@@ -1,0 +1,42 @@
+.nav{
+   display: flex;
+  align-items: center;
+flex-direction: row;
+  padding: 16px 170px; /* عشان ما يضل ملزق عاليسار */
+  position: absolute; /* يخليها تطلع فوق كلشي */
+  top: 0;
+  left: 0;
+}
+.logo {
+  height: 32px;
+  object-fit: contain;
+}
+
+.heading1{
+   color: #0F172A;
+   font-family: Outfit;
+font-weight: 400;
+font-size: 26px;
+line-height: 32px;
+text-align: center;
+}
+.heading2{
+    color:#475569;
+    font-family: Outfit;
+font-weight: 400;
+font-size: 20px;
+line-height: 24px;
+text-align: center;
+vertical-align: middle;
+
+}
+.Creatcontent{
+    font-family: Outfit;
+font-weight: 400;
+font-style: Regular;
+font-size: 12px;
+line-height: 16px;
+letter-spacing: 0%;
+vertical-align: middle;
+
+}
