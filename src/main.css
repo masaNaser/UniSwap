@@ -1,0 +1,13 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.container{
+   width: calc(100% - 200px);
+    margin: auto;
+}
+body{
+    font-family:Outfit ;
+}

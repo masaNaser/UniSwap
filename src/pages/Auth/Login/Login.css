@@ -1,3 +1,5 @@
+
+
 .nav{
    display: flex;
   align-items: center;
@@ -6,6 +8,7 @@ flex-direction: row;
   position: absolute; /* يخليها تطلع فوق كلشي */
   top: 0;
   left: 0;
+  gap:27px;
 }
 .logo {
   height: 32px;
@@ -27,16 +30,6 @@ font-weight: 400;
 font-size: 20px;
 line-height: 24px;
 text-align: center;
-vertical-align: middle;
-
-}
-.Creatcontent{
-    font-family: Outfit;
-font-weight: 400;
-font-style: Regular;
-font-size: 12px;
-line-height: 16px;
-letter-spacing: 0%;
 vertical-align: middle;
 
 }
