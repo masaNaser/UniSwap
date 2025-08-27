@@ -7,7 +7,7 @@
 //  <nav>
 //     <AppBar position="static" color="white" elevation={1}>
 //       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        
+
 //         {/* Left: Logo + Name */}
 //         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
 //           <img src="src/assets/images/logo.png" alt="logo" style={{ width: 32, height: 32 }} />
@@ -77,7 +77,8 @@
 
 import * as React from 'react';
 import { styled, alpha } from '@mui/material/styles';
-import {AppBar,
+import {
+  AppBar,
   Button,
   Box,
   Toolbar,
@@ -87,14 +88,17 @@ import {AppBar,
   IconButton,
   Typography,
   InputBase,
-} 
-from '@mui/material';
+}
+  from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
+import logo from "../../assets/images/logo.png";
+import Point from "../../assets/images/Point.svg";
+
 import "../Navbar/Navbar.css"
 import { Link } from 'react-router-dom';
 const Search = styled('div')(({ theme }) => ({
@@ -134,8 +138,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     [theme.breakpoints.up('md')]: {
       width: '40ch',
     },
-    
-    
+
+
   },
 }));
 
@@ -163,7 +167,7 @@ export default function PrimarySearchAppBar() {
     setMobileMoreAnchorEl(event.currentTarget);
   };
 
-   const menuId = 'primary-search-account-menu';
+  const menuId = 'primary-search-account-menu';
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -185,7 +189,7 @@ export default function PrimarySearchAppBar() {
     </Menu>
   );
 
-   const mobileMenuId = 'primary-search-account-menu-mobile';
+  const mobileMenuId = 'primary-search-account-menu-mobile';
   const renderMobileMenu = (
     <Menu
       anchorEl={mobileMoreAnchorEl}
@@ -239,12 +243,12 @@ export default function PrimarySearchAppBar() {
 
   return (
     <>
-    <div className="container">
-      <div className="navbar">
-         <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" color="white" elevation={0}>
-        <Toolbar sx={{  justifyContent: "space-between"}}>
-          {/* <IconButton
+      <AppBar position="sticky" sx={{ backgroundColor: "white", color: "black" }} elevation={1}>
+        <div className="main-container">
+
+          <Toolbar sx={{ justifyContent: "space-between" }}>
+
+            {/* <IconButton
             size="large"
             edge="start"
             color="inherit"
@@ -261,101 +265,109 @@ export default function PrimarySearchAppBar() {
           >
             MUI
           </Typography> */}
-              {/* Left: Logo + Name */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <img src="src/assets/images/logo.png" alt="logo" style={{ width: 32, height: 32 }} />
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            UniSwap
-          </Typography>
+            {/* Left: Logo + Name */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box
+                component="img"
+                src={logo}
+                alt="logo"
+                sx={{
+                  width: 32,
+                  height: 32,
+                }}
+              />
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                UniSwap
+              </Typography>
 
-        </Box>
+            </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-                <Button component={Link} to="" color="inherit"   sx={{ textTransform: "none", fontSize:"18px" }}>Feed</Button>
-                <Button component={Link} to="" color="inherit"   sx={{ textTransform: "none", fontSize:"18px"  }}>Browse</Button>
-                <Button component={Link} to="" color="inherit"   sx={{ textTransform: "none", fontSize:"18px"  }}>Projects</Button>
-           </Box>
+              <Button component={Link} to="" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Feed</Button>
+              <Button component={Link} to="" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Browse</Button>
+              <Button component={Link} to="" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Projects</Button>
+            </Box>
 
-          <Search  sx={{bgcolor:"#F8FAFC"}}>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search services,users,posts.."
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </Search>
+            <Search sx={{ bgcolor: "#F8FAFC" }}>
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder="Search services,users,posts.."
+                inputProps={{ 'aria-label': 'search' }}
+              />
+            </Search>
 
-          <div className='lastSide'>
-           <Box sx={{ 
-  display: "flex",
-   alignItems: "center", 
-   gap: 3,
-   mr:2,
-   bgcolor: "#eafaf2",
-   borderRadius: 5,
-   p:1
- }}>
-  {/* صورة */}
-  <Box
-    component="img"
-    src="src\assets\images\Point.svg" // مسار الصورة
-    alt="points"
-    sx={{ width: 30, height: 30 }}
-  />
+            <div className='lastSide'>
+              <Box sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 3,
+                mr: 2,
+                bgcolor: "#eafaf2",
+                borderRadius: 5,
+                p: 1
+              }}>
+                {/* صورة */}
+                <Box
+                  component="img"
+                  src={Point} // مسار الصورة
+                  alt="points"
+                  sx={{ width: 30, height: 30 }}
+                />
 
-  {/* الزر */}
-  <Typography sx={{ fontWeight: "bold", color: "#28a745" }}>
-    750 <Typography component="span" sx={{ fontWeight: "normal" }}>pts</Typography>
-  </Typography>
+                {/* الزر */}
+                <Typography sx={{ fontWeight: "bold", color: "#28a745" }}>
+                  750 <Typography component="span" sx={{ fontWeight: "normal" }}>pts</Typography>
+                </Typography>
               </Box>
-          <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-              <Badge badgeContent={4} color="error">
-                <MailIcon />
-              </Badge>
-            </IconButton>
-            <IconButton
-              size="large"
-              aria-label="show 5 new notifications"
-              color="inherit"
-            >
-              <Badge badgeContent={5} color="error">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            <IconButton
-              size="large"
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
-          </Box>
-          <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="show more"
-              aria-controls={mobileMenuId}
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
-              color="inherit"
-            >
-              <MoreIcon />
-            </IconButton>
-          </Box>
-          </div>
-        </Toolbar>
+              <Box sx={{ flexGrow: 1 }} />
+              <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+                  <Badge badgeContent={4} color="error">
+                    <MailIcon />
+                  </Badge>
+                </IconButton>
+                <IconButton
+                  size="large"
+                  aria-label="show 5 new notifications"
+                  color="inherit"
+                >
+                  <Badge badgeContent={5} color="error">
+                    <NotificationsIcon />
+                  </Badge>
+                </IconButton>
+                <IconButton
+                  size="large"
+                  edge="end"
+                  aria-label="account of current user"
+                  aria-controls={menuId}
+                  aria-haspopup="true"
+                  onClick={handleProfileMenuOpen}
+                  color="inherit"
+                >
+                  <AccountCircle />
+                </IconButton>
+              </Box>
+              <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+                <IconButton
+                  size="large"
+                  aria-label="show more"
+                  aria-controls={mobileMenuId}
+                  aria-haspopup="true"
+                  onClick={handleMobileMenuOpen}
+                  color="inherit"
+                >
+                  <MoreIcon />
+                </IconButton>
+              </Box>
+            </div>
+
+          </Toolbar>
+        </div>
+
       </AppBar>
       {renderMobileMenu}
       {renderMenu}
-         </Box>
-      </div>
-    </div>
     </>
   );
 }

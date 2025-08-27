@@ -1,15 +1,3 @@
-.lastSide{
+.lastSide {
     display: flex;
-}
-
-.search{
-    width: 448;
-height: 40;
-angle: 0 deg;
-opacity: 1;
-top: 12px;
-left: 581.64px;
-border-radius: 12px;
-border-width: 1px;
-
 }
