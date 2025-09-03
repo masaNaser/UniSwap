@@ -6,7 +6,6 @@ import Typography from '@mui/material/Typography';
 
 function SelectActionCard({ title, value, icon }) {
 return (
-<<<<<<< HEAD
 <Card
   sx={{
     width: '100%',
@@ -19,18 +18,6 @@ return (
   }}
 >
 
-=======
-<Card sx={{
-width: 450, 
-borderRadius: '12px',
-boxShadow: '0px 0px 3px rgba(0, 0, 0, 0.2)',
- transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-        '&:hover': {
-          transform: 'scale(1.02)',
-          
-        }
-}}>
->>>>>>> 1bfb1582988c644e02de2386c09cbb3e3ab50b24
 <CardContent sx={{
 display: 'flex',
 justifyContent: 'space-between',
@@ -51,11 +38,7 @@ borderRadius: '8px',
 padding: (theme) => theme.spacing(1), 
 display: 'flex',
 alignItems: 'center',
-<<<<<<< HEAD
 // justifyContent: 'center',
-=======
-justifyContent: 'center',
->>>>>>> 1bfb1582988c644e02de2386c09cbb3e3ab50b24
 }}>
 {icon}
 </Box>
