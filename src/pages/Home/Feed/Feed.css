@@ -1,0 +1,33 @@
+.welcome-section {
+  margin: 30px 0px;
+}
+
+.cards-section {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.wave {
+  animation: wave-animation 1.5s infinite;
+  transform-origin: 70% 70%;
+  color:#eacc51bf;
+  transform: rotate(0deg) rotateY(180deg); /* عكس الاتجاه */
+}
+
+@keyframes wave-animation {
+  0%   { transform: rotate(0deg) rotateY(180deg); }
+  20%  { transform: rotate(20deg) rotateY(180deg); }
+  40%  { transform: rotate(-10deg) rotateY(180deg); }
+  60%  { transform: rotate(20deg) rotateY(180deg); }
+  80%  { transform: rotate(-5deg) rotateY(180deg); }
+  100% { transform: rotate(0deg) rotateY(180deg); }
+}
+
+@media (max-width: 600px) {
+  .cards-section {
+   /* width: 142%; */
+   flex-wrap: wrap; 
+
+  }
+}
