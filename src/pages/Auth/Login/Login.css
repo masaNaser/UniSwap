@@ -4,11 +4,20 @@
    display: flex;
   align-items: center;
 flex-direction: row;
+<<<<<<< HEAD
   padding: 16px 150px; /* عشان ما يضل ملزق عاليسار */
    position: absolute; /* يخليها تطلع فوق كلشي */
    top: 0;
   left: 0;
 } 
+=======
+  padding: 16px 170px; /* عشان ما يضل ملزق عاليسار */
+  position: absolute; /* يخليها تطلع فوق كلشي */
+  top: 0;
+  left: 0;
+  gap:27px;
+}
+>>>>>>> 1bfb1582988c644e02de2386c09cbb3e3ab50b24
 .logo {
   height: 32px;
   object-fit: contain;

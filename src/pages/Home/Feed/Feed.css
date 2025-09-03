@@ -6,6 +6,7 @@
   display: flex;
   justify-content: center;
   gap: 20px;
+<<<<<<< HEAD
 }
 
 .wave {
@@ -30,4 +31,6 @@
    flex-wrap: wrap; 
 
   }
+=======
+>>>>>>> 1bfb1582988c644e02de2386c09cbb3e3ab50b24
 }
