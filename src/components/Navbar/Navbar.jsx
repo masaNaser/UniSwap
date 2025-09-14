@@ -6,8 +6,6 @@ import {
   Box,
   Toolbar,
   Badge,
-  MenuItem,
-  Menu,
   IconButton,
   Typography,
   InputBase,
@@ -62,165 +60,243 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export default function PrimarySearchAppBar() {
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState(null);
-
-  const isMenuOpen = Boolean(anchorEl);
-  const isMobileMenuOpen = Boolean(mobileMenuAnchor);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const handleProfileMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
-  const handleMobileMenuOpen = (event) => setMobileMenuAnchor(event.currentTarget);
-  const handleMobileMenuClose = () => setMobileMenuAnchor(null);
 
-  const menuId = "primary-search-account-menu";
-  const renderProfileMenu = (
-    <Menu
-      anchorEl={anchorEl}
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      id={menuId}
-      keepMounted
-      transformOrigin={{ vertical: "top", horizontal: "right" }}
-      open={isMenuOpen}
-      onClose={handleMenuClose}
-    >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-    </Menu>
-  );
+  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
 
-  const mobileMenuId = "primary-mobile-menu";
-const renderMobileMenu = (
-  <Menu
-    anchorEl={mobileMenuAnchor}
-    anchorOrigin={{ vertical: "top", horizontal: "right" }}
-    id={mobileMenuId}
-    keepMounted
-    transformOrigin={{ vertical: "top", horizontal: "right" }}
-    open={isMobileMenuOpen}
-    onClose={handleMobileMenuClose}
-  >
-    {/* Links */}
-    <MenuItem component={Link} to="/feed" sx={{ justifyContent: "center" }}>Feed</MenuItem>
-    <MenuItem component={Link} to="" sx={{ justifyContent: "center" }}>Browse</MenuItem>
-    <MenuItem component={Link} to="" sx={{ justifyContent: "center" }}>Projects</MenuItem>
+  React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    {/* Search */}
-    <MenuItem disableRipple sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
-      <Search sx={{ bgcolor: "#F8FAFC", width: "100%" }}>
-        <SearchIconWrapper>
-          <SearchIcon />
-        </SearchIconWrapper>
-        <StyledInputBase
-          placeholder="Search services, users, posts.."
-          inputProps={{ "aria-label": "search" }}
-        />
-      </Search>
-    </MenuItem>
-
-    {/* Points */}
-    <MenuItem disableRipple sx={{ width: "100%", justifyContent: "center" }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center", // <-- مهم للتمركز
-          gap: 1,
-          bgcolor: "#eafaf2",
-          borderRadius: 5,
-          p: 1,
-          width: "80%", // تحكم بعرض الصندوق
-        }}
-      >
-        <Box component="img" src={Point} alt="points" sx={{ width: 30, height: 30 }} />
-        <Typography component="span" sx={{ fontWeight: "bold", color: "#28a745", textAlign: "center" }}>
-          750 <Typography component="span" sx={{ fontWeight: "normal" }}>pts</Typography>
-        </Typography>
-      </Box>
-    </MenuItem>
-  </Menu>
-);
-
+  const toggleMobileMenu = () => setMobileOpen((prev) => !prev);
 
   return (
     <>
-      <AppBar position="sticky" sx={{ backgroundColor: "white !important", color: "black" }} elevation={1}>
+      <AppBar
+        position="sticky"
+        sx={{ backgroundColor: "white !important", color: "black" }}
+        elevation={1}
+      >
         <Container maxWidth="xl">
-          <Toolbar sx={{ justifyContent: "space-between", width: "100%", bgcolor: "white" }}>
+          <Toolbar
+            sx={{ justifyContent: "space-between", width: "100%", bgcolor: "white" }}
+          >
             {/* Logo + Name */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Box component="img" src={logo} alt="logo" sx={{ width: 32, height: 32 }} />
-              <Typography variant="h6" sx={{ fontWeight: "bold", color: "#74767a", display: { xs: "none", sm: "block" } }}>
+              <Box
+                component="img"
+                src={logo}
+                alt="logo"
+                sx={{ width: 32, height: 32 }}
+              />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: "bold",
+                  color: "#74767a",
+                  display: { xs: "none", sm: "block" },
+                }}
+              >
                 UniSwap
               </Typography>
             </Box>
 
-            {/* Desktop Links */}
-            <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 2 }}>
-              <Button component={Link} to="/feed" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Feed</Button>
-              <Button component={Link} to="" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Browse</Button>
-              <Button component={Link} to="" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Projects</Button>
-            </Box>
+            {/* Desktop Links (≥1029px) */}
+            {windowWidth >= 1029 && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Button
+                  component={Link}
+                  to="/feed"
+                  color="inherit"
+                  sx={{ textTransform: "none", fontSize: "18px" }}
+                >
+                  Feed
+                </Button>
+                <Button
+                  component={Link}
+                  to=""
+                  color="inherit"
+                  sx={{ textTransform: "none", fontSize: "18px" }}
+                >
+                  Browse
+                </Button>
+                <Button
+                  component={Link}
+                  to="/project"
+                  color="inherit"
+                  sx={{ textTransform: "none", fontSize: "18px" }}
+                >
+                  Projects
+                </Button>
+              </Box>
+            )}
 
-            {/* Desktop Search */}
-            <Box sx={{ display: { xs: "none", md: "flex" }, ml: 2 }}>
-              <Search sx={{ bgcolor: "#F8FAFC" }}>
-                <SearchIconWrapper><SearchIcon /></SearchIconWrapper>
-                <StyledInputBase placeholder="Search services, users, posts.." inputProps={{ "aria-label": "search" }} />
+            {/* Search (≥768px) */}
+            <Box
+              sx={{
+                display: { xs: "none", sm: "flex" },
+                ml: 2,
+                flex: 1,
+                justifyContent: "center",
+              }}
+            >
+              <Search
+                sx={{
+                  bgcolor: "#F8FAFC",
+                  width: "100%",
+                  maxWidth: windowWidth >= 1029 ? 300 : 400, // ✅ يصغر عند الشاشات الكبيرة
+                }}
+              >
+                <SearchIconWrapper>
+                  <SearchIcon />
+                </SearchIconWrapper>
+                <StyledInputBase
+                  placeholder="Search services, users, posts.."
+                  inputProps={{ "aria-label": "search" }}
+                />
               </Search>
             </Box>
 
             {/* Right Side Icons */}
             <Box sx={{ display: "flex", alignItems: "center" }}>
-              {/* Points */}
-              <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, bgcolor: "#eafaf2", borderRadius: 5, p: 1, mr: 2 }}>
-                <Box component="img" src={Point} alt="points" sx={{ width: 30, height: 30 }} />
-                <Typography component="span" sx={{ fontWeight: "bold", color: "#28a745" }}>
-                  750 <Typography component="span" sx={{ fontWeight: "normal" }}>pts</Typography>
-                </Typography>
-              </Box>
+              {/* Points (≥1029px) */}
+              {windowWidth >= 1029 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    bgcolor: "#eafaf2",
+                    borderRadius: 5,
+                    p: 1,
+                    mr: 2,
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={Point}
+                    alt="points"
+                    sx={{ width: 30, height: 30 }}
+                  />
+                  <Typography
+                    component="span"
+                    sx={{ fontWeight: "bold", color: "#28a745" }}
+                  >
+                    750{" "}
+                    <Typography component="span" sx={{ fontWeight: "normal" }}>
+                      pts
+                    </Typography>
+                  </Typography>
+                </Box>
+              )}
 
               {/* Icons */}
               <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-                <Badge badgeContent={4} color="error"><MailIcon /></Badge>
+                <Badge badgeContent={4} color="error">
+                  <MailIcon />
+                </Badge>
               </IconButton>
               <IconButton size="large" aria-label="show 5 new notifications" color="inherit">
-                <Badge badgeContent={5} color="error"><NotificationsIcon /></Badge>
+                <Badge badgeContent={5} color="error">
+                  <NotificationsIcon />
+                </Badge>
               </IconButton>
-
-              {/* Desktop Profile */}
               <IconButton
                 size="large"
                 edge="end"
                 aria-label="account of current user"
-                aria-controls={menuId}
                 aria-haspopup="true"
                 onClick={handleProfileMenuOpen}
                 color="inherit"
-                sx={{ display: { xs: "none", md: "flex" } }}
               >
                 <AccountCircle />
               </IconButton>
 
-              {/* Mobile Menu Button */}
-              <Box sx={{ display: { xs: "flex", md: "none" } }}>
-                <IconButton
-                  size="large"
-                  aria-label="show more"
-                  aria-controls={mobileMenuId}
-                  aria-haspopup="true"
-                  onClick={handleMobileMenuOpen}
-                  color="inherit"
-                >
-                  <MenuIcon />
-                </IconButton>
-              </Box>
+              {/* Mobile Menu Button (<1029px) */}
+              {windowWidth < 1029 && (
+                <Box>
+                  <IconButton
+                    size="large"
+                    aria-label="show more"
+                    onClick={toggleMobileMenu}
+                    color="inherit"
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                </Box>
+              )}
             </Box>
           </Toolbar>
         </Container>
       </AppBar>
 
-      {renderMobileMenu}
-      {renderProfileMenu}
+      {/* Mobile Menu Panel */}
+      {mobileOpen && windowWidth < 1029 && (
+        <Box
+          sx={{ width: "100%", bgcolor: "white", borderBottom: 1, borderColor: "divider" }}
+        >
+          <Container maxWidth="xl" sx={{ py: 1 }}>
+            <Button component={Link} to="/feed" fullWidth sx={{ justifyContent: "center" }}>
+              Feed
+            </Button>
+            <Button component={Link} to="" fullWidth sx={{ justifyContent: "center" }}>
+              Browse
+            </Button>
+            <Button component={Link} to="/project" fullWidth sx={{ justifyContent: "center" }}>
+              Projects
+            </Button>
+
+            {/* Search (<768px) */}
+            {windowWidth < 768 && (
+              <Box sx={{ display: "flex", mt: 1 }}>
+                <Search sx={{ bgcolor: "#F8FAFC", width: "100%" }}>
+                  <SearchIconWrapper>
+                    <SearchIcon />
+                  </SearchIconWrapper>
+                  <StyledInputBase
+                    placeholder="Search services, users, posts.."
+                    inputProps={{ "aria-label": "search" }}
+                  />
+                </Search>
+              </Box>
+            )}
+
+            {/* Points */}
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  bgcolor: "#eafaf2",
+                  borderRadius: 5,
+                  p: 1,
+                  width: "80%",
+                  justifyContent: "center",
+                }}
+              >
+                <Box
+                  component="img"
+                  src={Point}
+                  alt="points"
+                  sx={{ width: 30, height: 30 }}
+                />
+                <Typography component="span" sx={{ fontWeight: "bold", color: "#28a745" }}>
+                  750{" "}
+                  <Typography component="span" sx={{ fontWeight: "normal" }}>
+                    pts
+                  </Typography>
+                </Typography>
+              </Box>
+            </Box>
+          </Container>
+        </Box>
+      )}
     </>
   );
 }

@@ -4,47 +4,156 @@ import {
   Box,
   TextField,
   Button,
-  Checkbox,
-  FormControlLabel,
-  Link,
-  Tabs,
-  Tab,
-  Container,
   InputAdornment,
   Typography,
-  CircularProgress,
+  Container,
+  Tabs,
+  Tab,
+  Autocomplete,
+  Chip,
 } from "@mui/material";
-import { Email, Lock, CheckCircle, Person, Business,School,ElectricBoltSharp  } from "@mui/icons-material";
+import {
+  Email,
+  Lock,
+  Person,
+  School,
+  ElectricBoltSharp,
+  CalendarMonth,
+  CheckCircle,
+} from "@mui/icons-material";
+
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import CustomButton from "../../../components/CustomButton/CustomButton";
+import CustomButton from "../../../shared/CustomButton/CustomButton";
+import { register as registerApi } from "../../../services/authService";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { LinearProgress } from "@mui/material"; // ضيفيها فوق مع باقي الـ imports
 
 export default function Register() {
+  const validationSchema = yup.object({
+    userName: yup
+      .string()
+      .required("User Name is required")
+      .min(5, "User Name must be at least 5 characters"),
+    email: yup
+      .string()
+      .required("Email is required")
+      .email("Invalid email address"),
+    password: yup
+      .string()
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+      ),
+    confirmPassword: yup
+      .string()
+      .required("Please confirm your password")
+      .oneOf([yup.ref("password")], "Passwords must match"),
+  });
+
+  const [passwordStrength, setPasswordStrength] = useState(0);
+
+  const checkStrength = (value) => {
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+    setPasswordStrength(score);
+  };
+
+  const getStrengthLabel = () => {
+    switch (passwordStrength) {
+      case 0:
+        return { text: "", color: "inherit" };
+      case 1:
+        return { text: "very week", color: "red" };
+      case 2:
+        return { text: "week", color: "orange" };
+      case 3:
+      case 4:
+        return { text: "strong", color: "green" };
+      default:
+        return { text: "", color: "inherit" };
+    }
+  };
   const [showPassword, setshowPassword] = useState(false);
+  const [skills, setSkills] = useState([]); // skills as array
+  const [inputValue, setInputValue] = useState("");
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  // التاب الحالي حسب الرابط
   const currentTab = location.pathname === "/login" ? 0 : 1;
 
-  const { register: formRegister, handleSubmit } = useForm();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    //هاي الخطوة عشان نحكي للمكتبة الرياكت هوك فورم انه ما تعمل الفالديشن منها وانما الفالديشن اللي حطيناه باستخدام ال yup
+    resolver: yupResolver(validationSchema),
+  });
 
-  const registerHandle = (data) => {
-    console.log(data);
+  const registerHandle = async (data) => {
+    const finalData = {
+      userName: data.userName.trim(),
+      email: data.email.trim(),
+      password: data.password.trim(),
+      confirmPassword: data.confirmPassword.trim(),
+      skills: skills,
+      universityMajor: data.universityMajor.trim(),
+      academicYear: data.academicYear.trim(),
+    };
+
+    console.log(finalData);
+
+    try {
+      const response = await registerApi(finalData);
+      console.log(response);
+      if (response.status == 200) {
+        // toast.success(
+        //   "Registration successful! Please check your email to verify your account."
+        // );
+        navigate("/login");
+      }
+    } catch (error) {
+      const msg = error.response?.data?.message || "An error occurred";
+
+      console.error("Registration error:", error);
+    }
   };
 
   return (
     <>
-       {/* Navbar */}
+      {/* Navbar */}
       <Container maxWidth="lg">
         <Box sx={{ display: "flex", alignItems: "center", py: 2 }}>
-          <Button startIcon={<KeyboardBackspaceIcon />} color="inherit" sx={{ textTransform: "none",color: "#74767a"  }}>
+          <Button
+            startIcon={<KeyboardBackspaceIcon />}
+            color="inherit"
+            sx={{ textTransform: "none", color: "#74767a" }}
+            onClick={() => navigate(-1)}
+          >
             Back
           </Button>
-          <Box sx={{ display: "flex", alignItems: "center", gap: "6px", ml: 2 }}>
-            <img src="src/assets/images/logo.png" alt="UniSwap logo" className="logo" />
-            <Typography component={"span"} sx={{ fontWeight: "600", color: "#74767a", fontSize: "14px" }}>
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: "6px", ml: 2 }}
+          >
+            <img
+              src="src/assets/images/logo.png"
+              alt="UniSwap logo"
+              className="logo"
+            />
+            <Typography
+              component={"span"}
+              sx={{ fontWeight: "600", color: "#74767a", fontSize: "14px" }}
+            >
               UniSwap
             </Typography>
           </Box>
@@ -52,30 +161,30 @@ export default function Register() {
       </Container>
 
       {/* Content */}
-      <Container maxWidth="lg" className="container" >
+      <Container maxWidth="lg" className="container">
         <Box
           sx={{
             display: "flex",
-  flexDirection: {
-      xs: "column", // في الموبايل (xs - sm)
-      md: "row",    // من md وفوق (ديسكتوب)
-    },     
-  alignItems: {
-        xs: "center", // بالموبايل بالنص
-        md: "flex-start", // بالديسكتوب عادي
-      },
-                  justifyContent: "space-between",
-            mt: "120px",
-   gap: {
-       xs: 4, // gap صغير بالموبايل
-      md: 0.5  // gap أكبر بالديسكتوب
-    },
-                flexWrap:"wrap"
+            flexDirection: { xs: "column", md: "row" },
+            alignItems: { xs: "center", md: "flex-start" },
+            justifyContent: "space-between",
+            mt: "70px",
+            gap: { xs: 4, md: 0.5 },
+            flexWrap: "wrap",
+            pb: 5,
           }}
         >
           {/* LEFT SECTION */}
           <Box sx={{ flex: 1, maxWidth: "600px" }}>
-            <Typography component={"h2"} sx={{ fontSize: "36px", fontWeight: "700", lineHeight: "44px", color: "#0f172a" }}>
+            <Typography
+              component={"h2"}
+              sx={{
+                fontSize: "36px",
+                fontWeight: "700",
+                lineHeight: "44px",
+                color: "#0f172a",
+              }}
+            >
               Join the Future of <br />
               <Typography
                 component={"span"}
@@ -91,11 +200,19 @@ export default function Register() {
               </Typography>
             </Typography>
 
-            <Typography sx={{ mt: 2, fontSize: "18px", color: "#475569", lineHeight: "28px" }}>
-              Connect with fellow students, exchange skills, and build lasting academic relationships in a safe, university-verified environment.
+            <Typography
+              sx={{
+                mt: 2,
+                fontSize: "18px",
+                color: "#475569",
+                lineHeight: "28px",
+              }}
+            >
+              Connect with fellow students, exchange skills, and build lasting
+              academic relationships in a safe, university-verified environment.
             </Typography>
 
-            {/* Features list */}
+            {/* Features */}
             <Box sx={{ mt: 3 }}>
               {[
                 "Connect with students across universities",
@@ -104,27 +221,56 @@ export default function Register() {
                 "Access to exclusive study groups",
                 "Real-time collaboration tools",
               ].map((text, i) => (
-                <Box key={i} sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+                <Box
+                  key={i}
+                  sx={{ display: "flex", alignItems: "center", mb: 1.5 }}
+                >
                   <CheckCircle sx={{ color: "#22c55e", mr: 1 }} />
                   <Typography sx={{ color: "#0f172a" }}>{text}</Typography>
                 </Box>
               ))}
             </Box>
-              {/* University Verified card */}
-            <Box sx={{ mt: 4, p: 2.5, borderRadius: 3, bgcolor: "#aae2f12a", display: "flex", alignItems: "flex-start", gap: 2, boxShadow: "inset 0 0 4px #e2e8f0", maxWidth: "500px" }}>
-                <Box>
-                        <Typography sx={{ fontWeight: "600", color: "#0f172a" }}>University Verified</Typography>
-                        <Typography sx={{ fontSize: "14px", color: "#475569" }}>
-                         Join 5,000+ students from 25+ universities already using UniSwap to enhance their academic journey.
-                        </Typography>
-                        </Box>
-                        </Box>
+
+            {/* University Verified card */}
+            <Box
+              sx={{
+                mt: 4,
+                p: 2.5,
+                borderRadius: 3,
+                bgcolor: "#aae2f12a",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 2,
+                boxShadow: "inset 0 0 4px #e2e8f0",
+                maxWidth: "500px",
+              }}
+            >
+              <Box>
+                <Typography sx={{ fontWeight: "600", color: "#0f172a" }}>
+                  University Verified
+                </Typography>
+                <Typography sx={{ fontSize: "14px", color: "#475569" }}>
+                  Join 5,000+ students from 25+ universities already using
+                  UniSwap to enhance their academic journey.
+                </Typography>
+              </Box>
+            </Box>
           </Box>
 
           {/* RIGHT SECTION (Form) */}
-          <Box sx={{width: 400 ,  p: 4, borderRadius: 4, boxShadow: 3, bgcolor: "white"}}>
+          <Box
+            sx={{
+              width: 400,
+              p: 4,
+              borderRadius: 4,
+              boxShadow: 3,
+              bgcolor: "white",
+            }}
+          >
             <Box sx={{ textAlign: "center", mb: 3 }}>
-              <Typography sx={{ fontSize: "20px", fontWeight: "600", color: "#0f172a" }}>
+              <Typography
+                sx={{ fontSize: "20px", fontWeight: "600", color: "#0f172a" }}
+              >
                 Welcome to UniSwap
               </Typography>
               <Typography sx={{ fontSize: "14px", color: "#475569" }}>
@@ -140,7 +286,7 @@ export default function Register() {
                 if (newValue === 1) navigate("/register");
               }}
               centered
-                textColor="inherit"
+              textColor="inherit"
               sx={{
                 bgcolor: "#F1F5F9",
                 borderRadius: "50px",
@@ -158,9 +304,7 @@ export default function Register() {
                   background: "#FFFFFF",
                   color: "#0F172A",
                 },
-                "& .MuiTabs-indicator": {
-                  display: "none",
-                },
+                "& .MuiTabs-indicator": { display: "none" },
               }}
             >
               <Tab label="Sign In" />
@@ -168,95 +312,206 @@ export default function Register() {
             </Tabs>
 
             {/* Form */}
-            <Box component={"form"} sx={{ padding: "35px 0 0 0"}} onSubmit={handleSubmit(registerHandle)}>
+            <Box
+              component={"form"}
+              sx={{ padding: "35px 0 0 0" }}
+              onSubmit={handleSubmit(registerHandle)}
+            >
               <TextField
-                {...formRegister("fullName")}
+                {...register("userName")}
                 fullWidth
                 margin="normal"
-                label="Full Name"
-                placeholder="john Doe"
+                label="User Name"
+                placeholder="john doe"
                 variant="outlined"
+                error={errors.userName}
+                helperText={errors.userName?.message}
                 required
-                InputProps={{ startAdornment: <InputAdornment position="start"><Person /></InputAdornment> }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
               <TextField
-                {...formRegister("Email")}
+                {...register("email")}
                 fullWidth
                 margin="normal"
                 label="Email"
-                placeholder="john.doe@gmail.edu"
+                placeholder="john.doe@gmail.com"
                 variant="outlined"
                 required
-                InputProps={{ startAdornment: <InputAdornment position="start"><Email /></InputAdornment> }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
               <TextField
-                {...formRegister("UniversityName")}
-                fullWidth
-                margin="normal"
-                label="University"
-                placeholder="University Name"
-                variant="outlined"
-                required
-                InputProps={{ startAdornment: <InputAdornment position="start"><Business /></InputAdornment> }}
-              />
-
-              <TextField
-                {...formRegister("Password")}
+                {...register("password")}
                 fullWidth
                 margin="normal"
                 label="Password"
-                placeholder="Enter your password"
                 type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
                 variant="outlined"
                 required
-                InputProps={{ startAdornment: <InputAdornment position="start"><Lock /></InputAdornment> }}
+                error={errors.password}
+                helperText={errors.password?.message}
+                onChange={(e) => {
+                  // خلي الريأكت هوك فورم يقرأ القيمة
+                  register("password").onChange(e);
+                  checkStrength(e.target.value); // حساب قوة الباسورد
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
+              {passwordStrength > 0 && (
+                <>
+                  <LinearProgress
+                    variant="determinate"
+                    value={(passwordStrength / 4) * 100}
+                    sx={{ height: 8, borderRadius: 5, mt: 1 }}
+                    color={
+                      passwordStrength < 2
+                        ? "error"
+                        : passwordStrength === 2
+                        ? "warning"
+                        : "success"
+                    }
+                  />
+                  <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
+                    {getStrengthLabel().text}
+                  </Typography>
+                </>
+              )}
+
               <TextField
-                {...formRegister("ConfirmPass")}
+                {...register("confirmPassword")}
                 fullWidth
                 margin="normal"
                 label="Confirm Password"
-                placeholder="Confirm your password"
                 type={showPassword ? "text" : "password"}
+                placeholder="Confirm your password"
                 variant="outlined"
                 required
-                InputProps={{ startAdornment: <InputAdornment position="start"><Lock /></InputAdornment> }}
+                error={errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
-              <Box sx={{ bgcolor: "#F8FAFC", p: "3px 5px", mt: "15px", borderRadius: "10px" }}>
-                <Typography component={"p"} sx={{ fontFamily: "Outfit", fontSize: "11px" }}>
-                  By signing up, you agree to our Terms of Service and Privacy Policy.<br />
-                  Your university email will be verified before account activation.
-                </Typography>
-              </Box>
+              {/* Skills Input with Chips */}
+              <Autocomplete
+                multiple
+                freeSolo
+                options={[]}
+                value={skills}
+                inputValue={inputValue}
+                onInputChange={(event, newInputValue) => {
+                  setInputValue(newInputValue);
+                }}
+                onChange={(event, newValue) => {
+                  setSkills(newValue);
+                  setValue("skills", newValue);
+                  setInputValue(""); // نمسح النص بعد إدخال skill
+                }}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => {
+                    const { key, ...tagProps } = getTagProps({ index });
+                    return (
+                      <Chip
+                        key={key}
+                        variant="outlined"
+                        label={option}
+                        {...tagProps}
+                      />
+                    );
+                  })
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Skills"
+                    // 👇 هون الشرط: يظهر placeholder فقط إذا skills فاضي
+                    placeholder={
+                      skills.length === 0 ? "Type a skill and press Enter" : ""
+                    }
+                    margin="normal"
+                    fullWidth
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <>
+                          <InputAdornment position="start">
+                            <ElectricBoltSharp />
+                          </InputAdornment>
+                          {params.InputProps.startAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
 
-           <CustomButton
-  type="submit"
-  fullWidth
-  sx={{
-    mt: 2,
-    py: 1.5,
-    fontSize: 16,
-    borderRadius: 3,
-    opacity: 0.5,
-  }}
->
-  {currentTab === 0 ? "Sign In" : "Create Account"}
-</CustomButton>
-             <Typography sx={{ mt: 2, textAlign: "center", fontSize: "12px", color: "#475569" }}>
-                 <Lock sx={{ fontSize: 14,color: "#f0c724bf", verticalAlign: "middle", mr: 0.5 }} /> Secure ·
-                 <School sx={{ fontSize: 14, verticalAlign: "middle", mr: 0.5, ml: 0.5 }} /> University Verified ·
-                 <ElectricBoltSharp sx={{ fontSize: 14,color: "#f0c724bf",verticalAlign: "middle", mr: 0.5, ml: 0.5 }} /> Free Forever
-             </Typography>
+              <TextField
+                {...register("universityMajor")}
+                fullWidth
+                margin="normal"
+                label="University Major"
+                placeholder="cse"
+                variant="outlined"
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <School />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
+              <TextField
+                {...register("academicYear")}
+                fullWidth
+                margin="normal"
+                label="Academic Year"
+                placeholder="5th year"
+                variant="outlined"
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CalendarMonth />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <CustomButton type="submit" fullWidth sx={{ mt: 2, py: 1.5 }}>
+                Create Account
+              </CustomButton>
             </Box>
           </Box>
         </Box>
       </Container>
-
-      </>
+    </>
   );
 }
