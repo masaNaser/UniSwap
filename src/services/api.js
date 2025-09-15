@@ -20,7 +20,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://uniswap.runasp.net/api',
+    baseURL: 'https://uniswap.runasp.net/api',
     headers: { 'Content-Type': 'application/json' }
 });
 
@@ -35,7 +35,7 @@ api.interceptors.request.use(async (config) => {
     //ونتأكد إنه عندنا refreshToken صالح للتجديد.
     if (expiration && now >= expiration && refreshToken) {
         try {
-            const response = await axios.post('http://uniswap.runasp.net/api/Account/refresh-token', { refreshToken });
+            const response = await axios.post('https://uniswap.runasp.net/api/Account/refresh-token', { refreshToken });
             token = response.data.accessToken;
             localStorage.setItem('accessToken', token);
             localStorage.setItem('accessTokenExpiration', response.data.exp); // حسب السيرفر

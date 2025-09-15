@@ -119,7 +119,7 @@ export default function PrimarySearchAppBar() {
                 </Button>
                 <Button
                   component={Link}
-                  to=""
+                  to="/browse"
                   color="inherit"
                   sx={{ textTransform: "none", fontSize: "18px" }}
                 >
