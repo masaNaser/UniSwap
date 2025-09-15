@@ -101,7 +101,7 @@ const renderMobileMenu = (
   >
     {/* Links */}
     <MenuItem component={Link} to="/feed" sx={{ justifyContent: "center" }}>Feed</MenuItem>
-    <MenuItem component={Link} to="" sx={{ justifyContent: "center" }}>Browse</MenuItem>
+    <MenuItem component={Link} to="/browse" sx={{ justifyContent: "center" }}>Browse</MenuItem>
     <MenuItem component={Link} to="" sx={{ justifyContent: "center" }}>Projects</MenuItem>
 
     {/* Search */}
@@ -157,7 +157,7 @@ const renderMobileMenu = (
             {/* Desktop Links */}
             <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 2 }}>
               <Button component={Link} to="/feed" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Feed</Button>
-              <Button component={Link} to="" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Browse</Button>
+              <Button component={Link} to="/browse" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Browse</Button>
               <Button component={Link} to="" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Projects</Button>
             </Box>
 

@@ -36,6 +36,7 @@ export default function CustomButton({ children, type = "button", sx, ...props }
         background: 'linear-gradient(to right,#00C8FF,#8B5FF6)',
         color: "white",
         border: "none",
+        padding: "10px 20px",
         "&:hover": {
           background: "white",
           color: "#3b82f6",

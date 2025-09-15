@@ -3,6 +3,11 @@ import Login from "../pages/Auth/Login/Login"
 import Register from "../pages/Auth/Register/Register"
 import MainLayout from "../layouts/MainLayout"
 import Feed from "../pages/Home/Feed/Feed"
+import Services from "../pages/Home/Browse/Services"
+import SubServices from "../pages/Home/Browse/SubServices"
+import SubServiceProjects from "../pages/Home/Browse/SubServiceProjects"
+
+
 const router = createBrowserRouter([
     // {
     //     path:'/',
@@ -24,6 +29,18 @@ const router = createBrowserRouter([
         path: "feed", 
         element: <Feed />,
       },
+      {
+        path: "browse",
+        element: <Services />,
+      },
+      {
+        path: "browse/:categoryName",
+        element: <SubServices />,
+      },
+      {
+      path: "services/:subserviceName",
+      element: <SubServiceProjects />,
+      }
     ],
   },
 ])
