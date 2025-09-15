@@ -244,7 +244,7 @@ export default function PrimarySearchAppBar() {
             <Button component={Link} to="/feed" fullWidth sx={{ justifyContent: "center" }}>
               Feed
             </Button>
-            <Button component={Link} to="" fullWidth sx={{ justifyContent: "center" }}>
+            <Button component={Link} to="/browse" fullWidth sx={{ justifyContent: "center" }}>
               Browse
             </Button>
             <Button component={Link} to="/project" fullWidth sx={{ justifyContent: "center" }}>
