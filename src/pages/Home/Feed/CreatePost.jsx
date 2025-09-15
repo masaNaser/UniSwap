@@ -15,9 +15,9 @@ import {
   styled,
   FormHelperText,
 } from '@mui/material';
-import { Image, InsertDriveFile, Link, MoreHoriz } from '@mui/icons-material';
+import { Image, InsertDriveFile, Link } from '@mui/icons-material';
 import ProfilePic from '../../../assets/images/ProfilePic.jpg';
-import CustomButton from '../../../components/CustomButton/CustomButton';
+import CustomButton from "../../../shared/CustomButton/CustomButton";
 
 const FormWrapper = styled(Box)(({ theme }) => ({
   backgroundColor: 'white',
