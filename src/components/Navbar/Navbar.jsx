@@ -67,65 +67,11 @@ export default function PrimarySearchAppBar() {
 
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
 
-<<<<<<< HEAD
-  const mobileMenuId = "primary-mobile-menu";
-const renderMobileMenu = (
-  <Menu
-    anchorEl={mobileMenuAnchor}
-    anchorOrigin={{ vertical: "top", horizontal: "right" }}
-    id={mobileMenuId}
-    keepMounted
-    transformOrigin={{ vertical: "top", horizontal: "right" }}
-    open={isMobileMenuOpen}
-    onClose={handleMobileMenuClose}
-  >
-    {/* Links */}
-    <MenuItem component={Link} to="/feed" sx={{ justifyContent: "center" }}>Feed</MenuItem>
-    <MenuItem component={Link} to="/browse" sx={{ justifyContent: "center" }}>Browse</MenuItem>
-    <MenuItem component={Link} to="" sx={{ justifyContent: "center" }}>Projects</MenuItem>
-
-    {/* Search */}
-    <MenuItem disableRipple sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
-      <Search sx={{ bgcolor: "#F8FAFC", width: "100%" }}>
-        <SearchIconWrapper>
-          <SearchIcon />
-        </SearchIconWrapper>
-        <StyledInputBase
-          placeholder="Search services, users, posts.."
-          inputProps={{ "aria-label": "search" }}
-        />
-      </Search>
-    </MenuItem>
-
-    {/* Points */}
-    <MenuItem disableRipple sx={{ width: "100%", justifyContent: "center" }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center", // <-- مهم للتمركز
-          gap: 1,
-          bgcolor: "#eafaf2",
-          borderRadius: 5,
-          p: 1,
-          width: "80%", // تحكم بعرض الصندوق
-        }}
-      >
-        <Box component="img" src={Point} alt="points" sx={{ width: 30, height: 30 }} />
-        <Typography component="span" sx={{ fontWeight: "bold", color: "#28a745", textAlign: "center" }}>
-          750 <Typography component="span" sx={{ fontWeight: "normal" }}>pts</Typography>
-        </Typography>
-      </Box>
-    </MenuItem>
-  </Menu>
-);
-=======
   React.useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
->>>>>>> 2de60989959de5783ab9238d2504ec21d13f8031
 
   const toggleMobileMenu = () => setMobileOpen((prev) => !prev);
 
@@ -160,14 +106,6 @@ const renderMobileMenu = (
               </Typography>
             </Box>
 
-<<<<<<< HEAD
-            {/* Desktop Links */}
-            <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 2 }}>
-              <Button component={Link} to="/feed" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Feed</Button>
-              <Button component={Link} to="/browse" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Browse</Button>
-              <Button component={Link} to="" color="inherit" sx={{ textTransform: "none", fontSize: "18px" }}>Projects</Button>
-            </Box>
-=======
             {/* Desktop Links (≥1029px) */}
             {windowWidth >= 1029 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -197,7 +135,6 @@ const renderMobileMenu = (
                 </Button>
               </Box>
             )}
->>>>>>> 2de60989959de5783ab9238d2504ec21d13f8031
 
             {/* Search (≥768px) */}
             <Box
@@ -307,7 +244,7 @@ const renderMobileMenu = (
             <Button component={Link} to="/feed" fullWidth sx={{ justifyContent: "center" }}>
               Feed
             </Button>
-            <Button component={Link} to="" fullWidth sx={{ justifyContent: "center" }}>
+            <Button component={Link} to="/browse" fullWidth sx={{ justifyContent: "center" }}>
               Browse
             </Button>
             <Button component={Link} to="/project" fullWidth sx={{ justifyContent: "center" }}>
