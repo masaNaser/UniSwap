@@ -12,7 +12,6 @@ import {
   Container,
   InputAdornment,
   Typography,
-  CircularProgress 
 } from "@mui/material";
 import {
   Email,
@@ -66,18 +65,22 @@ export default function Login() {
 
   const loginHandle = async (data) => {
     try {
-        setLoading(true);
+      setLoading(true);
       const response = await loginApi(data);
       console.log(response);
       if (response.status == 200) {
         localStorage.setItem("accessToken", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
-        localStorage.setItem("refreshTokenExpiration",response.data.refreshTokenExpiration);
+        localStorage.setItem(
+          "refreshTokenExpiration",
+          response.data.refreshTokenExpiration
+        );
         Swal.fire({
-           title: "Login successful!",
-           icon: "success",
-          draggable: true
-         });
+          title: "Login successful!",
+          icon: "success",
+          draggable: true,
+          timer: 2000,
+        });
         navigate("/feed");
       }
     } catch (error) {
@@ -88,9 +91,9 @@ export default function Login() {
         icon: "error",
         title: "Login failed",
         text: msg,
-});
-    }
-    finally{
+        timer: 2000,
+      });
+    } finally {
       setLoading(false);
     }
   };
@@ -333,7 +336,7 @@ export default function Login() {
             <CustomButton
               type="submit"
               fullWidth
-              disabled={loading} 
+              loading={loading}
               sx={{
                 mt: 2,
                 py: 1.5,
@@ -342,8 +345,8 @@ export default function Login() {
                 opacity: 0.5,
               }}
             >
-           {loading ? <CircularProgress  /> : (currentTab === 0 ? "Sign In" : "Create Account")}  
-             </CustomButton>
+              {currentTab === 0 ? "Sign In" : "Create Account"}
+            </CustomButton>
 
             <Typography
               sx={{

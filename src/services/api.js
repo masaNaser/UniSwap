@@ -20,8 +20,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://uniswap.runasp.net/api',
-    headers: { 'Content-Type': 'application/json' }
+    // baseURL: 'https://uniswap.runasp.net/api',
+        baseURL: '/api', // فقط /api عشان proxy يشتغل
+    // headers: { 'Content-Type': 'application/json' }
 });
 
 api.interceptors.request.use(async (config) => {

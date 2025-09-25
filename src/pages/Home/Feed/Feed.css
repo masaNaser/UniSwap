@@ -1,14 +1,29 @@
 .welcome-section {
   margin: 30px 0px;
 }
-
+.post-section{
+   display: flex;
+   gap: 39px;
+   align-items: flex-start;
+   margin-top:24px ;
+   flex-wrap: wrap;
+   
+}
 .cards-section {
   display: flex;
   justify-content: center;
   gap: 20px;
 
 }
+.create-post-main,
+.feed-sidebar {
+  flex: 1 1 480px; /* grow, shrink, min-size */
+}
+.feed-sidebar{
+  margin: 40px auto;
 
+
+}
 .wave {
   animation: wave-animation 1.5s infinite;
   transform-origin: 70% 70%;
@@ -32,3 +47,4 @@
 
   }
 }
+

@@ -1,18 +1,25 @@
+import { Button, CircularProgress } from "@mui/material";
 
-import { Button } from "@mui/material";
-
-export default function CustomButton({ children, type = "button", sx, ...props }) {
+export default function CustomButton({
+  children,
+  type = "button",
+  loading = false,
+  sx,
+  ...props
+}) {
   return (
     <Button
+      children
       type={type}
       {...props}
+      disabled={loading || props.disabled} // 👈 تعطيل الزر وقت اللودنج
       sx={{
         borderRadius: 8,
         textTransform: "none",
         transition: "0.2s",
-        fontSize:18,
-         opacity: 0.5,
-        background: 'linear-gradient(to right, #00C8FF, #8B5FF6);',
+        fontSize: 18,
+        opacity: loading ? 0.7 : 0.5,
+        background: "linear-gradient(to right, #00C8FF, #8B5FF6);",
         color: "white",
         border: "none",
         "&:hover": {
@@ -23,8 +30,7 @@ export default function CustomButton({ children, type = "button", sx, ...props }
         ...sx, // أي تعديل إضافي من برّا
       }}
     >
-      {children}
+      {loading ? <CircularProgress color="inherit" /> : children}
     </Button>
   );
 }
-

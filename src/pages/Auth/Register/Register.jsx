@@ -30,7 +30,8 @@ import { register as registerApi } from "../../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { LinearProgress } from "@mui/material"; // ضيفيها فوق مع باقي الـ imports
-
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 export default function Register() {
   const validationSchema = yup.object({
     userName: yup
@@ -84,6 +85,7 @@ export default function Register() {
   const [showPassword, setshowPassword] = useState(false);
   const [skills, setSkills] = useState([]); // skills as array
   const [inputValue, setInputValue] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -114,18 +116,31 @@ export default function Register() {
     console.log(finalData);
 
     try {
+      setLoading(true);
       const response = await registerApi(finalData);
       console.log(response);
       if (response.status == 200) {
-        // toast.success(
-        //   "Registration successful! Please check your email to verify your account."
-        // );
+        Swal.fire({
+          title:
+            "Registration successful! Please check your email to verify your account.",
+          icon: "success",
+          draggable: true,
+          timer: 2000,
+        });
         navigate("/login");
       }
     } catch (error) {
       const msg = error.response?.data?.message || "An error occurred";
-
+      Swal.fire({
+        icon: "error",
+        title: "Register failed",
+        text: msg,
+        timer: 2000,
+      });
       console.error("Registration error:", error);
+    }
+    finally{
+      setLoading(false);
     }
   };
 
