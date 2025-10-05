@@ -1,26 +1,9 @@
-// import axios from 'axios';
 
-// const api = axios.create({
-//     baseURL: 'http://uniswap.runasp.net/api', // رابط الباك عندك
-//     headers: {
-//         'Content-Type': 'application/json'
-//     }
-// });
-
-// api.interceptors.request.use(config => {
-//     const token = localStorage.getItem('token'); // اسم المفتاح اللي خزنتي فيه التوكن
-//     if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-// });
-
-// export default api;
 
 import axios from 'axios';
 
 const api = axios.create({
-    // baseURL: 'https://uniswap.runasp.net/api',
+    // baseURL: 'http://uni.runasp.net/',
         baseURL: '/api', // فقط /api عشان proxy يشتغل
     // headers: { 'Content-Type': 'application/json' }
 });
@@ -36,7 +19,7 @@ api.interceptors.request.use(async (config) => {
     //ونتأكد إنه عندنا refreshToken صالح للتجديد.
     if (expiration && now >= expiration && refreshToken) {
         try {
-            const response = await axios.post('https://uniswap.runasp.net/api/Account/refresh-token', { refreshToken });
+            const response = await axios.post('http://uni.runasp.net/Account/refresh-token', { refreshToken });
             token = response.data.accessToken;
             localStorage.setItem('accessToken', token);
             localStorage.setItem('accessTokenExpiration', response.data.exp); // حسب السيرفر

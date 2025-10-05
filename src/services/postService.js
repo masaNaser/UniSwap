@@ -24,3 +24,21 @@ export const deletePost = async (token,id) => {
         }
     });
 }
+
+export const editPost = async (formData, token, id) => {
+    return await api.put(`/Posts/${id}`, formData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+        },
+    });
+};
+
+export const likePost = async (token,id)=>{
+    return await api.get(`/posts/${id}/like`,{
+         headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    }
+    );
+}

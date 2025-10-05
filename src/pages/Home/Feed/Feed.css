@@ -40,6 +40,13 @@
   100% { transform: rotate(0deg) rotateY(180deg); }
 }
 
+.my-swal-popup {
+  max-width: 600px !important;
+  width: 100% !important;
+  top: 60% !important;
+  transform: translateY(-50%) !important;
+}
+
 @media (max-width: 600px) {
   .cards-section {
    /* width: 142%; */

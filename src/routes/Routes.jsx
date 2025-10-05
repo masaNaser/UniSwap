@@ -9,8 +9,13 @@ import SubServiceProjects from "../pages/Home/Browse/SubServiceProjects";
 import ForgetPassword from "../pages/Auth/ForgetPassword";
 import Project from "../pages/Home/Project/Project";
 import ResetPassword from "../pages/Auth/ResetPassword";
+import LandingPage from "../pages/LandingPage/LandingPage";
 
 const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <LandingPage />,   // ✅ صح
+  },
   {
     path: "/login",
     element: <Login />,
@@ -28,7 +33,7 @@ const router = createBrowserRouter([
     element: <ResetPassword />,
   },
   {
-    path: "/",
+    path: "/app",
     element: <MainLayout />,
     children: [
       {

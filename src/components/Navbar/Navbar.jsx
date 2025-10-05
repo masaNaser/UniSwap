@@ -111,7 +111,7 @@ export default function PrimarySearchAppBar() {
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Button
                   component={Link}
-                  to="/feed"
+                  to="/app/feed"
                   color="inherit"
                   sx={{ textTransform: "none", fontSize: "18px" }}
                 >
@@ -119,7 +119,7 @@ export default function PrimarySearchAppBar() {
                 </Button>
                 <Button
                   component={Link}
-                  to="/browse"
+                  to="/app/browse"
                   color="inherit"
                   sx={{ textTransform: "none", fontSize: "18px" }}
                 >
@@ -127,7 +127,7 @@ export default function PrimarySearchAppBar() {
                 </Button>
                 <Button
                   component={Link}
-                  to="/project"
+                  to="/app/project"
                   color="inherit"
                   sx={{ textTransform: "none", fontSize: "18px" }}
                 >
@@ -241,13 +241,13 @@ export default function PrimarySearchAppBar() {
           sx={{ width: "100%", bgcolor: "white", borderBottom: 1, borderColor: "divider" }}
         >
           <Container maxWidth="xl" sx={{ py: 1 }}>
-            <Button component={Link} to="/feed" fullWidth sx={{ justifyContent: "center" }}>
+            <Button component={Link} to="/app/feed" fullWidth sx={{ justifyContent: "center" }}>
               Feed
             </Button>
-            <Button component={Link} to="/browse" fullWidth sx={{ justifyContent: "center" }}>
+            <Button component={Link} to="/app/browse" fullWidth sx={{ justifyContent: "center" }}>
               Browse
             </Button>
-            <Button component={Link} to="/project" fullWidth sx={{ justifyContent: "center" }}>
+            <Button component={Link} to="/app/project" fullWidth sx={{ justifyContent: "center" }}>
               Projects
             </Button>
 

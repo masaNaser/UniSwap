@@ -30,6 +30,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { login as loginApi } from "../../../services/authService";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
+import { jwtDecode } from "jwt-decode";
+
 export default function Login() {
   const validationSchema = yup.object({
     email: yup
@@ -75,13 +77,20 @@ export default function Login() {
           "refreshTokenExpiration",
           response.data.refreshTokenExpiration
         );
+        // فك التوكن واستخراج اسم اليوزر
+        const decoded = jwtDecode(response.data.accessToken);
+        const userName =
+          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+        console.log(userName);
+        // خزني اسم اليوزر
+        localStorage.setItem("userName", userName);
         Swal.fire({
           title: "Login successful!",
           icon: "success",
           draggable: true,
           timer: 2000,
         });
-        navigate("/feed");
+        navigate("/app/feed");
       }
     } catch (error) {
       const msg =
@@ -258,16 +267,18 @@ export default function Login() {
                 bgcolor: "#F1F5F9",
                 borderRadius: "50px",
                 minHeight: "40px",
-                mb: 3,
                 "& .MuiTab-root": {
                   textTransform: "none",
                   fontWeight: 600,
+                  color: "#0F172A",
+                  borderRadius: "50px",
+                  minHeight: "40px",
                   minWidth: "120px",
                   margin: "4px",
                 },
                 "& .Mui-selected": {
                   background: "#FFFFFF",
-                  color: "#0F172A !important",
+                  color: "#0F172A",
                 },
                 "& .MuiTabs-indicator": { display: "none" },
               }}
