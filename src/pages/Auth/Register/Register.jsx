@@ -104,14 +104,15 @@ export default function Register() {
 
   const registerHandle = async (data) => {
     const finalData = {
-      userName: data.userName.trim(),
+      userName: data.userName.replace(/\s/g, ""), // إزالة الفراغات
       email: data.email.trim(),
       password: data.password.trim(),
       confirmPassword: data.confirmPassword.trim(),
-      skills: skills,
+      skills: skills.length ? skills : [], // تأكد array
       universityMajor: data.universityMajor.trim(),
       academicYear: data.academicYear.trim(),
     };
+
 
     console.log(finalData);
 
@@ -139,7 +140,7 @@ export default function Register() {
       });
       console.error("Registration error:", error);
     }
-    finally{
+    finally {
       setLoading(false);
     }
   };
@@ -403,8 +404,8 @@ export default function Register() {
                       passwordStrength < 2
                         ? "error"
                         : passwordStrength === 2
-                        ? "warning"
-                        : "success"
+                          ? "warning"
+                          : "success"
                     }
                   />
                   <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>

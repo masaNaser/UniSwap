@@ -1,5 +1,5 @@
 
- import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Typography, Avatar, TextField, Stack, IconButton, alpha, styled, Chip
 } from '@mui/material';
@@ -54,7 +54,7 @@ const CreatePost = ({ addPost, token }) => {
     setSelectedTags(selectedTags.filter((tag) => tag !== tagToDelete));
   };
 
-    const handleFileChange = (e) => {
+  const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile); // للإرسال للـ API
@@ -77,7 +77,7 @@ const CreatePost = ({ addPost, token }) => {
     try {
       const response = await createPostApi(formData, token);
       const postData = response.data;
-     console.log("postData:",postData);
+      console.log("postData:", postData);
       const newPost = {
         id: postData.id,
         content: postData.content,
@@ -87,17 +87,15 @@ const CreatePost = ({ addPost, token }) => {
         likes: postData.likesCount,
         comments: postData.commentsCount,
         shares: 0,
-        fileUrl: postData.fileUrl ? `http://uni.runasp.net/${postData.fileUrl}` : null,
+        fileUrl: postData.fileUrl ? `https://uni.runasp.net/${postData.fileUrl}` : null,
       };
 
       addPost(newPost);
-
-      // Reset form
       setContent('');
       setSelectedTags([]);
       setTagInput('');
       setErrors({ content: '' });
-       setFile(null);
+      setFile(null);
       setImagePreview(null);
 
       if (response.status === 201) {
@@ -155,16 +153,16 @@ const CreatePost = ({ addPost, token }) => {
           </Stack>
         </Box>
       </Stack>
-          {/* عرض الصورة قبل الإرسال */}
+      {/* عرض الصورة قبل الإرسال */}
       {imagePreview && (
         <Box sx={{ mt: 2 }}>
           <img src={imagePreview} alt="Preview" style={{ width: '150px', borderRadius: '8px' }} />
-         </Box>
-       )}
+        </Box>
+      )}
       <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap">
         <Stack direction="row" spacing={1} sx={{ color: 'text.secondary' }}>
           <input accept="image/*" type="file" id="upload-image" style={{ display: 'none' }}
-             onChange={handleFileChange}
+            onChange={handleFileChange}
           />
           <label htmlFor="upload-image">
             <IconButton component="span" sx={iconHover}><Image /></IconButton>

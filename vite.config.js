@@ -15,7 +15,7 @@ export default defineConfig({
     strictPort: true,  // لو البورت مشغول ما يغيره
     proxy: {
       '/api': {
-        target: 'http://uni.runasp.net',
+        target: 'https://uni.runasp.net',
         changeOrigin: true,
         secure: false
       }
