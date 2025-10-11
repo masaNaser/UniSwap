@@ -180,4 +180,3 @@ const CreatePost = ({ addPost, token }) => {
 
 export default CreatePost;
 
-

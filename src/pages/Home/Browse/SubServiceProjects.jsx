@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams, Link, useLocation } from "react-router-dom";
 import {
   Container,
   Typography,
@@ -16,81 +16,17 @@ import {
   MenuItem,
   TextField,
   InputAdornment,
+  Button,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import { Button } from "@mui/material";
-import CustomButton from "../../../components/CustomButton/CustomButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import StarIcon from "@mui/icons-material/Star";
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SearchIcon from "@mui/icons-material/Search";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import logoDesignImage from "../../../assets/images/ProfessionalLogoDesign.png";
-import socialMediaImage from "../../../assets/images/SocialMediaPostDesign.png";
-import businessCardImage from "../../../assets/images/BusinessCardDesign.png";
-
-// Mock data for a specific sub-service
-const mockData = {
-  "branding-identity": {
-    name: "Branding & Identity",
-    description: "4 services available",
-    projects: [
-      {
-        user: {
-          name: "Sarah Wilson",
-          initials: "SW",
-          rating: 4.9,
-          reviews: 127,
-          level: "Top Rated",
-        },
-        title: "Professional Logo Design",
-        imageUrl: logoDesignImage,
-        description:
-          "I will create a modern, professional logo design that perfectly represents your brand identity.",
-        tags: ["Logo Design", "Branding"],
-        deliveryTime: "3-5 days",
-        sales: 89,
-        price: 150,
-      },
-      {
-        user: {
-          name: "Alex Chen",
-          initials: "AC",
-          rating: 4.8,
-          reviews: 94,
-          level: "Level 2",
-        },
-        title: "Social Media Post Design",
-        imageUrl: socialMediaImage,
-        description:
-          "Eye-catching social media designs for Instagram, Facebook, and other platforms.",
-        tags: ["Social Media", "Graphics"],
-        deliveryTime: "1-2 days",
-        sales: 156,
-        price: 75,
-      },
-      {
-        user: {
-          name: "Maria Garcia",
-          initials: "MG",
-          rating: 4.7,
-          reviews: 73,
-          level: "Level 1",
-        },
-        title: "Business Card Design",
-        imageUrl: businessCardImage,
-        description:
-          "Professional business card designs that make a lasting impression.",
-        tags: ["Business Cards", "Print Design"],
-        deliveryTime: "2-3 days",
-        sales: 67,
-        price: 50,
-      },
-    ],
-  },
-};
+import { getProjectBySubServices as getProjectBySubServicesApi } from "../../../services/publishProjectServices";
+import CustomButton from "../../../components/CustomButton/CustomButton";
+import Point from "../../../assets/images/Point.svg";
 
 const ProjectCard = ({ project }) => {
   return (
@@ -99,30 +35,24 @@ const ProjectCard = ({ project }) => {
         borderRadius: "12px",
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         height: "100%",
-        width: 368,
         display: "flex",
         flexDirection: "column",
       }}
     >
-
+      {/* صورة المشروع */}
       <Box sx={{ position: "relative" }}>
         <CardMedia
           component="img"
           height="200"
-          image={project.imageUrl}
+          image={project.img}
           alt={project.title}
           sx={{
             borderTopLeftRadius: "12px",
             borderTopRightRadius: "12px",
+            objectFit: "cover",
           }}
         />
-        <Box
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-          }}
-        >
+        <Box sx={{ position: "absolute", top: 8, right: 8 }}>
           <IconButton
             sx={{
               background: "rgba(255, 255, 255, 0.9)",
@@ -136,49 +66,75 @@ const ProjectCard = ({ project }) => {
       </Box>
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
-        {/* User and rating info */}
+        {/* User info */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Avatar sx={{ width: 32, height: 32, mr: 1 }}>
-            {project.user.initials}
+          <Avatar
+            sx={{ width: 32, height: 32, mr: 1 }}
+            src={
+              project.profilePicture
+                ? `https://uni.runasp.net${project.profilePicture}`
+                : null
+            }
+          >
+            {!project.profilePicture && project.title.charAt(0).toUpperCase()}
           </Avatar>
           <Box>
             <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-              {project.user.name}
+              {project.userName || "Anonymous"}
             </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
-              <StarIcon sx={{ fontSize: 16, color: "gold", mr: 0.5 }} />
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mr: 1 }}
-              >
-                {project.user.rating} ({project.user.reviews})
-              </Typography>
-              <Chip label={project.user.level} size="small" />
-            </Box>
+            {/* <Chip label={`Points: ${project.points}`} size="small" /> */}
           </Box>
         </Box>
 
-        {/* Project title and description */}
-        <Typography
-          variant="subtitle1"
-          sx={{ fontWeight: "bold", mb: 0.5 }}
-        >
+        {/* Title + description */}
+        <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 0.9 }}>
           {project.title}
         </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ mb: 1 }}
-        >
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           {project.description}
         </Typography>
 
         {/* Tags */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-          {project.tags.map((tag, i) => (
-            <Chip key={i} label={tag} size="small" variant="outlined" />
+          {project.tags?.slice(0, 3).map((tag, i) => (
+            //هون بنعرض اول 3 تاجات
+            <Chip
+              key={i}
+              label={tag}
+              size="small"
+              sx={{ bgcolor: "rgb(0 0 0 / 6%)" }}
+            />
           ))}
+          {project.tags?.length > 3 && (
+            //بنفحص بالاول اذا في اكثر من 3 تاجات بنعرض ال... وبنخلي الباقي مخفية
+            <>
+              <Chip
+                label="..."
+                size="small"
+                sx={{ bgcolor: "rgb(0 0 0 / 6%)", cursor: "pointer" }}
+                onClick={(e) => {
+                  //.parentNode → الصندوق الأب اللي يحتوي كل Chips (الـ Box)
+                  const hiddenChips =
+                    e.currentTarget.parentNode.querySelectorAll(".hidden-chip"); // اختيار التاجات المخفية
+                  hiddenChips.forEach(
+                    (chip) => (chip.style.display = "inline-flex")
+                  ); // اظهار التاجات المخفية
+                  e.currentTarget.style.display = "none"; // اخفاء ال...
+                }}
+              />
+
+              {project.tags.slice(3).map((tag, i) => (
+                // عرض التاجات الباقية المخفية بنبلش من التاج الرابع
+                <Chip
+                  key={i + 3}
+                  label={tag}
+                  size="small"
+                  className="hidden-chip"
+                  sx={{ bgcolor: "rgb(0 0 0 / 6%)", display: "none" }} //مخفي بالافتراضي , بنظهره لما نضغط على ال...
+                />
+              ))}
+            </>
+          )}
         </Box>
       </CardContent>
 
@@ -192,68 +148,82 @@ const ProjectCard = ({ project }) => {
           pt: 0,
         }}
       >
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
             <Typography variant="caption" color="text.secondary">
-              {project.deliveryTime}
+              {project.deliveryTimeInDays
+                ? `${project.deliveryTimeInDays} days`
+                : "N/A"}
             </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <PeopleOutlineIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+            {/* <PeopleOutlineIcon sx={{ fontSize: 16, color: "text.secondary" }} /> */}
+            <img src={Point} sx={{ color: "text.secondary" }} />
             <Typography variant="caption" color="text.secondary">
-              {project.sales}
+              {project.points} pts
             </Typography>
           </Box>
         </Box>
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: "bold", color: "text.primary" }}
-        >
-          ${project.price}
-        </Typography>
       </Box>
 
       <Box sx={{ px: 2, pb: 2 }}>
-        <CustomButton
-          fullWidth
-        >
-          Request Service
-        </CustomButton>
+        <CustomButton fullWidth>Request Service</CustomButton>
       </Box>
     </Card>
   );
 };
 
 const SubServiceProjects = () => {
-  const { subserviceName } = useParams();
-
-  const subserviceData = mockData[subserviceName];
-
+  const token = localStorage.getItem("accessToken");
+  // هون ال id قيمته عبارة عن مثلا بقسم الستادي الاي دي هو عبارة عن تبع ال  Explain difficult concepts
+  // Explain difficult concepts Id 
+  const { id } = useParams();
+  const [projects, setProjects] = useState([]);
   const [anchorElRated, setAnchorElRated] = useState(null);
   const [anchorElPrice, setAnchorElPrice] = useState(null);
+  const [selectedRated, setSelectedRated] = useState("Highest Rated");
+  const [selectedPrice, setSelectedPrice] = useState("All Prices");
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const subServiceName = params.get("name"); // الاسم اللي جاي من الرابط
+  const parentServiceName = params.get("parentName");
+  // study support Id
+   const parentServiceId = params.get("parentId");
 
-  const handleMenuClickRated = (event) => {
-    setAnchorElRated(event.currentTarget);
+  const fetchServiceProject = async () => {
+    try {
+      const response = await getProjectBySubServicesApi(token, id);
+      console.log("sub project data : ", response.data);
+      setProjects(response.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleMenuClickPrice = (event) => {
-    setAnchorElPrice(event.currentTarget);
-  };
+  useEffect(() => {
+    if (id) fetchServiceProject();
+  }, [id]);
 
+  const handleMenuClickRated = (event) => setAnchorElRated(event.currentTarget);
+  const handleMenuClickPrice = (event) => setAnchorElPrice(event.currentTarget);
   const handleMenuClose = () => {
     setAnchorElRated(null);
     setAnchorElPrice(null);
   };
-  const [selectedRated, setSelectedRated] = useState("Highest Rated");
-  const [selectedPrice, setSelectedPrice] = useState("All Prices");
 
-
-  if (!subserviceData) {
+  if (!projects.length) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Typography variant="h5" color="error">
-          Sub-service not found!
+        <Typography variant="h6" color="text.secondary">
+          No projects found for this subservice.
         </Typography>
       </Container>
     );
@@ -261,32 +231,17 @@ const SubServiceProjects = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs
-        separator={<NavigateNextIcon fontSize="small" />}
-        aria-label="breadcrumb"
-        sx={{ mb: 2 }}
-      >
-        <Typography
-          component={Link}
-          to="/browse"
-          color="inherit"
-          sx={{ textDecoration: "none" }}
-        >
-          Services
-        </Typography>
-        <Typography
-          component={Link}
-          to={`/browse/design-creative`}
-          color="inherit"
-          sx={{ textDecoration: "none" }}
-        >
-          Design & Creative
-        </Typography>
-        <Typography color="text.primary">{subserviceData.name}</Typography>
-      </Breadcrumbs>
+     <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 2 }}>
+  <Typography component={Link} to="/app/browse" color="inherit" sx={{ textDecoration: "none" }}>
+    Services
+  </Typography>
+  <Typography component={Link} to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`} color="inherit" sx={{ textDecoration: "none" }}>
+    {parentServiceName}
+  </Typography>
+  <Typography color="text.primary">{subServiceName}</Typography>
+</Breadcrumbs>
 
-      {/* Header and Back Button */}
+
       <Box
         sx={{
           display: "flex",
@@ -297,23 +252,19 @@ const SubServiceProjects = () => {
       >
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
-            {subserviceData.name}
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            {subserviceData.description}
+            {subServiceName}
           </Typography>
         </Box>
         <CustomButton
           component={Link}
-          to={`/browse/design-creative`}
+          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
           variant="outlined"
           startIcon={<ArrowBackIcon />}
         >
           Back
         </CustomButton>
       </Box>
-
-      {/* Search + Filters Container */}
+      {/* Filters */}
       <Box
         sx={{
           backgroundColor: "#fff",
@@ -331,7 +282,6 @@ const SubServiceProjects = () => {
             flexWrap: "wrap",
           }}
         >
-          {/* Search Bar */}
           <TextField
             variant="outlined"
             placeholder="Search services..."
@@ -353,18 +303,10 @@ const SubServiceProjects = () => {
             }}
           />
 
-          {/* Highest Rated Dropdown */}
           <Button
             variant="outlined"
             onClick={handleMenuClickRated}
-            sx={{
-              borderRadius: "12px",
-              textTransform: "none",
-              backgroundColor: "#fff",
-              color: "text.primary",
-              border: "1px solid #e0e0e0",
-              "&:hover": { backgroundColor: "#f9f9f9" },
-            }}
+            sx={{ borderRadius: "12px", textTransform: "none" }}
             endIcon={<KeyboardArrowDownIcon />}
           >
             {selectedRated}
@@ -392,21 +334,11 @@ const SubServiceProjects = () => {
             </MenuItem>
           </Menu>
 
-
-          {/* All Prices Dropdown */}
           <Button
             variant="outlined"
             onClick={handleMenuClickPrice}
-            sx={{
-              borderRadius: "12px",
-              textTransform: "none",
-              backgroundColor: "#fff",
-              color: "text.primary",
-              border: "1px solid #e0e0e0",
-              "&:hover": { backgroundColor: "#f9f9f9" },
-            }}
+            sx={{ borderRadius: "12px", textTransform: "none" }}
             endIcon={<KeyboardArrowDownIcon />}
-
           >
             {selectedPrice}
           </Button>
@@ -440,15 +372,13 @@ const SubServiceProjects = () => {
               High to Low
             </MenuItem>
           </Menu>
-
         </Box>
       </Box>
 
-
-      {/* Project Cards Grid */}
+      {/* Project Grid */}
       <Grid container spacing={3}>
-        {subserviceData.projects.map((project, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
+        {projects.map((project, index) => (
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
             <ProjectCard project={project} />
           </Grid>
         ))}

@@ -49,7 +49,7 @@ const router = createBrowserRouter([
         element: <SubServices />,
       },
       {
-        path: "services/:subserviceName",
+        path: "services/:id/projects",
         element: <SubServiceProjects />,
       },
       {

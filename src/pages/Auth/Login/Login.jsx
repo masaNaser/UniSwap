@@ -79,11 +79,12 @@ export default function Login() {
         );
         // فك التوكن واستخراج اسم اليوزر
         const decoded = jwtDecode(response.data.accessToken);
-        const userName =
-          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-        console.log(userName);
+        const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+        const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+        console.log(userId);
         // خزني اسم اليوزر
         localStorage.setItem("userName", userName);
+         localStorage.setItem("userId", userId);
        Swal.fire({
   title: "Login successful!",
   icon: "success",

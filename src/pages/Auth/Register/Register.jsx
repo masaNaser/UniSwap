@@ -59,6 +59,7 @@ export default function Register() {
   const [passwordStrength, setPasswordStrength] = useState(0);
 
   const checkStrength = (value) => {
+    // بنفحص قوة الباسورد بحيث نعطيه نقاط على حسب الشروط انه على الاقل 8 حروف، حرف كبير، رقم، وحرف خاص ( رمز))
     let score = 0;
     if (value.length >= 8) score++;
     if (/[A-Z]/.test(value)) score++;
@@ -68,6 +69,7 @@ export default function Register() {
   };
 
   const getStrengthLabel = () => {
+    // بنرجع النص واللون المناسبين على حسب قوة الباسورد اللي هو حسب قيمة السكور اللي حسبناها في الفنكشن اللي فوق
     switch (passwordStrength) {
       case 0:
         return { text: "", color: "inherit" };
@@ -110,7 +112,7 @@ const finalData = {
   confirmPassword: data.confirmPassword.trim(),
   skills: skills.map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()), // ["React"]
   universityMajor: data.universityMajor.toUpperCase(), // "CSE"
-  academicYear: data.academicYear.trim() // ممكن تبقي "Third" أو تغيريها لـ "3" حسب السيرفر
+  academicYear: data.academicYear.trim() 
 };
 
 

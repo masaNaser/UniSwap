@@ -83,7 +83,7 @@ function Feed() {
                 title: "Error!",
                 text: "Failed to fetch posts.",
                 icon: "error",
-                timer: 3000,
+                timer: 2000,
                 showConfirmButton: true,
             });
             console.error("Error fetching posts:", error);
@@ -135,11 +135,12 @@ function Feed() {
             const response = await deletePostApi(userToken, postId);
             if (response.status === 204) {
                 setPosts(posts.filter(p => p.id !== postId));
-                Swal.fire({ title: "Deleted!", text: "Your post has been deleted.", icon: "success", timer: 3000, showConfirmButton: false });
+
+                Swal.fire({ title: "Deleted!", text: "Your post has been deleted.", icon: "success", timer: 2000, showConfirmButton: false });
             }
         } catch (error) {
             console.error("Error deleting post:", error);
-            Swal.fire({ icon: "error", title: "Error deleting post", text: "Failed to delete post. Please try again.", timer: 3000, showConfirmButton: true });
+            Swal.fire({ icon: "error", title: "Error deleting post", text: "Failed to delete post. Please try again.", timer: 2000, showConfirmButton: true });
         }
     };
 
@@ -215,7 +216,8 @@ function Feed() {
                 };
                 setPosts(prev => updatePost(prev, postId, updatedPost));
                 Swal.close();
-                Swal.fire({ title: "Updated!", text: "Your post has been updated.", icon: "success", timer: 3000, showConfirmButton: true });
+
+                Swal.fire({ title: "Updated!", text: "Your post has been updated.", icon: "success", timer: 2000, showConfirmButton: true });
             }
         } catch (error) {
             console.error("Error editing post:", error);

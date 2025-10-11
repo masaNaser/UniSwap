@@ -79,9 +79,6 @@ const serviceName = params.get("name"); // الاسم اللي جاي من ال�
           <Typography variant="h4" component="h1" gutterBottom>
             {serviceName}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-Visual design, graphics, UI/UX, and creative services
-          </Typography>
         </Box>
         <CustomButton
           component={Link}
@@ -96,10 +93,11 @@ Visual design, graphics, UI/UX, and creative services
       {/* عرض الـ subservices */}
       <Grid container spacing={3} sx={{ mb: "55px" }}>
         {subservices.map((sub) => (
-          <Grid item xs={12} sm={6} md={4} key={sub.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}key={sub.id}>
             <ServiceCard
               title={sub.name}
-            url={`/app/services/${sub.id}`} // هون راح يوديك ع صفحة SubServiceProjects
+             count="3 projects"
+            url={`/app/services/${sub.id}/projects?name=${encodeURIComponent(sub.name)}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`}  // هون راح يوديك ع صفحة SubServiceProjects
             />
           </Grid>
         ))}
