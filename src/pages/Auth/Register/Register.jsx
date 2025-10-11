@@ -102,48 +102,49 @@ export default function Register() {
     resolver: yupResolver(validationSchema),
   });
 
-  const registerHandle = async (data) => {
-    const finalData = {
-      userName: data.userName.replace(/\s/g, ""), // إزالة الفراغات
-      email: data.email.trim(),
-      password: data.password.trim(),
-      confirmPassword: data.confirmPassword.trim(),
-      skills: skills.length ? skills : [], // تأكد array
-      universityMajor: data.universityMajor.trim(),
-      academicYear: data.academicYear.trim(),
-    };
+const registerHandle = async (data) => {
+const finalData = {
+  userName: data.userName.trim(),
+  email: data.email.trim(),
+  password: data.password.trim(),
+  confirmPassword: data.confirmPassword.trim(),
+  skills: skills.map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()), // ["React"]
+  universityMajor: data.universityMajor.toUpperCase(), // "CSE"
+  academicYear: data.academicYear.trim() // ممكن تبقي "Third" أو تغيريها لـ "3" حسب السيرفر
+};
 
 
-    console.log(finalData);
 
-    try {
-      setLoading(true);
-      const response = await registerApi(finalData);
-      console.log(response);
-      if (response.status == 200) {
-        Swal.fire({
-          title:
-            "Registration successful! Please check your email to verify your account.",
-          icon: "success",
-          draggable: true,
-          timer: 2000,
-        });
-        navigate("/login");
-      }
-    } catch (error) {
-      const msg = error.response?.data?.message || "An error occurred";
+  console.log("Final Data Sent:", JSON.stringify(finalData));
+
+  try {
+    setLoading(true);
+    const response = await registerApi(finalData);
+    console.log(response);
+    if (response.status === 200) {
       Swal.fire({
-        icon: "error",
-        title: "Register failed",
-        text: msg,
+        title: "Registration successful! Please check your email to verify your account.",
+        icon: "success",
+        draggable: true,
         timer: 2000,
       });
-      console.error("Registration error:", error);
+      navigate("/login");
     }
-    finally {
-      setLoading(false);
-    }
-  };
+  } catch (error) {
+  console.log("Full Error Response:", error.response);
+    const msg = error.response?.data || "An error occurred";
+    Swal.fire({
+      icon: "error",
+      title: "Register failed",
+      text: msg,
+      timer: 2000,
+    });
+    console.error("Registration error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
@@ -404,8 +405,8 @@ export default function Register() {
                       passwordStrength < 2
                         ? "error"
                         : passwordStrength === 2
-                          ? "warning"
-                          : "success"
+                        ? "warning"
+                        : "success"
                     }
                   />
                   <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>

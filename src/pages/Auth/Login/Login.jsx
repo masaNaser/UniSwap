@@ -84,13 +84,14 @@ export default function Login() {
         console.log(userName);
         // خزني اسم اليوزر
         localStorage.setItem("userName", userName);
-        Swal.fire({
-          title: "Login successful!",
-          icon: "success",
-          draggable: true,
-          timer: 2000,
-        });
-        navigate("/app/feed");
+       Swal.fire({
+  title: "Login successful!",
+  icon: "success",
+  timer: 1500,
+}).then(() => { //تأخير الانتقال ثانية واحدة لضمان حفظ التوكن قبل التنقل
+  navigate("/app/feed");
+});
+
       }
     } catch (error) {
       const msg =

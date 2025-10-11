@@ -1,73 +1,26 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Grid, Typography, Box } from "@mui/material";
 import ServiceCard from "../../../components/Cards/ServiceCard";
-import DesignServicesIcon from "@mui/icons-material/DesignServices";
-import CodeIcon from "@mui/icons-material/Code";
-import TranslateIcon from "@mui/icons-material/Translate";
-import SchoolIcon from "@mui/icons-material/School";
-import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
-import SelfImprovementIcon from "@mui/icons-material/SelfImprovement";
 import { getServices as getServicesApi } from "../../../services/servicesService";
 
-const categories = [
-  {
-    title: "Design & Creative",
-    description: "Visual design, graphics, UI/UX, and creative services",
-    count: 245,
-    icon: <DesignServicesIcon fontSize="large" sx={{ color: "#6A67FE" }} />,
-    url: "/app/browse/design-creative",
-  },
-  {
-    title: "Programming & Tech",
-    description: "Web development, mobile apps, and software solutions",
-    count: 189,
-    icon: <CodeIcon fontSize="large" sx={{ color: "#00C853" }} />,
-    url: "/app/browse/programming-tech",
-  },
-  {
-    title: "Writing & Translation",
-    description: "Content writing, copywriting, and translation services",
-    count: 156,
-    icon: <TranslateIcon fontSize="large" sx={{ color: "#FF9800" }} />,
-    url: "/app/browse/writing-translation",
-  },
-  {
-    title: "Study Support",
-    description: "Tutoring, exam prep, and academic assistance",
-    count: 134,
-    icon: <SchoolIcon fontSize="large" sx={{ color: "#2196F3" }} />,
-    url: "/app/browse/study-support",
-  },
-  {
-    title: "Career & Business",
-    description: "Resume writing, interview prep, and business consulting",
-    count: 98,
-    icon: <BusinessCenterIcon fontSize="large" sx={{ color: "#FF5722" }} />,
-    url: "/app/browse/career-business",
-  },
-  {
-    title: "Personal Development",
-    description: "Life coaching, skill development, and wellness",
-    count: 76,
-    icon: <SelfImprovementIcon fontSize="large" sx={{ color: "#9C27B0" }} />,
-    url: "/app/browse/personal-development",
-  },
-];
-
 const Services = () => {
-      const token  = localStorage.getItem('accessToken')
-  const fetchService = async()=>{
-    try {
-    const response = await getServicesApi(token);
-    console.log(response);
-  } catch (err) {
-    console.error(err);
-  }
+  const token = localStorage.getItem("accessToken");
+  const [services, setServices] = useState([]); //بنخزن الداتا اللي بالريسبونس عشان نقدر نعرض الداتا بالريتيرن
 
-  }
-    useEffect(() => {
-      fetchService();
-    }, []);
+  const fetchService = async () => {
+    try {
+      const response = await getServicesApi(token);
+      console.log(response);
+      setServices(response.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchService();
+  }, []);
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography
@@ -86,15 +39,21 @@ const Services = () => {
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
-        {categories.map((cat) => (
-          <Grid item xs={12} sm={6} md={4} key={cat.title}>
+      <Grid container spacing={3} sx={{ mb: "55px" }}>
+        {services.map((service) => (
+          <Grid item xs={12} sm={6} md={4} key={service.id}>
             <ServiceCard
-              icon={cat.icon}
-              title={cat.title}
-              description={cat.description}
-              count={cat.count}
-              url={cat.url}
+              title={service.name}
+              description={service.description}
+              icon={
+                <img
+                  src={service.image}
+                  alt={service.name}
+                  style={{ width: 40, height: 40 }}
+                />
+              }
+              count={service.subServices.length}
+url={`/app/browse/${service.id}?name=${encodeURIComponent(service.name)}`}
             />
           </Grid>
         ))}

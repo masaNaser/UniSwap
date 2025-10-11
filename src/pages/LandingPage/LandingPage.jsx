@@ -1,5 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Box, Container, Typography, Grid, Button } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Button,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  Collapse
+} from "@mui/material";
 import { Link } from "react-router-dom";
 import ServiceCard from "../../components/Cards/ServiceCard";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
@@ -9,9 +19,11 @@ import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOu
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import { ElectricBoltSharp } from "@mui/icons-material";
 import heroImg from "../../assets/images/hero-bg.png";
+import MenuIcon from "@mui/icons-material/Menu";
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,33 +37,121 @@ export default function LandingPage() {
   const FeatureCard = [
     {
       title: "Student Community",
-      description: <>Connect with fellow students and build <br /> meaningful academic relationships</>,
-      icon: <PeopleOutlinedIcon sx={{ bgcolor: "#00C8FF1A", borderRadius: "16px", width: 48, height: 48, p: 1 }} />,
+      description: (
+        <>
+          Connect with fellow students and build <br /> meaningful academic
+          relationships
+        </>
+      ),
+      icon: (
+        <PeopleOutlinedIcon
+          sx={{
+            bgcolor: "#00C8FF1A",
+            borderRadius: "16px",
+            width: 48,
+            height: 48,
+            p: 1,
+          }}
+        />
+      ),
     },
     {
       title: "Skill Exchange",
-      description: <>Trade your expertise for others' help using our <br /> innovative points system</>,
-      icon: <ElectricBoltSharp sx={{ bgcolor: "#00C8FF1A", borderRadius: "16px", width: 48, height: 48, p: 1 }} />,
+      description: (
+        <>
+          Trade your expertise for others' help using our <br /> innovative
+          points system
+        </>
+      ),
+      icon: (
+        <ElectricBoltSharp
+          sx={{
+            bgcolor: "#00C8FF1A",
+            borderRadius: "16px",
+            width: 48,
+            height: 48,
+            p: 1,
+          }}
+        />
+      ),
     },
     {
       title: "Academic Support",
-      description: <>Get help with assignments, projects, and exam <br /> preparation from peers</>,
-      icon: <ImportContactsTwoToneIcon sx={{ bgcolor: "#00C8FF1A", borderRadius: "16px", width: 48, height: 48, p: 1 }} />,
+      description: (
+        <>
+          Get help with assignments, projects, and exam <br /> preparation from
+          peers
+        </>
+      ),
+      icon: (
+        <ImportContactsTwoToneIcon
+          sx={{
+            bgcolor: "#00C8FF1A",
+            borderRadius: "16px",
+            width: 48,
+            height: 48,
+            p: 1,
+          }}
+        />
+      ),
     },
     {
       title: "Real-time Chat",
-      description: <>Instant messaging and collaboration tools to <br /> stay connected</>,
-      icon: <ChatBubbleOutlineOutlinedIcon sx={{ bgcolor: "#00C8FF1A", borderRadius: "16px", width: 48, height: 48, p: 1 }} />,
+      description: (
+        <>
+          Instant messaging and collaboration tools to <br /> stay connected
+        </>
+      ),
+      icon: (
+        <ChatBubbleOutlineOutlinedIcon
+          sx={{
+            bgcolor: "#00C8FF1A",
+            borderRadius: "16px",
+            width: 48,
+            height: 48,
+            p: 1,
+          }}
+        />
+      ),
     },
     {
       title: "Portfolio Building",
-      description: <>Showcase your skills and build a strong <br /> academic portfolio</>,
-      icon: <WorkspacePremiumOutlinedIcon sx={{ bgcolor: "#00C8FF1A", borderRadius: "16px", width: 48, height: 48, p: 1 }} />,
+      description: (
+        <>
+          Showcase your skills and build a strong <br /> academic portfolio
+        </>
+      ),
+      icon: (
+        <WorkspacePremiumOutlinedIcon
+          sx={{
+            bgcolor: "#00C8FF1A",
+            borderRadius: "16px",
+            width: 48,
+            height: 48,
+            p: 1,
+          }}
+        />
+      ),
     },
     {
       title: "Safe & Secure",
-      description: <>University-verified platform ensuring a trusted <br /> learning environment</>,
-      icon: <ShieldOutlinedIcon sx={{ bgcolor: "#00C8FF1A", borderRadius: "16px", width: 48, height: 48, p: 1 }} />,
+      description: (
+        <>
+          University-verified platform ensuring a trusted <br /> learning
+          environment
+        </>
+      ),
+      icon: (
+        <ShieldOutlinedIcon
+          sx={{
+            bgcolor: "#00C8FF1A",
+            borderRadius: "16px",
+            width: 48,
+            height: 48,
+            p: 1,
+          }}
+        />
+      ),
     },
   ];
 
@@ -63,7 +163,7 @@ export default function LandingPage() {
           position: "sticky",
           top: 0,
           zIndex: 10,
-          height: "70px", // 👈 ثبات الارتفاع
+          height: "70px",
           px: { xs: 3, md: 8 },
           display: "flex",
           justifyContent: "space-between",
@@ -71,6 +171,7 @@ export default function LandingPage() {
           backgroundColor: "rgba(255,255,255,0.9)",
           backdropFilter: "blur(8px)",
           transition: "background-color 0.3s ease",
+          flexWrap: "wrap", // يسمح بإضافة صف ثاني عند الحاجة
         }}
       >
         {/* Logo + Name */}
@@ -80,17 +181,32 @@ export default function LandingPage() {
             alt="UniSwap logo"
             style={{ height: "34px", width: "34px", objectFit: "contain" }}
           />
-          <Typography sx={{ fontWeight: 600, fontSize: { xs: 16, sm: 18 }, color: "#74767a" }}>
+          <Typography
+            sx={{
+              fontWeight: 600,
+              fontSize: { xs: 16, sm: 18 },
+              color: "#74767a",
+            }}
+          >
             UniSwap
           </Typography>
         </Box>
 
-        {/* Buttons */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* أزرار الديسكتوب */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 3,
+            "@media (max-width:433px)": {
+              display: "none", // تخفي الأزرار عند الشاشات الصغيرة
+            },
+          }}
+        >
           <Button
             component={Link}
             to="/login"
-            variant="outlined" // 👈 صار بإطار زي Sign Up
+            variant="outlined"
             sx={{
               borderColor: "#004aad",
               color: "#004aad",
@@ -99,11 +215,6 @@ export default function LandingPage() {
               px: 3,
               py: 1,
               textTransform: "none",
-              fontSize: { xs: 14, sm: 15 },
-              "&:hover": {
-                backgroundColor: "rgba(0,74,173,0.08)",
-                borderColor: "#004aad",
-              },
             }}
           >
             Login
@@ -120,17 +231,74 @@ export default function LandingPage() {
               px: 3,
               py: 1,
               textTransform: "none",
-              fontSize: { xs: 14, sm: 15 },
-              "&:hover": {
-                backgroundColor: "rgba(0,74,173,0.1)",
-                borderColor: "#004aad",
-              },
             }}
           >
             Sign Up
           </Button>
         </Box>
+
+        {/* أيقونة المنيو للجوال */}
+        <Box
+          sx={{
+            display: "none",
+            "@media (max-width:433px)": {
+              display: "flex",
+            },
+          }}
+        >
+          <IconButton onClick={() => setMenuOpen(!menuOpen)}>
+            <MenuIcon sx={{ color: "#004aad" }} />
+          </IconButton>
+        </Box>
       </Box>
+
+      {/* القائمة التي تظهر تحت الناف */}
+      <Collapse in={menuOpen}>
+        <Box
+          sx={{
+            backgroundColor: "rgba(255,255,255,0.95)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            justifyContent: "center",
+            gap: 2,
+            py: 2,
+            "@media (min-width:434px)": {
+              display: "none", // تظهر فقط في الشاشات الصغيرة
+            },
+          }}
+        >
+          <Button
+            component={Link}
+            to="/login"
+            variant="outlined"
+            sx={{
+              borderColor: "#004aad",
+              color: "#004aad",
+              borderRadius: "25px",
+              px: 3,
+              textTransform: "none",
+            }}
+          >
+            Login
+          </Button>
+          <Button
+            component={Link}
+            to="/register"
+            variant="outlined"
+            sx={{
+              borderColor: "#004aad",
+              color: "#004aad",
+              borderRadius: "25px",
+              px: 3,
+              textTransform: "none",
+            }}
+          >
+            Sign Up
+          </Button>
+        </Box>
+      </Collapse>
+    
+
 
       {/* Hero Section */}
       <Box
@@ -151,6 +319,7 @@ export default function LandingPage() {
         }}
       >
         <Box
+          
           sx={{
             position: "absolute",
             inset: 0,
@@ -164,7 +333,8 @@ export default function LandingPage() {
           sx={{
             position: "absolute",
             inset: 0,
-            background: "linear-gradient(to right, rgba(0,75,173,0.84) 35%, rgba(0,75,173,0.38) 100%)",
+            background:
+              "linear-gradient(to right, rgba(0,75,173,0.84) 35%, rgba(0,75,173,0.38) 100%)",
             zIndex: 2,
           }}
         />
@@ -202,7 +372,8 @@ export default function LandingPage() {
                 px: { xs: 1, sm: 0 },
               }}
             >
-              Join thousands of students transforming their university experience through skill sharing, collaboration, and peer support.
+              Join thousands of students transforming their university
+              experience through skill sharing, collaboration, and peer support.
             </Typography>
             <Button
               component={Link}
@@ -245,7 +416,8 @@ export default function LandingPage() {
             Everything you need to succeed
           </Typography>
           <Typography sx={{ fontSize: "16px", color: "#74767a", mb: 4 }}>
-            From skill sharing to project collaboration, UniSwap provides all the tools you need for <br /> academic excellence.
+            From skill sharing to project collaboration, UniSwap provides all
+            the tools you need for <br /> academic excellence.
           </Typography>
         </Box>
         <Grid container spacing={3} sx={{ mb: "55px" }}>

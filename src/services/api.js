@@ -1,42 +1,42 @@
-import axios from "axios";
+import axios from 'axios';
 
 const api = axios.create({
-  // baseURL: 'http://uni.runasp.net/',
-  baseURL: "/api", // فقط /api عشان proxy يشتغل
-  // headers: { 'Content-Type': 'application/json' }
+  baseURL: 'https://uni.runasp.net/api', // ضيفي /api إذا كل الـ endpoints تبدأ فيها
+  // headers: { 'Content-Type': 'application/json' },
+          // baseURL: '/api', // فقط /api عشان proxy يشتغل
+
 });
 
-api.interceptors.request.use(
-  async (config) => {
-    //أ) جلب التوكنات من التخزين
-    let token = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-    const expiration = localStorage.getItem("accessTokenExpiration");
-    const now = Math.floor(Date.now() / 1000); // الوقت الحالي بالثواني
+api.interceptors.request.use(async (config) => {
+  // أ) جلب التوكنات من التخزين
+  let token = localStorage.getItem('accessToken');
+  const refreshToken = localStorage.getItem('refreshToken');
+  const expiration = localStorage.getItem('accessTokenExpiration');
 
-    //إذا الوقت الحالي أكبر من وقت الانتهاء، يعني التوكن انتهت.
-    //ونتأكد إنه عندنا refreshToken صالح للتجديد.
-    if (expiration && now >= expiration && refreshToken) {
-      try {
-        const response = await axios.post(
-          "https://uni.runasp.net/Account/refresh-token",
-          { refreshToken }
-        );
-        token = response.data.accessToken;
-        localStorage.setItem("accessToken", token);
-        localStorage.setItem("accessTokenExpiration", response.data.exp); // حسب السيرفر
-      } catch (err) {
-        console.error("Refresh token failed", err);
-      }
+  // الوقت الحالي بالثواني
+  const now = Math.floor(Date.now() / 1000);
+
+  // ب) تحقق من انتهاء صلاحية الـ access token
+  if (expiration && now >= expiration && refreshToken) {
+    try {
+      const response = await axios.post('https://uni.runasp.net/api/Account/refresh-token', { refreshToken });
+
+      token = response.data.accessToken;
+      localStorage.setItem('accessToken', token);
+
+      // تأكدي من اسم الحقل اللي يرجعه السيرفر (exp أو accessTokenExpiration)
+      localStorage.setItem('accessTokenExpiration', response.data.exp);
+    } catch (err) {
+      console.error('Refresh token failed', err);
     }
+  }
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  // ج) إرفاق التوكن في كل الطلبات
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+  return config;
+}, (error) => Promise.reject(error));
 
 export default api;

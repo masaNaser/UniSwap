@@ -8,6 +8,7 @@ export const createPost = async (postData, token) => {
   });
 };
 
+
 export const getPosts = async (token) => {
   return await api.get(`/Posts`, {
     headers: {
@@ -99,3 +100,4 @@ export const deleteComment = async (token, commentId) => {
     },
   });
 };
+

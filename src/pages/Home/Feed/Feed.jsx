@@ -159,22 +159,32 @@ function Feed() {
             showCancelButton: true,
             confirmButtonText: "Save",
             customClass: { popup: "my-swal-popup" },
-            didOpen: () => {
-                const fileInput = document.getElementById("swal-input3");
-                const previewImg = document.getElementById("preview-img");
-                if (previewImg) applyPreviewStyles(previewImg);
+           didOpen: () => {
+    const fileInput = document.getElementById("swal-input3");
+    let previewImg = document.getElementById("preview-img");
 
-                fileInput.addEventListener("change", (e) => {
-                    const file = e.target.files[0];
-                    if (file && previewImg) {
-                        previewImg.src = URL.createObjectURL(file);
-                        applyPreviewStyles(previewImg);
-                    } else if (previewImg) {
-                        previewImg.src = "";
-                        previewImg.style.display = "none";
-                    }
-                });
-            },
+    fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+            if (!previewImg) {
+                // إذا ما في صورة موجودة، نخلق عنصر <img>
+                previewImg = document.createElement("img");
+                previewImg.id = "preview-img";
+                fileInput.insertAdjacentElement("afterend", previewImg);
+            }
+            previewImg.src = URL.createObjectURL(file);
+            applyPreviewStyles(previewImg);
+        } else if (previewImg) {
+            previewImg.src = "";
+            previewImg.style.display = "none";
+        }
+    });
+
+    // إذا فيه صورة موجودة مسبقاً، نطبق الستايلي
+    if (previewImg) applyPreviewStyles(previewImg);
+}
+,
             preConfirm: () => ({
                 content: document.getElementById("swal-input1").value,
                 tags: document.getElementById("swal-input2").value,
