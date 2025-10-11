@@ -1,306 +1,311 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
     Modal,
     Box,
     Typography,
+    Divider,
     TextField,
     Button,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemAvatar,
     Avatar,
     IconButton,
     CircularProgress,
-    Divider,
+    Chip,
+    CardHeader,
+    CardContent,
     Menu,
     MenuItem,
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import SendIcon from '@mui/icons-material/Send';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import ProfilePic from "../../../assets/images/ProfilePic.jpg";
-import dayjs from 'dayjs';
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import dayjs from "dayjs";
+import Swal from "sweetalert2";
 
-const modalStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: { xs: '90%', sm: 600 },
-    bgcolor: 'background.paper',
+const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: { xs: "95%", sm: 500, md: 600 },
+    height: "90vh",
+    bgcolor: "background.paper",
     borderRadius: 2,
     boxShadow: 24,
-    p: 4,
-    maxHeight: '90vh',
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
 };
 
-const formatTime = (time) => {
-    if (!time) return "Just now";
-    return dayjs(time).format('DD MMM, hh:mm A');
-};
+// Helper function to format time
+const formatTime = (time) => (time ? dayjs(time).format("DD MMM, hh:mm A") : "Just now");
 
-function CommentsModal({ isVisible, onClose, comments, postId, onCommentSubmit, onDeleteComment, onEditComment, currentUserName }) {
-    const [commentText, setCommentText] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+const Comment = ({ comment, onEdit, onDelete, currentUserName }) => {
     const [anchorEl, setAnchorEl] = useState(null);
-    const [menuCommentId, setMenuCommentId] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedContent, setEditedContent] = useState(comment.content);
 
-    const [editingCommentId, setEditingCommentId] = useState(null);
-    const [editedContent, setEditedContent] = useState('');
+    const isCurrentUser = comment.author.userName === currentUserName;
+    const open = Boolean(anchorEl);
 
-    const openMenu = Boolean(anchorEl);
-
-    // Menu Handlers
-    const handleMenuClick = (event, commentId) => {
+    const handleMenuClick = (event) => {
+        event.stopPropagation();
         setAnchorEl(event.currentTarget);
-        setMenuCommentId(commentId);
     };
 
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-        setMenuCommentId(null);
+    const handleMenuClose = () => setAnchorEl(null);
+
+    const handleEditClick = () => {
+        setIsEditing(true);
+        handleMenuClose();
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!commentText.trim() || !postId || isSubmitting || editingCommentId !== null) return;
+    const handleDeleteClick = async () => {
+        const result = await Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!",
+        });
+
+        if (result.isConfirmed) onDelete(comment.id);
+        handleMenuClose();
+    };
+
+    const handleSaveEdit = () => {
+        if (editedContent.trim() && editedContent !== comment.content) {
+            onEdit(comment.id, editedContent.trim());
+        }
+        setIsEditing(false);
+    };
+
+    const handleCancelEdit = () => {
+        setEditedContent(comment.content);
+        setIsEditing(false);
+    };
+
+    return (
+        <Box sx={{ display: "flex", gap: 1.5, my: 2 }}>
+            <Avatar
+                src={comment.author.avatar}
+                alt={comment.author.userName}
+                sx={{ width: 32, height: 32 }}
+            />
+            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                {isEditing ? (
+                    <Box>
+                        <TextField
+                            fullWidth
+                            multiline
+                            variant="outlined"
+                            size="small"
+                            value={editedContent}
+                            onChange={(e) => setEditedContent(e.target.value)}
+                            sx={{ mb: 1 }}
+                        />
+                        <Button
+                            variant="contained"
+                            size="small"
+                            onClick={handleSaveEdit}
+                            disabled={!editedContent.trim()}
+                        >
+                            Save
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={handleCancelEdit}
+                            sx={{ ml: 1 }}
+                        >
+                            Cancel
+                        </Button>
+                    </Box>
+                ) : (
+                    <Box
+                        sx={{
+                            bgcolor: "#f0f2f5",
+                            borderRadius: "16px",
+                            p: 1.5,
+                            position: "relative",
+                        }}
+                    >
+                        <Typography variant="body2" fontWeight="bold">
+                            {comment.author.userName}
+                        </Typography>
+                        <Typography variant="body2" sx={{ my: 0.5, pr: isCurrentUser ? 3 : 0 }}>
+                            {comment.content}
+                        </Typography>
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: "block", textAlign: "right", mt: 0.5, ml: 'auto' }}
+                        >
+                            {formatTime(comment.createdAt)}
+                        </Typography>
+
+                        {isCurrentUser && (
+                            <IconButton
+                                aria-label="more"
+                                onClick={handleMenuClick}
+                                size="small"
+                                sx={{ position: 'absolute', top: 4, right: 4, p: 0 }}
+                            >
+                                <MoreVertIcon fontSize="small" />
+                            </IconButton>
+                        )}
+                    </Box>
+                )}
+            </Box>
+
+            <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleMenuClose}
+                MenuListProps={{ "aria-labelledby": "basic-button" }}
+            >
+                <MenuItem onClick={handleEditClick}>
+                    <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
+                </MenuItem>
+                <MenuItem onClick={handleDeleteClick}>
+                    <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
+                </MenuItem>
+            </Menu>
+        </Box>
+    );
+};
+
+function CommentsModal({
+    isVisible,
+    onClose,
+    comments,
+    postId,
+    post,
+    onCommentSubmit,
+    onDeleteComment,
+    onEditComment,
+    currentUserName,
+}) {
+    const [commentText, setCommentText] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleCommentSubmit = async () => {
+        if (!commentText.trim() || isSubmitting) return;
 
         setIsSubmitting(true);
         try {
             await onCommentSubmit(postId, commentText.trim());
-            setCommentText('');
+            setCommentText("");
         } catch (error) {
             console.error("Error submitting comment:", error);
+            Swal.fire("Error", "Failed to submit comment.", "error");
         } finally {
             setIsSubmitting(false);
         }
     };
-
-    const handleDelete = (commentId) => {
-        onDeleteComment(commentId);
-        handleMenuClose();
-    };
-
-    const handleStartEdit = (commentId, content) => {
-        setEditingCommentId(commentId);
-        setEditedContent(content);
-        handleMenuClose();
-    };
-
-    const handleSaveEdit = async () => {
-        if (!editedContent.trim()) return;
-
-        const originalContent = comments.find(c => c.id === editingCommentId)?.content;
-        if (editedContent.trim() === originalContent) {
-            setEditingCommentId(null);
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            await onEditComment(editingCommentId, editedContent.trim());
-            setEditingCommentId(null);
-        } catch (error) {
-            console.error("Error saving comment edit:", error);
-            const originalContent = comments.find(c => c.id === editingCommentId)?.content;
-            setEditedContent(originalContent);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleCancelEdit = () => {
-        setEditingCommentId(null);
-        setEditedContent('');
-    };
-
 
     return (
-        <Modal open={isVisible} onClose={onClose}>
-            <Box sx={modalStyle}>
-                <Typography variant="h5" component="h2" sx={{ mb: 2, fontWeight: 'bold' }}>
-                    Comments ({comments.length})
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-
-                {/* Comment Input Form */}
-                <Box component="form" onSubmit={handleSubmit} sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-                    <TextField
-                        label="Add a comment..."
-                        variant="outlined"
-                        fullWidth
-                        value={commentText}
-                        onChange={(e) => setCommentText(e.target.value)}
-                        disabled={isSubmitting || editingCommentId !== null}
-                        size="small"
-                        sx={{ mr: 1 }}
-                    />
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        endIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
-                        disabled={!commentText.trim() || isSubmitting || editingCommentId !== null}
-                    >
-                        Send
-                    </Button>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-
-                {/* Comments List */}
-                <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-                    <List sx={{ width: '100%', p: 0 }}>
-                        {comments.length === 0 ? (
-                            <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 3 }}>
-                                Be the first to comment!
+        <Modal
+            open={isVisible}
+            onClose={onClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+        >
+            <Box sx={style}>
+                <Box sx={{ flexGrow: 1, overflowY: "auto", p: 2 }}>
+                    <Box sx={{ mb: 2 }}>
+                        <CardHeader
+                            avatar={<Avatar src={post?.user?.avatar} />}
+                            title={
+                                <Typography variant="subtitle1" fontWeight="bold">
+                                    {post?.user?.name}
+                                </Typography>
+                            }
+                            subheader={post?.time}
+                            sx={{ p: 0, mb: 1 }}
+                        />
+                        <CardContent sx={{ p: 0 }}>
+                            <Typography variant="body1" color="text.primary" paragraph>
+                                {post?.content}
                             </Typography>
-                        ) : (
-                            comments.map((comment) => {
-                                const authorUsername = comment.author?.userName || comment.user?.userName || 'Anonymous';
-                                const isAuthor = authorUsername === currentUserName;
-                                const isEditing = editingCommentId === comment.id;
-
-                                return (
-                                    <ListItem
-                                        key={comment.id}
-                                        alignItems="flex-start"
-                                        secondaryAction={
-                                            isAuthor && !isEditing ? (
-                                                <IconButton
-                                                    edge="end"
-                                                    aria-label="options"
-                                                    onClick={(e) => handleMenuClick(e, comment.id)}
-                                                    size="small"
-                                                >
-                                                    <MoreVertIcon fontSize="small" />
-                                                </IconButton>
-                                            ) : null
-                                        }
-                                        sx={{
-                                            px: 0,
-                                            py: 1,
-                                            borderBottom: '1px solid #eee',
-                                            '&:last-child': { borderBottom: 'none' }
-                                        }}
-                                    >
-                                        <ListItemAvatar>
-                                            <Avatar src={ProfilePic} alt={comment.author?.userName || 'User'} />
-                                        </ListItemAvatar>
-                                        <ListItemText
-                                            primary={
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <Typography
-                                                        component="span"
-                                                        variant="subtitle2"
-                                                        fontWeight="bold"
-                                                        sx={{ mr: 1 }}
-                                                    >
-                                                        {comment.author?.userName || 'Anonymous'}
-                                                    </Typography>
-                                                    <Typography
-                                                        component="span"
-                                                        variant="caption"
-                                                        color="text.secondary"
-                                                    >
-                                                        {formatTime(comment.createdAt)}
-                                                    </Typography>
-                                                </Box>
-                                            }
-                                            secondaryTypographyProps={{ component: 'div' }}
-                                            secondary={
-                                                <React.Fragment>
-                                                    {isEditing ? (
-                                                        <TextField
-                                                            value={editedContent}
-                                                            onChange={(e) => setEditedContent(e.target.value)}
-                                                            fullWidth
-                                                            multiline
-                                                            size="small"
-                                                            variant="outlined"
-                                                            disabled={isSubmitting}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                                    e.preventDefault();
-                                                                    handleSaveEdit();
-                                                                } else if (e.key === 'Escape') {
-                                                                    handleCancelEdit();
-                                                                }
-                                                            }}
-                                                            sx={{ mt: 0.5 }}
-                                                        />
-                                                    ) : (
-                                                        <Typography component="span" variant="body2" color="text.primary">
-                                                            {comment.content}
-                                                        </Typography>
-                                                    )}
-
-                                                    {isEditing && (
-                                                        <Box
-                                                            sx={{
-                                                                display: 'flex',
-                                                                justifyContent: 'flex-end',
-                                                                mt: 0.5,
-                                                                gap: 1
-                                                            }}
-                                                        >
-                                                            <Button
-                                                                onClick={handleCancelEdit}
-                                                                disabled={isSubmitting}
-                                                                size="small"
-                                                                color="error"
-                                                                variant="text"
-                                                                startIcon={<CloseIcon fontSize="small" />}
-                                                            >
-                                                                Cancel
-                                                            </Button>
-                                                            <Button
-                                                                onClick={handleSaveEdit}
-                                                                disabled={isSubmitting || !editedContent.trim()}
-                                                                size="small"
-                                                                color="primary"
-                                                                variant="text"
-                                                                startIcon={<CheckIcon fontSize="small" />}
-                                                            >
-                                                                Save
-                                                            </Button>
-                                                        </Box>
-                                                    )}
-                                                </React.Fragment>
-                                            }
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {post?.selectedTags?.map((tag, index) => (
+                                    <Chip key={index} label={tag} size="small" variant="outlined" color="primary" />
+                                ))}
+                            </Box>
+                            {post?.fileUrl && (
+                                <Box sx={{ mt: 2, maxHeight: 300, overflow: 'hidden', borderRadius: 1 }}>
+                                    {post.fileUrl.match(/\.(jpeg|jpg|gif|png|webp)$/) ? (
+                                        <img
+                                            src={post.fileUrl}
+                                            alt="Post content"
+                                            style={{ width: "100%", height: "auto", display: "block" }}
                                         />
-                                    </ListItem>
-                                )
-                            })
-                        )}
-                    </List>
+                                    ) : (
+                                        <a href={post.fileUrl} target="_blank" rel="noopener noreferrer">View File</a>
+                                    )}
+                                </Box>
+                            )}
+                        </CardContent>
+                    </Box>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
+                        Comments ({comments.length})
+                    </Typography>
+                    {comments.length > 0 ? (
+                        <Box>
+                            {comments.map((comment) => (
+                                <Comment
+                                    key={comment.id}
+                                    comment={comment}
+                                    onDelete={onDeleteComment}
+                                    onEdit={onEditComment}
+                                    currentUserName={currentUserName}
+                                />
+                            ))}
+                        </Box>
+                    ) : (
+                        <Typography variant="body2" color="text.secondary">
+                            No comments yet. Be the first!
+                        </Typography>
+                    )}
                 </Box>
 
-                {/* Edit/Delete Menu */}
-                <Menu
-                    anchorEl={anchorEl}
-                    open={openMenu}
-                    onClose={handleMenuClose}
-                >
-                    <MenuItem
-                        onClick={() => handleStartEdit(
-                            menuCommentId,
-                            comments.find(c => c.id === menuCommentId)?.content
-                        )}
-                        disabled={isSubmitting}
-                    >
-                        <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
-                    </MenuItem>
-                    <MenuItem onClick={() => handleDelete(menuCommentId)} disabled={isSubmitting}>
-                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
-                    </MenuItem>
-                </Menu>
-
+                <Box sx={{ p: 2, borderTop: "1px solid #eee", flexShrink: 0 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <TextField
+                            placeholder="Add a comment..."
+                            variant="outlined"
+                            fullWidth
+                            size="small"
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleCommentSubmit();
+                                }
+                            }}
+                            disabled={isSubmitting}
+                        />
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleCommentSubmit}
+                            disabled={!commentText.trim() || isSubmitting}
+                            sx={{ minWidth: "auto", p: 1.5 }}
+                        >
+                            {isSubmitting ? (
+                                <CircularProgress size={20} color="inherit" />
+                            ) : (
+                                <SendIcon />
+                            )}
+                        </Button>
+                    </Box>
+                </Box>
             </Box>
         </Modal>
     );

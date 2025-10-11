@@ -115,6 +115,7 @@ export default function Login() {
             startIcon={<KeyboardBackspaceIcon />}
             color="inherit"
             sx={{ textTransform: "none", color: "#74767a" }}
+            onClick={() => navigate(-1)}
           >
             Back
           </Button>

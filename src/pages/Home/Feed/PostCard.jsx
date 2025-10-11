@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -10,112 +10,147 @@ import {
   Box,
   Divider,
   Chip,
+  Button,
+  TextField,
+  CircularProgress,
+  Menu,
+  MenuItem,
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import ShareIcon from "@mui/icons-material/Share";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+import {
+  MoreVert as MoreVertIcon,
+  Favorite as FavoriteIcon,
+  FavoriteBorder as FavoriteBorderIcon,
+  ChatBubbleOutline as ChatBubbleOutlineIcon,
+  Share as ShareIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+} from "@mui/icons-material";
+import dayjs from 'dayjs';
 
-function PostCard({ post, onDelete, onEdit, onLike, onShowComments }) {
-  const [anchorEl, setAnchorEl] = React.useState(null);
+// Format comment/post time
+const formatTime = (time) => (!time ? "Just now" : dayjs(time).format('DD MMM, hh:mm A'));
+
+// Single Comment Bubble
+const CommentBubble = ({ comment }) => (
+  <Box sx={{ display: 'flex', gap: 1, mb: 1, minWidth: 0 }}>
+    <Avatar src={comment.author?.avatar} sx={{ width: 24, height: 24, flexShrink: 0 }} />
+    <Box sx={{
+      bgcolor: '#eef1f3',
+      borderRadius: '12px',
+      p: 1,
+      maxWidth: '100%',
+      wordBreak: 'break-word',
+      flexGrow: 1
+    }}>
+      <Typography variant="caption" fontWeight="bold">{comment.author.userName}</Typography>
+      <Typography variant="body2">{comment.content}</Typography>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'right', mt: 0.5, lineHeight: 1 }}>
+        {formatTime(comment.createdAt)}
+      </Typography>
+    </Box>
+  </Box>
+);
+
+const ActionButton = ({ icon, label, onClick }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
+    <IconButton>{icon}</IconButton>
+    <Typography variant="body2" color="text.secondary">{label}</Typography>
+  </Box>
+);
+
+function PostCard({
+  post,
+  onDelete,
+  onEdit,
+  onLike,
+  onShowComments,
+  fetchRecentComments,
+  onAddCommentInline
+}) {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [recentComments, setRecentComments] = useState(post.recentComments || []);
+  const [loadingComment, setLoadingComment] = useState(false);
+  const [inlineCommentText, setInlineCommentText] = useState('');
+  const [isCommenting, setIsCommenting] = useState(false);
+
   const open = Boolean(anchorEl);
   const currentUserName = localStorage.getItem("userName");
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleDeleteClick = () => {
-    onDelete(post.id);
-    handleClose();
-  };
-
-  const handleEditClick = () => {
-    onEdit(post.id);
-    handleClose();
-  };
-
-  const handleLikeClick = () => {
-    onLike(post.id);
-  };
-
-  const handleCommentClick = () => {
-    onShowComments(post.id);
-  };
-
-  // Check if the current user is the post author
   const isPostAuthor = post.user.name === currentUserName;
 
+  // Load recent comments
+  useEffect(() => {
+    const loadRecentComments = async () => {
+      if (post.comments > 0) {
+        setLoadingComment(true);
+        const comments = await fetchRecentComments(post.id);
+        setRecentComments(comments);
+        setLoadingComment(false);
+      } else {
+        setRecentComments([]);
+      }
+    };
+
+    // Use existing comments if available, otherwise load
+    if (post.recentComments?.length > 0) {
+      setRecentComments(post.recentComments);
+    } else {
+      loadRecentComments();
+    }
+  }, [post.id, post.comments, post.recentComments, fetchRecentComments]);
+
+  // Handlers
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+  const handleDeleteClick = () => { onDelete(post.id); handleClose(); };
+  const handleEditClick = () => { onEdit(post.id); handleClose(); };
+  const handleLikeClick = () => onLike(post.id);
+  const handleCommentClick = () => onShowComments(post.id);
+
+  const handleInlineCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!inlineCommentText.trim()) return;
+
+    setIsCommenting(true);
+    try {
+      await onAddCommentInline(post.id, inlineCommentText.trim());
+      setInlineCommentText('');
+    } catch (error) {
+      console.error("Error submitting inline comment:", error);
+    } finally {
+      setIsCommenting(false);
+    }
+  };
+
   return (
-    <Card
-      sx={{
-        mb: 3,
-        borderRadius: 2,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-      }}
-    >
+    <Card sx={{ mb: 3, borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+      {/* Header */}
       <CardHeader
         avatar={<Avatar src={post.user.avatar} />}
-        action={
-          isPostAuthor && ( // Only show menu if current user is the author
-            <IconButton aria-label="settings" onClick={handleClick}>
-              <MoreVertIcon />
-            </IconButton>
-          )
-        }
-        title={
-          <Typography variant="subtitle1" fontWeight="bold">
-            {post.user.name}
-          </Typography>
-        }
+        action={isPostAuthor && (
+          <IconButton aria-label="settings" onClick={handleClick}><MoreVertIcon /></IconButton>
+        )}
+        title={<Typography variant="subtitle1" fontWeight="bold">{post.user.name}</Typography>}
         subheader={post.time}
       />
 
-      {/* Menu for Edit/Delete */}
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleEditClick}>
-          <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit Post
-        </MenuItem>
-        <MenuItem onClick={handleDeleteClick}>
-          <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete Post
-        </MenuItem>
+      {/* Menu */}
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        <MenuItem onClick={handleEditClick}><EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit Post</MenuItem>
+        <MenuItem onClick={handleDeleteClick}><DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete Post</MenuItem>
       </Menu>
 
+      {/* Content */}
       <CardContent>
-        {/* Post Content */}
-        <Typography variant="body1" color="text.primary" paragraph>
-          {post.content}
-        </Typography>
-
-        {/* Tags */}
+        <Typography variant="body1" color="text.primary" paragraph>{post.content}</Typography>
         <Box sx={{ mb: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {post.selectedTags.map((tag, index) => (
             <Chip key={index} label={tag} size="small" variant="outlined" color="primary" />
           ))}
         </Box>
-
-        {/* Image/File */}
         {post.fileUrl && (
           <Box sx={{ mt: 2, maxHeight: 400, overflow: 'hidden', borderRadius: 1 }}>
             {post.fileUrl.match(/\.(jpeg|jpg|gif|png|webp)$/) ? (
-              <img
-                src={post.fileUrl}
-                alt="Post content"
-                style={{ width: "100%", height: "auto", display: "block" }}
-              />
+              <img src={post.fileUrl} alt="Post content" style={{ width: "100%", height: "auto", display: "block" }} />
             ) : (
               <a href={post.fileUrl} target="_blank" rel="noopener noreferrer">View File</a>
             )}
@@ -125,44 +160,50 @@ function PostCard({ post, onDelete, onEdit, onLike, onShowComments }) {
 
       <Divider />
 
+      {/* Actions */}
       <CardActions disableSpacing sx={{ justifyContent: "space-around" }}>
-        {/* Like Button */}
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton aria-label="add to favorites" onClick={handleLikeClick}>
-            {post.isLiked ? (
-              <FavoriteIcon color="error" />
-            ) : (
-              <FavoriteBorderIcon />
-            )}
-          </IconButton>
-          <Typography variant="body2" color="text.secondary">
-            {post.likes} Likes
-          </Typography>
-        </Box>
-
-        {/* Comment Button */}
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-          onClick={handleCommentClick}
-        >
-          <IconButton aria-label="comment">
-            <ChatBubbleOutlineIcon />
-          </IconButton>
-          <Typography variant="body2" color="text.secondary">
-            {post.comments} Comments
-          </Typography>
-        </Box>
-
-        {/* Share Button */}
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton aria-label="share">
-            <ShareIcon />
-          </IconButton>
-          <Typography variant="body2" color="text.secondary">
-            {post.shares} Shares
-          </Typography>
-        </Box>
+        <ActionButton icon={post.isLiked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />} label={`${post.likes} Likes`} onClick={handleLikeClick} />
+        <ActionButton icon={<ChatBubbleOutlineIcon />} label={`${post.comments} Comments`} onClick={handleCommentClick} />
+        <ActionButton icon={<ShareIcon />} label={`${post.shares} Shares`} />
       </CardActions>
+
+      <Divider />
+
+      {/* Comments */}
+      <Box sx={{ px: 2, pb: 1, pt: 1, bgcolor: '#fbfbfb' }}>
+        {recentComments.length > 0 && recentComments.map((comment, index) => (
+          <CommentBubble key={comment.id || index} comment={comment} />
+        ))}
+
+        {post.comments > recentComments.length && (
+          <Button variant="text" size="small" onClick={handleCommentClick} sx={{ justifyContent: 'flex-start', p: 0, mb: 1, fontWeight: 'bold' }}>
+            VIEW ALL {post.comments} COMMENTS
+          </Button>
+        )}
+
+        {/* Inline Comment */}
+        <Box component="form" onSubmit={handleInlineCommentSubmit} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Avatar src={post.user.avatar} sx={{ width: 32, height: 32 }} />
+          <TextField
+            placeholder="Add a comment..."
+            variant="outlined"
+            fullWidth
+            size="small"
+            value={inlineCommentText}
+            onChange={(e) => setInlineCommentText(e.target.value)}
+            disabled={isCommenting}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleInlineCommentSubmit(e);
+              }
+            }}
+          />
+          <IconButton type="submit" color="primary" disabled={!inlineCommentText.trim() || isCommenting} size="small">
+            {isCommenting ? <CircularProgress size={20} /> : <ChatBubbleOutlineIcon fontSize="small" />}
+          </IconButton>
+        </Box>
+      </Box>
     </Card>
   );
 }
