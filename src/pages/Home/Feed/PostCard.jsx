@@ -69,7 +69,6 @@ function PostCard({
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [recentComments, setRecentComments] = useState(post.recentComments || []);
-  const [loadingComment, setLoadingComment] = useState(false);
   const [inlineCommentText, setInlineCommentText] = useState('');
   const [isCommenting, setIsCommenting] = useState(false);
 
@@ -81,16 +80,13 @@ function PostCard({
   useEffect(() => {
     const loadRecentComments = async () => {
       if (post.comments > 0) {
-        setLoadingComment(true);
         const comments = await fetchRecentComments(post.id);
         setRecentComments(comments);
-        setLoadingComment(false);
       } else {
         setRecentComments([]);
       }
     };
 
-    // Use existing comments if available, otherwise load
     if (post.recentComments?.length > 0) {
       setRecentComments(post.recentComments);
     } else {
@@ -98,7 +94,6 @@ function PostCard({
     }
   }, [post.id, post.comments, post.recentComments, fetchRecentComments]);
 
-  // Handlers
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleDeleteClick = () => { onDelete(post.id); handleClose(); };
@@ -149,18 +144,17 @@ function PostCard({
         </Box>
         {post.fileUrl && (
           <Box sx={{ mt: 2, maxHeight: 400, overflow: 'hidden', borderRadius: 1 }}>
-            {post.fileUrl.match(/\.(jpeg|jpg|gif|png|webp)$/) ? (
-              <img src={post.fileUrl} alt="Post content" style={{ width: "100%", height: "auto", display: "block" }} />
-            ) : (
-              <a href={post.fileUrl} target="_blank" rel="noopener noreferrer">View File</a>
-            )}
+            <img
+              src={post.fileUrl}
+              alt="Post content"
+              style={{ width: "100%", height: "auto", display: "block" }}
+            />
           </Box>
         )}
       </CardContent>
 
       <Divider />
 
-      {/* Actions */}
       <CardActions disableSpacing sx={{ justifyContent: "space-around" }}>
         <ActionButton icon={post.isLiked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />} label={`${post.likes} Likes`} onClick={handleLikeClick} />
         <ActionButton icon={<ChatBubbleOutlineIcon />} label={`${post.comments} Comments`} onClick={handleCommentClick} />
