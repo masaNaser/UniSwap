@@ -17,6 +17,7 @@ import {
   TextField,
   InputAdornment,
   Button,
+  Pagination 
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -27,6 +28,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { getProjectBySubServices as getProjectBySubServicesApi } from "../../../services/publishProjectServices";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import Point from "../../../assets/images/Point.svg";
+import { Pagination as PaginationApi } from "../../../services/publishProjectServices";
 
 const ProjectCard = ({ project }) => {
   return (
@@ -44,7 +46,7 @@ const ProjectCard = ({ project }) => {
         <CardMedia
           component="img"
           height="200"
-          image={project.img}
+          image={project.img? `https://uni.runasp.net//${project.img}`: null}
           alt={project.title}
           sx={{
             borderTopLeftRadius: "12px",
@@ -52,7 +54,7 @@ const ProjectCard = ({ project }) => {
             objectFit: "cover",
           }}
         />
-        <Box sx={{ position: "absolute", top: 8, right: 8 }}>
+        {/* <Box sx={{ position: "absolute", top: 8, right: 8 }}>
           <IconButton
             sx={{
               background: "rgba(255, 255, 255, 0.9)",
@@ -62,7 +64,7 @@ const ProjectCard = ({ project }) => {
           >
             <FavoriteBorderIcon fontSize="small" />
           </IconButton>
-        </Box>
+        </Box> */}
       </Box>
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
@@ -197,20 +199,24 @@ const SubServiceProjects = () => {
   const parentServiceName = params.get("parentName");
   // study support Id
    const parentServiceId = params.get("parentId");
+  const[page, setPage] = useState(1);
+  const pageSize = 6; // عدد المشاريع في كل صفحة  
+const [totalPages, setTotalPages] = useState(1); // عدد الصفحات الكلي من API
 
-  const fetchServiceProject = async () => {
+  const fetchServiceProject = async (page=1) => {
     try {
-      const response = await getProjectBySubServicesApi(token, id);
+      const response = await PaginationApi(token, page, pageSize);
       console.log("sub project data : ", response.data);
-      setProjects(response.data);
+      setTotalPages(response.data.totalPages);
+      setProjects(response.data.items);4
     } catch (err) {
       console.error(err);
     }
   };
 
   useEffect(() => {
-    if (id) fetchServiceProject();
-  }, [id]);
+    if (id) fetchServiceProject(page);
+  }, [id,page]);
 
   const handleMenuClickRated = (event) => setAnchorElRated(event.currentTarget);
   const handleMenuClickPrice = (event) => setAnchorElPrice(event.currentTarget);
@@ -383,6 +389,17 @@ const SubServiceProjects = () => {
           </Grid>
         ))}
       </Grid>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
+  <Pagination
+    count={totalPages}               // عدد الصفحات حسب الـ API
+    page={page}                      // الصفحة الحالية
+    //value → رقم الصفحة الجديدة اللي اختارها المستخدم
+    onChange={(event, value) => setPage(value)} // لما المستخدم يختار صفحة جديدة
+    color="primary"
+    variant="outlined"
+  />
+</Box>
+
     </Container>
   );
 };
