@@ -110,10 +110,11 @@ const finalData = {
   email: data.email.trim(),
   password: data.password.trim(),
   confirmPassword: data.confirmPassword.trim(),
-  skills: skills.map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()), // ["React"]
-  universityMajor: data.universityMajor.toUpperCase(), // "CSE"
-  academicYear: data.academicYear.trim() 
+  skills: skills,
+  universityMajor: data.universityMajor.toUpperCase(),
+  academicYear: data.academicYear.trim()
 };
+
 
 
 

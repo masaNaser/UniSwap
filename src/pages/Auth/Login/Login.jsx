@@ -73,10 +73,7 @@ export default function Login() {
       if (response.status == 200) {
         localStorage.setItem("accessToken", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
-        localStorage.setItem(
-          "refreshTokenExpiration",
-          response.data.refreshTokenExpiration
-        );
+        localStorage.setItem("refreshTokenExpiration",response.data.refreshTokenExpiration);
         // فك التوكن واستخراج اسم اليوزر
         const decoded = jwtDecode(response.data.accessToken);
         const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];

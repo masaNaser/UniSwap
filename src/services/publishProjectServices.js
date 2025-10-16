@@ -7,3 +7,11 @@ export const getProjectBySubServices = async (token,id) => {
     },
   });
 };
+
+export const Pagination = async (token, page,pageSize) => {
+  return await api.get(`/PublishProjects/browse?page=${page}&pageSize=${pageSize}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
