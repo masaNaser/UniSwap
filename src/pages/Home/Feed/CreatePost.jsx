@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import {
   Box, Typography, Avatar, TextField, Stack, IconButton, alpha, styled, Chip
 } from '@mui/material';
-import { Image, InsertDriveFile } from '@mui/icons-material';
+import { Image, Close as CloseIcon } from '@mui/icons-material';
 import ProfilePic from '../../../assets/images/ProfilePic.jpg';
 import CustomButton from "../../../shared/CustomButton/CustomButton";
 import { createPost as createPostApi } from "../../../services/postService";
@@ -60,6 +60,13 @@ const CreatePost = ({ addPost, token }) => {
       setFile(selectedFile); // للإرسال للـ API
       setImagePreview(URL.createObjectURL(selectedFile)); // للمعاينة فقط
     }
+  };
+
+  const handleRemoveFile = () => {
+    setFile(null);
+    setImagePreview(null);
+    const fileInput = document.getElementById('upload-image');
+    if (fileInput) fileInput.value = '';
   };
 
   const handleSubmit = async (event) => {
@@ -155,8 +162,31 @@ const CreatePost = ({ addPost, token }) => {
       </Stack>
       {/* عرض الصورة قبل الإرسال */}
       {imagePreview && (
-        <Box sx={{ mt: 2 }}>
-          <img src={imagePreview} alt="Preview" style={{ width: '150px', borderRadius: '8px' }} />
+        <Box sx={{ position: "relative", display: "inline-block", mt: 2 }}>
+          <img
+            src={imagePreview}
+            alt="Preview"
+            style={{
+              width: "150px",
+              height: "150px",
+              objectFit: "cover",
+              borderRadius: "8px",
+              display: "block",
+            }}
+          />
+          <IconButton
+            onClick={handleRemoveFile}
+            size="small"
+            sx={{
+              position: "absolute",
+              top: -6,
+              right: -6,
+              bgcolor: "rgba(0,0,0,0.1)",
+              "&:hover": { bgcolor: "rgba(0,0,0,0.2)" },
+            }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
         </Box>
       )}
       <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap">
