@@ -1,117 +1,133 @@
-import React, { useEffect, useState } from "react";
-import {
-  createChatHubConnection,
-  getOneConversation,
-  sendMessage,
-} from "../../services/chatService";
+import React, { useEffect, useState, useRef } from "react";
+import { createChatHubConnection, sendMessage ,getOneConversation} from "../../services/chatService";
 
 const Chat = () => {
   const [connection, setConnection] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-const [conversationId, setConversationId] = useState("56a67043-4dbb-43d4-b964-01a948bc5cef");
   
-  // ReceiverId ثابت لتجربة الشات (آية)
-  const [receiverId] = useState("e87a5665-057a-4ee5-ae88-ea85e603312f"); 
-
+  const conversationId = "73400fe0-e20a-4de4-bff9-93a3202f5c69"; 
+  const receiverId = "7458c046-5ec4-4ac4-5147-08de0bf1f524"; 
   const token = localStorage.getItem("accessToken");
+  const currentUserId = localStorage.getItem("userId"); 
 
-  // 1️⃣ إنشاء اتصال SignalR Hub عند تحميل الصفحة
-  useEffect(() => {
-    const conn = createChatHubConnection(token);
-    setConnection(conn);
+  const messagesEndRef = useRef(null);
 
-    conn.start()
-      .then(() => {
-        console.log("✅ متصل بالـ SignalR");
-
-        // استقبال أي رسالة جديدة
-        conn.on("ReceiveMessage", (msg) => {
-          console.log("📩 رسالة جديدة:", msg);
-          setMessages((prev) => [...prev, msg]);
-        });
-      })
-      .catch((err) => console.error("❌ فشل الاتصال بـ Hub:", err));
-
-    return () => conn.stop(); // تنظيف عند الخروج
-  }, [token]);
-
-  // 2️⃣ إنشاء أو فتح المحادثة عند الضغط على الزر
-  const handleStartConversation = async () => {
-    try {
-      const data = await getOneConversation(null, receiverId, 10, token);
-      setConversationId(data.id);             // حفظ conversationId
-      setMessages(data.messages || []);       // عرض الرسائل السابقة
-      console.log("✅ تم إنشاء/فتح المحادثة:", data);
-    } catch (err) {
-      console.error("❌ خطأ في إنشاء المحادثة:", err);
-      alert("حدث خطأ أثناء إنشاء المحادثة. تحقق من السيرفر أو التوكن.");
-    }
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // 3️⃣ إرسال رسالة
+  useEffect(() => {
+    const initChat = async () => {
+      try {
+        const conn = createChatHubConnection(token);
+        setConnection(conn);
+        await conn.start();
+        console.log("✅ متصل بالـ SignalR");
+
+        // منع التكرار: تحقق من الرسائل المؤقتة والـ id
+        conn.on("ReceiveMessage", (msg) => {
+          setMessages(prev => {
+            // تجاهل أي رسالة موجودة مسبقًا
+            if (prev.some(m => m.id === msg.id)) return prev;
+
+            // تحقق من وجود رسالة مؤقتة تطابق النص والمرسل
+            const tempIndex = prev.findIndex(
+              m => m.id.toString().startsWith("temp-") &&
+                   (m.Text || m.text) === (msg.Text || msg.text) &&
+                   m.senderId === msg.senderId
+            );
+
+            if (tempIndex !== -1) {
+              const newMessages = [...prev];
+              newMessages[tempIndex] = { ...msg, status: "delivered" };
+              return newMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            }
+
+            return [...prev, msg].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+          });
+        });
+
+        // جلب الرسائل القديمة
+        const data = await getOneConversation(conversationId, receiverId, 10, token);
+        setMessages(data || []);
+      } catch (err) {
+        console.error("❌ خطأ في تهيئة الشات:", err);
+      }
+    };
+
+    initChat();
+
+    return () => {
+      connection?.off("ReceiveMessage");
+      connection?.stop();
+    };
+  }, [token, currentUserId]);
+
+  useEffect(scrollToBottom, [messages]);
+
   const handleSend = async () => {
-    if (!message.trim() || !connection || !conversationId) return;
+    if (!message.trim() || !connection) return;
+
+    const tempId = `temp-${Date.now()}`;
+    const msgDto = {
+      ReceiverId: receiverId,
+      ConversationId: conversationId,
+      Text: message,
+    };
+
+    // عرض الرسالة مباشرة
+    setMessages(prev => [
+      ...prev,
+      {
+        ...msgDto,
+        senderId: currentUserId,
+        receiverId,
+        id: tempId,
+        filePath: null,
+        createdAt: new Date().toISOString(),
+      }
+    ]);
+    setMessage("");
+    scrollToBottom();
 
     try {
       await sendMessage(connection, receiverId, message, conversationId);
-      setMessage(""); // مسح input بعد الإرسال
     } catch (err) {
       console.error("❌ فشل إرسال الرسالة:", err);
-      alert("حدث خطأ أثناء إرسال الرسالة.");
     }
   };
 
   return (
-    <div style={{ border: "1px solid #ccc", padding: "10px", maxWidth: "400px" }}>
-      <h3>💬 شات تجريبي مع آية</h3>
+    <></>
+    // <div style={{ border: "1px solid #ccc", padding: "10px", maxWidth: "400px" }}>
+    //   <h3>💬 شات تجريبي</h3>
 
-      {!conversationId && (
-        <button onClick={handleStartConversation} style={{ marginBottom: "10px" }}>
-          ابدأ محادثة مع آية
-        </button>
-      )}
+    //   <div style={{ height: "300px", overflowY: "scroll", border: "1px solid #eee", padding: "5px", marginBottom: "10px" }}>
+    //     {messages.length === 0 ? (
+    //       <p style={{ textAlign: "center", color: "#777" }}>لا توجد رسائل بعد</p>
+    //     ) : (
+    //       messages.map((m, i) => (
+    //         <div key={m.id || i} style={{ marginBottom: "8px", textAlign: m.senderId === currentUserId ? "right" : "left" }}>
+    //           <strong>{m.senderId === currentUserId ? "أنت" : "آية"}:</strong>{" "}
+    //           {m.text || m.Text || (m.filePath ? "📎 ملف مرفق" : "")}
+    //         </div>
+    //       ))
+    //     )}
+    //     <div ref={messagesEndRef} />
+    //   </div>
 
-      <div
-        style={{
-          height: "300px",
-          overflowY: "scroll",
-          border: "1px solid #eee",
-          padding: "5px",
-          marginBottom: "10px",
-        }}
-      >
-        {messages.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#777" }}>لا توجد رسائل بعد</p>
-        ) : (
-          messages.map((m, i) => (
-            <div
-              key={i}
-              style={{
-                marginBottom: "8px",
-                textAlign: m.senderId === localStorage.getItem("userId") ? "right" : "left",
-              }}
-            >
-              <strong>{m.senderName || "مستخدم"}:</strong> {m.text || "📎 ملف مرفق"}
-            </div>
-          ))
-        )}
-      </div>
-
-      {conversationId && (
-        <div style={{ display: "flex", gap: "5px" }}>
-          <input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="اكتب رسالة..."
-            style={{ flex: 1, padding: "6px" }}
-          />
-          <button onClick={handleSend} style={{ padding: "6px 12px" }}>
-            إرسال
-          </button>
-        </div>
-      )}
-    </div>
+    //   <div style={{ display: "flex", gap: "5px" }}>
+    //     <input
+    //       value={message}
+    //       onChange={(e) => setMessage(e.target.value)}
+    //       placeholder="اكتب رسالة..."
+    //       style={{ flex: 1, padding: "6px" }}
+    //       onKeyDown={(e) => e.key === "Enter" && handleSend()}
+    //     />
+    //     <button onClick={handleSend} style={{ padding: "6px 12px" }}>إرسال</button>
+    //   </div>
+    // </div>
   );
 };
 
