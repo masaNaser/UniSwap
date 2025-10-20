@@ -222,11 +222,7 @@ import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 import CircularProgress from "@mui/material/CircularProgress";
 
-export default function ChatWindow({
-  conversationId,
-  receiverId,
-  receiverName,
-}) {
+export default function ChatWindow({ conversationId, receiverId, receiverName }) {
   const [connection, setConnection] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -238,9 +234,14 @@ export default function ChatWindow({
   const connectionRef = useRef(null);
   const hasMoreRef = useRef(true);
 
-  // تمرير تلقائي عند تحديث الرسائل
+  // تمرير تلقائي عند الرسائل الجديدة فقط
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length === 0) return;
+    // const lastMessage = messages[messages.length - 1];
+    // // scroll إذا كانت رسالة جديدة أو مرسلة من المستخدم الحالي
+    // if (lastMessage.senderId === currentUserId || lastMessage.isNew) {
+    //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // }
   }, [messages]);
 
   // إنشاء اتصال SignalR وإدارة الرسائل
@@ -268,7 +269,7 @@ export default function ChatWindow({
             );
           }
 
-          return [...prev, msg].sort(
+          return [...prev, { ...msg, isNew: true }].sort(
             (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
           );
         });
@@ -298,25 +299,27 @@ export default function ChatWindow({
 
   // تحميل الرسائل القديمة
   const fetchOlderMessages = async () => {
-
     if (loadingOlder || !hasMoreRef.current || messages.length === 0) return;
     setLoadingOlder(true);
+    console.log("جلب رسائل أقدم...",messages);
+    const container = messagesContainerRef.current;
+    const scrollHeightBefore = container.scrollHeight;
 
-  // الحصول على أقدم رسالة حقيقية (ليست مؤقتة)
-   const oldestMessage = messages.find(m => !m.id.startsWith("temp-"));
-if (!oldestMessage) return; // لا توجد رسالة حقيقية بعد
-const beforeId = oldestMessage.id;
- console.log("جلب رسائل أقدم قبل ID:", beforeId);
-
+    const oldestMessage = messages.find(m => !m.id.startsWith("temp-"));
+    if (!oldestMessage) return;
+    const beforeId = oldestMessage.id;
+ console.log("أقدم رسالة ID:", beforeId);
     try {
       const res = await getOldMessages(conversationId, beforeId, 7);
-      console.log("الرسائل الأقدم المستلمة:", res);
       const olderMessages = res.data || [];
 
       if (olderMessages.length === 0) {
         hasMoreRef.current = false;
       } else {
         setMessages((prev) => [...olderMessages, ...prev]);
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight - scrollHeightBefore;
+        }, 0);
       }
     } catch (err) {
       console.error("فشل في جلب الرسائل القديمة:", err);
@@ -341,28 +344,30 @@ const beforeId = oldestMessage.id;
   }, [messages, loadingOlder]);
 
   // إرسال رسالة جديدة
-  const handleSend = async (text) => {
-    if (!connection || !text.trim()) return;
-    const tempId = `temp-${Date.now()}`;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: tempId,
-        senderId: currentUserId,
-        receiverId,
-        conversationId,
-        text,
-        createdAt: new Date().toISOString(),
-        status: "pending",
-      },
-    ]);
-
-    try {
-      await sendMessage(connection, receiverId, text, conversationId);
-    } catch (err) {
-      console.error("فشل إرسال الرسالة:", err);
+const handleSend = async (text, files = []) => {
+  const tempId = `temp-${Date.now()}`;
+  setMessages(prev => [
+    ...prev,
+    {
+      id: tempId,
+      senderId: currentUserId,
+      receiverId,
+      conversationId,
+      text,
+      createdAt: new Date().toISOString(),
+      status: "pending",
+      isNew: true,
+      files
     }
-  };
+  ]);
+
+  try {
+    await sendMessage(connection, receiverId, text, conversationId, files);
+  } catch (err) {
+    console.error("فشل إرسال الرسالة:", err);
+  }
+};
+
 
   return (
     <div className="chat-window">
@@ -385,11 +390,18 @@ const beforeId = oldestMessage.id;
           <p className="empty">There are no messages yet.</p>
         ) : (
           messages.map((m, i) => (
-            <Message
-              key={m.id || i}
-              text={m.text}
-              sender={m.senderId === currentUserId ? "me" : "them"}
-            />
+        <Message
+  key={m.id || i}
+  text={m.text}
+  sender={m.senderId === currentUserId ? "me" : "them"}
+  content={m.content}
+  filePath={m.filePath}
+  style={{
+    backgroundColor: m.isNew ? "#2e2e2e" : "transparent", // لون غامق للرسالة الجديدة
+    transition: "background-color 0.5s",
+  }}
+/>
+
           ))
         )}
         <div ref={messagesEndRef} />

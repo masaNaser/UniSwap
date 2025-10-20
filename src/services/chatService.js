@@ -19,26 +19,60 @@ export function createChatHubConnection(token) {
 }
 
 //  إرسال رسالة عبر Hub
-export async function sendMessage(connection, receiverId, text, conversationId = null) {
+// export async function sendMessage(connection, receiverId, text, conversationId = null) {
+//   try {
+//     if (!receiverId) {
+//       console.error(" خطأ: ReceiverId غير موجود");
+//       return;
+//     }
+
+//     const messageDto = {
+//       ReceiverId: receiverId,
+//       ConversationId: conversationId || null,
+//       Text: text || "",
+//       File: null,
+//     };
+
+//     console.log(" إرسال عبر Hub:", messageDto);
+//     await connection.invoke("SendMessage", messageDto);
+//     console.log(" تم الإرسال عبر SignalR");
+//   } catch (err) {
+//     console.error(" فشل إرسال الرسالة:", err);
+//     console.error(" تأكد أن ReceiverId صالح و ConversationId صحيح و Token ساري");
+//     throw err;
+//   }
+// }
+
+export async function sendMessage(connection, receiverId, text, conversationId = null, files = []) {
   try {
     if (!receiverId) {
       console.error(" خطأ: ReceiverId غير موجود");
       return;
     }
 
-    const messageDto = {
-      ReceiverId: receiverId,
-      ConversationId: conversationId || null,
-      Text: text || "",
-      File: null,
-    };
+    const formData = new FormData();
+    formData.append("ReceiverId", receiverId);
+    if (conversationId) formData.append("ConversationId", conversationId);
+    if (text) formData.append("Text", text);
 
-    console.log(" إرسال عبر Hub:", messageDto);
-    await connection.invoke("SendMessage", messageDto);
-    console.log(" تم الإرسال عبر SignalR");
+    files.forEach(file => formData.append("File", file));
+
+    // استخدام axios بدل fetch
+    const res = await api.post("/Chats/send", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    });
+
+    // إذا حابة تبعتي الرسالة عبر SignalR بعد الحفظ
+    if (connection) {
+      connection.invoke("SendMessage", res.data);
+    }
+
+    return res.data;
+
   } catch (err) {
     console.error(" فشل إرسال الرسالة:", err);
-    console.error(" تأكد أن ReceiverId صالح و ConversationId صحيح و Token ساري");
     throw err;
   }
 }
@@ -69,7 +103,7 @@ export const getOneConversation = async (conversationId, receiverId, take = 10, 
 
 // جلب الرسائل القديمة
 export const getOldMessages = async (conversationId, beforeId, take) => {
-  return await api.get(`/Chats/messages/older?conversationId=${conversationId}&beforeId=${beforeId}&take=${take}` 
+  return await api.get(`/Chats/messages/old?conversationId=${conversationId}&beforeId=${beforeId}&take=${take}` 
   );
 };
 
