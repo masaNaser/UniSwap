@@ -5,7 +5,7 @@ import api from "./api";
 const API_BASE_URL = "https://uni.runasp.net/api";
 const HUB_BASE_URL = "https://uni.runasp.net";
 
-// ✅ إنشاء اتصال SignalR
+//  إنشاء اتصال SignalR
 export function createChatHubConnection(token) {
   const connection = new signalR.HubConnectionBuilder()
     .withUrl(`${HUB_BASE_URL}/chatHub`, {
@@ -18,11 +18,11 @@ export function createChatHubConnection(token) {
   return connection;
 }
 
-// ✅ إرسال رسالة عبر Hub
+//  إرسال رسالة عبر Hub
 export async function sendMessage(connection, receiverId, text, conversationId = null) {
   try {
     if (!receiverId) {
-      console.error("❌ خطأ: ReceiverId غير موجود");
+      console.error(" خطأ: ReceiverId غير موجود");
       return;
     }
 
@@ -33,22 +33,21 @@ export async function sendMessage(connection, receiverId, text, conversationId =
       File: null,
     };
 
-    console.log("📤 إرسال عبر Hub:", messageDto);
+    console.log(" إرسال عبر Hub:", messageDto);
     await connection.invoke("SendMessage", messageDto);
-    console.log("✅ تم الإرسال عبر SignalR");
+    console.log(" تم الإرسال عبر SignalR");
   } catch (err) {
-    console.error("❌ فشل إرسال الرسالة:", err);
-    console.error("💡 تأكد أن ReceiverId صالح و ConversationId صحيح و Token ساري");
+    console.error(" فشل إرسال الرسالة:", err);
+    console.error(" تأكد أن ReceiverId صالح و ConversationId صحيح و Token ساري");
     throw err;
   }
 }
 
 //  جلب جميع المحادثات (لجزء اليمين لاحقًا)
 export const getConversations = async (token) => {
-  const res = await api.get(`/Chats/conversations`, {
+  return await api.get(`/Chats/conversations`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return res.data;
 };
 
 //  فتح أو إنشاء محادثة واحدة
@@ -63,25 +62,21 @@ export const getOneConversation = async (conversationId, receiverId, take = 10, 
 
     return res.data;
   } catch (err) {
-    console.error("❌ خطأ في استدعاء GetOneConversation:", err);
+    console.error(" خطأ في استدعاء GetOneConversation:", err);
     throw err;
   }
 };
 
 // جلب الرسائل القديمة
-export const getOldMessages = async (conversationId, beforeId, take = 10, token) => {
-  const res = await api.get(
-    `/Chats/messages/older?conversationId=${conversationId}&beforeId=${beforeId}&take=${take}`,
-    { headers: { Authorization: `Bearer ${token}` } }
+export const getOldMessages = async (conversationId, beforeId, take) => {
+  return await api.get(`/Chats/messages/older?conversationId=${conversationId}&beforeId=${beforeId}&take=${take}` 
   );
-  return res.data;
 };
 
 // جلب الرسائل الجديدة
 export const getNewMessages = async (conversationId, afterId, take = 10, token) => {
-  const res = await api.get(
+  return await api.get(
     `/Chats/messages/new?conversationId=${conversationId}&afterId=${afterId}&take=${take}`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
-  return res.data;
 };

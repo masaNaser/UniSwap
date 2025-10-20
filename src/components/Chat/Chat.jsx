@@ -24,7 +24,7 @@ const Chat = () => {
         setConnection(conn);
         await conn.start();
         console.log("✅ متصل بالـ SignalR");
-
+  
         // منع التكرار: تحقق من الرسائل المؤقتة والـ id
         conn.on("ReceiveMessage", (msg) => {
           setMessages(prev => {

@@ -8,11 +8,11 @@ export default function ChatList({ onSelectConversation }) {
 
   const fetchConversations = async () => {
     try {
-      const data = await getConversations(token);
-
+      const response = await getConversations(token);
+      
       // تحديد الطرف الآخر واسم افتراضي
       //بنمشي ب ارري ع المحادثات 
-      const convsWithNames = data.map((conv) => {
+      const convsWithNames = response.data.map((conv) => {
         const partnerId = conv.senderId === userId ? conv.receiverId : conv.senderId;
         const partnerImage = conv.partnerImage || null; // مؤقت
         const partnerName = "مستخدم"; // اسم افتراضي
@@ -23,7 +23,7 @@ export default function ChatList({ onSelectConversation }) {
 
       setConversations(convsWithNames);
     } catch (err) {
-      console.error("❌ فشل في جلب المحادثات:", err);
+      console.error(" فشل في جلب المحادثات:", err);
     }
   };
 
