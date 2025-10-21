@@ -85,7 +85,7 @@ export const getConversations = async (token) => {
 };
 
 //  فتح أو إنشاء محادثة واحدة
-export const getOneConversation = async (conversationId, receiverId, take = 10, token) => {
+export const getOneConversation = async (conversationId, receiverId, take = 20, token) => {
   try {
     let url = `/Chats?receiverId=${receiverId}&take=${take}`;
     if (conversationId) url += `&conversationId=${conversationId}`;
@@ -102,13 +102,14 @@ export const getOneConversation = async (conversationId, receiverId, take = 10, 
 };
 
 // جلب الرسائل القديمة
-export const getOldMessages = async (conversationId, beforeId, take) => {
-  return await api.get(`/Chats/messages/old?conversationId=${conversationId}&beforeId=${beforeId}&take=${take}` 
+export const getOldMessages = async (conversationId, beforeId, take,token) => {
+  return await api.get(`/Chats/messages/old?conversationId=${conversationId}&beforeId=${beforeId}&take=${take}`,
+    { headers: { Authorization: `Bearer ${token}` } } 
   );
 };
 
 // جلب الرسائل الجديدة
-export const getNewMessages = async (conversationId, afterId, take = 10, token) => {
+export const getNewMessages = async (conversationId, afterId, take, token) => {
   return await api.get(
     `/Chats/messages/new?conversationId=${conversationId}&afterId=${afterId}&take=${take}`,
     { headers: { Authorization: `Bearer ${token}` } }

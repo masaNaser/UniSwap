@@ -79,7 +79,9 @@
   padding: 15px;
   overflow-y: auto;
   background: #f5f7fa;
+  max-height: calc(100vh - 160px); /* أو حسب الهيدر والإنبوت */
 }
+
 
 .message {
   margin-bottom: 10px;

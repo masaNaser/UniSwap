@@ -237,11 +237,11 @@ export default function ChatWindow({ conversationId, receiverId, receiverName })
   // تمرير تلقائي عند الرسائل الجديدة فقط
   useEffect(() => {
     if (messages.length === 0) return;
-    // const lastMessage = messages[messages.length - 1];
-    // // scroll إذا كانت رسالة جديدة أو مرسلة من المستخدم الحالي
-    // if (lastMessage.senderId === currentUserId || lastMessage.isNew) {
-    //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    // }
+    const lastMessage = messages[messages.length - 1];
+    // scroll إذا كانت رسالة جديدة أو مرسلة من المستخدم الحالي
+    if (lastMessage.senderId === currentUserId || lastMessage.isNew) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   // إنشاء اتصال SignalR وإدارة الرسائل
@@ -283,7 +283,7 @@ export default function ChatWindow({ conversationId, receiverId, receiverName })
       conn.off("ReceiveMessage");
       conn.on("ReceiveMessage", handleReceiveMessage);
 
-      const data = await getOneConversation(conversationId, receiverId, 7, token);
+      const data = await getOneConversation(conversationId, receiverId, 10, token);
       setMessages(data || []);
     };
 
@@ -310,7 +310,7 @@ export default function ChatWindow({ conversationId, receiverId, receiverName })
     const beforeId = oldestMessage.id;
  console.log("أقدم رسالة ID:", beforeId);
     try {
-      const res = await getOldMessages(conversationId, beforeId, 7);
+      const res = await getOldMessages(conversationId, beforeId, 10);
       const olderMessages = res.data || [];
 
       if (olderMessages.length === 0) {

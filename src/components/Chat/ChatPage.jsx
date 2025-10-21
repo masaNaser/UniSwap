@@ -1,16 +1,3 @@
-// import React from 'react'
-// import { Box } from "@mui/material";
-
-// export default function ChatPage() {
-//   return (
-//     <>
-//     <Box sx={{display:'flex', height:'100vh'}}>
-//       <div style={{ width: "30%", borderRight: "1px solid #ddd" }}>Sidebar</div>
-//       <div style={{ flex: 1 }}>Chat Window</div>
-//     </Box>
-//     </>
-//   )
-// }
 
 
 import React, { useState } from "react";
