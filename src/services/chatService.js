@@ -43,39 +43,34 @@ export function createChatHubConnection(token) {
 //   }
 // }
 
-export async function sendMessage(connection, receiverId, text, conversationId = null, files = []) {
+// إرسال رسالة (نص أو ملف)
+export const sendMessage = async (
+  receiverId,
+  text,
+  conversationId = null,
+  files = []
+) => {
+  const formData = new FormData();
+  formData.append("receiverId", receiverId);
+  formData.append("text", text || "");
+
+  if (conversationId) formData.append("conversationId", conversationId);
+
+  files.forEach((file) => {
+    // file.file إذا جاي من MessageInput مع preview
+    formData.append("file", file.file || file);
+  });
+
   try {
-    if (!receiverId) {
-      console.error(" خطأ: ReceiverId غير موجود");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("ReceiverId", receiverId);
-    if (conversationId) formData.append("ConversationId", conversationId);
-    if (text) formData.append("Text", text);
-
-    files.forEach(file => formData.append("File", file));
-
-    // استخدام axios بدل fetch
     const res = await api.post("/Chats/send", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data"
-      }
+      headers: { "Content-Type": "multipart/form-data" },
     });
-
-    // إذا حابة تبعتي الرسالة عبر SignalR بعد الحفظ
-    if (connection) {
-      connection.invoke("SendMessage", res.data);
-    }
-
     return res.data;
-
   } catch (err) {
-    console.error(" فشل إرسال الرسالة:", err);
+    console.error("فشل إرسال الرسالة:", err);
     throw err;
   }
-}
+};
 
 //  جلب جميع المحادثات (لجزء اليمين لاحقًا)
 export const getConversations = async (token) => {
@@ -85,26 +80,25 @@ export const getConversations = async (token) => {
 };
 
 //  فتح أو إنشاء محادثة واحدة
-export const getOneConversation = async (conversationId, receiverId, take = 20, token) => {
-  try {
-    let url = `/Chats?receiverId=${receiverId}&take=${take}`;
-    if (conversationId) url += `&conversationId=${conversationId}`;
-
-    const res = await api.get(url, {
+export const getOneConversation = async (
+  conversationId,
+  receiverId,
+  take,
+  token
+) => {
+  return await api.get(
+    `/Chats?receiverId=${receiverId}&take=${take}&conversationId=${conversationId}`,
+    {
       headers: { Authorization: `Bearer ${token}` },
-    });
-
-    return res.data;
-  } catch (err) {
-    console.error(" خطأ في استدعاء GetOneConversation:", err);
-    throw err;
-  }
+    }
+  );
 };
 
 // جلب الرسائل القديمة
-export const getOldMessages = async (conversationId, beforeId, take,token) => {
-  return await api.get(`/Chats/messages/old?conversationId=${conversationId}&beforeId=${beforeId}&take=${take}`,
-    { headers: { Authorization: `Bearer ${token}` } } 
+export const getOldMessages = async (conversationId, beforeId, take, token) => {
+  return await api.get(
+    `/Chats/messages/old?conversationId=${conversationId}&beforeId=${beforeId}&take=${take}`,
+    { headers: { Authorization: `Bearer ${token}` } }
   );
 };
 

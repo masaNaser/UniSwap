@@ -1,29 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { getConversations } from "../../services/chatService";
 
-export default function ChatList({ onSelectConversation }) {
-  const [conversations, setConversations] = useState([]);
+export default function ChatList({
+  conversations,
+  setConversations,
+  onSelectConversation,
+}) {
   const token = localStorage.getItem("accessToken");
   const userId = localStorage.getItem("userId");
 
   const fetchConversations = async () => {
     try {
       const response = await getConversations(token);
-      
-      // تحديد الطرف الآخر واسم افتراضي
-      //بنمشي ب ارري ع المحادثات 
       const convsWithNames = response.data.map((conv) => {
-        const partnerId = conv.senderId === userId ? conv.receiverId : conv.senderId;
-        const partnerImage = conv.partnerImage || null; // مؤقت
-        const partnerName = "مستخدم"; // اسم افتراضي
-        //...conv = نسخ كل الحقول الأصلية للمحادثة
-        // وبعدين نضيف الحقول الجديدة partnerId و partnerName
-        return { ...conv, partnerId, partnerName,partnerImage };
+        const partnerId =
+          conv.senderId === userId ? conv.receiverId : conv.senderId;
+        const partnerName =
+          conv.senderId === userId ? conv.receiverName : conv.senderName;
+        const partnerImage =
+          conv.senderId === userId ? conv.receiverImage : conv.senderImage;
+        return { ...conv, partnerId, partnerName, partnerImage };
       });
 
-      setConversations(convsWithNames);
+      const sorted = convsWithNames.sort(
+        (a, b) =>
+          new Date(b.lastMessage?.createdAt || 0) -
+          new Date(a.lastMessage?.createdAt || 0)
+      );
+
+      setConversations(sorted);
     } catch (err) {
-      console.error(" فشل في جلب المحادثات:", err);
+      console.error("فشل في جلب المحادثات:", err);
     }
   };
 
@@ -39,25 +46,34 @@ export default function ChatList({ onSelectConversation }) {
           <p className="empty">There are no messages yet.</p>
         ) : (
           conversations.map((conv) => {
-            const lastMsg = conv.lastMessage?.text || "Without messages";
+            const lastMsg = conv.lastMessage
+              ? conv.lastMessage.content === "Text"
+                ? conv.lastMessage.text
+                : "File"
+              : "";
             const lastTime = conv.lastMessage?.createdAt
               ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })
               : "";
- // استخراج أول حرفين من الاسم
+            // أول حرفين من اسم الطرف الآخر
             const initials = conv.partnerName?.substring(0, 2).toUpperCase();
+
             return (
               <div
                 key={conv.id}
                 className="chat-item"
-                // لما المستخدم يضغط على محادثة، ننادي الدالة onSelectConversation اللي جت من الـ ChatPage
-                //عند الضغط على المحادثة → ChatPage يعرف أي محادثة مفتوحة ويعرض الرسائل في ChatWindow
                 onClick={() =>
-                  onSelectConversation(conv.id, conv.partnerId, conv.partnerName,conv.partnerName)
+                  onSelectConversation(
+                    conv.id,
+                    conv.partnerId,
+                    conv.partnerName,
+                    conv.partnerImage
+                  )
                 }
-              >     <div className="chat-avatar">
+              >
+                <div className="chat-avatar">
                   {conv.partnerImage ? (
                     <img
                       src={conv.partnerImage}
@@ -68,7 +84,6 @@ export default function ChatList({ onSelectConversation }) {
                     <div className="avatar-fallback">{initials}</div>
                   )}
                 </div>
-
                 <div className="chat-info">
                   <div className="chat-name">{conv.partnerName}</div>
                   <div className="chat-last">{lastMsg}</div>

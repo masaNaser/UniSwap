@@ -49,10 +49,10 @@ const Chat = () => {
         });
 
         // جلب الرسائل القديمة
-        const data = await getOneConversation(conversationId, receiverId, 10, token);
-        setMessages(data || []);
+        const response = await getOneConversation(conversationId, receiverId, 10, token);
+        setMessages(response.data || []);
       } catch (err) {
-        console.error("❌ خطأ في تهيئة الشات:", err);
+        console.error(" خطأ في تهيئة الشات:", err);
       }
     };
 
