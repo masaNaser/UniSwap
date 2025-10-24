@@ -7,7 +7,7 @@ const Chat = () => {
   const [message, setMessage] = useState("");
   
   const conversationId = "73400fe0-e20a-4de4-bff9-93a3202f5c69"; 
-  const receiverId = "7458c046-5ec4-4ac4-5147-08de0bf1f524"; 
+  const receiverId = "6c9e0224-1b33-4db1-07a3-08de0a7e6f3e"; 
   const token = localStorage.getItem("accessToken");
   const currentUserId = localStorage.getItem("userId"); 
 

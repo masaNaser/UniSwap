@@ -11,17 +11,15 @@ import {
   CardContent,
   Chip,
   Avatar,
-  IconButton,
   Menu,
   MenuItem,
   TextField,
   InputAdornment,
   Button,
-  Pagination 
+  Pagination,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SearchIcon from "@mui/icons-material/Search";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -46,7 +44,7 @@ const ProjectCard = ({ project }) => {
         <CardMedia
           component="img"
           height="200"
-          image={project.img? `https://uni.runasp.net//${project.img}`: null}
+          image={project.img ? `https://uni.runasp.net${project.img}` : null}
           alt={project.title}
           sx={{
             borderTopLeftRadius: "12px",
@@ -54,17 +52,6 @@ const ProjectCard = ({ project }) => {
             objectFit: "cover",
           }}
         />
-        {/* <Box sx={{ position: "absolute", top: 8, right: 8 }}>
-          <IconButton
-            sx={{
-              background: "rgba(255, 255, 255, 0.9)",
-              "&:hover": { background: "rgba(255, 255, 255, 1)" },
-            }}
-            size="small"
-          >
-            <FavoriteBorderIcon fontSize="small" />
-          </IconButton>
-        </Box> */}
       </Box>
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
@@ -84,22 +71,32 @@ const ProjectCard = ({ project }) => {
             <Typography variant="body2" sx={{ fontWeight: "medium" }}>
               {project.userName || "Anonymous"}
             </Typography>
-            {/* <Chip label={`Points: ${project.points}`} size="small" /> */}
           </Box>
         </Box>
 
-        {/* Title + description */}
-        <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 0.9 }}>
+        {/* Title - Clickable */}
+        <Typography
+          variant="subtitle1"
+          component={Link}
+          to={`/app/project/${project.id}`}
+          sx={{
+            fontWeight: "bold",
+            mb: 1,
+            display: "block",
+            color: "inherit",
+            textDecoration: "none",
+            "&:hover": {
+              color: "primary.main",
+              textDecoration: "underline",
+            },
+          }}
+        >
           {project.title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          {project.description}
         </Typography>
 
         {/* Tags */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
           {project.tags?.slice(0, 3).map((tag, i) => (
-            //هون بنعرض اول 3 تاجات
             <Chip
               key={i}
               label={tag}
@@ -108,31 +105,28 @@ const ProjectCard = ({ project }) => {
             />
           ))}
           {project.tags?.length > 3 && (
-            //بنفحص بالاول اذا في اكثر من 3 تاجات بنعرض ال... وبنخلي الباقي مخفية
             <>
               <Chip
                 label="..."
                 size="small"
                 sx={{ bgcolor: "rgb(0 0 0 / 6%)", cursor: "pointer" }}
                 onClick={(e) => {
-                  //.parentNode → الصندوق الأب اللي يحتوي كل Chips (الـ Box)
                   const hiddenChips =
-                    e.currentTarget.parentNode.querySelectorAll(".hidden-chip"); // اختيار التاجات المخفية
+                    e.currentTarget.parentNode.querySelectorAll(".hidden-chip");
                   hiddenChips.forEach(
                     (chip) => (chip.style.display = "inline-flex")
-                  ); // اظهار التاجات المخفية
-                  e.currentTarget.style.display = "none"; // اخفاء ال...
+                  );
+                  e.currentTarget.style.display = "none";
                 }}
               />
 
               {project.tags.slice(3).map((tag, i) => (
-                // عرض التاجات الباقية المخفية بنبلش من التاج الرابع
                 <Chip
                   key={i + 3}
                   label={tag}
                   size="small"
                   className="hidden-chip"
-                  sx={{ bgcolor: "rgb(0 0 0 / 6%)", display: "none" }} //مخفي بالافتراضي , بنظهره لما نضغط على ال...
+                  sx={{ bgcolor: "rgb(0 0 0 / 6%)", display: "none" }}
                 />
               ))}
             </>
@@ -140,7 +134,7 @@ const ProjectCard = ({ project }) => {
         </Box>
       </CardContent>
 
-      {/* Bottom section */}
+      {/* Bottom section - Delivery Time & Points */}
       <Box
         sx={{
           display: "flex",
@@ -167,17 +161,12 @@ const ProjectCard = ({ project }) => {
             </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            {/* <PeopleOutlineIcon sx={{ fontSize: 16, color: "text.secondary" }} /> */}
-            <img src={Point} sx={{ color: "text.secondary" }} />
+            <img src={Point} alt="points" style={{ width: 16, height: 16 }} />
             <Typography variant="caption" color="text.secondary">
               {project.points} pts
             </Typography>
           </Box>
         </Box>
-      </Box>
-
-      <Box sx={{ px: 2, pb: 2 }}>
-        <CustomButton fullWidth>Request Service</CustomButton>
       </Box>
     </Card>
   );
@@ -185,8 +174,6 @@ const ProjectCard = ({ project }) => {
 
 const SubServiceProjects = () => {
   const token = localStorage.getItem("accessToken");
-  // هون ال id قيمته عبارة عن مثلا بقسم الستادي الاي دي هو عبارة عن تبع ال  Explain difficult concepts
-  // Explain difficult concepts Id 
   const { id } = useParams();
   const [projects, setProjects] = useState([]);
   const [anchorElRated, setAnchorElRated] = useState(null);
@@ -195,20 +182,19 @@ const SubServiceProjects = () => {
   const [selectedPrice, setSelectedPrice] = useState("All Prices");
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const subServiceName = params.get("name"); // الاسم اللي جاي من الرابط
+  const subServiceName = params.get("name");
   const parentServiceName = params.get("parentName");
-  // study support Id
-   const parentServiceId = params.get("parentId");
-  const[page, setPage] = useState(1);
-  const pageSize = 6; // عدد المشاريع في كل صفحة  
-const [totalPages, setTotalPages] = useState(1); // عدد الصفحات الكلي من API
+  const parentServiceId = params.get("parentId");
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchServiceProject = async (page=1) => {
+  const fetchServiceProject = async (page = 1) => {
     try {
       const response = await PaginationApi(token, page, pageSize);
       console.log("sub project data : ", response.data);
       setTotalPages(response.data.totalPages);
-      setProjects(response.data.items);4
+      setProjects(response.data.items);
     } catch (err) {
       console.error(err);
     }
@@ -216,7 +202,7 @@ const [totalPages, setTotalPages] = useState(1); // عدد الصفحات الك
 
   useEffect(() => {
     if (id) fetchServiceProject(page);
-  }, [id,page]);
+  }, [id, page]);
 
   const handleMenuClickRated = (event) => setAnchorElRated(event.currentTarget);
   const handleMenuClickPrice = (event) => setAnchorElPrice(event.currentTarget);
@@ -237,16 +223,30 @@ const [totalPages, setTotalPages] = useState(1); // عدد الصفحات الك
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-     <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 2 }}>
-  <Typography component={Link} to="/app/browse" color="inherit" sx={{ textDecoration: "none" }}>
-    Services
-  </Typography>
-  <Typography component={Link} to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`} color="inherit" sx={{ textDecoration: "none" }}>
-    {parentServiceName}
-  </Typography>
-  <Typography color="text.primary">{subServiceName}</Typography>
-</Breadcrumbs>
-
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        sx={{ mb: 2 }}
+      >
+        <Typography
+          component={Link}
+          to="/app/browse"
+          color="inherit"
+          sx={{ textDecoration: "none" }}
+        >
+          Services
+        </Typography>
+        <Typography
+          component={Link}
+          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
+            parentServiceName
+          )}`}
+          color="inherit"
+          sx={{ textDecoration: "none" }}
+        >
+          {parentServiceName}
+        </Typography>
+        <Typography color="text.primary">{subServiceName}</Typography>
+      </Breadcrumbs>
 
       <Box
         sx={{
@@ -263,13 +263,16 @@ const [totalPages, setTotalPages] = useState(1); // عدد الصفحات الك
         </Box>
         <CustomButton
           component={Link}
-          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
+          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
+            parentServiceName
+          )}`}
           variant="outlined"
           startIcon={<ArrowBackIcon />}
         >
           Back
         </CustomButton>
       </Box>
+
       {/* Filters */}
       <Box
         sx={{
@@ -389,17 +392,16 @@ const [totalPages, setTotalPages] = useState(1); // عدد الصفحات الك
           </Grid>
         ))}
       </Grid>
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
-  <Pagination
-    count={totalPages}               // عدد الصفحات حسب الـ API
-    page={page}                      // الصفحة الحالية
-    //value → رقم الصفحة الجديدة اللي اختارها المستخدم
-    onChange={(event, value) => setPage(value)} // لما المستخدم يختار صفحة جديدة
-    color="primary"
-    variant="outlined"
-  />
-</Box>
 
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(event, value) => setPage(value)}
+          color="primary"
+          variant="outlined"
+        />
+      </Box>
     </Container>
   );
 };

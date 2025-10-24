@@ -7,26 +7,23 @@ export default function CustomButton({
   sx,
   ...props
 }) {
+
+
   return (
-    <Button
+    <Button disabled
       children
       type={type}
       {...props}
-      disabled={loading || props.disabled} // 👈 تعطيل الزر وقت اللودنج
       sx={{
         borderRadius: 8,
         textTransform: "none",
         transition: "0.2s",
-        fontSize: 18,
+        fontSize: 16,
         opacity: loading ? 0.7 : 0.5,
         background: "linear-gradient(to right, #00C8FF, #8B5FF6);",
         color: "white",
         border: "none",
-        "&:hover": {
-          background: "white",
-          color: "#3b82f6",
-          border: "1px solid #3b82f6",
-        },
+        padding: "10px 20px",
         ...sx, // أي تعديل إضافي من برّا
       }}
     >

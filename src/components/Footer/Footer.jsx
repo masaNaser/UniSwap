@@ -4,10 +4,11 @@ import {
   Container,
   Typography,
 } from "@mui/material";
+import logo from "../../assets/images/logo.png";
 export default function Footer() {
   return (
-<>
-   {/* Footer */}
+    <>
+      {/* Footer */}
       <Box
         sx={{
           background: "rgba(0, 75, 173, 0.84)",
@@ -29,7 +30,7 @@ export default function Footer() {
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <img
-                src="src/assets/images/logo.png "
+                src={logo}
                 alt="UniSwap logo"
                 style={{ height: "36px", width: "36px" }}
               />
@@ -54,5 +55,5 @@ export default function Footer() {
           </Box>
         </Container>
       </Box>
-</>  )
+    </>)
 }

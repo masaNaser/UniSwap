@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { Email, Lock, VpnKey } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
-import CustomButton from "../../shared/CustomButton/CustomButton";
+import CustomButton from "../../components/CustomButton/CustomButton";
 import { resetPassword as resetPasswordApi } from "../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -97,7 +97,7 @@ export default function ResetPassword() {
       });
       console.log(error);
     }
-    finally{
+    finally {
       setLoading(false);
     }
   };
@@ -183,8 +183,8 @@ export default function ResetPassword() {
                 passwordStrength < 2
                   ? "error"
                   : passwordStrength === 2
-                  ? "warning"
-                  : "success"
+                    ? "warning"
+                    : "success"
               }
             />
             <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>

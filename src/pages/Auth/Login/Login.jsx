@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "../Login/Login.css";
 import {
   Box,
   TextField,
@@ -20,10 +19,11 @@ import {
   School,
   ElectricBoltSharp,
 } from "@mui/icons-material";
+import logo from "../../../assets/images/logo.png";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import CustomButton from "../../../shared/CustomButton/CustomButton";
+import CustomButton from "../../../components/CustomButton/CustomButton";
 import { Link as RouterLink } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -73,7 +73,7 @@ export default function Login() {
       if (response.status == 200) {
         localStorage.setItem("accessToken", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
-        localStorage.setItem("refreshTokenExpiration",response.data.refreshTokenExpiration);
+        localStorage.setItem("refreshTokenExpiration", response.data.refreshTokenExpiration);
         // فك التوكن واستخراج اسم اليوزر
         const decoded = jwtDecode(response.data.accessToken);
         const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
@@ -81,14 +81,14 @@ export default function Login() {
         console.log(userId);
         // خزني اسم اليوزر
         localStorage.setItem("userName", userName);
-         localStorage.setItem("userId", userId);
-       Swal.fire({
-  title: "Login successful!",
-  icon: "success",
-  timer: 1500,
-}).then(() => { //تأخير الانتقال ثانية واحدة لضمان حفظ التوكن قبل التنقل
-  navigate("/app/feed");
-});
+        localStorage.setItem("userId", userId);
+        Swal.fire({
+          title: "Login successful!",
+          icon: "success",
+          timer: 1500,
+        }).then(() => { //تأخير الانتقال ثانية واحدة لضمان حفظ التوكن قبل التنقل
+          navigate("/app/feed");
+        });
 
       }
     } catch (error) {
@@ -122,9 +122,9 @@ export default function Login() {
             sx={{ display: "flex", alignItems: "center", gap: "6px", ml: 2 }}
           >
             <img
-              src="src/assets/images/logo.png"
+              src={logo}
               alt="UniSwap logo"
-              className="logo"
+              style={{ height: "36px", width: "36px" }}
             />
             <Typography
               component={"span"}
@@ -352,8 +352,6 @@ export default function Login() {
                 mt: 2,
                 py: 1.5,
                 fontSize: 16,
-                borderRadius: 3,
-                opacity: 0.5,
               }}
             >
               {currentTab === 0 ? "Sign In" : "Create Account"}
