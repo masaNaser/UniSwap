@@ -9,12 +9,13 @@ import SubServiceProjects from "../pages/Home/Browse/SubServiceProjects";
 import ForgetPassword from "../pages/Auth/ForgetPassword";
 import ResetPassword from "../pages/Auth/ResetPassword";
 import LandingPage from "../pages/LandingPage/LandingPage";
-import ProjectDetails from "../pages/Home/Browse/ProjectDetails"; // Assuming the correct path
+import ProjectDetails from "../pages/Home/Browse/ProjectDetails"; 
+import Project from "../pages/Home/Project/Project";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />,   // ✅ صح
+    element: <LandingPage />, 
   },
   {
     path: "/login",
@@ -53,8 +54,12 @@ const router = createBrowserRouter([
         element: <SubServiceProjects />,
       },
       {
-        path: "project/:id", // <-- Added :id parameter
-        element: <ProjectDetails />, // <-- Used ProjectDetails component
+        path: "project/:id", 
+        element: <ProjectDetails />,
+      },
+      {
+        path: "project", 
+        element: <Project />, 
       },
     ],
   },

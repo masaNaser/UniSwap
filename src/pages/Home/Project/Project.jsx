@@ -321,7 +321,8 @@ export default function Project() {
                 bgcolor: "#FFFFFFCC",
               },
               "& .Mui-selected": {
-                bgcolor: "#00c8ff",
+                bgcolor: "#3b82f6",
+                color: "#FFF",
               },
             }}
           >

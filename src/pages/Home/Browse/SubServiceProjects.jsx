@@ -79,16 +79,18 @@ const ProjectCard = ({ project }) => {
             fontWeight: "bold",
             mb: 1,
             display: "block",
-            color: "inherit",
+            color: "black",
             textDecoration: "none",
             "&:hover": {
-              color: "primary.main",
+              color: "black",
               textDecoration: "underline",
+              cursor: "pointer",
             },
           }}
         >
           {project.title}
         </Typography>
+
 
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
           {project.tags?.slice(0, 3).map((tag, i) => (
@@ -190,7 +192,7 @@ export default function SubServiceProjects () {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Debug logging
       console.log('Fetching projects with:', {
         subServiceId: id,
@@ -198,11 +200,11 @@ export default function SubServiceProjects () {
         pageSize,
         token: token ? 'present' : 'missing'
       });
-      
+
       const response = await browseProjectsBySubService(token, id, page, pageSize);
-      
+
       console.log("Projects data:", response.data);
-      
+
       setTotalPages(response.data.totalPages);
       setTotalCount(response.data.totalCount);
       setProjects(response.data.items);
@@ -275,7 +277,7 @@ export default function SubServiceProjects () {
           </Typography>
           <Typography color="text.primary">{subServiceName}</Typography>
         </Breadcrumbs>
-        
+
         <Box
           sx={{
             display: "flex",
@@ -298,7 +300,7 @@ export default function SubServiceProjects () {
             Back
           </CustomButton>
         </Box>
-        
+
         <Typography variant="h6" color="text.secondary">
           No projects found for this subservice.
         </Typography>
@@ -307,7 +309,7 @@ export default function SubServiceProjects () {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb:8 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
       <Breadcrumbs
         separator={<NavigateNextIcon fontSize="small" />}
         sx={{ mb: 2 }}

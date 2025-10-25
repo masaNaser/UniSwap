@@ -90,7 +90,7 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    pb: 2,
+                    pb: 1.5,
                 }}
             >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -104,12 +104,12 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                 </IconButton>
             </DialogTitle>
 
-            <DialogContent sx={{ pt: 1 }}>
+            <DialogContent sx={{ pt: 1, pb: 1 }}>
                 {/* Service Title */}
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ mb: 2 }}>
                     <Typography
                         variant="body2"
-                        sx={{ mb: 1, fontWeight: "medium", color: "text.primary" }}
+                        sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
                     >
                         Service Title <span style={{ color: "red" }}>*</span>
                     </Typography>
@@ -121,23 +121,24 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                         sx={{
                             "& .MuiOutlinedInput-root": {
                                 borderRadius: "8px",
+                                height: "46px",
                             },
                         }}
                     />
                 </Box>
 
                 {/* Description */}
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ mb: 2 }}>
                     <Typography
                         variant="body2"
-                        sx={{ mb: 1, fontWeight: "medium", color: "text.primary" }}
+                        sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
                     >
                         Description <span style={{ color: "red" }}>*</span>
                     </Typography>
                     <TextField
                         fullWidth
                         multiline
-                        rows={4}
+                        rows={3}
                         placeholder="Describe your project in detail..."
                         value={serviceDescription}
                         onChange={(e) => setServiceDescription(e.target.value)}
@@ -150,11 +151,11 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                 </Box>
 
                 {/* Category & Points Budget */}
-                <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid container spacing={2} sx={{ mb: 2 }}>
                     <Grid item xs={6}>
                         <Typography
                             variant="body2"
-                            sx={{ mb: 1, fontWeight: "medium", color: "text.primary" }}
+                            sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
                         >
                             Request Type <span style={{ color: "red" }}>*</span>
                         </Typography>
@@ -165,8 +166,10 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                                 displayEmpty
                                 sx={{
                                     borderRadius: "8px",
+                                    height: "46px",
                                     "& .MuiSelect-select": {
-                                        color: serviceCategory ? "text.primary" : "text.secondary",
+                                        display: "flex",
+                                        alignItems: "center",
                                     },
                                 }}
                             >
@@ -182,7 +185,7 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                     <Grid item xs={6}>
                         <Typography
                             variant="body2"
-                            sx={{ mb: 1, fontWeight: "medium", color: "text.primary" }}
+                            sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
                         >
                             Points Budget <span style={{ color: "red" }}>*</span>
                         </Typography>
@@ -198,7 +201,7 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                                         <img
                                             src={Point}
                                             alt="points"
-                                            style={{ width: 25, height: 25 }}
+                                            style={{ width: 24, height: 24 }}
                                         />
                                     </InputAdornment>
                                 ),
@@ -206,6 +209,7 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     borderRadius: "8px",
+                                    height: "46px",
                                 },
                             }}
                         />
@@ -213,10 +217,10 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                 </Grid>
 
                 {/* Deadline */}
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{ mb: 1.5 }}>
                     <Typography
                         variant="body2"
-                        sx={{ mb: 1, fontWeight: "medium", color: "text.primary" }}
+                        sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
                     >
                         Deadline
                     </Typography>
@@ -235,12 +239,14 @@ const RequestServiceModal = ({ open, onClose, projectTitle, projectId, pointsBud
                         sx={{
                             "& .MuiOutlinedInput-root": {
                                 borderRadius: "8px",
+                                height: "46px",
                             },
                         }}
                     />
                 </Box>
             </DialogContent>
 
+            {/* Buttons*/}
             <DialogActions sx={{ px: 3, pb: 3, gap: 2 }}>
                 <CustomButton
                     variant="outlined"
