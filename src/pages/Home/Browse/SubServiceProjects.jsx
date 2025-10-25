@@ -23,10 +23,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SearchIcon from "@mui/icons-material/Search";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { getProjectBySubServices as getProjectBySubServicesApi } from "../../../services/publishProjectServices";
+import { browseProjectsBySubService } from "../../../services/publishProjectServices";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import Point from "../../../assets/images/Point.svg";
-import { Pagination as PaginationApi } from "../../../services/publishProjectServices";
 
 const ProjectCard = ({ project }) => {
   return (
@@ -39,7 +38,6 @@ const ProjectCard = ({ project }) => {
         flexDirection: "column",
       }}
     >
-      {/* صورة المشروع */}
       <Box sx={{ position: "relative" }}>
         <CardMedia
           component="img"
@@ -55,7 +53,6 @@ const ProjectCard = ({ project }) => {
       </Box>
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
-        {/* User info */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Avatar
             sx={{ width: 32, height: 32, mr: 1 }}
@@ -74,7 +71,6 @@ const ProjectCard = ({ project }) => {
           </Box>
         </Box>
 
-        {/* Title - Clickable */}
         <Typography
           variant="subtitle1"
           component={Link}
@@ -94,7 +90,6 @@ const ProjectCard = ({ project }) => {
           {project.title}
         </Typography>
 
-        {/* Tags */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
           {project.tags?.slice(0, 3).map((tag, i) => (
             <Chip
@@ -134,7 +129,6 @@ const ProjectCard = ({ project }) => {
         </Box>
       </CardContent>
 
-      {/* Bottom section - Delivery Time & Points */}
       <Box
         sx={{
           display: "flex",
@@ -174,8 +168,10 @@ const ProjectCard = ({ project }) => {
 
 const SubServiceProjects = () => {
   const token = localStorage.getItem("accessToken");
-  const { id } = useParams();
+  const { id } = useParams(); // This is the subServiceId
   const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [anchorElRated, setAnchorElRated] = useState(null);
   const [anchorElPrice, setAnchorElPrice] = useState(null);
   const [selectedRated, setSelectedRated] = useState("Highest Rated");
@@ -188,15 +184,33 @@ const SubServiceProjects = () => {
   const [page, setPage] = useState(1);
   const pageSize = 6;
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   const fetchServiceProject = async (page = 1) => {
     try {
-      const response = await PaginationApi(token, page, pageSize);
-      console.log("sub project data : ", response.data);
+      setLoading(true);
+      setError(null);
+      
+      // Debug logging
+      console.log('Fetching projects with:', {
+        subServiceId: id,
+        page,
+        pageSize,
+        token: token ? 'present' : 'missing'
+      });
+      
+      const response = await browseProjectsBySubService(token, id, page, pageSize);
+      
+      console.log("Projects data:", response.data);
+      
       setTotalPages(response.data.totalPages);
+      setTotalCount(response.data.totalCount);
       setProjects(response.data.items);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching projects:", err);
+      setError(err.message || "Failed to load projects");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -211,9 +225,80 @@ const SubServiceProjects = () => {
     setAnchorElPrice(null);
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Typography variant="h6" color="text.secondary">
+          Loading projects...
+        </Typography>
+      </Container>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Typography variant="h6" color="error">
+          Error: {error}
+        </Typography>
+      </Container>
+    );
+  }
+
+  // No projects state
   if (!projects.length) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Breadcrumbs
+          separator={<NavigateNextIcon fontSize="small" />}
+          sx={{ mb: 2 }}
+        >
+          <Typography
+            component={Link}
+            to="/app/browse"
+            color="inherit"
+            sx={{ textDecoration: "none" }}
+          >
+            Services
+          </Typography>
+          <Typography
+            component={Link}
+            to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
+              parentServiceName
+            )}`}
+            color="inherit"
+            sx={{ textDecoration: "none" }}
+          >
+            {parentServiceName}
+          </Typography>
+          <Typography color="text.primary">{subServiceName}</Typography>
+        </Breadcrumbs>
+        
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+          }}
+        >
+          <Typography variant="h4" component="h1">
+            {subServiceName}
+          </Typography>
+          <CustomButton
+            component={Link}
+            to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
+              parentServiceName
+            )}`}
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+          >
+            Back
+          </CustomButton>
+        </Box>
+        
         <Typography variant="h6" color="text.secondary">
           No projects found for this subservice.
         </Typography>
@@ -222,7 +307,7 @@ const SubServiceProjects = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb:8 }}>
       <Breadcrumbs
         separator={<NavigateNextIcon fontSize="small" />}
         sx={{ mb: 2 }}
@@ -260,6 +345,9 @@ const SubServiceProjects = () => {
           <Typography variant="h4" component="h1" gutterBottom>
             {subServiceName}
           </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {totalCount} {totalCount === 1 ? 'project' : 'projects'} available
+          </Typography>
         </Box>
         <CustomButton
           component={Link}
@@ -293,7 +381,7 @@ const SubServiceProjects = () => {
         >
           <TextField
             variant="outlined"
-            placeholder="Search services..."
+            placeholder="Search projects..."
             sx={{
               flexGrow: 1,
               backgroundColor: "#fff",
@@ -386,22 +474,25 @@ const SubServiceProjects = () => {
 
       {/* Project Grid */}
       <Grid container spacing={3}>
-        {projects.map((project, index) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+        {projects.map((project) => (
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={project.id}>
             <ProjectCard project={project} />
           </Grid>
         ))}
       </Grid>
 
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={(event, value) => setPage(value)}
-          color="primary"
-          variant="outlined"
-        />
-      </Box>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(event, value) => setPage(value)}
+            color="primary"
+            variant="outlined"
+          />
+        </Box>
+      )}
     </Container>
   );
 };

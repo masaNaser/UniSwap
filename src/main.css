@@ -4,10 +4,7 @@
   padding: 0;
   box-sizing: border-box;
 }
-.container {
-  width: calc(100% - 100px) !important ;
-  margin: auto;
-}
+
 body {
   font-family: 'Outfit', sans-serif !important;
   background-color: #F1F5F9;
