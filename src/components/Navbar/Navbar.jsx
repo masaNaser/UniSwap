@@ -84,7 +84,7 @@ export default function PrimarySearchAppBar() {
       >
         <Container maxWidth="xl">
           <Toolbar
-            sx={{ justifyContent: "space-between", width: "100%", bgcolor: "white" }}
+            sx={{ justifyContent: "space-between", width: "100%", bgcolor: "white",gap: "21px" }}
           >
             {/* Logo + Name */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -110,26 +110,24 @@ export default function PrimarySearchAppBar() {
             {windowWidth >= 1029 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Button
+                className="nav-link"
                   component={Link}
                   to="/app/feed"
-                  color="inherit"
-                  sx={{ textTransform: "none", fontSize: "18px" }}
+                  sx={{ textTransform: "none", fontSize: "18px",color:"rgba(71, 85, 105, 1)" }}
                 >
                   Feed
                 </Button>
                 <Button
                   component={Link}
                   to="/app/browse"
-                  color="inherit"
-                  sx={{ textTransform: "none", fontSize: "18px" }}
+                  sx={{ textTransform: "none", fontSize: "18px",color:"rgba(71, 85, 105, 1)" }}
                 >
                   Browse
                 </Button>
                 <Button
                   component={Link}
                   to="/app/project"
-                  color="inherit"
-                  sx={{ textTransform: "none", fontSize: "18px" }}
+                  sx={{ textTransform: "none", fontSize: "18px",color:"rgba(71, 85, 105, 1)" }}
                 >
                   Projects
                 </Button>

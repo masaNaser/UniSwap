@@ -46,7 +46,7 @@ const ProjectCard = ({ project }) => {
         <CardMedia
           component="img"
           height="200"
-          image={project.img? `https://uni.runasp.net//${project.img}`: null}
+  image={project.img ? `https://uni.runasp.net${project.img}` : null}
           alt={project.title}
           sx={{
             borderTopLeftRadius: "12px",

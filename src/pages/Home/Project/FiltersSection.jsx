@@ -2,17 +2,33 @@ import * as React from "react";
 import { Box, TextField, MenuItem, InputAdornment } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
-export default function FiltersSection() {
+export default function FiltersSection({ onFilterChange, currentStatus }) {
   const [status, setStatus] = React.useState("");
-  const [priority, setPriority] = React.useState("");
+  // const [priority, setPriority] = React.useState("");
+    const [searchQuery, setSearchQuery] = React.useState("");
 
   const handleStatusChange = (event) => {
-    setStatus(event.target.value);
+   const newStatus = event.target.value;
+    setStatus(newStatus);
+    
+    // أرسل التغيير للـ Parent Component
+    if (onFilterChange) {
+      onFilterChange(newStatus, searchQuery);
+    }
+  };
+    const handleSearchChange = (event) => {
+    const newSearch = event.target.value;
+    setSearchQuery(newSearch);
+    
+    // يمكن إضافة debounce هنا لتحسين الأداء
+    if (onFilterChange) {
+      onFilterChange(status, newSearch);
+    }
   };
 
-  const handlePriorityChange = (event) => {
-    setPriority(event.target.value);
-  };
+  // const handlePriorityChange = (event) => {
+  //   setPriority(event.target.value);
+  // };
 
   return (
     <Box
@@ -59,7 +75,7 @@ export default function FiltersSection() {
       </TextField>
 
       {/* Priority Dropdown */}
-      <TextField
+      {/* <TextField
         select
         label="All Priorities"
         value={priority}
@@ -73,7 +89,7 @@ export default function FiltersSection() {
         <MenuItem value="low">Low</MenuItem>
         <MenuItem value="medium">Medium</MenuItem>
         <MenuItem value="high">High</MenuItem>
-      </TextField>
+      </TextField> */}
     </Box>
   );
 }

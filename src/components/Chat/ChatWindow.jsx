@@ -651,7 +651,7 @@ export default function ChatWindow({
           {loadingOlder && <CircularProgress size={24} />}
         </Box>
         {messages.length === 0 ? (
-          <p className="empty">لا توجد رسائل بعد</p>
+          <p className="empty">No messages yet</p>
         ) : (
           messages.map((m, i) => (
             <Message

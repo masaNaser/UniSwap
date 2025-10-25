@@ -1,3 +1,8 @@
 .lastSide {
     display: flex;
 }
+.nav-link{
+   text-transform: "none";
+font-size: "18px";
+    color:"rgba(71, 85, 105, 1)";
+}

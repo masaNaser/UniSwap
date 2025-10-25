@@ -91,7 +91,7 @@ export default function Message({ text, filePath, content, sender }) {
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              color: sender === "me" ? "#be0e0eff" : "#0078ff",
+              color: sender === "me" ? "#010a12ff" : "#0078ff",
               textDecoration: "underline",
             }}
           >
@@ -107,7 +107,7 @@ export default function Message({ text, filePath, content, sender }) {
               href={part}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#fff" }}
+              style={{ color: "black" }}
             >
               {part}
             </a>
