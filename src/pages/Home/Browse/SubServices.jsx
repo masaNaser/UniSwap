@@ -6,10 +6,10 @@ import {
   Box,
   Breadcrumbs,
 } from "@mui/material";
-import { Link, useParams, useLocation} from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CustomButton from "../../../shared/CustomButton/CustomButton";
+import CustomButton from "../../../components/CustomButton/CustomButton";
 import ServiceCard from "../../../components/Cards/ServiceCard";
 import { getSubServices as getSubServicesApi } from "../../../services/subServiceServices";
 
@@ -18,8 +18,8 @@ const SubServices = () => {
   const { id } = useParams(); // id الخدمة من الرابط
   const [subservices, setSubServices] = useState([]);
   const location = useLocation();
-const params = new URLSearchParams(location.search);
-const serviceName = params.get("name"); // الاسم اللي جاي من الرابط
+  const params = new URLSearchParams(location.search);
+  const serviceName = params.get("name"); // الاسم اللي جاي من الرابط
   // جلب الداتا
   const fetchSubServices = async () => {
     try {
@@ -93,11 +93,11 @@ const serviceName = params.get("name"); // الاسم اللي جاي من ال�
       {/* عرض الـ subservices */}
       <Grid container spacing={3} sx={{ mb: "55px" }}>
         {subservices.map((sub) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}key={sub.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={sub.id}>
             <ServiceCard
               title={sub.name}
-             count="3 projects"
-            url={`/app/services/${sub.id}/projects?name=${encodeURIComponent(sub.name)}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`}  // هون راح يوديك ع صفحة SubServiceProjects
+              count="3 projects"
+              url={`/app/services/${sub.id}/projects?name=${encodeURIComponent(sub.name)}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`}  // هون راح يوديك ع صفحة SubServiceProjects
             />
           </Grid>
         ))}

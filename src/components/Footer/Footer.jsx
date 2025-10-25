@@ -5,11 +5,10 @@ import {
   Typography,
 } from "@mui/material";
 import logo from "../../assets/images/logo.png";
-
 export default function Footer() {
   return (
-<>
-   {/* Footer */}
+    <>
+      {/* Footer */}
       <Box
         sx={{
           background: "rgba(0, 75, 173, 0.84)",
@@ -56,5 +55,5 @@ export default function Footer() {
           </Box>
         </Container>
       </Box>
-</>  )
+    </>)
 }

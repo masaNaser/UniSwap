@@ -7,9 +7,9 @@ import Services from "../pages/Home/Browse/Services";
 import SubServices from "../pages/Home/Browse/SubServices";
 import SubServiceProjects from "../pages/Home/Browse/SubServiceProjects";
 import ForgetPassword from "../pages/Auth/ForgetPassword";
-import Project from "../pages/Home/Project/Project";
 import ResetPassword from "../pages/Auth/ResetPassword";
 import LandingPage from "../pages/LandingPage/LandingPage";
+import ProjectDetails from "../pages/Home/Browse/ProjectDetails"; // Assuming the correct path
 
 const router = createBrowserRouter([
   {
@@ -53,8 +53,8 @@ const router = createBrowserRouter([
         element: <SubServiceProjects />,
       },
       {
-        path: "project",
-        element: <Project />,
+        path: "project/:id", // <-- Added :id parameter
+        element: <ProjectDetails />, // <-- Used ProjectDetails component
       },
     ],
   },

@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
 import {
   Box, Typography, Avatar, TextField, Stack, IconButton, alpha, styled, Chip
 } from '@mui/material';
 import { Image, Close as CloseIcon } from '@mui/icons-material';
 import ProfilePic from '../../../assets/images/ProfilePic.jpg';
-import CustomButton from "../../../shared/CustomButton/CustomButton";
+import CustomButton from "../../../components/CustomButton/CustomButton";
+import DisabledCustomButton from "../../../components/CustomButton/DisabledCustomButton";
 import { createPost as createPostApi } from "../../../services/postService";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
@@ -29,10 +29,12 @@ const CreatePost = ({ addPost, token }) => {
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [errors, setErrors] = useState({ content: '' });
-  // const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [file, setFile] = useState(null);
   const characterLimit = 500;
+
+  // 💡 Condition to disable the post button
+  const isPostDisabled = content.trim().length === 0;
 
   const handleContentChange = (event) => {
     if (event.target.value.length <= characterLimit) setContent(event.target.value);
@@ -57,8 +59,8 @@ const CreatePost = ({ addPost, token }) => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      setFile(selectedFile); // للإرسال للـ API
-      setImagePreview(URL.createObjectURL(selectedFile)); // للمعاينة فقط
+      setFile(selectedFile);
+      setImagePreview(URL.createObjectURL(selectedFile));
     }
   };
 
@@ -71,10 +73,9 @@ const CreatePost = ({ addPost, token }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!content.trim()) {
-      setErrors({ content: 'Please enter post content' });
-      return;
-    }
+
+    // Since the button is disabled if content is empty, we don't need a content check here.
+    if (isPostDisabled) return;
 
     const formData = new FormData();
     formData.append('Content', content);
@@ -160,7 +161,7 @@ const CreatePost = ({ addPost, token }) => {
           </Stack>
         </Box>
       </Stack>
-      {/* عرض الصورة قبل الإرسال */}
+
       {imagePreview && (
         <Box sx={{ position: "relative", display: "inline-block", mt: 2 }}>
           <img
@@ -189,6 +190,7 @@ const CreatePost = ({ addPost, token }) => {
           </IconButton>
         </Box>
       )}
+
       <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap">
         <Stack direction="row" spacing={1} sx={{ color: 'text.secondary' }}>
           <input accept="image/*" type="file" id="upload-image" style={{ display: 'none' }}
@@ -200,8 +202,27 @@ const CreatePost = ({ addPost, token }) => {
         </Stack>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-          <CustomButton sx={{ width: { xs: "100%", sm: "auto" } }}>Save Draft</CustomButton>
-          <CustomButton type="submit" sx={{ width: { xs: "100%", sm: "auto" } }}>Post</CustomButton>
+          {/* Conditional Component Rendering based on post content */}
+          {isPostDisabled ? (
+            <DisabledCustomButton
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+                padding: "10px 30px",
+              }}
+            >
+              Post
+            </DisabledCustomButton>
+          ) : (
+            <CustomButton
+              type="submit"
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+                padding: "10px 30px",
+              }}
+            >
+              Post
+            </CustomButton>
+          )}
         </Stack>
       </Stack>
     </FormWrapper>
@@ -209,4 +230,3 @@ const CreatePost = ({ addPost, token }) => {
 };
 
 export default CreatePost;
-

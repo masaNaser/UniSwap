@@ -6,10 +6,7 @@
    font-family: 'Outfit', sans-serif !important;
 
 }
-.container {
-  width: calc(100% - 100px) !important ;
-  margin: auto;
-}
+
 body {
   background-color: #F1F5F9;
 }

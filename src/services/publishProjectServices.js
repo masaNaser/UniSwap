@@ -1,6 +1,7 @@
 import api from './api';
 
-export const getProjectBySubServices = async (token,id) => {
+// Get all projects by subservice 
+export const getProjectBySubServices = async (token, id) => {
   return await api.get(`/PublishProjects/by-subservice/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -8,10 +9,23 @@ export const getProjectBySubServices = async (token,id) => {
   });
 };
 
-export const Pagination = async (token, page,pageSize) => {
-  return await api.get(`/PublishProjects/browse?page=${page}&pageSize=${pageSize}`, {
+// Get paginated projects by subservice
+export const browseProjectsBySubService = async (token, subServiceId, page, pageSize) => {
+  // Validate subServiceId
+  if (!subServiceId) {
+    throw new Error('subServiceId is required');
+  }
+  
+  console.log('Calling browse API with:', { subServiceId, page, pageSize });
+  
+  return await api.get(`/PublishProjects/browse`, {
+    params: {
+      SubServiceId: subServiceId,  
+      Page: page,
+      PageSize: pageSize
+    },
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
-}
+};

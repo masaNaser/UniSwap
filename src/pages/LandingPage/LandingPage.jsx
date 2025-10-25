@@ -17,6 +17,7 @@ import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutline
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import { ElectricBoltSharp } from "@mui/icons-material";
+import logo from "../../assets/images/logo.png";
 import heroImg from "../../assets/images/hero-bg.png";
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -176,9 +177,9 @@ export default function LandingPage() {
         {/* Logo + Name */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <img
-            src="src/assets/images/logo.png"
+            src={logo}
             alt="UniSwap logo"
-            style={{ height: "34px", width: "34px", objectFit: "contain" }}
+            style={{ height: "34px", width: "34px" }}
           />
           <Typography
             sx={{
@@ -296,7 +297,7 @@ export default function LandingPage() {
           </Button>
         </Box>
       </Collapse>
-    
+
 
 
       {/* Hero Section */}
@@ -318,7 +319,7 @@ export default function LandingPage() {
         }}
       >
         <Box
-          
+
           sx={{
             position: "absolute",
             inset: 0,
@@ -455,7 +456,7 @@ export default function LandingPage() {
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <img
-                src="src/assets/images/logo.png"
+                src={logo}
                 alt="UniSwap logo"
                 style={{ height: "36px", width: "36px" }}
               />

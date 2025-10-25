@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "../Login/Login.css";
 import {
   Box,
   TextField,
@@ -25,7 +24,8 @@ import {
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import CustomButton from "../../../shared/CustomButton/CustomButton";
+import logo from "../../../assets/images/logo.png";
+import CustomButton from "../../../components/CustomButton/CustomButton";
 import { register as registerApi } from "../../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -104,49 +104,49 @@ export default function Register() {
     resolver: yupResolver(validationSchema),
   });
 
-const registerHandle = async (data) => {
-const finalData = {
-  userName: data.userName.trim(),
-  email: data.email.trim(),
-  password: data.password.trim(),
-  confirmPassword: data.confirmPassword.trim(),
-  skills: skills,
-  universityMajor: data.universityMajor.toUpperCase(),
-  academicYear: data.academicYear.trim()
-};
+  const registerHandle = async (data) => {
+    const finalData = {
+      userName: data.userName.trim(),
+      email: data.email.trim(),
+      password: data.password.trim(),
+      confirmPassword: data.confirmPassword.trim(),
+      skills: skills,
+      universityMajor: data.universityMajor.toUpperCase(),
+      academicYear: data.academicYear.trim()
+    };
 
 
 
 
-  console.log("Final Data Sent:", JSON.stringify(finalData));
+    console.log("Final Data Sent:", JSON.stringify(finalData));
 
-  try {
-    setLoading(true);
-    const response = await registerApi(finalData);
-    console.log(response);
-    if (response.status === 200) {
+    try {
+      setLoading(true);
+      const response = await registerApi(finalData);
+      console.log(response);
+      if (response.status === 200) {
+        Swal.fire({
+          title: "Registration successful! Please check your email to verify your account.",
+          icon: "success",
+          draggable: true,
+          timer: 2000,
+        });
+        navigate("/login");
+      }
+    } catch (error) {
+      console.log("Full Error Response:", error.response);
+      const msg = error.response?.data || "An error occurred";
       Swal.fire({
-        title: "Registration successful! Please check your email to verify your account.",
-        icon: "success",
-        draggable: true,
+        icon: "error",
+        title: "Register failed",
+        text: msg,
         timer: 2000,
       });
-      navigate("/login");
+      console.error("Registration error:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-  console.log("Full Error Response:", error.response);
-    const msg = error.response?.data || "An error occurred";
-    Swal.fire({
-      icon: "error",
-      title: "Register failed",
-      text: msg,
-      timer: 2000,
-    });
-    console.error("Registration error:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   return (
@@ -166,9 +166,9 @@ const finalData = {
             sx={{ display: "flex", alignItems: "center", gap: "6px", ml: 2 }}
           >
             <img
-              src="src/assets/images/logo.png"
+              src={logo}
               alt="UniSwap logo"
-              className="logo"
+              style={{ height: "36px", width: "36px" }}
             />
             <Typography
               component={"span"}
@@ -408,8 +408,8 @@ const finalData = {
                       passwordStrength < 2
                         ? "error"
                         : passwordStrength === 2
-                        ? "warning"
-                        : "success"
+                          ? "warning"
+                          : "success"
                     }
                   />
                   <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
@@ -525,7 +525,16 @@ const finalData = {
                 }}
               />
 
-              <CustomButton type="submit" fullWidth sx={{ mt: 2, py: 1.5 }}>
+              <CustomButton
+                type="submit"
+                fullWidth
+                loading={loading}
+                sx={{
+                  mt: 2,
+                  py: 1.5,
+                  fontSize: 16,
+                }}
+              >
                 Create Account
               </CustomButton>
             </Box>

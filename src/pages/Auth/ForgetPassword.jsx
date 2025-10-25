@@ -4,15 +4,15 @@ import "sweetalert2/dist/sweetalert2.min.css";
 import { Box, TextField, Typography, InputAdornment } from "@mui/material";
 import { Email } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import CustomButton from "../../shared/CustomButton/CustomButton";
+import CustomButton from "../../components/CustomButton/CustomButton";
 import { forgotPassword as forgotPasswordApi } from "../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 
 export default function ForgetPassword() {
-    const [loading, setLoading] = useState(false);
-  
+  const [loading, setLoading] = useState(false);
+
   const validationSchema = yup.object({
     email: yup
       .string()
@@ -32,7 +32,7 @@ export default function ForgetPassword() {
     try {
       setLoading(true);
       const response = await forgotPasswordApi(data);
-     
+
       if (response.status === 200) {
         Swal.fire({
           title: "Code has been sent successfully.",
@@ -40,7 +40,7 @@ export default function ForgetPassword() {
           draggable: true,
           timer: 1000,
         });
-         // تمرير الإيميل للفورم الثاني
+        // تمرير الإيميل للفورم الثاني
         navigate("/resetPassword", { state: { email: data.email } });
       }
       console.log(response);
@@ -56,7 +56,7 @@ export default function ForgetPassword() {
       });
       console.log(error);
     }
-    finally{
+    finally {
       setLoading(false);
     }
   };
