@@ -3,11 +3,15 @@ import ChatList from "./ChatList";
 import ChatWindow from "./ChatWindow";
 import "./Chat.css";
 import Container from "@mui/material/Container";
+import { useLocation } from "react-router-dom";
 
 export default function ChatPage() {
-  const [selectedConv, setSelectedConv] = useState(null);
+  // const [selectedConv, setSelectedConv] = useState(null);
+  // const [conversations, setConversations] = useState([]);
+    const location = useLocation();
+  const initialConv = location.state || null;
+  const [selectedConv, setSelectedConv] = useState(initialConv);
   const [conversations, setConversations] = useState([]);
-
   return (
     <>
       <Container maxWidth="lg">

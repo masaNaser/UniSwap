@@ -11,6 +11,8 @@ import ResetPassword from "../pages/Auth/ResetPassword";
 import LandingPage from "../pages/LandingPage/LandingPage";
 import ProjectDetails from "../pages/Home/Browse/ProjectDetails"; 
 import Project from "../pages/Home/Project/Project";
+import Profile from "../pages/Profile/Profile";
+import ChatPage from '../components/Chat/ChatPage'
 
 const router = createBrowserRouter([
   {
@@ -32,6 +34,10 @@ const router = createBrowserRouter([
   {
     path: "/resetPassword",
     element: <ResetPassword />,
+  },
+    {
+    path: "/Chat",
+    element:<ChatPage/>,
   },
   {
     path: "/app",
@@ -60,6 +66,10 @@ const router = createBrowserRouter([
       {
         path: "project", 
         element: <Project />, 
+      },
+         {
+        path: "profile", 
+        element: <Profile/>, 
       },
     ],
   },

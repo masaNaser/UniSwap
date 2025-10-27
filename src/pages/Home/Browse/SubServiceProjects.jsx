@@ -54,16 +54,21 @@ const ProjectCard = ({ project }) => {
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Avatar
-            sx={{ width: 32, height: 32, mr: 1 }}
-            src={
-              project.profilePicture
-                ? `https://uni.runasp.net${project.profilePicture}`
-                : null
-            }
+          <Link
+            to={`/profile/${project.userId}`}
+            style={{ textDecoration: "none" }}
           >
-            {!project.profilePicture && project.title.charAt(0).toUpperCase()}
-          </Avatar>
+            <Avatar
+              sx={{ width: 32, height: 32, mr: 1, cursor: "pointer" }}
+              src={
+                  project.profilePicture
+                  ? `https://uni.runasp.net${project.profilePicture}`
+                  : null
+              }
+            >
+              {!project.profilePicture && project.userName.substring(0, 2).toUpperCase()}
+            </Avatar>
+          </Link>
           <Box>
             <Typography variant="body2" sx={{ fontWeight: "medium" }}>
               {project.userName || "Anonymous"}
@@ -90,7 +95,6 @@ const ProjectCard = ({ project }) => {
         >
           {project.title}
         </Typography>
-
 
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
           {project.tags?.slice(0, 3).map((tag, i) => (
@@ -168,7 +172,7 @@ const ProjectCard = ({ project }) => {
   );
 };
 
-export default function SubServiceProjects () {
+export default function SubServiceProjects() {
   const token = localStorage.getItem("accessToken");
   const { id } = useParams(); // This is the subServiceId
   const [projects, setProjects] = useState([]);
@@ -194,14 +198,19 @@ export default function SubServiceProjects () {
       setError(null);
 
       // Debug logging
-      console.log('Fetching projects with:', {
+      console.log("Fetching projects with:", {
         subServiceId: id,
         page,
         pageSize,
-        token: token ? 'present' : 'missing'
+        token: token ? "present" : "missing",
       });
 
-      const response = await browseProjectsBySubService(token, id, page, pageSize);
+      const response = await browseProjectsBySubService(
+        token,
+        id,
+        page,
+        pageSize
+      );
 
       console.log("Projects data:", response.data);
 
@@ -348,7 +357,7 @@ export default function SubServiceProjects () {
             {subServiceName}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {totalCount} {totalCount === 1 ? 'project' : 'projects'} available
+            {totalCount} {totalCount === 1 ? "project" : "projects"} available
           </Typography>
         </Box>
         <CustomButton
@@ -497,5 +506,4 @@ export default function SubServiceProjects () {
       )}
     </Container>
   );
-};
-
+}

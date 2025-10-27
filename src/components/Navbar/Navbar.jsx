@@ -10,6 +10,11 @@ import {
   Typography,
   InputBase,
   Container,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider,
+  ListItemIcon,
 } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
@@ -17,10 +22,15 @@ import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-
+import Settings from "@mui/icons-material/Settings";
+import Logout from "@mui/icons-material/Logout";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import StarIcon from "@mui/icons-material/Star";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import logo from "../../assets/images/logo.png";
 import Point from "../../assets/images/Point.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { logout } from "../../services/authService"; // أو المسار الصحيح عندك
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -59,10 +69,22 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function PrimarySearchAppBar() {
+  const navigate = useNavigate();
+  const userName = localStorage.getItem("userName");
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
-  const handleProfileMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  // ✅ Toggle menu on/off
+  const handleProfileMenuOpen = (event) => {
+    if (anchorEl) {
+      setAnchorEl(null);
+    } else {
+      setAnchorEl(event.currentTarget);
+    }
+  };
+
+  // ✅ Close when clicking outside or choosing option
   const handleMenuClose = () => setAnchorEl(null);
 
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
@@ -84,16 +106,16 @@ export default function PrimarySearchAppBar() {
       >
         <Container maxWidth="xl">
           <Toolbar
-            sx={{ justifyContent: "space-between", width: "100%", bgcolor: "white",gap: "21px" }}
+            sx={{
+              justifyContent: "space-between",
+              width: "100%",
+              bgcolor: "white",
+              gap: "21px",
+            }}
           >
             {/* Logo + Name */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Box
-                component="img"
-                src={logo}
-                alt="logo"
-                sx={{ width: 32, height: 32 }}
-              />
+              <Box component="img" src={logo} alt="logo" sx={{ width: 32, height: 32 }} />
               <Typography
                 variant="h6"
                 sx={{
@@ -110,24 +132,36 @@ export default function PrimarySearchAppBar() {
             {windowWidth >= 1029 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Button
-                className="nav-link"
+                  className="nav-link"
                   component={Link}
                   to="/app/feed"
-                  sx={{ textTransform: "none", fontSize: "18px",color:"rgba(71, 85, 105, 1)" }}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "18px",
+                    color: "rgba(71, 85, 105, 1)",
+                  }}
                 >
                   Feed
                 </Button>
                 <Button
                   component={Link}
                   to="/app/browse"
-                  sx={{ textTransform: "none", fontSize: "18px",color:"rgba(71, 85, 105, 1)" }}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "18px",
+                    color: "rgba(71, 85, 105, 1)",
+                  }}
                 >
                   Browse
                 </Button>
                 <Button
                   component={Link}
                   to="/app/project"
-                  sx={{ textTransform: "none", fontSize: "18px",color:"rgba(71, 85, 105, 1)" }}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "18px",
+                    color: "rgba(71, 85, 105, 1)",
+                  }}
                 >
                   Projects
                 </Button>
@@ -175,16 +209,8 @@ export default function PrimarySearchAppBar() {
                     mr: 2,
                   }}
                 >
-                  <Box
-                    component="img"
-                    src={Point}
-                    alt="points"
-                    sx={{ width: 30, height: 30 }}
-                  />
-                  <Typography
-                    component="span"
-                    sx={{ fontWeight: "bold", color: "#28a745" }}
-                  >
+                  <Box component="img" src={Point} alt="points" sx={{ width: 30, height: 30 }} />
+                  <Typography component="span" sx={{ fontWeight: "bold", color: "#28a745" }}>
                     750{" "}
                     <Typography component="span" sx={{ fontWeight: "normal" }}>
                       pts
@@ -194,26 +220,117 @@ export default function PrimarySearchAppBar() {
               )}
 
               {/* Icons */}
-              <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+              <IconButton size="large" color="inherit">
                 <Badge badgeContent={4} color="error">
                   <MailIcon />
                 </Badge>
               </IconButton>
-              <IconButton size="large" aria-label="show 5 new notifications" color="inherit">
+              <IconButton size="large" color="inherit">
                 <Badge badgeContent={5} color="error">
                   <NotificationsIcon />
                 </Badge>
               </IconButton>
+
+              {/* ✅ Account Menu */}
               <IconButton
                 size="large"
                 edge="end"
-                aria-label="account of current user"
                 aria-haspopup="true"
                 onClick={handleProfileMenuOpen}
                 color="inherit"
               >
                 <AccountCircle />
               </IconButton>
+
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                PaperProps={{
+                  elevation: 3,
+                  sx: {
+                    mt: 1.5,
+                    overflow: "visible",
+                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.1))",
+                    borderRadius: "12px",
+                    minWidth: 230,
+                    "&:before": {
+                      content: '""',
+                      display: "block",
+                      position: "absolute",
+                      top: 0,
+                      right: 20,
+                      width: 10,
+                      height: 10,
+                      bgcolor: "background.paper",
+                      transform: "translateY(-50%) rotate(45deg)",
+                      zIndex: 0,
+                    },
+                  },
+                }}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", px: 2, py: 1 }}>
+                  <Avatar sx={{ width: 40, height: 40, mr: 1 }} />
+                  <Box>
+                    <Typography sx={{ fontWeight: "bold" }}>{userName}</Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: "flex", alignItems: "center", px: 2, pb: 1 }}>
+                  <StarIcon sx={{ color: "orange", fontSize: 18, mr: 0.5 }} />
+                  <Typography sx={{ fontSize: "0.9rem", fontWeight: "500", color: "#555" }}>
+                    4.8
+                  </Typography>
+                  <Box sx={{ flex: 1 }} />
+                  <Typography sx={{ color: "green", fontWeight: "bold" }}>750</Typography>
+                </Box>
+
+                <Divider />
+
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    navigate("/app/profile");
+                  }}
+                >
+                  <ListItemIcon>
+                    <PersonOutlineOutlinedIcon fontSize="small" />
+                  </ListItemIcon>
+                  Profile
+                </MenuItem>
+
+                <MenuItem onClick={handleMenuClose}>
+                  <ListItemIcon>
+                    <Settings fontSize="small" />
+                  </ListItemIcon>
+                  Settings
+                </MenuItem>
+
+                <MenuItem onClick={handleMenuClose}>
+                  <ListItemIcon>
+                    <AdminPanelSettingsIcon fontSize="small" />
+                  </ListItemIcon>
+                  Switch to Admin Mode
+                </MenuItem>
+
+                <Divider />
+
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    logout();
+                    navigate("/");
+                  }}
+                  sx={{ color: "red" }}
+                >
+                  <ListItemIcon>
+                    <Logout fontSize="small" sx={{ color: "red" }} />
+                  </ListItemIcon>
+                  Sign Out
+                </MenuItem>
+              </Menu>
 
               {/* Mobile Menu Button (<1029px) */}
               {windowWidth < 1029 && (
@@ -233,7 +350,7 @@ export default function PrimarySearchAppBar() {
         </Container>
       </AppBar>
 
-      {/* Mobile Menu Panel */}
+      {/* Mobile Menu Panel (نفس الكود تبعك بدون تعديل) */}
       {mobileOpen && windowWidth < 1029 && (
         <Box
           sx={{ width: "100%", bgcolor: "white", borderBottom: 1, borderColor: "divider" }}
@@ -249,7 +366,6 @@ export default function PrimarySearchAppBar() {
               Projects
             </Button>
 
-            {/* Search (<768px) */}
             {windowWidth < 768 && (
               <Box sx={{ display: "flex", mt: 1 }}>
                 <Search sx={{ bgcolor: "#F8FAFC", width: "100%" }}>
@@ -264,7 +380,6 @@ export default function PrimarySearchAppBar() {
               </Box>
             )}
 
-            {/* Points */}
             <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
               <Box
                 sx={{
@@ -278,12 +393,7 @@ export default function PrimarySearchAppBar() {
                   justifyContent: "center",
                 }}
               >
-                <Box
-                  component="img"
-                  src={Point}
-                  alt="points"
-                  sx={{ width: 30, height: 30 }}
-                />
+                <Box component="img" src={Point} alt="points" sx={{ width: 30, height: 30 }} />
                 <Typography component="span" sx={{ fontWeight: "bold", color: "#28a745" }}>
                   750{" "}
                   <Typography component="span" sx={{ fontWeight: "normal" }}>
