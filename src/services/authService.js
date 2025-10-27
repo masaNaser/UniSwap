@@ -11,3 +11,8 @@ export const resetPassword = ({ email, code, newPassword, confirmPassword }) =>
     newPassword,
     confirmPassword,
   });
+
+export const logout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userName");
+};

@@ -9,9 +9,7 @@ function App() {
     <>
     <RouterProvider router={router}/>
      <div>
-      <h2>تجربة الشات</h2>
-     {/* <Chat/> */}
-   <ChatPage/>
+   {/* <ChatPage/> */}
     </div>
     </>
   )
