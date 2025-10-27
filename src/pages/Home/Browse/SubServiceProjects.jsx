@@ -424,8 +424,4 @@ export default function SubServiceProjects() {
       )}
     </Container>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 14dc94158fa85ec73fecda62f32d98ec0173e71a
