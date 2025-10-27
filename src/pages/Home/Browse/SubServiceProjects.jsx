@@ -11,19 +11,13 @@ import {
   CardContent,
   Chip,
   Avatar,
-  Menu,
-  MenuItem,
-  TextField,
-  InputAdornment,
-  Button,
   Pagination,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import SearchIcon from "@mui/icons-material/Search";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { browseProjectsBySubService } from "../../../services/publishProjectServices";
+import FilterSection from "../../../components/Filter/FilterSection";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import Point from "../../../assets/images/Point.svg";
 
@@ -90,7 +84,6 @@ const ProjectCard = ({ project }) => {
         >
           {project.title}
         </Typography>
-
 
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
           {project.tags?.slice(0, 3).map((tag, i) => (
@@ -168,16 +161,12 @@ const ProjectCard = ({ project }) => {
   );
 };
 
-export default function SubServiceProjects () {
+export default function SubServiceProjects() {
   const token = localStorage.getItem("accessToken");
-  const { id } = useParams(); // This is the subServiceId
+  const { id } = useParams();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [anchorElRated, setAnchorElRated] = useState(null);
-  const [anchorElPrice, setAnchorElPrice] = useState(null);
-  const [selectedRated, setSelectedRated] = useState("Highest Rated");
-  const [selectedPrice, setSelectedPrice] = useState("All Prices");
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const subServiceName = params.get("name");
@@ -187,13 +176,16 @@ export default function SubServiceProjects () {
   const pageSize = 6;
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRated, setSelectedRated] = useState("Highest Rated");
+  const [selectedPrice, setSelectedPrice] = useState("All Prices");
 
   const fetchServiceProject = async (page = 1) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Debug logging
       console.log('Fetching projects with:', {
         subServiceId: id,
         page,
@@ -220,12 +212,39 @@ export default function SubServiceProjects () {
     if (id) fetchServiceProject(page);
   }, [id, page]);
 
-  const handleMenuClickRated = (event) => setAnchorElRated(event.currentTarget);
-  const handleMenuClickPrice = (event) => setAnchorElPrice(event.currentTarget);
-  const handleMenuClose = () => {
-    setAnchorElRated(null);
-    setAnchorElPrice(null);
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
+
+  const handleRatedSelect = (value) => {
+    setSelectedRated(value);
+  };
+
+  const handlePriceSelect = (value) => {
+    setSelectedPrice(value);
+  };
+
+  const filterItems = [
+    {
+      type: 'menu',
+      label: selectedRated,
+      items: [
+        { label: "Highest Rated", value: "Highest Rated" },
+        { label: "Most Reviewed", value: "Most Reviewed" }
+      ],
+      onSelect: handleRatedSelect
+    },
+    {
+      type: 'menu',
+      label: selectedPrice,
+      items: [
+        { label: "All Prices", value: "All Prices" },
+        { label: "Low to High", value: "Low to High" },
+        { label: "High to Low", value: "High to Low" }
+      ],
+      onSelect: handlePriceSelect
+    }
+  ];
 
   // Loading state
   if (loading) {
@@ -363,116 +382,13 @@ export default function SubServiceProjects () {
         </CustomButton>
       </Box>
 
-      {/* Filters */}
-      <Box
-        sx={{
-          backgroundColor: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-          p: 2,
-          mb: 4,
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            flexWrap: "wrap",
-          }}
-        >
-          <TextField
-            variant="outlined"
-            placeholder="Search projects..."
-            sx={{
-              flexGrow: 1,
-              backgroundColor: "#fff",
-              borderRadius: "12px",
-              "& fieldset": { border: "1px solid #e0e0e0" },
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "12px",
-              },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: "text.secondary" }} />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <Button
-            variant="outlined"
-            onClick={handleMenuClickRated}
-            sx={{ borderRadius: "12px", textTransform: "none" }}
-            endIcon={<KeyboardArrowDownIcon />}
-          >
-            {selectedRated}
-          </Button>
-          <Menu
-            anchorEl={anchorElRated}
-            open={Boolean(anchorElRated)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem
-              onClick={() => {
-                setSelectedRated("Highest Rated");
-                handleMenuClose();
-              }}
-            >
-              Highest Rated
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                setSelectedRated("Most Reviewed");
-                handleMenuClose();
-              }}
-            >
-              Most Reviewed
-            </MenuItem>
-          </Menu>
-
-          <Button
-            variant="outlined"
-            onClick={handleMenuClickPrice}
-            sx={{ borderRadius: "12px", textTransform: "none" }}
-            endIcon={<KeyboardArrowDownIcon />}
-          >
-            {selectedPrice}
-          </Button>
-          <Menu
-            anchorEl={anchorElPrice}
-            open={Boolean(anchorElPrice)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem
-              onClick={() => {
-                setSelectedPrice("All Prices");
-                handleMenuClose();
-              }}
-            >
-              All Prices
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                setSelectedPrice("Low to High");
-                handleMenuClose();
-              }}
-            >
-              Low to High
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                setSelectedPrice("High to Low");
-                handleMenuClose();
-              }}
-            >
-              High to Low
-            </MenuItem>
-          </Menu>
-        </Box>
-      </Box>
+      {/* Filter Section */}
+      <FilterSection
+        searchPlaceholder="Search projects..."
+        searchValue={searchQuery}
+        onSearchChange={handleSearchChange}
+        items={filterItems}
+      />
 
       {/* Project Grid */}
       <Grid container spacing={3}>
@@ -497,5 +413,4 @@ export default function SubServiceProjects () {
       )}
     </Container>
   );
-};
-
+}
