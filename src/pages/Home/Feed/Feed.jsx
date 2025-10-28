@@ -68,7 +68,7 @@ function Feed() {
                 id: p.id,
                 content: p.content,
                 selectedTags: p.tags?.[0]?.split(",") || [],
-                user: { name: p.author.userName, avatar: ProfilePic },
+                user: { name: p.author.userName, avatar: p.author.profilePictureUrl, id: p.author.id },
                 time: dayjs(p.createdAt).format('DD MMM, hh:mm A'),
                 likes: p.likesCount,
                 comments: p.commentsCount,

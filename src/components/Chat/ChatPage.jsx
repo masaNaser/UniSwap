@@ -4,14 +4,22 @@ import ChatWindow from "./ChatWindow";
 import "./Chat.css";
 import Container from "@mui/material/Container";
 import { useLocation } from "react-router-dom";
+import { useEffect} from "react";
 
 export default function ChatPage() {
   // const [selectedConv, setSelectedConv] = useState(null);
   // const [conversations, setConversations] = useState([]);
     const location = useLocation();
   const initialConv = location.state || null;
+  
   const [selectedConv, setSelectedConv] = useState(initialConv);
   const [conversations, setConversations] = useState([]);
+    // 🔥 لما نيجي من الـ profile، نفتح المحادثة تلقائياً
+  useEffect(() => {
+    if (initialConv?.autoOpen) {
+      setSelectedConv(initialConv);
+    }
+  }, [initialConv]);
   return (
     <>
       <Container maxWidth="lg">
@@ -20,6 +28,7 @@ export default function ChatPage() {
           <ChatList
             conversations={conversations}
             setConversations={setConversations}
+            selectedConvId={selectedConv?.convId} // ⬅️ عشان نعرف أي محادثة محددة
             // onSelectConversation : هذا خاصية (prop) نمرّرها للـ ChatList لكي يعرف ماذا نفعل عند الضغط على أي محادثة.
             onSelectConversation={(
               convId,

@@ -26,6 +26,7 @@ import {
   Edit as EditIcon,
 } from "@mui/icons-material";
 import dayjs from 'dayjs';
+import { useNavigate } from "react-router-dom";
 
 // Format comment/post time
 const formatTime = (time) => (!time ? "Just now" : dayjs(time).format('DD MMM, hh:mm A'));
@@ -75,6 +76,7 @@ function PostCard({
   const open = Boolean(anchorEl);
   const currentUserName = localStorage.getItem("userName");
   const isPostAuthor = post.user.name === currentUserName;
+  const navigate = useNavigate();
 
   // Load recent comments
   useEffect(() => {
@@ -100,7 +102,7 @@ function PostCard({
   const handleEditClick = () => { onEdit(post.id); handleClose(); };
   const handleLikeClick = () => onLike(post.id);
   const handleCommentClick = () => onShowComments(post.id);
-
+ 
   const handleInlineCommentSubmit = async (e) => {
     e.preventDefault();
     if (!inlineCommentText.trim()) return;
@@ -115,7 +117,13 @@ function PostCard({
       setIsCommenting(false);
     }
   };
-
+ // دالة للانتقال للبروفايل
+  const handleNavigateToProfile = () => {
+    if (post.user.id) {
+      console.log("Post userId",post.user.id);
+      navigate(`/app/profile/${post.user.id}`);
+    }
+  };
   return (
     <Card sx={{ mb: 3, borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
       {/* Header */}
@@ -124,7 +132,18 @@ function PostCard({
         action={isPostAuthor && (
           <IconButton aria-label="settings" onClick={handleClick}><MoreVertIcon /></IconButton>
         )}
-        title={<Typography variant="subtitle1" fontWeight="bold">{post.user.name}</Typography>}
+        title={
+        <Typography variant="subtitle1" fontWeight="bold" 
+          sx={{ 
+              cursor: 'pointer',
+              '&:hover': { 
+                textDecoration: 'underline',
+                color: 'primary.main'
+              }
+            }}     
+           onClick={handleNavigateToProfile}>
+            {post.user.name}
+            </Typography>}
         subheader={post.time}
       />
 
