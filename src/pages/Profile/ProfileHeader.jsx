@@ -1,78 +1,50 @@
 import React from "react";
-import {
-  Box,
-  Avatar,
-  Typography,
-  Button,
-  Stack,
-  Chip
-} from "@mui/material";
+import { Box, Avatar, Typography, Button, Stack, Chip } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import StarIcon from "@mui/icons-material/Star";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EditIcon from "@mui/icons-material/Edit";
-import {GetFullProfile} from "../../services/profileService"
-import  { useEffect,useState} from "react";
- import { sendMessage,getConversations } from "../../services/chatService";
- import { useNavigate } from "react-router-dom";
- import { useProfile } from "../../Context/ProfileContext";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useProfile } from "../../Context/ProfileContext";
+import RequestServiceModal from "../../components/Modals/RequestServiceModal"
 export default function ProfileHeader() {
-//  const[userData,setUserData] = useState(null);
-   const { userData, isMyProfile } = useProfile();
-const navigate = useNavigate();
+  //  const[userData,setUserData] = useState(null);
+  const { userData, isMyProfile } = useProfile();
+  const navigate = useNavigate();
+  const[isRequestModalOpen,setIsRequestModalOpen] = useState(false);
+  const handleMessageClick = () => {
+    if (!userData?.id) return;
 
-   const token = localStorage.getItem("accessToken");
-    //   const profile =async () => {
-    //   try {
-    //     const response = await GetFullProfile(token);
-    //     console.log('Profile data:', response);
-    //     setUserData(response.data);
-    //   }
-    //   catch (error) {
-    //     console.error('Error fetching profile data:', error);
-    //   }
-    // }
-    //  useEffect(() => {
-    //  profile();
-    // }, []);
-
-      // const handleMessageClick = async () => {
-      //   if (!userData?.id) return;
-      //   try {
-      //     const newConv = await sendMessage(userData.id, "", null, []);
-      //     navigate("/chat", {
-      //       state: {
-      //         convId: newConv.conversationId || newConv.id,
-      //         receiverId: userData.id,
-      //         receiverName: userData.userName,
-      //         receiverImage: userData.profilePicture,
-      //       },
-      //     });
-      //   } catch (err) {
-      //     console.error("فشل فتح المحادثة:", err);
-      //   }
-      // };
-
-const handleMessageClick = () => {
-  if (!userData?.id) return;
+    // روح مباشرة على صفحة الشات
+    navigate("/chat", {
+      state: {
+        convId: null, // ما نعرف إذا في محادثة ولا لأ
+        receiverId: userData.id,
+        receiverName: userData.userName,
+        receiverImage: userData.profilePicture,
+        autoOpen: true, // ⬅️ علامة إننا جايين من profile
+      },
+    });
+  };
   
-  // روح مباشرة على صفحة الشات
-  navigate("/chat", {
-    state: {
-      convId: null, // ما نعرف إذا في محادثة ولا لأ
-      receiverId: userData.id,
-      receiverName: userData.userName,
-      receiverImage: userData.profilePicture,
-      autoOpen: true, // ⬅️ علامة إننا جايين من profile
-    },
-  });
-};
+  
+    // دالة لفتح المودال
+  const handleRequestService = () => {
+    setIsRequestModalOpen(true);
+  };
 
-        if (!userData) return <p>Loading...</p>;
+    // دالة لإغلاق المودال
+  const handleCloseModal = () => {
+    setIsRequestModalOpen(false);
+  };
+
+  if (!userData) return <p>Loading...</p>;
 
   return (
+    <>
     <Box
       sx={{
         position: "relative",
@@ -88,10 +60,11 @@ const handleMessageClick = () => {
         sx={{
           width: "100%",
           height: 260,
-  backgroundImage: `url(${
+          backgroundImage: `url(${
             userData?.coverImg ||
             "https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1000&q=80"
-          })`,          backgroundSize: "cover",
+          })`,
+          backgroundSize: "cover",
           backgroundPosition: "center",
           position: "relative",
           display: "flex",
@@ -110,26 +83,28 @@ const handleMessageClick = () => {
         />
 
         {/* زر تعديل البروفايل*/}
-        {isMyProfile ?(
-        <Button
-          variant="contained"
-          startIcon={<EditIcon sx={{ color: "rgba(255,255,255,0.9)" }} />}
-          sx={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            textTransform: "none",
-            backgroundColor: "rgba(255,255,255,0.2)",
-            color: "rgba(255,255,255,0.9)",
-            backdropFilter: "blur(4px)",
-            "&:hover": {
-              backgroundColor: "rgba(255,255,255,0.3)",
-            },
-          }}
-        >
-          Edit Profile
-        </Button>
-):""}
+        {isMyProfile ? (
+          <Button
+            variant="contained"
+            startIcon={<EditIcon sx={{ color: "rgba(255,255,255,0.9)" }} />}
+            sx={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              textTransform: "none",
+              backgroundColor: "rgba(255,255,255,0.2)",
+              color: "rgba(255,255,255,0.9)",
+              backdropFilter: "blur(4px)",
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.3)",
+              },
+            }}
+          >
+            Edit Profile
+          </Button>
+        ) : (
+          ""
+        )}
         <Stack
           direction="row"
           spacing={2}
@@ -145,35 +120,40 @@ const handleMessageClick = () => {
           <Stack direction="row" spacing={2} alignItems="flex-end">
             <Box sx={{ position: "relative" }}>
               <Avatar
-                 src={userData?.profilePicture || "https://randomuser.me/api/portraits/men/75.jpg"}
-                 alt={userData?.userName}
+                src={
+                  userData?.profilePicture ||
+                  "https://randomuser.me/api/portraits/men/75.jpg"
+                }
+                alt={userData?.userName}
                 sx={{
                   width: 90,
                   height: 90,
                   border: "3px solid white",
                 }}
               />
-               <Chip
-                            label={userData?.rank}
-                            color="secondary"
-                            size="small"
-                            sx={{
-                              position: "absolute",
-                              top: 0,
-                              left: 65,
-                              fontWeight: "bold",
-                            }}
-                          />
+              <Chip
+                label={userData?.rank}
+                color="secondary"
+                size="small"
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 65,
+                  fontWeight: "bold",
+                }}
+              />
             </Box>
 
             <Box>
               <Typography variant="h5" fontWeight="bold">
                 {userData?.userName}
               </Typography>
-              <Typography variant="body1">{userData?.universityMajor}</Typography>
+              <Typography variant="body1">
+                {userData?.universityMajor}
+              </Typography>
 
               <Stack direction="row" spacing={2} mt={1} alignItems="center">
-               {/*  <Stack direction="row" alignItems="center" spacing={0.5}>
+                {/*  <Stack direction="row" alignItems="center" spacing={0.5}>
                   <LocationOnIcon sx={{ fontSize: 18 }} />
                   <Typography variant="body2">{user.location}</Typography>
                 </Stack> */}
@@ -181,61 +161,72 @@ const handleMessageClick = () => {
                 <Stack direction="row" alignItems="center" spacing={0.5}>
                   <StarIcon sx={{ fontSize: 18, color: "#FFD700" }} />
                   <Typography variant="body2">
-                  {userData?.averageRating} ({userData?.ratingCount} reviews)
+                    {userData?.averageRating} ({userData?.ratingCount} reviews)
                   </Typography>
                 </Stack>
 
                 <Stack direction="row" alignItems="center" spacing={0.5}>
                   <CalendarMonthIcon sx={{ fontSize: 18 }} />
-                  <Typography variant="body2">
-                    Joined
-                  </Typography>
+                  <Typography variant="body2">Joined</Typography>
                 </Stack>
               </Stack>
             </Box>
           </Stack>
 
           {/* الأزرار على اليمين */}
-          {!isMyProfile ?(
-          <Stack direction="row" spacing={1}>
-            <Button
-              variant="contained"
-              startIcon={<ChatBubbleOutlineIcon />}
-               onClick={handleMessageClick}
-                
-              sx={{
-                textTransform: "none",
-                backgroundColor: "rgba(255,255,255,0.2)",
-                color: "white",
-                backdropFilter: "blur(4px)",
-                "&:hover": {
-                  backgroundColor: "rgba(255,255,255,0.3)",
-                },
-              }}
-            >
-              Message
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<HandshakeIcon />}
-              sx={{
-                textTransform: "none",
-                backgroundColor: "rgba(255,255,255,0.2)",
-                color: "white",
-                backdropFilter: "blur(4px)",
-                "&:hover": {
-                  backgroundColor: "rgba(255,255,255,0.3)",
-                },
-              }}
-            >
-              Request Service
-            </Button>
-          </Stack>
-        ):""}
+          {!isMyProfile ? (
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="contained"
+                startIcon={<ChatBubbleOutlineIcon />}
+                onClick={handleMessageClick}
+                sx={{
+                  textTransform: "none",
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  color: "white",
+                  backdropFilter: "blur(4px)",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.3)",
+                  },
+                }}
+              >
+                Message
+              </Button>
+              <Button
+                onClick={handleRequestService} //  عشان نستدعي المودال
+                variant="contained"
+                startIcon={<HandshakeIcon />}
+                sx={{
+                  textTransform: "none",
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  color: "white",
+                  backdropFilter: "blur(4px)",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.3)",
+                  },
+                }}
+              >
+                Request Service
+              </Button>
+            </Stack>
+          ) : (
+            ""
+          )}
         </Stack>
       </Box>
     </Box>
+
+
+
+
+      {/* المودال */}
+      <RequestServiceModal
+        open={isRequestModalOpen}
+        onClose={handleCloseModal}
+        providerId={userData?.id} // ⬅️ مهم: ID اليوزر اللي بدك تطلب منه
+          providerName={userData?.userName}
+
+      />
+    </>
   );
 }
-
-

@@ -1,7 +1,7 @@
 import api from "./api";
 
 export const GetFullProfile = async (token) => {
-  return await api.get(`/portfolio`,{
+  return await api.get(`/Profile`,{
     headers: {
       Authorization: `Bearer ${token}`,
     },

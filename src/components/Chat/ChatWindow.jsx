@@ -545,10 +545,10 @@ export default function ChatWindow({
           <h3 className="chat-name">{receiverName}</h3>
         </Box>
 
-        <Box sx={{ display: "flex", gap: "10px" }}>
+        {/* <Box sx={{ display: "flex", gap: "10px" }}>
           <LocalPhoneOutlinedIcon sx={{ color: "#0078ff" }} />
           <VideocamOutlinedIcon sx={{ color: "#0078ff" }} />
-        </Box>
+        </Box> */}
       </Box>
       
       <Box className="messages" ref={messagesContainerRef}>

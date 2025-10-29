@@ -16,6 +16,7 @@ import {
   Divider,
   ListItemIcon,
 } from "@mui/material";
+import { useProfile } from "../../Context/ProfileContext";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
@@ -68,9 +69,11 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+
 export default function PrimarySearchAppBar() {
   const navigate = useNavigate();
   const userName = localStorage.getItem("userName");
+  const {userData} = useProfile();
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -211,7 +214,7 @@ export default function PrimarySearchAppBar() {
                 >
                   <Box component="img" src={Point} alt="points" sx={{ width: 30, height: 30 }} />
                   <Typography component="span" sx={{ fontWeight: "bold", color: "#28a745" }}>
-                    750{" "}
+                    {userData?.totalPoints}
                     <Typography component="span" sx={{ fontWeight: "normal" }}>
                       pts
                     </Typography>

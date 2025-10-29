@@ -208,9 +208,9 @@ export default function SubServiceProjects() {
 
       console.log("Projects data:", response.data);
 
-      setTotalPages(response.data.totalPages);
-      setTotalCount(response.data.totalCount);
-      setProjects(response.data.items);
+     setProjects(Array.isArray(response.data.items) ? response.data.items : []);
+setTotalPages(response.data.totalPages || 1);
+setTotalCount(response.data.totalCount || 0);
     } catch (err) {
       console.error("Error fetching projects:", err);
       setError(err.message || "Failed to load projects");
@@ -280,7 +280,8 @@ export default function SubServiceProjects() {
   }
 
   // No projects state
-  if (!projects.length) {
+  if (!projects || projects.length === 0)
+ {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Breadcrumbs

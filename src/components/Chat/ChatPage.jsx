@@ -14,7 +14,7 @@ export default function ChatPage() {
   
   const [selectedConv, setSelectedConv] = useState(initialConv);
   const [conversations, setConversations] = useState([]);
-    // 🔥 لما نيجي من الـ profile، نفتح المحادثة تلقائياً
+    //  لما نيجي من الـ profile، نفتح المحادثة تلقائياً
   useEffect(() => {
     if (initialConv?.autoOpen) {
       setSelectedConv(initialConv);
@@ -22,7 +22,7 @@ export default function ChatPage() {
   }, [initialConv]);
   return (
     <>
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{mt:5,mb: 5}}>
         <div className="chat-container">
           {/* Sidebar: قائمة المحادثات */}
           <ChatList

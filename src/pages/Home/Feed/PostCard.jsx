@@ -118,9 +118,19 @@ function PostCard({
     }
   };
  // دالة للانتقال للبروفايل
-  const handleNavigateToProfile = () => {
+   const handleNavigateToProfile = () => {
+         if (!post.user.id) return;
+  
+  // const currentUserId = localStorage.getItem("userId");
+  
+  // // إذا بروفايلي، روح على /app/profile بدون userId
+  // if (post.user.id === currentUserId) {
+  //   navigate('/app/profile');
+  // } else {
+  //   // إذا بروفايل شخص تاني، مرر الـ userId
+  //   navigate(`/app/profile/${post.user.id}`);
+  // }
     if (post.user.id) {
-      console.log("Post userId",post.user.id);
       navigate(`/app/profile/${post.user.id}`);
     }
   };

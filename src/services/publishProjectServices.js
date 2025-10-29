@@ -18,9 +18,9 @@ export const browseProjectsBySubService = async (token, subServiceId, page, page
   
   console.log('Calling browse API with:', { subServiceId, page, pageSize });
   
-  return await api.get(`/PublishProjects/browse`, {
+  return await api.get(`/PublishProjects/browse/${subServiceId}`, {
     params: {
-      SubServiceId: subServiceId,  
+      // SubServiceId: subServiceId,  
       Page: page,
       PageSize: pageSize
     },
