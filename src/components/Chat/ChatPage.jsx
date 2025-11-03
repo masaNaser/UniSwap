@@ -5,7 +5,7 @@ import "./Chat.css";
 import Container from "@mui/material/Container";
 import { useLocation } from "react-router-dom";
 import { useEffect} from "react";
-
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 export default function ChatPage() {
   // const [selectedConv, setSelectedConv] = useState(null);
   // const [conversations, setConversations] = useState([]);
@@ -57,9 +57,17 @@ export default function ChatPage() {
               receiverImage={selectedConv.receiverImage} //  تمرير صورة الطرف الآخر
             />
           ) : (
-            <div className="empty-window">
-              Select a conversation to start chatting
-            </div>
+          <div className="empty-window">
+  <MailOutlineIcon 
+    sx={{ 
+      fontSize: 64, 
+      opacity: 0.5, 
+      color: '#999',
+      mb: 2  // margin-bottom
+    }} 
+  />
+  <p>Select a conversation to start messaging</p>
+</div>
           )}
         </div>
       </Container>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://uni.runasp.net/api', // ضيفي /api إذا كل الـ endpoints تبدأ فيها
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://uni.runasp.net/api",
   // headers: { 'Content-Type': 'application/json' },
           // baseURL: '/api', // فقط /api عشان proxy يشتغل
 

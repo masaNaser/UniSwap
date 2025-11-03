@@ -15,3 +15,14 @@ export const GetProfileById = async (token,userId) => {
     },
   });
 };
+export const EditProfile = async (token,data) => {
+  return await api.put(
+    `/Profile/me`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};

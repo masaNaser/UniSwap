@@ -4,7 +4,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 
-function SelectActionCard({ title, value, icon }) {
+function SelectActionCard({ title, value, icon ,iconBgColor = '#F1F5F9' }) {
   return (
     <Card
       sx={{
@@ -33,7 +33,7 @@ function SelectActionCard({ title, value, icon }) {
           </Typography>
         </Box>
         <Box sx={{
-          backgroundColor: '#F1F5F9',
+          backgroundColor: iconBgColor,
           borderRadius: '8px',
           padding: (theme) => theme.spacing(1),
           display: 'flex',

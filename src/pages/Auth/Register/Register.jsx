@@ -54,6 +54,12 @@ export default function Register() {
       .string()
       .required("Please confirm your password")
       .oneOf([yup.ref("password")], "Passwords must match"),
+       academicYear: yup 
+    .number()
+    .required("Academic Year is required")
+    // .min(1, "Academic year must be between 1 and 5")
+    // .max(5, "Academic year must be between 1 and 5")
+    .typeError("Please enter a valid number")
   });
 
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -112,11 +118,8 @@ export default function Register() {
       confirmPassword: data.confirmPassword.trim(),
       skills: skills,
       universityMajor: data.universityMajor.toUpperCase(),
-      academicYear: data.academicYear.trim()
+      academicYear: parseInt(data.academicYear) 
     };
-
-
-
 
     console.log("Final Data Sent:", JSON.stringify(finalData));
 
@@ -515,6 +518,9 @@ export default function Register() {
                 label="Academic Year"
                 placeholder="5th year"
                 variant="outlined"
+                type="number"
+                error={Boolean(errors.academicYear)}
+               helperText={errors.academicYear?.message}
                 required
                 InputProps={{
                   startAdornment: (
