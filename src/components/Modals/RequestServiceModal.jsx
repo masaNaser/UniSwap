@@ -24,9 +24,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import Point from "../../assets/images/Point.svg";
 import CustomButton from "../CustomButton/CustomButton";
 import DisabledCustomButton from "../CustomButton/DisabledCustomButton";
-import { 
+import {
   createCollaborationRequest,
-  editCollaborationRequest 
+  editCollaborationRequest
 } from "../../services/collaborationService";
 
 const RequestServiceModal = ({
@@ -69,11 +69,11 @@ const RequestServiceModal = ({
       if (isEditMode && editData) {
         // نحن في وضع التعديل، املأ الفورم بالبيانات الموجودة
         console.log("📝 Edit Data received:", editData);
-        
+
         setServiceTitle(editData.title || "");
         setServiceDescription(editData.description || "");
         setPointsBudget(editData.pointsOffered || "");
-        
+
         // تحويل التاريخ إلى فورمات YYYY-MM-DD
         if (editData.deadline) {
           // إذا كان التاريخ بالفورمات "MM/DD/YYYY" (من toLocaleDateString)
@@ -93,22 +93,22 @@ const RequestServiceModal = ({
           console.log("📅 Formatted date:", formattedDate);
           setDeadline(formattedDate);
         }
-        
+
         // استخرج الـ category من الـ type أو category
         // القيمة تكون "RequestProject" أو "RequestCourse" ونحتاج فقط "Project" أو "Course"
         let categoryValue = "";
-        
+
         // جرب من editData.category أولاً
         if (editData.category) {
           categoryValue = editData.category.replace("Request", "");
           console.log("✅ Category from editData.category:", categoryValue);
-        } 
+        }
         // إذا ما لقيناها، جرب من editData.type
         else if (editData.type) {
           categoryValue = editData.type.replace("Request", "");
           console.log("✅ Category extracted from type:", categoryValue);
         }
-        
+
         console.log("🎯 Final category value:", categoryValue);
         setServiceCategory(categoryValue);
       } else {
@@ -178,7 +178,7 @@ const RequestServiceModal = ({
       // عرض رسالة نجاح
       setSnackbar({
         open: true,
-        message: isEditMode ? "Request updated successfully!" : "Request sent successfully!",
+        message: isEditMode ? "Request updated successfully! 🎉" : "Request sent successfully!",
         severity: "success",
       });
 
@@ -188,7 +188,7 @@ const RequestServiceModal = ({
       }, 1500);
     } catch (error) {
       console.error(isEditMode ? "❌ Error editing request:" : "❌ Error creating request:", error);
-      
+
       // 🔍 اطبع تفاصيل الخطأ بالكامل
       if (error.response) {
         console.error("📛 Server Error Response:", error.response.data);
@@ -282,7 +282,7 @@ const RequestServiceModal = ({
                 variant="body1"
                 sx={{ fontWeight: 500, color: "#1e40af" }}
               >
-                {isEditMode 
+                {isEditMode
                   ? `Editing request sent to ${providerName}`
                   : `You're sending a request to ${providerName}`
                 }
@@ -458,14 +458,14 @@ const RequestServiceModal = ({
               disabled={isSubmitting}
               sx={{ minWidth: "150px" }}
             >
-              {isSubmitting 
-                ? (isEditMode ? "Updating..." : "Sending...") 
+              {isSubmitting
+                ? (isEditMode ? "Updating..." : "Sending...")
                 : (isEditMode ? "Update Request" : "Send Request")
               }
             </CustomButton>
           ) : (
-            <DisabledCustomButton 
-              startIcon={isEditMode ? <EditIcon /> : <SendIcon />} 
+            <DisabledCustomButton
+              startIcon={isEditMode ? <EditIcon /> : <SendIcon />}
               sx={{ minWidth: "150px" }}
             >
               {isEditMode ? "Update Request" : "Send Request"}
@@ -484,7 +484,15 @@ const RequestServiceModal = ({
         <Alert
           onClose={handleSnackbarClose}
           severity={snackbar.severity}
-          sx={{ width: "100%" }}
+          sx={{
+            width: "100%",
+            bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
+            color: "white",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+          variant="filled"
         >
           {snackbar.message}
         </Alert>

@@ -121,13 +121,11 @@ export default function AllStatusProjectCard({
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         transition: "transform 0.2s, box-shadow 0.2s",
         width: "350px",
-        minHeight: "350px",
+        minHeight: "330px",
         display: "flex",
         flexDirection: "column",
-        "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
-        },
+        transition: "0.3s",
+        "&:hover": { transform: "translateY(-3px)", boxShadow: 3 },
       }}
     >
       <CardContent

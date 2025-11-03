@@ -10,6 +10,8 @@ import {
   Tab,
   Autocomplete,
   Chip,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   Email,
@@ -30,8 +32,7 @@ import { register as registerApi } from "../../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { LinearProgress } from "@mui/material"; // ضيفيها فوق مع باقي الـ imports
-import Swal from "sweetalert2";
-import "sweetalert2/dist/sweetalert2.min.css";
+
 export default function Register() {
   const validationSchema = yup.object({
     userName: yup
@@ -94,6 +95,11 @@ export default function Register() {
   const [skills, setSkills] = useState([]); // skills as array
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -109,6 +115,11 @@ export default function Register() {
     //هاي الخطوة عشان نحكي للمكتبة الرياكت هوك فورم انه ما تعمل الفالديشن منها وانما الفالديشن اللي حطيناه باستخدام ال yup
     resolver: yupResolver(validationSchema),
   });
+
+  // Handle Snackbar Close
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const registerHandle = async (data) => {
     const finalData = {
@@ -128,29 +139,34 @@ export default function Register() {
       const response = await registerApi(finalData);
       console.log(response);
       if (response.status === 200) {
-        Swal.fire({
-          title: "Registration successful! Please check your email to verify your account.",
-          icon: "success",
-          draggable: true,
-          timer: 2000,
+        // عرض رسالة النجاح
+        setSnackbar({
+          open: true,
+          message: "Registration successful! Please check your email to verify your account. ✅",
+          severity: "success",
         });
-        navigate("/login");
+
+        // الانتقال لصفحة اللوقن بعد 2 ثانية
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
       }
     } catch (error) {
       console.log("Full Error Response:", error.response);
       const msg = error.response?.data || "An error occurred";
-      Swal.fire({
-        icon: "error",
-        title: "Register failed",
-        text: msg,
-        timer: 2000,
+      
+      // عرض رسالة الخطأ
+      setSnackbar({
+        open: true,
+        message: msg,
+        severity: "error",
       });
+      
       console.error("Registration error:", error);
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <>
@@ -547,6 +563,30 @@ export default function Register() {
           </Box>
         </Box>
       </Container>
+
+      {/* Snackbar للإشعارات */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ 
+            width: "100%",
+            bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
+            color: "white",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

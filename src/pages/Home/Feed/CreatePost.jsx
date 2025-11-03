@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import {
-  Box, Typography, Avatar, TextField, Stack, IconButton, alpha, styled, Chip
+  Box, Typography, Avatar, TextField, Stack, IconButton, alpha, styled, Chip, Snackbar, Alert
 } from '@mui/material';
 import { Image, Close as CloseIcon } from '@mui/icons-material';
 import ProfilePic from '../../../assets/images/ProfilePic.jpg';
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import DisabledCustomButton from "../../../components/CustomButton/DisabledCustomButton";
 import { createPost as createPostApi } from "../../../services/postService";
-import Swal from "sweetalert2";
-import "sweetalert2/dist/sweetalert2.min.css";
 
 const FormWrapper = styled(Box)(({ theme }) => ({
   backgroundColor: 'white',
@@ -31,10 +29,20 @@ const CreatePost = ({ addPost, token }) => {
   const [errors, setErrors] = useState({ content: '' });
   const [imagePreview, setImagePreview] = useState(null);
   const [file, setFile] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const characterLimit = 500;
 
   // 💡 Condition to disable the post button
   const isPostDisabled = content.trim().length === 0;
+
+  // Handle Snackbar Close
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const handleContentChange = (event) => {
     if (event.target.value.length <= characterLimit) setContent(event.target.value);
@@ -107,125 +115,159 @@ const CreatePost = ({ addPost, token }) => {
       setImagePreview(null);
 
       if (response.status === 201) {
-        Swal.fire({ title: "Post has been created successfully.", icon: "success", timer: 3000 });
+        setSnackbar({
+          open: true,
+          message: "Post has been created successfully! 🎉",
+          severity: "success",
+        });
       }
     } catch (error) {
       console.error('Error creating post:', error);
-      Swal.fire({ icon: "error", title: "Error creating post", text: 'Failed to create post. Please try again.', timer: 3000 });
+      setSnackbar({
+        open: true,
+        message: "Failed to create post. Please try again.",
+        severity: "error",
+      });
     }
   };
 
   const iconHover = { '&:hover': { color: 'primary.main' } };
 
   return (
-    <FormWrapper component="form" onSubmit={handleSubmit}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-        <Avatar src={ProfilePic} alt="User Avatar" />
-        <TextField
-          multiline fullWidth variant="outlined"
-          placeholder="What's on your mind? Share your thoughts..."
-          value={content} onChange={handleContentChange}
-          error={!!errors.content}
-          helperText={errors.content || `${content.length}/${characterLimit} characters`}
-          sx={{
-            flexGrow: 1,
-            backgroundColor: '#FFF',
-            borderRadius: 3,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 3,
-              padding: 1.5,
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#7eadf8ff', boxShadow: '0 0 0 2px rgba(59,130,246,0.2)' },
-            },
-            '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha('#94A3B8', 0.5) },
-          }}
-          inputProps={{ style: { minHeight: '80px' } }}
-        />
-      </Box>
-
-      <Stack direction="column" spacing={2}>
-        <Box>
-          <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1 }}>Tags (max 5)</Typography>
+    <>
+      <FormWrapper component="form" onSubmit={handleSubmit}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+          <Avatar src={ProfilePic} alt="User Avatar" />
           <TextField
-            placeholder="Enter tags and press Enter"
-            value={tagInput}
-            onChange={handleTagInputChange}
-            onKeyDown={handleTagKeyDown}
-            fullWidth
-            variant="outlined"
-            size="small"
-          />
-          <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1 }}>
-            {selectedTags.map((tag) => (
-              <Chip key={tag} label={`#${tag}`} onDelete={() => handleTagDelete(tag)} color="primary" sx={{ fontWeight: 'bold', bgcolor: alpha('#0b62f0ff', 0.5) }} />
-            ))}
-          </Stack>
-        </Box>
-      </Stack>
-
-      {imagePreview && (
-        <Box sx={{ position: "relative", display: "inline-block", mt: 2 }}>
-          <img
-            src={imagePreview}
-            alt="Preview"
-            style={{
-              width: "150px",
-              height: "150px",
-              objectFit: "cover",
-              borderRadius: "8px",
-              display: "block",
-            }}
-          />
-          <IconButton
-            onClick={handleRemoveFile}
-            size="small"
+            multiline fullWidth variant="outlined"
+            placeholder="What's on your mind? Share your thoughts..."
+            value={content} onChange={handleContentChange}
+            error={!!errors.content}
+            helperText={errors.content || `${content.length}/${characterLimit} characters`}
             sx={{
-              position: "absolute",
-              top: -6,
-              right: -6,
-              bgcolor: "rgba(0,0,0,0.1)",
-              "&:hover": { bgcolor: "rgba(0,0,0,0.2)" },
+              flexGrow: 1,
+              backgroundColor: '#FFF',
+              borderRadius: 3,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 3,
+                padding: 1.5,
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#7eadf8ff', boxShadow: '0 0 0 2px rgba(59,130,246,0.2)' },
+              },
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha('#94A3B8', 0.5) },
             }}
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      )}
-
-      <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap">
-        <Stack direction="row" spacing={1} sx={{ color: 'text.secondary' }}>
-          <input accept="image/*" type="file" id="upload-image" style={{ display: 'none' }}
-            onChange={handleFileChange}
+            inputProps={{ style: { minHeight: '80px' } }}
           />
-          <label htmlFor="upload-image">
-            <IconButton component="span" sx={iconHover}><Image /></IconButton>
-          </label>
+        </Box>
+
+        <Stack direction="column" spacing={2}>
+          <Box>
+            <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1 }}>Tags (max 5)</Typography>
+            <TextField
+              placeholder="Enter tags and press Enter"
+              value={tagInput}
+              onChange={handleTagInputChange}
+              onKeyDown={handleTagKeyDown}
+              fullWidth
+              variant="outlined"
+              size="small"
+            />
+            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1 }}>
+              {selectedTags.map((tag) => (
+                <Chip key={tag} label={`#${tag}`} onDelete={() => handleTagDelete(tag)} color="primary" sx={{ fontWeight: 'bold', bgcolor: alpha('#0b62f0ff', 0.5) }} />
+              ))}
+            </Stack>
+          </Box>
         </Stack>
 
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-          {/* Conditional Component Rendering based on post content */}
-          {isPostDisabled ? (
-            <DisabledCustomButton
+        {imagePreview && (
+          <Box sx={{ position: "relative", display: "inline-block", mt: 2 }}>
+            <img
+              src={imagePreview}
+              alt="Preview"
+              style={{
+                width: "150px",
+                height: "150px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                display: "block",
+              }}
+            />
+            <IconButton
+              onClick={handleRemoveFile}
+              size="small"
               sx={{
-                width: { xs: "100%", sm: "auto" },
-                padding: "10px 30px",
+                position: "absolute",
+                top: -6,
+                right: -6,
+                bgcolor: "rgba(0,0,0,0.1)",
+                "&:hover": { bgcolor: "rgba(0,0,0,0.2)" },
               }}
             >
-              Post
-            </DisabledCustomButton>
-          ) : (
-            <CustomButton
-              type="submit"
-              sx={{
-                width: { xs: "100%", sm: "auto" },
-                padding: "10px 30px",
-              }}
-            >
-              Post
-            </CustomButton>
-          )}
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
+
+        <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap">
+          <Stack direction="row" spacing={1} sx={{ color: 'text.secondary' }}>
+            <input accept="image/*" type="file" id="upload-image" style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+            <label htmlFor="upload-image">
+              <IconButton component="span" sx={iconHover}><Image /></IconButton>
+            </label>
+          </Stack>
+
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            {/* Conditional Component Rendering based on post content */}
+            {isPostDisabled ? (
+              <DisabledCustomButton
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  padding: "10px 30px",
+                }}
+              >
+                Post
+              </DisabledCustomButton>
+            ) : (
+              <CustomButton
+                type="submit"
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  padding: "10px 30px",
+                }}
+              >
+                Post
+              </CustomButton>
+            )}
+          </Stack>
         </Stack>
-      </Stack>
-    </FormWrapper>
+      </FormWrapper>
+
+      {/* Snackbar للإشعارات */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{
+            width: "100%",
+            bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
+            color: "white",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 

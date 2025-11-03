@@ -122,7 +122,7 @@ export default function ProviderDashboard({
 
   // Get projects based on current view (using 'items' instead of 'projects')
   const currentProjects = data?.items || [];
-  
+
   // Console to check API response for active projects
   console.log("Provider Dashboard - Active Projects Data:", {
     allProjects: currentProjects,
@@ -232,7 +232,7 @@ export default function ProviderDashboard({
             <Grid container spacing={3}>
               {filteredProjects.map((project) => (
                 <Grid item xs={12} sm={6} lg={4} key={project.id}>
-                  <AllStatusProjectCard 
+                  <AllStatusProjectCard
                     {...project}
                     isProvider={true}
                   />

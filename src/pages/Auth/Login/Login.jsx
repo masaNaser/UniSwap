@@ -11,6 +11,8 @@ import {
   Container,
   InputAdornment,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   Email,
@@ -28,8 +30,6 @@ import { Link as RouterLink } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { login as loginApi } from "../../../services/authService";
-import Swal from "sweetalert2";
-import "sweetalert2/dist/sweetalert2.min.css";
 import { jwtDecode } from "jwt-decode";
 
 export default function Login() {
@@ -61,9 +61,19 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   // تحديد التاب الحالي
   const currentTab = location.pathname === "/login" ? 0 : 1;
+
+  // Handle Snackbar Close
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const loginHandle = async (data) => {
     try {
@@ -82,29 +92,35 @@ export default function Login() {
         // خزني اسم اليوزر
         localStorage.setItem("userName", userName);
         localStorage.setItem("userId", userId);
-        Swal.fire({
-          title: "Login successful!",
-          icon: "success",
-          timer: 1500,
-        }).then(() => { //تأخير الانتقال ثانية واحدة لضمان حفظ التوكن قبل التنقل
-          navigate("/app/feed");
+        
+        // عرض رسالة النجاح
+        setSnackbar({
+          open: true,
+          message: "Login successful! 🎉",
+          severity: "success",
         });
 
+        // تأخير الانتقال ثانية واحدة لضمان حفظ التوكن قبل التنقل
+        setTimeout(() => {
+          navigate("/app/feed");
+        }, 1500);
       }
     } catch (error) {
       const msg =
         error.response?.data?.message || "Login failed. Please try again.";
       console.error("Login error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Login failed",
-        text: msg,
-        timer: 2000,
+      
+      // عرض رسالة الخطأ
+      setSnackbar({
+        open: true,
+        message: msg,
+        severity: "error",
       });
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <>
       {/* Navbar */}
@@ -392,6 +408,30 @@ export default function Login() {
           </Box>
         </Box>
       </Container>
+
+      {/* Snackbar للإشعارات */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ 
+            width: "100%",
+            bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
+            color: "white",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

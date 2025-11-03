@@ -16,8 +16,8 @@ const ServiceCard = ({ icon, title, description, count, url, verticalHeader }) =
         justifyContent: "space-between",
         p: 2,
         borderRadius: "12px",
-        transition: "0.2s",
-        "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
+        transition: "0.3s",
+        "&:hover": { transform: "translateY(-3px)", boxShadow: 3 },
       }}
     >
       {/* المحتوى الرئيسي */}

@@ -1,6 +1,19 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Container, Box } from "@mui/material";
+import { 
+    Container, 
+    Box, 
+    Dialog, 
+    DialogTitle, 
+    DialogContent, 
+    DialogActions, 
+    TextField, 
+    Button,
+    Snackbar,
+    Alert,
+    CircularProgress,
+} from "@mui/material";
 import { WavingHand } from "@mui/icons-material";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import SelectActionCard from "../../../components/Cards/Cards";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
@@ -23,8 +36,6 @@ import {
 } from "../../../services/postService";
 import ProfilePic from "../../../assets/images/ProfilePic.jpg";
 import dayjs from 'dayjs';
-import Swal from "sweetalert2";
-import "sweetalert2/dist/sweetalert2.min.css";
 
 // normalize comment
 const normalizeComment = (comment, userName) => ({
@@ -41,15 +52,6 @@ const normalizeComment = (comment, userName) => ({
 const updatePost = (posts, postId, newData) =>
     posts.map(p => (p.id === postId ? { ...p, ...newData } : p));
 
-// ظهور الصورة بصفحة تعديل البوست
-const applyPreviewStyles = (img) => {
-    img.style.display = "block";
-    img.style.objectFit = "cover";
-    img.style.width = "50%";
-    img.style.maxHeight = "200px";
-    img.style.margin = "20px auto 0 auto";
-};
-
 function Feed() {
     const [posts, setPosts] = useState([]);
     const userToken = localStorage.getItem("accessToken");
@@ -59,6 +61,37 @@ function Feed() {
     const [currentPostId, setCurrentPostId] = useState(null);
     const [currentComments, setCurrentComments] = useState([]);
     const [modalPost, setModalPost] = useState(null);
+
+    // Delete Dialog State
+    const [deleteDialog, setDeleteDialog] = useState({
+        open: false,
+        postId: null,
+    });
+
+    // Edit Dialog State
+    const [editDialog, setEditDialog] = useState({
+        open: false,
+        postId: null,
+        content: "",
+        tags: "",
+        file: null,
+        existingFileUrl: "",
+        previewUrl: "",
+    });
+
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    // Snackbar State
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: "",
+        severity: "success",
+    });
+
+    // Handle Snackbar Close
+    const handleSnackbarClose = () => {
+        setSnackbar({ ...snackbar, open: false });
+    };
 
     const fetchPosts = async () => {
         try {
@@ -79,12 +112,10 @@ function Feed() {
             }));
             setPosts(postsData);
         } catch (error) {
-            Swal.fire({
-                title: "Error!",
-                text: "Failed to fetch posts.",
-                icon: "error",
-                timer: 2000,
-                showConfirmButton: true,
+            setSnackbar({
+                open: true,
+                message: "Failed to fetch posts.",
+                severity: "error",
             });
             console.error("Error fetching posts:", error);
         }
@@ -120,109 +151,124 @@ function Feed() {
     const addPost = (newPost) =>
         setPosts([{ ...newPost, isLiked: false, recentComments: [] }, ...posts]);
 
-    const handleDeletePost = async (postId) => {
-        const result = await Swal.fire({
-            title: "Are you sure you want to delete this post?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, delete it!",
-            cancelButtonText: "No, keep it",
-        });
+    // Open Delete Dialog
+    const openDeleteDialog = (postId) => {
+        setDeleteDialog({ open: true, postId });
+    };
 
-        if (!result.isConfirmed) return;
+    // Close Delete Dialog
+    const closeDeleteDialog = () => {
+        setDeleteDialog({ open: false, postId: null });
+    };
+
+    // Confirm Delete Post
+    const handleDeletePost = async () => {
+        const postId = deleteDialog.postId;
+        closeDeleteDialog();
 
         try {
             const response = await deletePostApi(userToken, postId);
             if (response.status === 204) {
                 setPosts(posts.filter(p => p.id !== postId));
-
-                Swal.fire({ title: "Deleted!", text: "Your post has been deleted.", icon: "success", timer: 2000, showConfirmButton: false });
+                setSnackbar({
+                    open: true,
+                    message: "Your post has been deleted. ✓",
+                    severity: "success",
+                });
             }
         } catch (error) {
             console.error("Error deleting post:", error);
-            Swal.fire({ icon: "error", title: "Error deleting post", text: "Failed to delete post. Please try again.", timer: 2000, showConfirmButton: true });
+            setSnackbar({
+                open: true,
+                message: "Failed to delete post. Please try again.",
+                severity: "error",
+            });
         }
     };
 
-    const handleEditPost = async (postId) => {
+    // Open Edit Dialog
+    const openEditDialog = (postId) => {
         const postToEdit = posts.find(p => p.id === postId);
         if (!postToEdit) return;
 
-        const { value: formValues } = await Swal.fire({
-            title: "Edit Post",
-            html: `
-                <textarea id="swal-input1" class="swal2-textarea" placeholder="Content">${postToEdit.content}</textarea>
-                <input id="swal-input2" class="swal2-input" placeholder="Tags (comma separated)" value="${postToEdit.selectedTags.join(",")}" />
-                <input type="file" id="swal-input3" class="swal2-file" />
-                ${postToEdit.fileUrl ? `<img id="preview-img" src="${postToEdit.fileUrl}" />` : ""}
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: "Save",
-            customClass: { popup: "my-swal-popup" },
-           didOpen: () => {
-    const fileInput = document.getElementById("swal-input3");
-    let previewImg = document.getElementById("preview-img");
-
-    fileInput.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-
-        if (file) {
-            if (!previewImg) {
-                // إذا ما في صورة موجودة، نخلق عنصر <img>
-                previewImg = document.createElement("img");
-                previewImg.id = "preview-img";
-                fileInput.insertAdjacentElement("afterend", previewImg);
-            }
-            previewImg.src = URL.createObjectURL(file);
-            applyPreviewStyles(previewImg);
-        } else if (previewImg) {
-            previewImg.src = "";
-            previewImg.style.display = "none";
-        }
-    });
-
-    // إذا فيه صورة موجودة مسبقاً، نطبق الستايلي
-    if (previewImg) applyPreviewStyles(previewImg);
-}
-,
-            preConfirm: () => ({
-                content: document.getElementById("swal-input1").value,
-                tags: document.getElementById("swal-input2").value,
-                file: document.getElementById("swal-input3").files[0] || null,
-            }),
+        setEditDialog({
+            open: true,
+            postId,
+            content: postToEdit.content,
+            tags: postToEdit.selectedTags.join(","),
+            file: null,
+            existingFileUrl: postToEdit.fileUrl || "",
+            previewUrl: postToEdit.fileUrl || "",
         });
+    };
 
-        if (!formValues) return;
+    // Close Edit Dialog
+    const closeEditDialog = () => {
+        setEditDialog({
+            open: false,
+            postId: null,
+            content: "",
+            tags: "",
+            file: null,
+            existingFileUrl: "",
+            previewUrl: "",
+        });
+    };
 
-        Swal.fire({ title: "Updating data...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    // Handle File Change in Edit Dialog
+    const handleEditFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setEditDialog(prev => ({
+                ...prev,
+                file,
+                previewUrl: URL.createObjectURL(file),
+            }));
+        }
+    };
+
+    // Confirm Edit Post
+    const handleEditPost = async () => {
+        const { postId, content, tags, file } = editDialog;
+        
+        setIsUpdating(true);
 
         try {
             const formData = new FormData();
-            formData.append("Content", formValues.content);
-            formData.append("Tags", formValues.tags);
-            if (formValues.file) formData.append("File", formValues.file);
+            formData.append("Content", content);
+            formData.append("Tags", tags);
+            if (file) formData.append("File", file);
 
             const response = await editPostApi(formData, userToken, postId);
             console.log(response);
 
             if (response.status === 204) {
+                const postToEdit = posts.find(p => p.id === postId);
                 const updatedPost = {
                     ...postToEdit,
-                    content: formValues.content,
-                    selectedTags: formValues.tags ? formValues.tags.split(",") : [],
+                    content,
+                    selectedTags: tags ? tags.split(",") : [],
                     time: new Date().toLocaleString(),
-                    fileUrl: formValues.file ? URL.createObjectURL(formValues.file) : postToEdit.fileUrl,
+                    fileUrl: file ? URL.createObjectURL(file) : postToEdit.fileUrl,
                 };
                 setPosts(prev => updatePost(prev, postId, updatedPost));
-                Swal.close();
-
-                Swal.fire({ title: "Updated!", text: "Your post has been updated.", icon: "success", timer: 2000, showConfirmButton: true });
+                
+                closeEditDialog();
+                setSnackbar({
+                    open: true,
+                    message: "Your post has been updated. ✓",
+                    severity: "success",
+                });
             }
         } catch (error) {
             console.error("Error editing post:", error);
-            Swal.close();
-            Swal.fire("Error", "Failed to update post", "error");
+            setSnackbar({
+                open: true,
+                message: "Failed to update post.",
+                severity: "error",
+            });
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -246,7 +292,11 @@ function Feed() {
         } catch (error) {
             console.error(`Error ${isCurrentlyLiked ? 'unliking' : 'liking'} post:`, error);
             setPosts(prev => updatePost(prev, postId, { isLiked: isCurrentlyLiked, likes: originalLikes }));
-            Swal.fire("Error", `Failed to ${isCurrentlyLiked ? 'unlike' : 'like'} post.`, "error");
+            setSnackbar({
+                open: true,
+                message: `Failed to ${isCurrentlyLiked ? 'unlike' : 'like'} post.`,
+                severity: "error",
+            });
         }
     };
 
@@ -267,7 +317,11 @@ function Feed() {
             setCurrentComments(sortedComments);
         } catch (error) {
             console.error("Error fetching comments:", error);
-            Swal.fire("Error", "Failed to load comments.", "error");
+            setSnackbar({
+                open: true,
+                message: "Failed to load comments.",
+                severity: "error",
+            });
             setCommentsModalVisible(false);
             setModalPost(null);
         }
@@ -290,7 +344,11 @@ function Feed() {
             }
         } catch (error) {
             console.error("Error adding comment:", error);
-            Swal.fire("Error", "Failed to add comment.", "error");
+            setSnackbar({
+                open: true,
+                message: "Failed to add comment.",
+                severity: "error",
+            });
             setCurrentComments(prev => prev.filter(c => c.id !== tempCommentId));
             setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: p.comments - 1, recentComments: p.recentComments.filter(c => c.id !== tempCommentId) } : p));
         }
@@ -322,7 +380,11 @@ function Feed() {
         } catch (error) {
             console.error("Error deleting comment:", error);
             if (error.response?.status !== 404) {
-                Swal.fire("Error", "Failed to delete comment.", "error");
+                setSnackbar({
+                    open: true,
+                    message: "Failed to delete comment.",
+                    severity: "error",
+                });
                 setCurrentComments(originalComments);
                 setPosts(prev => updatePost(prev, postId, { comments: originalRecentComments.length, recentComments: originalRecentComments }));
             }
@@ -344,64 +406,221 @@ function Feed() {
             console.error("Error editing comment:", error);
             setCurrentComments(originalComments);
             setPosts(prev => prev.map(p => p.id === postId ? { ...p, recentComments: p.recentComments.map(c => c.id === commentId ? { ...c, content: originalContent, createdAt: originalComment.createdAt } : c) } : p));
-            Swal.fire("Error", "Failed to update comment.", "error");
+            setSnackbar({
+                open: true,
+                message: "Failed to update comment.",
+                severity: "error",
+            });
         }
     };
 
     useEffect(() => { fetchPosts(); }, [userToken]);
 
     return (
-        <Container maxWidth="lg" className="container">
-            <div className="welcome-section">
-                <h1 className="welcome-heading">
-                    Welcome back, {userName}! <WavingHand className="wave" />
-                </h1>
-                <p className="welcome-subheading">
-                    Here's what's happening in your community today.
-                </p>
-            </div>
+        <>
+            <Container maxWidth="lg" className="container">
+                <div className="welcome-section">
+                    <h1 className="welcome-heading">
+                        Welcome back, {userName}! <WavingHand className="wave" />
+                    </h1>
+                    <p className="welcome-subheading">
+                        Here's what's happening in your community today.
+                    </p>
+                </div>
 
-            <div className="cards-section">
-                <SelectActionCard title="Active Services" value="12" icon={<AccessTimeIcon />} />
-                <SelectActionCard title="Completed Tasks" value="47" icon={<WorkspacePremiumOutlinedIcon />} />
-                <SelectActionCard title="Peer Rating" value="4.8" icon={<GroupIcon />} />
-            </div>
+                <div className="cards-section">
+                    <SelectActionCard title="Active Services" value="12" icon={<AccessTimeIcon />} />
+                    <SelectActionCard title="Completed Tasks" value="47" icon={<WorkspacePremiumOutlinedIcon />} />
+                    <SelectActionCard title="Peer Rating" value="4.8" icon={<GroupIcon />} />
+                </div>
 
-            <div className="post-section">
-                <div className="create-post-main">
-                    <CreatePost addPost={addPost} token={userToken} />
-                    <Box mt={3}>
-                        {posts.map(post => (
-                            <PostCard
-                                key={post.id}
-                                post={post}
-                                onDelete={handleDeletePost}
-                                onEdit={handleEditPost}
-                                onLike={handleLikePost}
-                                onShowComments={handleShowComments}
-                                onAddCommentInline={handleAddComment}
-                                fetchRecentComments={fetchRecentComments}
-                            />
-                        ))}
+                <div className="post-section">
+                    <div className="create-post-main">
+                        <CreatePost addPost={addPost} token={userToken} />
+                        <Box mt={3}>
+                            {posts.map(post => (
+                                <PostCard
+                                    key={post.id}
+                                    post={post}
+                                    onDelete={openDeleteDialog}
+                                    onEdit={openEditDialog}
+                                    onLike={handleLikePost}
+                                    onShowComments={handleShowComments}
+                                    onAddCommentInline={handleAddComment}
+                                    fetchRecentComments={fetchRecentComments}
+                                />
+                            ))}
+                        </Box>
+                    </div>
+                    <div className="feed-sidebar" style={{ flex: 1 }}>
+                        <Sidebar />
+                    </div>
+                </div>
+
+                <CommentsModal
+                    isVisible={commentsModalVisible}
+                    onClose={() => setCommentsModalVisible(false)}
+                    comments={currentComments}
+                    postId={currentPostId}
+                    post={modalPost}
+                    onCommentSubmit={handleAddComment}
+                    onDeleteComment={handleDeleteComment}
+                    onEditComment={handleEditComment}
+                    currentUserName={userName}
+                />
+            </Container>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog
+                open={deleteDialog.open}
+                onClose={closeDeleteDialog}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "12px",
+                        width: "400px",
+                        maxWidth: "90%",
+                    },
+                }}
+            >
+                <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <WarningAmberIcon sx={{ color: "#F59E0B" }} />
+                    Delete Post
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ pt: 1 }}>
+                        Are you sure you want to delete this post?
                     </Box>
-                </div>
-                <div className="feed-sidebar" style={{ flex: 1 }}>
-                    <Sidebar />
-                </div>
-            </div>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button
+                        onClick={closeDeleteDialog}
+                        sx={{
+                            color: "#6B7280",
+                            textTransform: "none",
+                        }}
+                    >
+                        No, keep it
+                    </Button>
+                    <Button
+                        onClick={handleDeletePost}
+                        variant="contained"
+                        sx={{
+                            bgcolor: "#EF4444",
+                            textTransform: "none",
+                            "&:hover": {
+                                bgcolor: "#DC2626",
+                            },
+                        }}
+                    >
+                        Yes, delete it!
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
-            <CommentsModal
-                isVisible={commentsModalVisible}
-                onClose={() => setCommentsModalVisible(false)}
-                comments={currentComments}
-                postId={currentPostId}
-                post={modalPost}
-                onCommentSubmit={handleAddComment}
-                onDeleteComment={handleDeleteComment}
-                onEditComment={handleEditComment}
-                currentUserName={userName}
-            />
-        </Container>
+            {/* Edit Post Dialog */}
+            <Dialog
+                open={editDialog.open}
+                onClose={closeEditDialog}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: "12px",
+                    },
+                }}
+            >
+                <DialogTitle>Edit Post</DialogTitle>
+                <DialogContent sx={{ pt: 2 }}>
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={4}
+                        label="Content"
+                        value={editDialog.content}
+                        onChange={(e) => setEditDialog(prev => ({ ...prev, content: e.target.value }))}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Tags (comma separated)"
+                        value={editDialog.tags}
+                        onChange={(e) => setEditDialog(prev => ({ ...prev, tags: e.target.value }))}
+                        sx={{ mb: 2 }}
+                    />
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleEditFileChange}
+                        style={{ marginBottom: "16px" }}
+                    />
+                    {editDialog.previewUrl && (
+                        <Box sx={{ mt: 2, textAlign: "center" }}>
+                            <img
+                                src={editDialog.previewUrl}
+                                alt="Preview"
+                                style={{
+                                    width: "50%",
+                                    maxHeight: "200px",
+                                    objectFit: "cover",
+                                    borderRadius: "8px",
+                                }}
+                            />
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button
+                        onClick={closeEditDialog}
+                        disabled={isUpdating}
+                        sx={{
+                            color: "#6B7280",
+                            textTransform: "none",
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleEditPost}
+                        variant="contained"
+                        disabled={isUpdating}
+                        sx={{
+                            bgcolor: "#3B82F6",
+                            textTransform: "none",
+                            minWidth: "100px",
+                            "&:hover": {
+                                bgcolor: "#2563EB",
+                            },
+                        }}
+                    >
+                        {isUpdating ? <CircularProgress size={20} color="inherit" /> : "Save"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Snackbar للإشعارات */}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            >
+                <Alert
+                    onClose={handleSnackbarClose}
+                    severity={snackbar.severity}
+                    sx={{
+                        width: "100%",
+                        bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
+                        color: "white",
+                        "& .MuiAlert-icon": {
+                            color: "white",
+                        },
+                    }}
+                    variant="filled"
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
+        </>
     );
 }
 

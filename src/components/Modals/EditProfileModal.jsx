@@ -339,7 +339,19 @@ const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{
+            width: "100%",
+            bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
+            color: "white",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+          variant="filled"
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

@@ -8,7 +8,9 @@ export default function StatCard(props) {
         boxShadow: "0px 2px 6px rgba(0,0,0,0.08)",
         p: 2,
         textAlign: "center",
-        width: 210, 
+        width: 210,
+        transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+        '&:hover': { transform: 'scale(1.02)', boxShadow: "0px 4px 12px rgba(0,0,0,0.2)" },
       }}
     >
       <CardContent>
@@ -18,7 +20,7 @@ export default function StatCard(props) {
         </Typography>
 
         {/* النص */}
-        <Typography variant="body1" color="#64748B" sx={{ mb: 1, fontWeight:"bold" }}>
+        <Typography variant="body1" color="#64748B" sx={{ mb: 1, fontWeight: "bold" }}>
           {props.label}
         </Typography>
 
