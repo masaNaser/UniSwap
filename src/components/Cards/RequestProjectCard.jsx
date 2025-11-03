@@ -1,165 +1,3 @@
-// import React from "react";
-// import {
-//   Box,
-//   Card,
-//   CardContent,
-//   Typography,
-//   Avatar,
-//   Chip,
-//   Stack,
-//   Button,
-// } from "@mui/material";
-
-// export default function RequestProjectCard({
-//   status = "Pending Request",
-//   title,
-//   clientInitials,
-//   userName,
-//   offeredPoints,
-//   sentDate,
-//   description,
-//   isProvider = true, // جديد: يخبرنا إذا كان المستخدم provider
-// }) {
-//   return (
-//     <Card
-//       sx={{
-//         borderRadius: "16px",
-//         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-//         width: 350,
-//         height: 310,
-//         display: "flex",
-//         flexDirection: "column",
-//         justifyContent: "space-between",
-//       }}
-//     >
-//       <CardContent sx={{ p: 3 }}>
-//         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-//           <Box
-//             sx={{
-//               width: 8,
-//               height: 8,
-//               borderRadius: "50%",
-//               backgroundColor: "#FBBF24",
-//             }}
-//           />
-//           <Chip
-//             label={status}
-//             size="small"
-//             sx={{
-//               backgroundColor: "#FEF3C7",
-//               color: "#D97706",
-//               fontWeight: 600,
-//               fontSize: "0.75rem",
-//               height: 24,
-//               borderRadius: "8px",
-//               px: 1,
-//             }}
-//           />
-//         </Stack>
-
-//         <Typography
-//           variant="h6"
-//           component="div"
-//           sx={{ fontWeight: 700, mb: 2, color: "#1F2937" }}
-//         >
-//           {title}
-//         </Typography>
-
-//         <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-//           <Avatar
-//             sx={{
-//               width: 48,
-//               height: 48,
-//               bgcolor: "#4299e1",
-//               fontSize: "1rem",
-//               fontWeight: 600,
-//             }}
-//           >
-//             {clientInitials}
-//           </Avatar>
-//           <Box>
-//             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-//               {userName}
-//             </Typography>
-//             <Typography variant="body2" color="text.secondary">
-//               Offered: {offeredPoints}
-//             </Typography>
-//             <Typography variant="body2" color="text.secondary">
-//               Sent: {sentDate}
-//             </Typography>
-//           </Box>
-//         </Stack>
-
-//         <Typography
-//           variant="body2"
-//           sx={{
-//             color: "#4B5563",
-//             mb: 2,
-//             display: "-webkit-box",
-//             WebkitLineClamp: 2,
-//             WebkitBoxOrient: "vertical",
-//             overflow: "hidden",
-//           }}
-//         >
-//           {description}
-//         </Typography>
-
-//         <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: "auto" }}>
-//           <Button
-//             variant="outlined"
-//             sx={{
-//               borderColor: "#D1D5DB",
-//               color: "#4B5563",
-//               textTransform: "none",
-//               borderRadius: "8px",
-//               fontWeight: 600,
-//               flexGrow: 1,
-//             }}
-//           >
-//             View
-//           </Button>
-
-//           {isProvider && (
-//             <>
-//               <Button
-//                 variant="outlined"
-//                 sx={{
-//                   borderColor: "#EF4444",
-//                   color: "#EF4444",
-//                   textTransform: "none",
-//                   borderRadius: "8px",
-//                   fontWeight: 600,
-//                   flexGrow: 1,
-//                 }}
-//               >
-//                 Reject
-//               </Button>
-//               <Button
-//                 variant="contained"
-//                 sx={{
-//                   backgroundColor: "#1976D2",
-//                   "&:hover": {
-//                     backgroundColor: "#1565C0",
-//                   },
-//                   color: "white",
-//                   textTransform: "none",
-//                   borderRadius: "8px",
-//                   fontWeight: 600,
-//                   boxShadow: "none",
-//                   flexGrow: 1,
-//                 }}
-//               >
-//                 Approve
-//               </Button>
-//             </>
-//           )}
-//         </Stack>
-//       </CardContent>
-//     </Card>
-//   );
-// }
-
-
 import React, { useState } from "react";
 import {
   Card,
@@ -174,11 +12,14 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import EditIcon from "@mui/icons-material/Edit";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import Point from "../../assets/images/Point.svg";
 import {
   approveCollaborationRequest,
   rejectCollaborationRequest,
+  cancelCollaborationRequest,
 } from "../../services/collaborationService";
 
 export default function RequestProjectCard({
@@ -191,21 +32,32 @@ export default function RequestProjectCard({
   pointsOffered,
   deadline,
   category,
-  isProvider, // true إذا أنا Provider و بستقبل Request
-  onRequestHandled, // callback لما يقبل/يرفض
+  isProvider, // true = Provider view (can Accept/Reject), false = Client view (can Edit/Cancel)
+  onRequestHandled, // callback when Accept/Reject/Cancel happens
+  onEditRequest, // callback when Edit is clicked
+  sentDate, // جديد: تاريخ إرسال الطلب
 }) {
   const [loading, setLoading] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
   const token = localStorage.getItem("accessToken");
+
+  // تحديد إذا كان الوصف طويل (أكثر من 100 حرف)
+  const isLongDescription = description && description.length > 50;
+  const displayedDescription = showFullDescription 
+    ? description 
+    : isLongDescription 
+      ? description.substring(0, 50) + "..." 
+      : description;
 
   const handleApprove = async () => {
     try {
       setLoading(true);
       await approveCollaborationRequest(token, id);
       alert("Request approved successfully! ✅");
-      onRequestHandled?.(); // refresh الـ list
+      onRequestHandled?.();
     } catch (error) {
       console.error("Error approving request:", error);
-      alert("Failed to approve request");
+      alert(error.response?.data?.message || "Failed to approve request");
     } finally {
       setLoading(false);
     }
@@ -219,10 +71,44 @@ export default function RequestProjectCard({
       onRequestHandled?.();
     } catch (error) {
       console.error("Error rejecting request:", error);
-      alert("Failed to reject request");
+      alert(error.response?.data?.message || "Failed to reject request");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = async () => {
+    if (!window.confirm("Are you sure you want to cancel this request?")) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await cancelCollaborationRequest(token, id);
+      alert("Request cancelled successfully ❌");
+      onRequestHandled?.();
+    } catch (error) {
+      console.error("Error cancelling request:", error);
+      alert(error.response?.data?.message || "Failed to cancel request");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = () => {
+    // Pass the request data to parent component to open edit modal
+    const requestData = {
+      id,
+      title,
+      description,
+      pointsOffered,
+      deadline,
+      category, // ⚠️ هذا هو الـ category الأصلي
+      type: category, // إضافة type أيضاً للتأكد
+      providerName: clientName,
+    };
+    console.log("🔵 Sending to edit modal:", requestData);
+    onEditRequest?.(requestData);
   };
 
   return (
@@ -231,33 +117,52 @@ export default function RequestProjectCard({
         borderRadius: "16px",
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         transition: "transform 0.2s, box-shadow 0.2s",
+        width: "350px",
+        height: "350px",
+        display: "flex",
+        flexDirection: "column",
         "&:hover": {
           transform: "translateY(-4px)",
           boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
         },
       }}
     >
-      <CardContent>
-        {/* Header: Client Info */}
-        <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+      <CardContent sx={{ 
+        flex: 1, 
+        display: "flex", 
+        flexDirection: "column",
+        p: 2.5,
+        "&:last-child": { pb: 2.5 }
+      }}>
+        {/* Header: Client/Provider Info */}
+        <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
           <Avatar
             src={clientImage}
             sx={{
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               bgcolor: "#3b82f6",
               fontWeight: "bold",
+              fontSize: "14px",
             }}
           >
             {clientInitials}
           </Avatar>
           <Box flex={1}>
-            <Typography variant="body2" fontWeight="bold">
+            <Typography variant="body2" fontWeight="bold" fontSize="14px">
               {clientName}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Requesting {category}
+            <Typography variant="caption" color="text.secondary" fontSize="11px">
+              {isProvider
+                ? `Requesting ${category?.replace("Request", "")}`
+                : `Providing ${category?.replace("Request", "")}`}
             </Typography>
+            {/* تاريخ الارسال */}
+            {sentDate && (
+              <Typography variant="caption" color="text.secondary" fontSize="10px" display="block">
+                Sent: {sentDate}
+              </Typography>
+            )}
           </Box>
           <Chip
             label="Pending"
@@ -266,59 +171,94 @@ export default function RequestProjectCard({
               bgcolor: "#FEF3C7",
               color: "#F59E0B",
               fontWeight: "bold",
+              fontSize: "12px",
+              height: "25px",
+              width: "70px",
             }}
           />
         </Box>
 
         {/* Title */}
-        <Typography variant="h6" fontWeight="bold" mb={1}>
+        <Typography variant="h6" fontWeight="bold" mb={1} fontSize="16px" lineHeight={1.3}>
           {title}
         </Typography>
 
-        {/* Description */}
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          mb={2}
-          sx={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-          }}
-        >
-          {description}
-        </Typography>
+        {/* Description with Read More */}
+        <Box mb={1.5} flex={1}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            fontSize="13px"
+            lineHeight={1.4}
+            sx={{
+              wordBreak: "break-word",
+              overflowY: showFullDescription ? "auto" : "hidden", 
+              maxHeight: showFullDescription ? 60 : "auto",
+            }}
+          >
+            {displayedDescription}
+          </Typography>
+          {isLongDescription && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#3B82F6",
+                cursor: "pointer",
+                fontWeight: "500",
+                fontSize: "12px",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+              onClick={() => setShowFullDescription(!showFullDescription)}
+            >
+              {showFullDescription ? "Show less" : "Read more"}
+            </Typography>
+          )}
+        </Box>
 
         {/* Points & Deadline */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={1.5}
+        >
           <Box display="flex" alignItems="center" gap={0.5}>
-            <img src={Point} alt="points" style={{ width: 20, height: 20 }} />
-            <Typography variant="body2" fontWeight="bold" color="#F59E0B">
+            <img src={Point} alt="points" style={{ width: 18, height: 18 }} />
+            <Typography variant="body2" fontWeight="bold" color="#F59E0B" fontSize="13px">
               {pointsOffered} Points
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={0.5}>
-            <CalendarMonthIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-            <Typography variant="caption" color="text.secondary">
-              {deadline}
+            <CalendarMonthIcon sx={{ fontSize: 15, color: "text.secondary" }} />
+            <Typography variant="caption" color="text.secondary" fontSize="12px">
+              Due: {deadline}
             </Typography>
           </Box>
         </Box>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - For Provider (Accept/Reject) */}
         {isProvider && (
           <Stack direction="row" spacing={1}>
             <Button
               fullWidth
               variant="contained"
-              startIcon={loading ? <CircularProgress size={16} /> : <CheckCircleIcon />}
+              startIcon={
+                loading ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : (
+                  <CheckCircleIcon />
+                )
+              }
               disabled={loading}
               onClick={handleApprove}
               sx={{
-                bgcolor: "#10B981",
-                "&:hover": { bgcolor: "#059669" },
+                bgcolor: "#3B82F6",
+                "&:hover": { bgcolor: "#2563EB" },
+                textTransform: "none",
+                fontSize: "13px",
+                height: "36px",
               }}
             >
               Accept
@@ -332,6 +272,9 @@ export default function RequestProjectCard({
               sx={{
                 color: "#EF4444",
                 borderColor: "#EF4444",
+                textTransform: "none",
+                fontSize: "13px",
+                height: "36px",
                 "&:hover": {
                   bgcolor: "#FEE2E2",
                   borderColor: "#DC2626",
@@ -341,6 +284,74 @@ export default function RequestProjectCard({
               Reject
             </Button>
           </Stack>
+        )}
+
+        {/* Action Buttons - For Client (Edit/Cancel) */}
+        {!isProvider && (
+          <>
+            <Stack direction="row" spacing={1} mb={1.5}>
+              <Button
+                fullWidth
+                variant="contained"
+                startIcon={<EditIcon />}
+                disabled={loading}
+                onClick={handleEdit}
+                sx={{
+                  bgcolor: "#3B82F6",
+                  "&:hover": { bgcolor: "#2563EB" },
+                  textTransform: "none",
+                  fontSize: "13px",
+                  height: "36px",
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <CancelIcon />
+                  )
+                }
+                disabled={loading}
+                onClick={handleCancel}
+                sx={{
+                  color: "#EF4444",
+                  borderColor: "#EF4444",
+                  textTransform: "none",
+                  fontSize: "13px",
+                  height: "36px",
+                  "&:hover": {
+                    bgcolor: "#FEE2E2",
+                    borderColor: "#DC2626",
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+            </Stack>
+
+            {/* Info for Client - they're waiting for response */}
+            <Box
+              sx={{
+                bgcolor: "#EFF6FF",
+                p: 1,
+                borderRadius: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 0.8,
+              }}
+            >
+              <HourglassEmptyIcon sx={{ color: "#3B82F6", fontSize: 18 }} />
+              <Typography variant="body2" color="#3B82F6" fontWeight="500" fontSize="12px">
+                Waiting for {clientName} to respond
+              </Typography>
+            </Box>
+          </>
         )}
       </CardContent>
     </Card>

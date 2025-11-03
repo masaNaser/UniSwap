@@ -33,6 +33,18 @@ export const getCollaborationRequest = async (token, id) => {
   });
 };
 
+// Get pending collaboration requests
+// role: 'Client' or 'Provider' (case-sensitive!)
+export const getPendingRequests = async (token, role) => {
+  return await api.get("/collaborations/requests/pending", {
+    params: {
+      role: role, // 'Client' or 'Provider'
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
 // Edit collaboration request
 export const editCollaborationRequest = async (token, id, data) => {
   return await api.put(`/collaborations/${id}`, data, {
@@ -78,6 +90,6 @@ export const rejectCollaborationRequest = async (token, id) => {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    }
-  );
+    }
+  );
 };

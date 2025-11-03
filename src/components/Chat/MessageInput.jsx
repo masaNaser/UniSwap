@@ -29,6 +29,13 @@ export default function MessageInput({ onSend }) {
     setFiles([]);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); 
+      handleSendClick();
+    }
+  };
+
   return (
     <div className="message-input-wrapper">
       {/* منطقة عرض الملفات المرفقة - فوق الـ input */}
@@ -51,7 +58,8 @@ export default function MessageInput({ onSend }) {
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="write messege..."
+          placeholder="Type a message..."
+          onKeyDown={handleKeyDown}
         />
         <button onClick={handleAttachClick}>
           <AttachFileIcon />

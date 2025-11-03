@@ -1,127 +1,269 @@
-import React from "react";
-import { Box, Card, CardContent, Typography, Avatar, Chip, Stack } from "@mui/material";
-import { CalendarToday, BusinessCenter } from "@mui/icons-material";
+import React, { useState } from "react";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Avatar,
+  Chip,
+  LinearProgress,
+} from "@mui/material";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 export default function AllStatusProjectCard({
-  status = "Active",
-  title = "E-commerce Website Development",
-  description = "Build a modern e-commerce platform with React and Node.js including payment integration and admin panel.",
-  clientInitials = "SC",
-  clientName = "Sarah Chen",
-  clientRole = "Client",
-  clientTime = "2 hours ago",
-  dueDate = "2/15/2024",
-  category = "Web Development",
+  id,
+  // API Response Fields
+  projectStatus,
+  title,
+  description,
+  clientInitials,
+  clientName,
+  clientAvatar,
+  providerInitials,
+  providerName,
+  providerAvatar,
+  deadline,
+  category,
+  pointsOffered,
+  progressPercentage,
+  // Derived Props
+  isProvider = true, // true = show client info, false = show provider info
+  createdAt,
 }) {
+  const [showFullDescription, setShowFullDescription] = useState(false);
+
+  // Console to check field mapping
+  console.log("🔵 AllStatusProjectCard - Props Received:", {
+    id,
+    title,
+    projectStatus,
+    clientName,
+    providerName,
+    progressPercentage,
+    pointsOffered,
+    createdAt,
+    deadline,
+    isProvider,
+  });
+
+  // تحديد إذا كان الوصف طويل (أكثر من 50 حرف)
+  const isLongDescription = description && description.length > 50;
+  const displayedDescription = showFullDescription
+    ? description
+    : isLongDescription
+      ? description.substring(0, 50) + "..."
+      : description;
+
   const getStatusStyles = (status) => {
     const styles = {
-      Active: { bg: "#ECFDF5", text: "#059669", dotColor: "#10B981" },
-      Completed: { bg: "#EFF6FF", text: "#0284C7", dotColor: "#0EA5E9" },
-      Overdue: { bg: "#FEF2F2", text: "#DC2626", dotColor: "#EF4444" },
+      Active: {
+        bg: "#ECFDF5",
+        text: "#059669",
+      },
+      Completed: {
+        bg: "#EFF6FF",
+        text: "#0284C7",
+      },
+      Overdue: {
+        bg: "#FEF2F2",
+        text: "#DC2626",
+      },
+      Pending: {
+        bg: "#FEF3C7",
+        text: "#F59E0B",
+      },
     };
     return styles[status] || styles.Active;
   };
 
-  const statusStyles = getStatusStyles(status);
+  const statusStyles = getStatusStyles(projectStatus);
+
+  // Generate initials from name if not provided
+  const generateInitials = (name) => {
+    if (!name) return "NA";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  // Determine who to display (client or provider)
+  const displayName = isProvider ? clientName : providerName;
+  const displayInitials = isProvider
+    ? clientInitials || generateInitials(clientName)
+    : providerInitials || generateInitials(providerName);
+  const displayAvatar = isProvider ? clientAvatar : providerAvatar;
+  const displayRole = isProvider ? "Client" : "Service Provider";
+
+  // Format deadline date
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formattedDeadline = formatDate(deadline);
 
   return (
     <Card
       sx={{
-        width: 350,
-        height: 310,
         borderRadius: "16px",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
-        transition: "all 0.3s ease",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        transition: "transform 0.2s, box-shadow 0.2s",
+        width: "350px",
+        minHeight: "350px",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
         "&:hover": {
-          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.12)",
-          transform: "translateY(-2px)",
+          transform: "translateY(-4px)",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
         },
       }}
     >
-      <CardContent sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}>
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-          <Box
-            sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: statusStyles.dotColor }}
-          />
+      <CardContent
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          p: 2.5,
+          "&:last-child": { pb: 2.5 },
+        }}
+      >
+        {/* Header: Client/Provider Info + Status Chip */}
+        <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
+          <Avatar
+            src={displayAvatar}
+            sx={{
+              width: 36,
+              height: 36,
+              bgcolor: "#3b82f6",
+              fontWeight: "bold",
+              fontSize: "14px",
+            }}
+          >
+            {displayInitials}
+          </Avatar>
+          <Box flex={1}>
+            <Typography variant="body2" fontWeight="bold" fontSize="14px">
+              {displayName || "Unknown"}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" fontSize="11px">
+              {displayRole}
+            </Typography>
+          </Box>
           <Chip
-            label={status}
+            label={projectStatus}
             size="small"
             sx={{
-              backgroundColor: statusStyles.bg,
+              bgcolor: statusStyles.bg,
               color: statusStyles.text,
-              fontWeight: 600,
-              fontSize: "0.75rem",
-              height: 24,
-              borderRadius: "8px",
-              px: 1,
+              fontWeight: "bold",
+              fontSize: "12px",
+              height: "25px",
+              width: "70px",
             }}
           />
-        </Stack>
+        </Box>
 
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: "#1F2937", fontSize: "1.1rem" }}>
+        {/* Title */}
+        <Typography
+          variant="h6"
+          fontWeight="bold"
+          mb={1}
+          fontSize="16px"
+          lineHeight={1.3}
+        >
           {title}
         </Typography>
 
-        <Typography
-          variant="body2"
-          sx={{
-            mb: 3,
-            color: "#6B7280",
-            lineHeight: 1.6,
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {description}
-        </Typography>
-
-        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: "auto" }}>
-          <Avatar sx={{ width: 40, height: 40, bgcolor: "#3B82F6", fontWeight: 600, fontSize: "0.9rem" }}>
-            {clientInitials}
-          </Avatar>
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937" }}>
-              {clientName}
+        {/* Description with Read More */}
+        <Box mb={1.5} flex={1}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            fontSize="13px"
+            lineHeight={1.4}
+            sx={{
+              wordBreak: "break-word",
+              overflowY: showFullDescription ? "auto" : "hidden",
+              maxHeight: showFullDescription ? 60 : "auto",
+            }}
+          >
+            {displayedDescription}
+          </Typography>
+          {isLongDescription && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#3B82F6",
+                cursor: "pointer",
+                fontWeight: "500",
+                fontSize: "12px",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+              onClick={() => setShowFullDescription(!showFullDescription)}
+            >
+              {showFullDescription ? "Show less" : "Read more"}
             </Typography>
-            <Typography variant="caption" sx={{ color: "#9CA3AF" }}>
-              {clientRole} • {clientTime}
+          )}
+        </Box>
+
+        {/* Due Date */}
+        <Box display="flex" alignItems="center" gap={0.5} mb={2}>
+          <CalendarMonthIcon sx={{ fontSize: 15, color: "text.secondary" }} />
+          <Typography variant="caption" color="text.secondary" fontSize="12px">
+            Due: {formattedDeadline}
+          </Typography>
+        </Box>
+
+        {/* Progress Section */}
+        <Box>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={0.5}
+          >
+            <Typography
+              variant="body2"
+              fontWeight="600"
+              fontSize="13px"
+              color="#1F2937"
+            >
+              Progress
+            </Typography>
+            <Typography
+              variant="body2"
+              fontWeight="600"
+              fontSize="13px"
+              color="#3B82F6"
+            >
+              {Math.round(progressPercentage)}%
             </Typography>
           </Box>
-        </Stack>
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            pt: 2,
-            mt: "auto",
-            borderTop: "1px solid #F3F4F6",
-          }}
-        >
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <CalendarToday sx={{ fontSize: 16, color: "#6B7280" }} />
-            <Typography variant="body2" sx={{ color: "#4B5563", fontWeight: 500 }}>
-              Due: {dueDate}
-            </Typography>
-          </Stack>
-
-          <Chip
-            label={category}
-            size="small"
-            icon={<BusinessCenter sx={{ fontSize: 14 }} />}
+          <LinearProgress
+            variant="determinate"
+            value={progressPercentage}
             sx={{
-              backgroundColor: "#F3F4F6",
-              color: "#4B5563",
-              fontWeight: 500,
-              fontSize: "0.75rem",
-              height: 26,
-              borderRadius: "8px",
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: "#E5E7EB",
+              "& .MuiLinearProgress-bar": {
+                borderRadius: 4,
+                backgroundColor: "#0EA5E9",
+              },
             }}
           />
         </Box>

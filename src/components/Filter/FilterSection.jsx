@@ -115,7 +115,7 @@ export default function FilterSection({
                 anchorEl={anchorElements[index]}
                 open={Boolean(anchorElements[index])}
                 onClose={() => handleMenuClose(index)}
-                MenuProps={{ disableScrollLock: true }}
+                disableScrollLock={true}
                 PaperProps={{
                   sx: {
                     borderRadius: "8px",

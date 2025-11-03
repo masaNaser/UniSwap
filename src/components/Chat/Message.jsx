@@ -76,6 +76,7 @@ export default function Message({ text, filePath, content, sender }) {
         backgroundColor: isFileMessage ? "transparent" : "",
         border: isFileMessage ? "none" : "",
         padding: isFileMessage ? "0" : "10px",
+        color: sender === "me" ? "white" : "initial",
       }}
     >
       {isFileMessage ? (
@@ -91,7 +92,7 @@ export default function Message({ text, filePath, content, sender }) {
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              color: sender === "me" ? "#010a12ff" : "#0078ff",
+              color: sender === "me" ? "white" : "#0078ff",
               textDecoration: "underline",
             }}
           >
@@ -107,7 +108,9 @@ export default function Message({ text, filePath, content, sender }) {
               href={part}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "black" }}
+              style={{
+                color: sender === "me" ? "white" : "black",
+              }}
             >
               {part}
             </a>
