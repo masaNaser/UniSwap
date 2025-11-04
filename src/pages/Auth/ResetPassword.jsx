@@ -1,12 +1,12 @@
 import { useState } from "react";
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 import {
   Box,
   TextField,
   Typography,
   InputAdornment,
   LinearProgress,
-  Snackbar,
-  Alert,
 } from "@mui/material";
 import { Email, Lock, VpnKey } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -19,11 +19,6 @@ import { useForm } from "react-hook-form";
 export default function ResetPassword() {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
 
   const navigate = useNavigate();
   const email = location.state?.email || ""; // الإيميل الممرر من ForgetPassword
@@ -55,11 +50,6 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
 
-  // Handle Snackbar Close
-  const handleSnackbarClose = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const checkStrength = (value) => {
     let score = 0;
     if (value.length >= 8) score++;
@@ -88,183 +78,151 @@ export default function ResetPassword() {
       setLoading(true);
       const response = await resetPasswordApi({ email, ...data });
       if (response.status === 200) {
-        // عرض رسالة النجاح
-        setSnackbar({
-          open: true,
-          message: "Password has been reset successfully! ✓",
-          severity: "success",
+        Swal.fire({
+          title: "Password has been reset successfully.",
+          icon: "success",
+          draggable: true,
+          timer: 1500,
         });
-
-        // الانتقال لصفحة اللوقن بعد ثانية
-        setTimeout(() => {
-          navigate("/login");
-        }, 1000);
+        navigate("/login");
       }
     } catch (error) {
       const errorMessage =
         error.response?.data?.[0] ||
         "Failed to reset password. Please try again.";
-      
-      // عرض رسالة الخطأ
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
+      Swal.fire({
+        icon: "error",
+        title: "Reset Failed",
+        text: errorMessage,
       });
-      
       console.log(error);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <Box
-        sx={{
-          maxWidth: 500,
-          mx: "auto",
-          mt: 8,
-          p: 8,
-          boxShadow: 3,
-          borderRadius: 2,
-        }}
-      >
-        <Typography variant="h6" mb={2}>
-          Reset Password
-        </Typography>
-        <Box component={"form"} onSubmit={handleSubmit(ResetHandle)}>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Email"
-            value={email}
-            disabled
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <TextField
-            {...register("code")}
-            fullWidth
-            margin="normal"
-            label="Code"
-            placeholder="xxxx"
-            variant="outlined"
-            required
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <VpnKey />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <TextField
-            {...register("newPassword")}
-            fullWidth
-            margin="normal"
-            label="New Password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter your password"
-            variant="outlined"
-            required
-            error={!!errors.newPassword}
-            helperText={errors.newPassword?.message}
-            onChange={(e) => {
-              register("newPassword").onChange(e);
-              checkStrength(e.target.value);
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          {passwordStrength > 0 && (
-            <>
-              <LinearProgress
-                variant="determinate"
-                value={(passwordStrength / 4) * 100}
-                sx={{ height: 8, borderRadius: 5, mt: 1 }}
-                color={
-                  passwordStrength < 2
-                    ? "error"
-                    : passwordStrength === 2
-                      ? "warning"
-                      : "success"
-                }
-              />
-              <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
-                {getStrengthLabel().text}
-              </Typography>
-            </>
-          )}
-
-          <TextField
-            {...register("confirmPassword")}
-            fullWidth
-            margin="normal"
-            label="Confirm Password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Confirm your password"
-            variant="outlined"
-            required
-            error={!!errors.confirmPassword}
-            helperText={errors.confirmPassword?.message}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <CustomButton
-            fullWidth
-            loading={loading}
-            variant="contained"
-            sx={{ mt: 5 }}
-            type="submit"
-          >
-            Reset Password
-          </CustomButton>
-        </Box>
-      </Box>
-
-      {/* Snackbar للإشعارات */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{
-            width: "100%",
-            bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
-            color: "white",
-            "& .MuiAlert-icon": {
-              color: "white",
-            },
+    <Box
+      sx={{
+        maxWidth: 500,
+        mx: "auto",
+        mt: 8,
+        p: 8,
+        boxShadow: 3,
+        borderRadius: 2,
+      }}
+    >
+      <Typography variant="h6" mb={2}>
+        Reset Password
+      </Typography>
+      <Box component={"form"} onSubmit={handleSubmit(ResetHandle)}>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Email"
+          value={email}
+          disabled
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Email />
+              </InputAdornment>
+            ),
           }}
-          variant="filled"
+        />
+
+        <TextField
+          {...register("code")}
+          fullWidth
+          margin="normal"
+          label="Code"
+          placeholder="xxxx"
+          variant="outlined"
+          required
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <VpnKey />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <TextField
+          {...register("newPassword")}
+          fullWidth
+          margin="normal"
+          label="New Password"
+          type={showPassword ? "text" : "password"}
+          placeholder="Enter your password"
+          variant="outlined"
+          required
+          error={!!errors.newPassword}
+          helperText={errors.newPassword?.message}
+          onChange={(e) => {
+            register("newPassword").onChange(e);
+            checkStrength(e.target.value);
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Lock />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        {passwordStrength > 0 && (
+          <>
+            <LinearProgress
+              variant="determinate"
+              value={(passwordStrength / 4) * 100}
+              sx={{ height: 8, borderRadius: 5, mt: 1 }}
+              color={
+                passwordStrength < 2
+                  ? "error"
+                  : passwordStrength === 2
+                    ? "warning"
+                    : "success"
+              }
+            />
+            <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
+              {getStrengthLabel().text}
+            </Typography>
+          </>
+        )}
+
+        <TextField
+          {...register("confirmPassword")}
+          fullWidth
+          margin="normal"
+          label="Confirm Password"
+          type={showPassword ? "text" : "password"}
+          placeholder="Confirm your password"
+          variant="outlined"
+          required
+          error={!!errors.confirmPassword}
+          helperText={errors.confirmPassword?.message}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Lock />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <CustomButton
+          fullWidth
+          loading={loading}
+          variant="contained"
+          sx={{ mt: 5 }}
+          type="submit"
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </>
+          Reset Password
+        </CustomButton>
+      </Box>
+    </Box>
   );
 }

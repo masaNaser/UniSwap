@@ -10,8 +10,6 @@ import {
   Tab,
   Autocomplete,
   Chip,
-  Snackbar,
-  Alert,
 } from "@mui/material";
 import {
   Email,
@@ -32,7 +30,8 @@ import { register as registerApi } from "../../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { LinearProgress } from "@mui/material"; // ضيفيها فوق مع باقي الـ imports
-
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 export default function Register() {
   const validationSchema = yup.object({
     userName: yup
@@ -55,12 +54,6 @@ export default function Register() {
       .string()
       .required("Please confirm your password")
       .oneOf([yup.ref("password")], "Passwords must match"),
-       academicYear: yup 
-    .number()
-    .required("Academic Year is required")
-    // .min(1, "Academic year must be between 1 and 5")
-    // .max(5, "Academic year must be between 1 and 5")
-    .typeError("Please enter a valid number")
   });
 
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -95,11 +88,6 @@ export default function Register() {
   const [skills, setSkills] = useState([]); // skills as array
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -116,11 +104,6 @@ export default function Register() {
     resolver: yupResolver(validationSchema),
   });
 
-  // Handle Snackbar Close
-  const handleSnackbarClose = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const registerHandle = async (data) => {
     const finalData = {
       userName: data.userName.trim(),
@@ -129,8 +112,11 @@ export default function Register() {
       confirmPassword: data.confirmPassword.trim(),
       skills: skills,
       universityMajor: data.universityMajor.toUpperCase(),
-      academicYear: parseInt(data.academicYear) 
+      academicYear: data.academicYear.trim()
     };
+
+
+
 
     console.log("Final Data Sent:", JSON.stringify(finalData));
 
@@ -139,34 +125,29 @@ export default function Register() {
       const response = await registerApi(finalData);
       console.log(response);
       if (response.status === 200) {
-        // عرض رسالة النجاح
-        setSnackbar({
-          open: true,
-          message: "Registration successful! Please check your email to verify your account. ✅",
-          severity: "success",
+        Swal.fire({
+          title: "Registration successful! Please check your email to verify your account.",
+          icon: "success",
+          draggable: true,
+          timer: 1500,
         });
-
-        // الانتقال لصفحة اللوقن بعد 2 ثانية
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
+        navigate("/login");
       }
     } catch (error) {
       console.log("Full Error Response:", error.response);
       const msg = error.response?.data || "An error occurred";
-      
-      // عرض رسالة الخطأ
-      setSnackbar({
-        open: true,
-        message: msg,
-        severity: "error",
+      Swal.fire({
+        icon: "error",
+        title: "Register failed",
+        text: msg,
+        timer: 1500,
       });
-      
       console.error("Registration error:", error);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <>
@@ -534,9 +515,6 @@ export default function Register() {
                 label="Academic Year"
                 placeholder="5th year"
                 variant="outlined"
-                type="number"
-                error={Boolean(errors.academicYear)}
-               helperText={errors.academicYear?.message}
                 required
                 InputProps={{
                   startAdornment: (
@@ -563,30 +541,6 @@ export default function Register() {
           </Box>
         </Box>
       </Container>
-
-      {/* Snackbar للإشعارات */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{ 
-            width: "100%",
-            bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
-            color: "white",
-            "& .MuiAlert-icon": {
-              color: "white",
-            },
-          }}
-          variant="filled"
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </>
   );
 }
