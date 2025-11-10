@@ -121,18 +121,16 @@ function PostCard({
    const handleNavigateToProfile = () => {
          if (!post.user.id) return;
   
-  // const currentUserId = localStorage.getItem("userId");
+   const currentUserId = localStorage.getItem("userId");
   
-  // // إذا بروفايلي، روح على /app/profile بدون userId
-  // if (post.user.id === currentUserId) {
-  //   navigate('/app/profile');
-  // } else {
-  //   // إذا بروفايل شخص تاني، مرر الـ userId
-  //   navigate(`/app/profile/${post.user.id}`);
-  // }
-    if (post.user.id) {
-      navigate(`/app/profile/${post.user.id}`);
-    }
+   // إذا بروفايلي، روح على /app/profile بدون userId
+   // حطينا نمبر لأن الـ userId في الـ localStorage مخزن كنص
+   if (post.user.id === Number(currentUserId)) {
+     navigate('/app/profile');
+   } else {
+     // إذا بروفايل شخص تاني، مرر الـ userId
+     navigate(`/app/profile/${post.user.id}`);
+   }
   };
   return (
     <Card sx={{ mb: 3, borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>

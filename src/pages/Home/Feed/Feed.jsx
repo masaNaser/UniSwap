@@ -21,7 +21,7 @@ import GroupIcon from "@mui/icons-material/Group";
 import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 import Sidebar from "./Sidebar";
-import "./feed.css";
+import "./Feed.css";
 import CommentsModal from './CommentsModal';
 import {
     getPosts as getPostsApi,
