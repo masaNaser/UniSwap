@@ -140,7 +140,7 @@ export default function Register() {
         icon: "error",
         title: "Register failed",
         text: msg,
-        timer: 1500,
+        // timer: 1500,
       });
       console.error("Registration error:", error);
     } finally {

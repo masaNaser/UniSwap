@@ -99,7 +99,7 @@ export default function Login() {
         icon: "error",
         title: "Login failed",
         text: msg,
-        timer: 1500,
+        // timer: 1500,
       });
     } finally {
       setLoading(false);
