@@ -91,6 +91,7 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import WorkOutlineOutlinedIcon from "@mui/icons-material/WorkOutlineOutlined";
 import ProfileInfo from "../Profile/ProfileInfo";
+import ProfileTabs from "./ProfileTabs/ProfileTabs";
 
 export default function Profile() {
   const { userData, fetchUserData } = useProfile(); // ⬅️ جيب fetchUserData من الـ Context
@@ -144,6 +145,9 @@ export default function Profile() {
         </Box>
         <ProfileInfo />
       </Box>
+
+
+      <ProfileTabs/>
     </Container>
   );
 }

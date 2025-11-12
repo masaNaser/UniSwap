@@ -155,7 +155,34 @@ const ProjectCard = ({ project }) => {
             </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <img src={Point} alt="points" style={{ width: 16, height: 16 }} />
+            {/* <img src={Point} alt="points" style={{ width: 16, height: 16 }} /> */}
+               <Box   sx={{
+                              width: 20,
+                              height: 20,
+                              backgroundColor: "#3B82F6", // لون الخلفية
+                              borderRadius: "50%", // دائري
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="10"
+                              height="10"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="rgba(255, 255, 255, 1)"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <circle cx="8" cy="8" r="6"></circle>
+                              <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                              <path d="M7 6h1v4"></path>
+                              <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                            </svg>
+                          </Box>
             <Typography variant="caption" color="text.secondary">
               {project.points} pts
             </Typography>

@@ -26,8 +26,7 @@ import {
   Edit as EditIcon,
 } from "@mui/icons-material";
 import dayjs from 'dayjs';
-import { useNavigate } from "react-router-dom";
-
+import {useNavigateToProfile} from "../../../hooks/useNavigateToProfile"
 // Format comment/post time
 const formatTime = (time) => (!time ? "Just now" : dayjs(time).format('DD MMM, hh:mm A'));
 
@@ -76,7 +75,6 @@ function PostCard({
   const open = Boolean(anchorEl);
   const currentUserName = localStorage.getItem("userName");
   const isPostAuthor = post.user.name === currentUserName;
-  const navigate = useNavigate();
 
   // Load recent comments
   useEffect(() => {
@@ -103,6 +101,8 @@ function PostCard({
   const handleLikeClick = () => onLike(post.id);
   const handleCommentClick = () => onShowComments(post.id);
  
+    const navigateToProfile = useNavigateToProfile();
+
   const handleInlineCommentSubmit = async (e) => {
     e.preventDefault();
     if (!inlineCommentText.trim()) return;
@@ -118,20 +118,20 @@ function PostCard({
     }
   };
  // دالة للانتقال للبروفايل
-   const handleNavigateToProfile = () => {
-         if (!post.user.id) return;
+  //  const handleNavigateToProfile = () => {
+  //        if (!post.user.id) return;
   
-   const currentUserId = localStorage.getItem("userId");
+  //  const currentUserId = localStorage.getItem("userId");
   
-   // إذا بروفايلي، روح على /app/profile بدون userId
-   // حطينا نمبر لأن الـ userId في الـ localStorage مخزن كنص
-   if (post.user.id === Number(currentUserId)) {
-     navigate('/app/profile');
-   } else {
-     // إذا بروفايل شخص تاني، مرر الـ userId
-     navigate(`/app/profile/${post.user.id}`);
-   }
-  };
+  //  // إذا بروفايلي، روح على /app/profile بدون userId
+  //  // حطينا نمبر لأن الـ userId في الـ localStorage مخزن كنص
+  //  if (post.user.id === Number(currentUserId)) {
+  //    navigate('/app/profile');
+  //  } else {
+  //    // إذا بروفايل شخص تاني، مرر الـ userId
+  //    navigate(`/app/profile/${post.user.id}`);
+  //  }
+  // };
   return (
     <Card sx={{ mb: 3, borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
       {/* Header */}
@@ -149,7 +149,7 @@ function PostCard({
                 color: 'primary.main'
               }
             }}     
-           onClick={handleNavigateToProfile}>
+           onClick={() => navigateToProfile(post.user.id)}>
             {post.user.name}
             </Typography>}
         subheader={post.time}

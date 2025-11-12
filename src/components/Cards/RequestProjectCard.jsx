@@ -64,8 +64,8 @@ export default function RequestProjectCard({
   const displayedDescription = showFullDescription
     ? description
     : isLongDescription
-      ? description.substring(0, 50) + "..."
-      : description;
+    ? description.substring(0, 50) + "..."
+    : description;
 
   // Handle Snackbar Close
   const handleSnackbarClose = () => {
@@ -77,7 +77,8 @@ export default function RequestProjectCard({
     const dialogConfig = {
       cancel: {
         title: "Cancel Request",
-        message: "Are you sure you want to cancel this request? This action cannot be undone.",
+        message:
+          "Are you sure you want to cancel this request? This action cannot be undone.",
       },
       reject: {
         title: "Reject Request",
@@ -145,7 +146,9 @@ export default function RequestProjectCard({
       console.error(`Error ${confirmDialog.type}ing request:`, error);
       setSnackbar({
         open: true,
-        message: error.response?.data?.message || `Failed to ${confirmDialog.type} request`,
+        message:
+          error.response?.data?.message ||
+          `Failed to ${confirmDialog.type} request`,
         severity: "error",
       });
     } finally {
@@ -183,13 +186,15 @@ export default function RequestProjectCard({
           "&:hover": { transform: "translateY(-3px)", boxShadow: 3 },
         }}
       >
-        <CardContent sx={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          p: 2.5,
-          "&:last-child": { pb: 2.5 }
-        }}>
+        <CardContent
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            p: 2.5,
+            "&:last-child": { pb: 2.5 },
+          }}
+        >
           {/* Header: Client/Provider Info */}
           <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
             <Avatar
@@ -208,13 +213,22 @@ export default function RequestProjectCard({
               <Typography variant="body2" fontWeight="bold" fontSize="14px">
                 {clientName}
               </Typography>
-              <Typography variant="caption" color="text.secondary" fontSize="11px">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontSize="11px"
+              >
                 {isProvider
                   ? `Requesting ${category?.replace("Request", "")}`
                   : `Providing ${category?.replace("Request", "")}`}
               </Typography>
               {sentDate && (
-                <Typography variant="caption" color="text.secondary" fontSize="10px" display="block">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontSize="10px"
+                  display="block"
+                >
                   Sent: {sentDate}
                 </Typography>
               )}
@@ -234,7 +248,13 @@ export default function RequestProjectCard({
           </Box>
 
           {/* Title */}
-          <Typography variant="h6" fontWeight="bold" mb={1} fontSize="16px" lineHeight={1.3}>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            mb={1}
+            fontSize="16px"
+            lineHeight={1.3}
+          >
             {title}
           </Typography>
 
@@ -280,14 +300,52 @@ export default function RequestProjectCard({
             mb={1.5}
           >
             <Box display="flex" alignItems="center" gap={0.5}>
-              <img src={Point} alt="points" style={{ width: 18, height: 18 }} />
-              <Typography variant="body2" fontWeight="bold" color="#F59E0B" fontSize="13px">
+              <Box
+                sx={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#3B82F6", // لون الخلفية
+                  borderRadius: "50%", // دائري
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="rgba(255, 255, 255, 1)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="8" cy="8" r="6"></circle>
+                  <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                  <path d="M7 6h1v4"></path>
+                  <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                </svg>
+              </Box>{" "}
+              <Typography
+                variant="body2"
+                fontWeight="bold"
+                color="#F59E0B"
+                fontSize="13px"
+              >
                 {pointsOffered} Points
               </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={0.5}>
-              <CalendarMonthIcon sx={{ fontSize: 15, color: "text.secondary" }} />
-              <Typography variant="caption" color="text.secondary" fontSize="12px">
+              <CalendarMonthIcon
+                sx={{ fontSize: 15, color: "text.secondary" }}
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontSize="12px"
+              >
                 Due: {deadline}
               </Typography>
             </Box>
@@ -402,7 +460,12 @@ export default function RequestProjectCard({
                 }}
               >
                 <HourglassEmptyIcon sx={{ color: "#3B82F6", fontSize: 18 }} />
-                <Typography variant="body2" color="#3B82F6" fontWeight="500" fontSize="12px">
+                <Typography
+                  variant="body2"
+                  color="#3B82F6"
+                  fontWeight="500"
+                  fontSize="12px"
+                >
                   Waiting for {clientName} to respond
                 </Typography>
               </Box>
@@ -428,9 +491,7 @@ export default function RequestProjectCard({
           {confirmDialog.title}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            {confirmDialog.message}
-          </DialogContentText>
+          <DialogContentText>{confirmDialog.message}</DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
@@ -449,7 +510,8 @@ export default function RequestProjectCard({
               bgcolor: confirmDialog.type === "approve" ? "#3B82F6" : "#EF4444",
               textTransform: "none",
               "&:hover": {
-                bgcolor: confirmDialog.type === "approve" ? "#2563EB" : "#DC2626",
+                bgcolor:
+                  confirmDialog.type === "approve" ? "#2563EB" : "#DC2626",
               },
             }}
           >
@@ -470,7 +532,12 @@ export default function RequestProjectCard({
           severity={snackbar.severity}
           sx={{
             width: "100%",
-            bgcolor: snackbar.severity === "success" ? "#3b82f6" : snackbar.severity === "info" ? "#3b82f6" : "#EF4444",
+            bgcolor:
+              snackbar.severity === "success"
+                ? "#3b82f6"
+                : snackbar.severity === "info"
+                ? "#3b82f6"
+                : "#EF4444",
             color: "white",
             "& .MuiAlert-icon": {
               color: "white",

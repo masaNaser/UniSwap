@@ -19,7 +19,7 @@ import {
   School,
   ElectricBoltSharp,
 } from "@mui/icons-material";
-import logo from "../../../assets/images/logo.png";
+import Logo from "../../../assets/images/Logo.png";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -122,7 +122,7 @@ export default function Login() {
             sx={{ display: "flex", alignItems: "center", gap: "6px", ml: 2 }}
           >
             <img
-              src={logo}
+              src={Logo}
               alt="UniSwap logo"
               style={{ height: "36px", width: "36px" }}
             />

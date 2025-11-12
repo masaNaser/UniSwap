@@ -441,7 +441,7 @@ import Logout from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import StarIcon from "@mui/icons-material/Star";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import logo from "../../assets/images/logo.png";
+import Logo from "../../assets/images/Logo.png";
 import Point from "../../assets/images/Point.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../services/authService";
@@ -532,7 +532,7 @@ export default function PrimarySearchAppBar() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Box
                 component="img"
-                src={logo}
+                src={Logo}
                 alt="logo"
                 sx={{ width: 32, height: 32 }}
               />
@@ -623,7 +623,7 @@ export default function PrimarySearchAppBar() {
                     display: "flex",
                     alignItems: "center",
                     gap: 1,
-                    bgcolor: "#8ab3f4a5",
+                    bgcolor: "#3b82f638",
                     borderRadius: 5,
                     p: 1,
                     mr: 2,
@@ -633,7 +633,7 @@ export default function PrimarySearchAppBar() {
                     sx={{
                       width: 35,
                       height: 35,
-                      backgroundColor: "rgba(0, 75, 173, 0.84)", // لون الخلفية
+                      backgroundColor: "#3B82F6", // لون الخلفية
                       borderRadius: "50%", // دائري
                       display: "flex",
                       alignItems: "center",
@@ -659,7 +659,7 @@ export default function PrimarySearchAppBar() {
                   </Box>
                   <Typography
                     component="span"
-                    sx={{ fontWeight: "bold", color: "rgba(0, 75, 173, 0.84)",fontSize:"20px" }}
+                    sx={{ fontWeight: "bold", color: "#3B82F6",fontSize:"20px" }}
                   >
                     {/* ✅ استخدام currentUser بدل userData */}
                     {currentUser?.totalPoints || 0}{' '}

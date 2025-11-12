@@ -28,7 +28,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import dayjs from "dayjs";
-
+import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 const style = {
     position: "absolute",
     top: "50%",
@@ -51,7 +51,9 @@ const Comment = ({ comment, onEdit, onDelete, currentUserName }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedContent, setEditedContent] = useState(comment.content);
     const [deleteDialog, setDeleteDialog] = useState(false);
-
+   
+    console.log("Current ",comment);
+    const navigateToProfile = useNavigateToProfile();
     const isCurrentUser = comment.author.userName === currentUserName;
     const open = Boolean(anchorEl);
 
@@ -98,6 +100,7 @@ const Comment = ({ comment, onEdit, onDelete, currentUserName }) => {
             <Box sx={{ display: "flex", gap: 1.5, my: 2 }}>
                 <Avatar
                     src={comment.author.avatar}
+                    onClick={() => navigateToProfile(comment.authorId)} // ← استخدم authorId من الـ comment
                     alt={comment.author.userName}
                     sx={{ width: 32, height: 32 }}
                 />
@@ -139,9 +142,14 @@ const Comment = ({ comment, onEdit, onDelete, currentUserName }) => {
                                 position: "relative",
                             }}
                         >
-                            <Typography variant="body2" fontWeight="bold">
+                            {
+                            <Typography variant="body2" fontWeight="bold"
+                                onClick={() => navigateToProfile(comment.authorId)} // ← استخدم authorId
+                            sx={{ cursor: 'pointer' }}>
+                                
                                 {comment.author.userName}
                             </Typography>
+}
                             <Typography variant="body2" sx={{ my: 0.5, pr: isCurrentUser ? 3 : 0 }}>
                                 {comment.content}
                             </Typography>

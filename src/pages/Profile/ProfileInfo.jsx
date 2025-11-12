@@ -124,7 +124,7 @@ export default function ProfileInfo() {
   }}
 >
   {/* Response Time */}
-  <Box 
+  {/* <Box 
     sx={{
       background: "rgba(241, 245, 249, 1)",
       p: 2.5,
@@ -157,10 +157,10 @@ export default function ProfileInfo() {
     >
       &lt; 2 hours
     </Typography>
-  </Box>
+  </Box> */}
 
   {/* Skills */}
-  <Box 
+  {/* <Box 
     sx={{
       background: "rgba(241, 245, 249, 1)",
       p: 2.5,
@@ -209,7 +209,7 @@ export default function ProfileInfo() {
         </Typography>
       )}
     </Box>
-  </Box>
+  </Box> */}
 
   {/* Contact */}
   <Box 

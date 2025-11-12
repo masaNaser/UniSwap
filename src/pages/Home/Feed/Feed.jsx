@@ -42,6 +42,7 @@ const normalizeComment = (comment, userName) => ({
     id: comment.id,
     content: comment.content,
     createdAt: comment.createdAt,
+    authorId: comment.user?.id, // إضافة الـ authorId
     author: {
         userName: comment.user?.userName,
         avatar: comment.user?.avatarUrl || ProfilePic,
@@ -61,7 +62,7 @@ function Feed() {
     const [currentPostId, setCurrentPostId] = useState(null);
     const [currentComments, setCurrentComments] = useState([]);
     const [modalPost, setModalPost] = useState(null);
-
+    const [userIdCommenting, setUserIdCommenting] = useState(null);
     // Delete Dialog State
     const [deleteDialog, setDeleteDialog] = useState({
         open: false,
@@ -124,6 +125,7 @@ function Feed() {
     const fetchRecentComments = useCallback(async (postId) => {
         try {
             const response = await getCommentsApi(userToken, postId);
+            setUserIdCommenting(response.data[0]?.user?.id || null);
             if (response.data?.length) {
                 return response.data
                     .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
@@ -311,10 +313,12 @@ function Feed() {
 
         try {
             const response = await getCommentsApi(userToken, postId);
+        console.log("Comments fetched:",response.data);
             const sortedComments = response.data
                 .map(comment => normalizeComment(comment, userName))
                 .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf());
             setCurrentComments(sortedComments);
+            console.log("Sorted Comments:",sortedComments);
         } catch (error) {
             console.error("Error fetching comments:", error);
             setSnackbar({
@@ -325,11 +329,12 @@ function Feed() {
             setCommentsModalVisible(false);
             setModalPost(null);
         }
-    };
 
+    }
     const handleAddComment = async (postId, content) => {
         const tempCommentId = Date.now();
-        const newComment = { id: tempCommentId, content, createdAt: new Date().toISOString(), author: { userName, avatar: ProfilePic } };
+        const currentUserId = localStorage.getItem("userId"); // أو من أي مكان تاني عندك الـ userId
+        const newComment = { id: tempCommentId, content, createdAt: new Date().toISOString(), author: { userName, avatar: ProfilePic },authorId: currentUserId,};
 
         // Update modal and posts instantly
         if (currentPostId === postId) setCurrentComments(prev => [newComment, ...prev]);

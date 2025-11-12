@@ -24,12 +24,12 @@ import {
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import logo from "../../../assets/images/logo.png";
+import Logo from "../../../assets/images/Logo.png";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import { register as registerApi } from "../../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { LinearProgress } from "@mui/material"; // ضيفيها فوق مع باقي الـ imports
+import { LinearProgress } from "@mui/material"; 
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 export default function Register() {
@@ -166,7 +166,7 @@ export default function Register() {
             sx={{ display: "flex", alignItems: "center", gap: "6px", ml: 2 }}
           >
             <img
-              src={logo}
+              src={Logo}
               alt="UniSwap logo"
               style={{ height: "36px", width: "36px" }}
             />
@@ -346,7 +346,6 @@ export default function Register() {
                 variant="outlined"
                 error={errors.userName}
                 helperText={errors.userName?.message}
-                required
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">

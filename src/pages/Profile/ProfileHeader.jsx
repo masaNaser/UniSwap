@@ -10,13 +10,15 @@ import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../Context/ProfileContext";
 import RequestServiceModal from "../../components/Modals/RequestServiceModal";
 import EditProfileModal from "../../components/Modals/EditProfileModal";
-import { getImageUrl } from "../../components/utils/imageHelper";
+import { getImageUrl } from "../../utils/imageHelper";
+import ReportModal from "../../components/Modals/ReportModal";
 
 export default function ProfileHeader() {
   const { userData, isMyProfile, fetchUserData } = useProfile();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const navigate = useNavigate();
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const handleProfileUpdated = async () => {
     console.log("🔄 Refreshing profile data...");
@@ -40,9 +42,12 @@ export default function ProfileHeader() {
   const handleRequestService = () => {
     setIsRequestModalOpen(true);
   };
-
+ const handleReport = () => {
+  setIsReportModalOpen(true);
+ }
   const handleCloseModal = () => {
     setIsRequestModalOpen(false);
+    setIsReportModalOpen(false);
   };
 
   if (!userData) return <p>Loading...</p>;
@@ -145,7 +150,7 @@ export default function ProfileHeader() {
             {/* الصورة والمعلومات */}
             <Stack 
               direction={{ xs: "column", sm: "row" }} 
-              spacing={{ xs: 1, sm: 2 }} 
+              spacing={{ xs: 1, sm: 3 }} 
               alignItems={{ xs: "center", sm: "flex-end" }}
               sx={{ width: { xs: "100%", sm: "auto" } }}
             >
@@ -168,7 +173,7 @@ export default function ProfileHeader() {
                   size="small"
                   sx={{
                     position: "absolute",
-                    top: 0,
+                    top: -8,
                     left: { xs: 48, sm: 58, md: 65 },
                     fontWeight: "bold",
                     fontSize: { xs: "0.65rem", sm: "0.75rem" },
@@ -176,7 +181,7 @@ export default function ProfileHeader() {
                 />
               </Box>
 
-              <Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
+              <Box sx={{ textAlign: { xs: "center", sm: "left" },position: "relative",top: 8, }}>
                 <Typography 
                   variant="h5" 
                   fontWeight="bold"
@@ -204,12 +209,12 @@ export default function ProfileHeader() {
                     </Typography>
                   </Stack>
 
-                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                  {/* <Stack direction="row" alignItems="center" spacing={0.5}>
                     <CalendarMonthIcon sx={{ fontSize: { xs: 16, md: 18 } }} />
                     <Typography variant="body2" sx={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}>
                       Joined
                     </Typography>
-                  </Stack>
+                  </Stack> */}
                 </Stack>
               </Box>
             </Stack>
@@ -258,7 +263,7 @@ export default function ProfileHeader() {
                   <Button
                     variant="contained"
                     startIcon={<ReportIcon />}
-                    onClick={() => {/* هون حط الفنكشن تبع الريبورت */}}
+                    onClick={handleReport}
                     sx={{
                       textTransform: "none",
                       backgroundColor: "rgba(255,0,0,0.2)",
@@ -306,7 +311,7 @@ export default function ProfileHeader() {
                     <HandshakeIcon />
                   </IconButton>
                   <IconButton
-                    onClick={() => {/* هون حط الفنكشن تبع الريبورت */}}
+                    onClick={handleReport}
                     sx={{
                       backgroundColor: "rgba(255,0,0,0.2)",
                       color: "white",
@@ -338,6 +343,12 @@ export default function ProfileHeader() {
         onClose={() => setIsEditModalOpen(false)}
         userData={userData}
         onProfileUpdated={handleProfileUpdated}
+      />
+      <ReportModal
+      open={isReportModalOpen}
+      onClose={() => setIsReportModalOpen(false)}
+       userId={userData?.id}
+       userName={userData?.userName}
       />
     </>
   );
