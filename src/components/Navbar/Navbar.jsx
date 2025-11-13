@@ -430,10 +430,9 @@ import {
   ListItemIcon,
 } from "@mui/material";
 import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ التغيير الأساسي
-
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import AccountCircle from "@mui/icons-material/AccountCircle";
+// import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Settings from "@mui/icons-material/Settings";
@@ -442,10 +441,10 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import StarIcon from "@mui/icons-material/Star";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import Logo from "../../assets/images/Logo.png";
-import Point from "../../assets/images/Point.svg";
+// import Point from "../../assets/images/Point.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../services/authService";
-import { SvgIcon } from "@mui/material";
+import { getImageUrl } from "../../utils/imageHelper";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -659,10 +658,14 @@ export default function PrimarySearchAppBar() {
                   </Box>
                   <Typography
                     component="span"
-                    sx={{ fontWeight: "bold", color: "#3B82F6",fontSize:"20px" }}
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#3B82F6",
+                      fontSize: "20px",
+                    }}
                   >
                     {/* ✅ استخدام currentUser بدل userData */}
-                    {currentUser?.totalPoints || 0}{' '}
+                    {currentUser?.totalPoints || 0}{" "}
                     <Typography component="span" sx={{ fontWeight: "normal" }}>
                       pts
                     </Typography>
@@ -691,10 +694,18 @@ export default function PrimarySearchAppBar() {
                 size="large"
                 edge="end"
                 aria-haspopup="true"
-                onClick={handleProfileMenuOpen} //  بس افتح
+                onClick={handleProfileMenuOpen}
                 color="inherit"
+                sx={{ p: 0 }}
               >
-                <AccountCircle />
+                <Avatar
+                  alt={currentUser?.userName || "User"}
+                  src={getImageUrl(
+                    currentUser?.profilePicture,
+                    currentUser?.userName
+                  )}
+                  sx={{ width: 30, height: 30 }}
+                />
               </IconButton>
 
               <Menu
@@ -728,9 +739,16 @@ export default function PrimarySearchAppBar() {
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               >
                 <Box
-                  sx={{ display: "flex", alignItems: "center", px: 2, py: 1 }}
+                  sx={{ display: "flex", alignItems: "center", px: 2, py: 1 ,gap:1}}
                 >
-                  <Avatar sx={{ width: 40, height: 40, mr: 1 }} />
+                  <Avatar
+                    alt={currentUser?.userName || "User"}
+                    src={getImageUrl(
+                      currentUser?.profilePicture,
+                      currentUser?.userName
+                    )}
+                    sx={{ width: 30, height: 30 }}
+                  />{" "}
                   <Box>
                     <Typography sx={{ fontWeight: "bold" }}>
                       {userName}

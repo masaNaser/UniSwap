@@ -36,6 +36,7 @@ import {
 } from "../../../services/postService";
 import ProfilePic from "../../../assets/images/ProfilePic.jpg";
 import dayjs from 'dayjs';
+import { getImageUrl } from "../../../utils/imageHelper"; // أضف هذا
 
 // normalize comment
 const normalizeComment = (comment, userName) => ({
@@ -45,7 +46,7 @@ const normalizeComment = (comment, userName) => ({
     authorId: comment.user?.id, // إضافة الـ authorId
     author: {
         userName: comment.user?.userName,
-        avatar: comment.user?.avatarUrl || ProfilePic,
+        avatar: getImageUrl(comment.user?.profilePictureUrl, comment.user?.userName), // ✅ هنا
     }
 });
 
@@ -102,7 +103,7 @@ function Feed() {
                 id: p.id,
                 content: p.content,
                 selectedTags: p.tags?.[0]?.split(",") || [],
-                user: { name: p.author.userName, avatar: p.author.profilePictureUrl, id: p.author.id },
+                user: { name: p.author.userName, avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName), id: p.author.id },
                 time: dayjs(p.createdAt).format('DD MMM, hh:mm A'),
                 likes: p.likesCount,
                 comments: p.commentsCount,
@@ -334,7 +335,17 @@ function Feed() {
     const handleAddComment = async (postId, content) => {
         const tempCommentId = Date.now();
         const currentUserId = localStorage.getItem("userId"); // أو من أي مكان تاني عندك الـ userId
-        const newComment = { id: tempCommentId, content, createdAt: new Date().toISOString(), author: { userName, avatar: ProfilePic },authorId: currentUserId,};
+        const currentUserAvatar = getImageUrl(null, userName); // صورة افتراضية
+        const newComment = { id: tempCommentId,
+             content,
+              createdAt: new Date().toISOString(),
+               author:
+                {
+                 userName, 
+                 avatar: currentUserAvatar // ✅ هنا
+                },
+                authorId: currentUserId,
+            };
 
         // Update modal and posts instantly
         if (currentPostId === postId) setCurrentComments(prev => [newComment, ...prev]);

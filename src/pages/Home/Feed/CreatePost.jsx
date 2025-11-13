@@ -1,32 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  Box, Typography, Avatar, TextField, Stack, IconButton, alpha, styled, Chip, Snackbar, Alert
-} from '@mui/material';
-import { Image, Close as CloseIcon } from '@mui/icons-material';
-import ProfilePic from '../../../assets/images/ProfilePic.jpg';
+  Box,
+  Typography,
+  Avatar,
+  TextField,
+  Stack,
+  IconButton,
+  alpha,
+  styled,
+  Chip,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import { Image, Close as CloseIcon } from "@mui/icons-material";
+import ProfilePic from "../../../assets/images/ProfilePic.jpg";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import DisabledCustomButton from "../../../components/CustomButton/DisabledCustomButton";
 import { createPost as createPostApi } from "../../../services/postService";
+import { getImageUrl } from "../../../utils/imageHelper";
+import { useProfile } from "../../../Context/ProfileContext";
 
 const FormWrapper = styled(Box)(({ theme }) => ({
-  backgroundColor: 'white',
+  backgroundColor: "white",
   padding: theme.spacing(3),
-  borderRadius: '12px',
-  boxShadow: '0px 0px 3px rgba(0, 0, 0, 0.2)',
-  display: 'flex',
-  flexDirection: 'column',
+  borderRadius: "12px",
+  boxShadow: "0px 0px 3px rgba(0, 0, 0, 0.2)",
+  display: "flex",
+  flexDirection: "column",
   gap: theme.spacing(2),
-  width: '100%',
-  margin: '40px auto',
-  [theme.breakpoints.down('md')]: { maxWidth: '100%' },
-  [theme.breakpoints.down('sm')]: { padding: theme.spacing(2), margin: '20px auto' },
+  width: "100%",
+  margin: "40px auto",
+  [theme.breakpoints.down("md")]: { maxWidth: "100%" },
+  [theme.breakpoints.down("sm")]: {
+    padding: theme.spacing(2),
+    margin: "20px auto",
+  },
 }));
 
 const CreatePost = ({ addPost, token }) => {
-  const [content, setContent] = useState('');
-  const [tagInput, setTagInput] = useState('');
+  const { userData } = useProfile();
+  console.log("CreatePost userData:", userData);
+  const [content, setContent] = useState("");
+  const [tagInput, setTagInput] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
-  const [errors, setErrors] = useState({ content: '' });
+  const [errors, setErrors] = useState({ content: "" });
   const [imagePreview, setImagePreview] = useState(null);
   const [file, setFile] = useState(null);
   const [snackbar, setSnackbar] = useState({
@@ -45,19 +62,21 @@ const CreatePost = ({ addPost, token }) => {
   };
 
   const handleContentChange = (event) => {
-    if (event.target.value.length <= characterLimit) setContent(event.target.value);
-    if (errors.content && event.target.value.trim() !== '') setErrors({ content: '' });
+    if (event.target.value.length <= characterLimit)
+      setContent(event.target.value);
+    if (errors.content && event.target.value.trim() !== "")
+      setErrors({ content: "" });
   };
 
   const handleTagInputChange = (event) => setTagInput(event.target.value);
   const handleTagKeyDown = (event) => {
-    if ((event.key === 'Enter' || event.key === ',') && tagInput.trim()) {
+    if ((event.key === "Enter" || event.key === ",") && tagInput.trim()) {
       event.preventDefault();
       const newTag = tagInput.trim();
       if (!selectedTags.includes(newTag) && selectedTags.length < 5) {
         setSelectedTags([...selectedTags, newTag]);
       }
-      setTagInput('');
+      setTagInput("");
     }
   };
   const handleTagDelete = (tagToDelete) => {
@@ -75,8 +94,8 @@ const CreatePost = ({ addPost, token }) => {
   const handleRemoveFile = () => {
     setFile(null);
     setImagePreview(null);
-    const fileInput = document.getElementById('upload-image');
-    if (fileInput) fileInput.value = '';
+    const fileInput = document.getElementById("upload-image");
+    if (fileInput) fileInput.value = "";
   };
 
   const handleSubmit = async (event) => {
@@ -86,9 +105,9 @@ const CreatePost = ({ addPost, token }) => {
     if (isPostDisabled) return;
 
     const formData = new FormData();
-    formData.append('Content', content);
-    formData.append('Tags', selectedTags);
-    if (file) formData.append('File', file);
+    formData.append("Content", content);
+    formData.append("Tags", selectedTags);
+    if (file) formData.append("File", file);
 
     try {
       const response = await createPostApi(formData, token);
@@ -97,20 +116,22 @@ const CreatePost = ({ addPost, token }) => {
       const newPost = {
         id: postData.id,
         content: postData.content,
-        selectedTags: postData.tags?.[0]?.split(',') || [],
+        selectedTags: postData.tags?.[0]?.split(",") || [],
         user: { name: postData.author.userName, avatar: ProfilePic },
         time: new Date(postData.createdAt || Date.now()).toLocaleTimeString(),
         likes: postData.likesCount,
         comments: postData.commentsCount,
         shares: 0,
-        fileUrl: postData.fileUrl ? `https://uni.runasp.net/${postData.fileUrl}` : null,
+        fileUrl: postData.fileUrl
+          ? `https://uni.runasp.net/${postData.fileUrl}`
+          : null,
       };
 
       addPost(newPost);
-      setContent('');
+      setContent("");
       setSelectedTags([]);
-      setTagInput('');
-      setErrors({ content: '' });
+      setTagInput("");
+      setErrors({ content: "" });
       setFile(null);
       setImagePreview(null);
 
@@ -122,7 +143,7 @@ const CreatePost = ({ addPost, token }) => {
         });
       }
     } catch (error) {
-      console.error('Error creating post:', error);
+      console.error("Error creating post:", error);
       setSnackbar({
         open: true,
         message: "Failed to create post. Please try again.",
@@ -131,37 +152,52 @@ const CreatePost = ({ addPost, token }) => {
     }
   };
 
-  const iconHover = { '&:hover': { color: 'primary.main' } };
+  const iconHover = { "&:hover": { color: "primary.main" } };
 
   return (
     <>
       <FormWrapper component="form" onSubmit={handleSubmit}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          <Avatar src={ProfilePic} alt="User Avatar" />
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+          <Avatar
+            src={getImageUrl(userData?.profilePicture, userData?.userName)}
+            alt={userData?.userName || "User"}
+          />
           <TextField
-            multiline fullWidth variant="outlined"
+            multiline
+            fullWidth
+            variant="outlined"
             placeholder="What's on your mind? Share your thoughts..."
-            value={content} onChange={handleContentChange}
+            value={content}
+            onChange={handleContentChange}
             error={!!errors.content}
-            helperText={errors.content || `${content.length}/${characterLimit} characters`}
+            helperText={
+              errors.content || `${content.length}/${characterLimit} characters`
+            }
             sx={{
               flexGrow: 1,
-              backgroundColor: '#FFF',
+              backgroundColor: "#FFF",
               borderRadius: 3,
-              '& .MuiOutlinedInput-root': {
+              "& .MuiOutlinedInput-root": {
                 borderRadius: 3,
                 padding: 1.5,
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#7eadf8ff', boxShadow: '0 0 0 2px rgba(59,130,246,0.2)' },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#7eadf8ff",
+                  boxShadow: "0 0 0 2px rgba(59,130,246,0.2)",
+                },
               },
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha('#94A3B8', 0.5) },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: alpha("#94A3B8", 0.5),
+              },
             }}
-            inputProps={{ style: { minHeight: '80px' } }}
+            inputProps={{ style: { minHeight: "80px" } }}
           />
         </Box>
 
         <Stack direction="column" spacing={2}>
           <Box>
-            <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1 }}>Tags (max 5)</Typography>
+            <Typography variant="body1" sx={{ fontWeight: "bold", mb: 1 }}>
+              Tags (max 5)
+            </Typography>
             <TextField
               placeholder="Enter tags and press Enter"
               value={tagInput}
@@ -173,7 +209,13 @@ const CreatePost = ({ addPost, token }) => {
             />
             <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1 }}>
               {selectedTags.map((tag) => (
-                <Chip key={tag} label={`#${tag}`} onDelete={() => handleTagDelete(tag)} color="primary" sx={{ fontWeight: 'bold', bgcolor: alpha('#0b62f0ff', 0.5) }} />
+                <Chip
+                  key={tag}
+                  label={`#${tag}`}
+                  onDelete={() => handleTagDelete(tag)}
+                  color="primary"
+                  sx={{ fontWeight: "bold", bgcolor: alpha("#0b62f0ff", 0.5) }}
+                />
               ))}
             </Stack>
           </Box>
@@ -208,13 +250,24 @@ const CreatePost = ({ addPost, token }) => {
           </Box>
         )}
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap">
-          <Stack direction="row" spacing={1} sx={{ color: 'text.secondary' }}>
-            <input accept="image/*" type="file" id="upload-image" style={{ display: 'none' }}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          flexWrap="wrap"
+        >
+          <Stack direction="row" spacing={1} sx={{ color: "text.secondary" }}>
+            <input
+              accept="image/*"
+              type="file"
+              id="upload-image"
+              style={{ display: "none" }}
               onChange={handleFileChange}
             />
             <label htmlFor="upload-image">
-              <IconButton component="span" sx={iconHover}><Image /></IconButton>
+              <IconButton component="span" sx={iconHover}>
+                <Image />
+              </IconButton>
             </label>
           </Stack>
 

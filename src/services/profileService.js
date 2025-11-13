@@ -24,7 +24,7 @@ export const EditProfile = async (token, data) => {
 };
 
 
-// Projects APIs
+// Projects(PortfolioTap) APIs
 export const CreateProject = async (token, data) => {
   return await api.post(`/Profile/CreateProject`, data, {
     headers: {
@@ -41,7 +41,24 @@ export const EditProject = async (token, data,projectId) => {
   });
 };
 
-// Services APIs
+export const DeleteProject = async (token, projectId) => {
+  return await api.delete(`/Profile/project/${projectId}`,{
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const GetUserProject = (token, userId = null) => {
+  const endpoint = userId 
+    ? `Profile/projects-by-user/${userId}` 
+    : `Profile/projects-by-user`;
+    
+  return api.get(endpoint, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+// Services(overviewTap) APIs
 export const CreateService = async (token, data) => {
   return await api.post(`/Profile/my-services`, data, {
     headers: {
@@ -51,10 +68,16 @@ export const CreateService = async (token, data) => {
 };
 
 export const GetUserService = async (token) => {
-  return await api.get(`/Profile/services`, {
+  return await api.get(`/Profile/my-services`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  });
+};
+
+export const GetUserServiceById = async (token, userId) => {
+  return await api.get(`/Profile/services/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 };
 
@@ -65,3 +88,5 @@ export const RemoveService = async (token,serviceId) => {
     },
   });
 };
+
+

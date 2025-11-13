@@ -23,12 +23,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import Point from "../../assets/images/Point.svg";
 import {
   approveCollaborationRequest,
   rejectCollaborationRequest,
   cancelCollaborationRequest,
 } from "../../services/collaborationService";
+import { getImageUrl } from "../../utils/imageHelper";
 
 export default function RequestProjectCard({
   id,
@@ -45,6 +45,7 @@ export default function RequestProjectCard({
   onEditRequest,
   sentDate,
 }) {
+
   const [loading, setLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
@@ -59,7 +60,7 @@ export default function RequestProjectCard({
     severity: "success",
   });
   const token = localStorage.getItem("accessToken");
-
+  console.log("clientImage:", clientImage);
   const isLongDescription = description && description.length > 50;
   const displayedDescription = showFullDescription
     ? description
@@ -177,12 +178,11 @@ export default function RequestProjectCard({
         sx={{
           borderRadius: "16px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          transition: "transform 0.2s, box-shadow 0.2s",
+          transition: "transform 0.3s, box-shadow 0.2s",
           width: "350px",
           height: "330px",
           display: "flex",
           flexDirection: "column",
-          transition: "0.3s",
           "&:hover": { transform: "translateY(-3px)", boxShadow: 3 },
         }}
       >
@@ -198,17 +198,19 @@ export default function RequestProjectCard({
           {/* Header: Client/Provider Info */}
           <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
             <Avatar
-              src={clientImage}
+              alt="client-avatar"
+              src={getImageUrl(clientImage, clientName)}
               sx={{
-                width: 36,
-                height: 36,
+                width: 40,
+                height: 40,
                 bgcolor: "#3b82f6",
                 fontWeight: "bold",
                 fontSize: "14px",
               }}
             >
-              {clientInitials}
+              {!clientImage && clientInitials}
             </Avatar>
+
             <Box flex={1}>
               <Typography variant="body2" fontWeight="bold" fontSize="14px">
                 {clientName}

@@ -181,7 +181,7 @@ export default function OverviewTab() {
     //     </CardContent>
     //   </Card>
     // </Box>
-     <Box >
+     <Box sx={{display: 'flex', flexDirection: 'row', gap: 4, mb:4, flexWrap: 'wrap', justifyContent: 'space-between'}}>
      <SkillsSection/>
      <ServicesSection/>
     </Box>

@@ -33,7 +33,7 @@ import Footer from '../components/Footer/Footer';
 import { ProfileContext } from "../Context/ProfileContext";
 import { CurrentUserProvider } from "../Context/CurrentUserContext";
 import { GetFullProfile, GetProfileById } from "../services/profileService";
-import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function MainLayout() {
   const [userData, setUserData] = useState(null);
@@ -58,11 +58,18 @@ export default function MainLayout() {
         : await GetProfileById(token, userId);
       
       setUserData(res.data);
-      console.log("✅ Profile data refreshed:", res.data);
+      console.log(" Profile data refreshed:", res.data);
     } catch (error) {
-      console.error("❌ Error fetching profile:", error);
+      console.error(" Error fetching profile:", error);
     }
   };
+
+  useEffect(() => {
+  const token = localStorage.getItem("accessToken");
+  if (token) {
+    fetchUserData(); // 🔥 هيك من أول ما يفتح المستخدم الموقع بنجيب بياناته
+  }
+}, []);
 
   return (
     <>
