@@ -285,6 +285,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
+import { getImageUrl } from "../../utils/imageHelper";
 
 export default function ChatWindow({
   conversationId,
@@ -533,11 +534,12 @@ export default function ChatWindow({
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Box className="chat-avatar">
             {receiverImage ? (
-              <img
-                src={receiverImage}
-                alt={receiverName}
-                className="avatar-img"
-              />
+             <img
+  src={getImageUrl(receiverImage, receiverName)}
+  alt={receiverName}
+  className="avatar-img"
+/>
+
             ) : (
               <Box className="avatar-fallback">{initials}</Box>
             )}

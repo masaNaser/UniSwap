@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { getConversations } from "../../services/chatService";
+import { getImageUrl } from "../../utils/imageHelper";
 
 export default function ChatList({
   conversations,
@@ -12,6 +13,7 @@ export default function ChatList({
   const fetchConversations = async () => {
     try {
       const response = await getConversations(token);
+      console.log("المحادثات المستلمة:", response.data);
       const convsWithNames = response.data.map((conv) => {
         const partnerId =
           conv.senderId === userId ? conv.receiverId : conv.senderId;
@@ -96,11 +98,12 @@ export default function ChatList({
               >
                 <div className="chat-avatar">
                   {conv.partnerImage ? (
-                    <img
-                      src={conv.partnerImage}
-                      alt={conv.partnerName}
-                      className="avatar-img"
-                    />
+                 <img
+  src={getImageUrl(conv.partnerImage, conv.partnerName)}
+  alt={conv.partnerName}
+  className="avatar-img"
+/>
+
                   ) : (
                     <div className="avatar-fallback">{initials}</div>
                   )}

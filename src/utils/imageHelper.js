@@ -27,7 +27,7 @@ export const getImageUrl = (path, fallbackName = "User") => {
   }
   
   // إذا في صورة وهي full URL
-  if (path.startsWith('http')) return path;
+  if (!path.startsWith("/")) path = "/" + path;
   
   // إذا في صورة وهي relative path
   return `${BASE_URL}${path}`;

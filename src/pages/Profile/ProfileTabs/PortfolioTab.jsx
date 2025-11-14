@@ -43,7 +43,7 @@ export default function PortfolioTab() {
   const handleDeleteClick = (project) => {
     setProjectToDelete(project);
     setDeleteDialogOpen(true);
-    handleClose(); // يغلق المينيو إذا كان مفتوح
+    handleClose();
   };
 
   const handleConfirmDelete = async () => {
@@ -89,7 +89,7 @@ export default function PortfolioTab() {
   };
 
   return (
-    <div>
+    <Box sx={{ width: '100%'  , mb: 5 }}>
       {isMyProfile && (
         <Button
           variant="contained"
@@ -104,11 +104,23 @@ export default function PortfolioTab() {
       {loading ? (
         <CircularProgress />
       ) : projects.length === 0 ? (
-        <Typography>No projects yet. Create your first project!</Typography>
+        <Typography>No projects yet.</Typography>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: 2,
+          mt: 0
+        }}>
           {projects.map((p) => (
-            <Grid item xs={12} sm={6} md={6} key={p.id}>
+            <Box 
+              key={p.id}
+              sx={{ 
+                width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(50% - 8px)' },
+                flexGrow: 0,
+                flexShrink: 0
+              }}
+            >
               <Card
                 sx={{
                   borderRadius: 3,
@@ -121,7 +133,8 @@ export default function PortfolioTab() {
                   },
                   position: 'relative',
                   display: 'flex',
-                  flexDirection: 'column'
+                  flexDirection: 'column',
+                  height: '100%'
                 }}
               >
                 {isMyProfile && (
@@ -155,25 +168,6 @@ export default function PortfolioTab() {
                   />
                 )}
 
-                {p.points && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: p.coverImage ? { xs: 140, sm: 160, md: 180 } : 8,
-                      right: 16,
-                      bgcolor: 'white',
-                      borderRadius: 2,
-                      px: 1.5,
-                      py: 0.5,
-                      boxShadow: 2,
-                      fontWeight: 600,
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    {p.points} pts
-                  </Box>
-                )}
-
                 <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
                     {p.title}
@@ -188,40 +182,13 @@ export default function PortfolioTab() {
                       <Chip key={idx} label={tag} size="small" sx={{ bgcolor: '#F3F4F6' }} />
                     ))}
                   </Box>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                    {p.client && (
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                          Client:
-                        </Typography>
-                        <Typography variant="body2">{p.client}</Typography>
-                      </Box>
-                    )}
-                    {p.duration && (
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="caption" color="rgba(71, 85, 105, 1)" sx={{ fontWeight: 800,fontSize:15 }}>
-                          Duration: <Typography variant="span" sx={{ fontWeight: 400,fontSize:12 }}>{p.duration}</Typography>
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-
-                  {/* {p.testimonial && (
-                    <Box sx={{ bgcolor: '#F9FAFB', borderRadius: 2, p: 1.5, mt: 1, borderLeft: '3px solid #1976d2' }}>
-                      <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-                        "{p.testimonial}"
-                      </Typography>
-                    </Box>
-                  )} */}
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
 
-      {/* Menu */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose} sx={{ mt: 1 }}>
         <MenuItem onClick={() => handleEdit(selectedProject)}>
           <EditIcon fontSize="small" sx={{ mr: 1.5 }} /> Edit Project
@@ -231,7 +198,6 @@ export default function PortfolioTab() {
         </MenuItem>
       </Menu>
 
-      {/* Dialog لتأكيد الحذف */}
       <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
@@ -250,6 +216,6 @@ export default function PortfolioTab() {
         onSuccess={handleSuccess}
         editData={editProject}
       />
-    </div>
+    </Box>
   );
 }

@@ -126,6 +126,7 @@ function Feed() {
     const fetchRecentComments = useCallback(async (postId) => {
         try {
             const response = await getCommentsApi(userToken, postId);
+            console.log("Recent comments fetched:",response.data);
             setUserIdCommenting(response.data[0]?.user?.id || null);
             if (response.data?.length) {
                 return response.data

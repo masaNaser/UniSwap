@@ -112,7 +112,7 @@ useEffect(() => {
                 position: "relative", // مهم عشان نقدر نحط الأيقونة بالزاوية
                 mb: 1,
                 backgroundColor: "rgba(248, 250, 252, 1)",
-                width: "300px",
+                // width: "300px",
               }}
             >
               {/* أيقونة الحذف */}
