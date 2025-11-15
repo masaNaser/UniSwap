@@ -440,7 +440,7 @@ import Logout from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import StarIcon from "@mui/icons-material/Star";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import Logo from "../../assets/images/Logo.png";
+import Logo from "../../assets/images/logo.png";
 // import Point from "../../assets/images/Point.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../services/authService";

@@ -4,7 +4,7 @@ import {
   Container,
   Typography,
 } from "@mui/material";
-import Logo from "../../assets/images/Logo.png";
+import Logo from "../../assets/images/logo.png";
 export default function Footer() {
   return (
     <>
