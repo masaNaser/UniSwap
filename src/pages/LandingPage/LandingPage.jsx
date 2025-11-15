@@ -17,7 +17,7 @@ import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutline
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import { ElectricBoltSharp } from "@mui/icons-material";
-import Logo from "../../../../assets/images/Logo.png";
+import Logo from "../../assets/images/Logo.png";
 import heroImg from "../../assets/images/hero-bg.png";
 import MenuIcon from "@mui/icons-material/Menu";
 
