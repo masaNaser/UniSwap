@@ -37,24 +37,31 @@ import {
 import ProfilePic from "../../../assets/images/ProfilePic.jpg";
 import dayjs from 'dayjs';
 import { getImageUrl } from "../../../utils/imageHelper"; // أضف هذا
-
+import { useCurrentUser } from "../../../Context/CurrentUserContext"; // ✅ إضافة
 // normalize comment
-const normalizeComment = (comment, userName) => ({
-    id: comment.id,
-    content: comment.content,
-    createdAt: comment.createdAt,
-    authorId: comment.user?.id, // إضافة الـ authorId
-    author: {
-        userName: comment.user?.userName,
-        avatar: getImageUrl(comment.user?.profilePictureUrl, comment.user?.userName), // ✅ هنا
-    }
-});
-
+const normalizeComment = (comment, userName, currentUser) => {
+    // إذا الـ comment من المستخدم الحالي، استخدم صورته من الـ Context
+    const isCurrentUserComment = comment.user?.userName === currentUser?.userName;
+    
+    return {
+        id: comment.id,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        authorId: comment.user?.id,
+        author: {
+            userName: comment.user?.userName,
+            avatar: isCurrentUserComment 
+                ? getImageUrl(currentUser?.profilePicture, currentUser?.userName) // ✅ صورتك من Context
+                : getImageUrl(comment.user?.profilePictureUrl, comment.user?.userName), // صورة الآخرين (أو افتراضية)
+        }
+    };
+};
 // update post by ID
 const updatePost = (posts, postId, newData) =>
     posts.map(p => (p.id === postId ? { ...p, ...newData } : p));
 
 function Feed() {
+     const { currentUser, loading } = useCurrentUser(); // ✅ استخدام Context
     const [posts, setPosts] = useState([]);
     const userToken = localStorage.getItem("accessToken");
     const userName = localStorage.getItem("userName");
@@ -131,14 +138,14 @@ function Feed() {
                 return response.data
                     .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
                     .slice(0, 2)
-                    .map(c => normalizeComment(c, userName));
+                    .map(c => normalizeComment(c, userName, currentUser));
             }
             return [];
         } catch (error) {
             console.error("Error fetching recent comments:", error);
             return [];
         }
-    }, [userToken, userName]);
+    }, [userToken, userName, currentUser]);
 
     useEffect(() => {
         if (posts.length) {
@@ -315,8 +322,10 @@ function Feed() {
         try {
             const response = await getCommentsApi(userToken, postId);
         console.log("Comments fetched:",response.data);
+            console.log("First comment user:", response.data[0]?.user); // ✅ شوف بيانات اليوزر
+
             const sortedComments = response.data
-                .map(comment => normalizeComment(comment, userName))
+                .map(comment => normalizeComment(comment, userName, currentUser))
                 .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf());
             setCurrentComments(sortedComments);
             console.log("Sorted Comments:",sortedComments);
@@ -335,7 +344,8 @@ function Feed() {
     const handleAddComment = async (postId, content) => {
         const tempCommentId = Date.now();
         const currentUserId = localStorage.getItem("userId"); // أو من أي مكان تاني عندك الـ userId
-        const currentUserAvatar = getImageUrl(null, userName); // صورة افتراضية
+       const currentUserAvatar = getImageUrl(currentUser?.profilePicture, userName);  
+       console.log("currentUserAvatar:", currentUserAvatar);
         const newComment = { id: tempCommentId,
              content,
               createdAt: new Date().toISOString(),
@@ -354,7 +364,7 @@ function Feed() {
         try {
             const response = await addCommentApi(userToken, postId, content);
             if (response.data?.id) {
-                const finalComment = normalizeComment(response.data, userName);
+                const finalComment = normalizeComment(response.data, userName, currentUser);
                 setCurrentComments(prev => prev.map(c => c.id === tempCommentId ? finalComment : c));
                 setPosts(prev => prev.map(p => p.id === postId ? { ...p, recentComments: [finalComment, ...p.recentComments.filter(c => c.id !== tempCommentId)].slice(0, 2) } : p));
             }
@@ -452,7 +462,7 @@ function Feed() {
 
                 <div className="post-section">
                     <div className="create-post-main">
-                        <CreatePost addPost={addPost} token={userToken} />
+                        <CreatePost addPost={addPost} token={userToken}  />
                         <Box mt={3}>
                             {posts.map(post => (
                                 <PostCard
@@ -464,6 +474,8 @@ function Feed() {
                                     onShowComments={handleShowComments}
                                     onAddCommentInline={handleAddComment}
                                     fetchRecentComments={fetchRecentComments}
+                                    currentUserAvatar={getImageUrl(currentUser?.profilePicture, currentUser?.userName || userName)} // ✅ تمرير الصورة
+
                                 />
                             ))}
                         </Box>
@@ -483,6 +495,7 @@ function Feed() {
                     onDeleteComment={handleDeleteComment}
                     onEditComment={handleEditComment}
                     currentUserName={userName}
+                    currentUserAvatar={getImageUrl(currentUser?.profilePicture, currentUser?.userName || userName)} // ✅ إضافة
                 />
             </Container>
 

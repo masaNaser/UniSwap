@@ -1,43 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ChatList from "./ChatList";
 import ChatWindow from "./ChatWindow";
-import "./Chat.css";
 import Container from "@mui/material/Container";
 import { useLocation } from "react-router-dom";
-import { useEffect} from "react";
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import "./Chat.css";
+
 export default function ChatPage() {
-  // const [selectedConv, setSelectedConv] = useState(null);
-  // const [conversations, setConversations] = useState([]);
-    const location = useLocation();
+  const location = useLocation();
   const initialConv = location.state || null;
-  
+
   const [selectedConv, setSelectedConv] = useState(initialConv);
   const [conversations, setConversations] = useState([]);
-    //  لما نيجي من الـ profile، نفتح المحادثة تلقائياً
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+const [showChatList, setShowChatList] = useState(() => {
+  // إذا موبايل + جاي من profile → افتح الشات
+  if (window.innerWidth <= 768 && initialConv?.autoOpen) {
+    return false;
+  }
+  return true; // الافتراضي: افتح قائمة المحادثات
+});
+
+  // تحديث حالة الموبايل عند تغيير حجم الشاشة
   useEffect(() => {
-    if (initialConv?.autoOpen) {
-      setSelectedConv(initialConv);
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+
+      if (!mobile) {
+        setShowChatList(true); // على الكمبيوتر دائمًا تظهر القائمة
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // لو جاي من الـ profile → افتح المحادثة مباشرة (حسب اختيارك رقم 2)
+useEffect(() => {
+  if (isMobile && initialConv?.autoOpen) {
+    setSelectedConv(initialConv);
+    setShowChatList(false);
+  } else if (isMobile && !initialConv) {
+    setSelectedConv(null);
+    setShowChatList(true); // لو مش جاي من profile → افتح القائمة
+  }
+}, [initialConv, isMobile]);
+
+
+  const handleSelectConversation = (convObj) => {
+    setSelectedConv(convObj);
+
+    if (isMobile) {
+      setShowChatList(false);
     }
-  }, [initialConv]);
+  };
+
+  const handleBackToList = () => {
+    setShowChatList(true);
+    setSelectedConv(null);
+  };
+
   return (
-    <>
-      <Container maxWidth="lg" sx={{mt:5,mb: 5}}>
-        <div className="chat-container">
-          {/* Sidebar: قائمة المحادثات */}
-          <ChatList
+    <Container maxWidth="lg" sx={{ mt: 5, mb: 5 }}>
+      <div className="chat-container">
+
+        {/* قائمة المحادثات */}
+        {(!isMobile || showChatList) && (
+          <ChatList   className={isMobile && showChatList ? "mobile-show" : ""}
             conversations={conversations}
             setConversations={setConversations}
-            selectedConvId={selectedConv?.convId} // ⬅️ عشان نعرف أي محادثة محددة
-            // onSelectConversation : هذا خاصية (prop) نمرّرها للـ ChatList لكي يعرف ماذا نفعل عند الضغط على أي محادثة.
-            onSelectConversation={(
-              convId,
-              receiverId,
-              receiverName,
-              receiverImage
-            ) =>
-              //هذا يعني: لما المستخدم يضغط على محادثة، نخزن بيانات المحادثة المحددة في حالة (selectedConv) الخاصة بـ ChatPage.
-              setSelectedConv({
+            selectedConvId={selectedConv?.convId}
+            onSelectConversation={(convId, receiverId, receiverName, receiverImage) =>
+              handleSelectConversation({
                 convId,
                 receiverId,
                 receiverName,
@@ -45,32 +81,35 @@ export default function ChatPage() {
               })
             }
           />
+        )}
 
-          {/* نافذة الشات */}
-          {/*يعني: إذا اخترت محادثة → تظهر نافذة الشات مع الرسائل للطرف الآخر، وإلا يظهر نص "اختر محادثة لبدء الدردشة".*/}
-          {selectedConv ? (
+        {/* نافذة الدردشة */}
+        {(!isMobile || (!showChatList && selectedConv)) && (
+          selectedConv ? (
             <ChatWindow
-              setConversations={setConversations} //  لرفع تحديثات قائمة المحادثات عشان انه اخر محادثة انفتحت ( انبعثلها رسالة) هي تظهر بالاول مباشرة بدون ريفريش
-              conversationId={selectedConv.convId} //  تمرير اي دي المحادثة
-              receiverId={selectedConv.receiverId} //  تمرير اي دي الطرف الآخر
-              receiverName={selectedConv.receiverName} //  تمرير اسم الطرف الآخر
-              receiverImage={selectedConv.receiverImage} //  تمرير صورة الطرف الآخر
+              conversationId={selectedConv.convId}
+              receiverId={selectedConv.receiverId}
+              receiverName={selectedConv.receiverName}
+              receiverImage={selectedConv.receiverImage}
+              setConversations={setConversations}
+              onBack={isMobile ? handleBackToList : null}
             />
           ) : (
-          <div className="empty-window">
-  <MailOutlineIcon 
-    sx={{ 
-      fontSize: 64, 
-      opacity: 0.5, 
-      color: '#999',
-      mb: 2  // margin-bottom
-    }} 
-  />
-  <p>Select a conversation to start messaging</p>
-</div>
-          )}
-        </div>
-      </Container>
-    </>
+            <div className="empty-window">
+              <MailOutlineIcon
+                sx={{
+                  fontSize: 64,
+                  opacity: 0.5,
+                  color: "#999",
+                  mb: 2,
+                }}
+              />
+              <p>Select a conversation to start messaging</p>
+            </div>
+          )
+        )}
+
+      </div>
+    </Container>
   );
 }

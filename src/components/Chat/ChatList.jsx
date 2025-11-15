@@ -6,6 +6,7 @@ export default function ChatList({
   conversations,
   setConversations,
   onSelectConversation,
+  className = "",
 }) {
   const token = localStorage.getItem("accessToken");
   const userId = localStorage.getItem("userId");
@@ -41,7 +42,7 @@ export default function ChatList({
   }, []);
 
   return (
-    <div className="chat-list">
+    <div  className={`chat-list ${className}`}>
       <h3 className="chat-list-header">Messages</h3>
       <div className="chat-list-items">
         {conversations.length === 0 ? (

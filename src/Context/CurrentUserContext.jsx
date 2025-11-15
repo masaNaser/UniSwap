@@ -20,6 +20,7 @@ export const CurrentUserProvider = ({ children }) => {
       if (token) {
         try {
           const res = await GetFullProfile(token);
+          console.log("Loaded current user:", res.data);
           setCurrentUser(res.data);
         } catch (error) {
           console.error("Error loading current user:", error);

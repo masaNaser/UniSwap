@@ -293,6 +293,7 @@ export default function ChatWindow({
   receiverName,
   setConversations,
   receiverImage,
+  onBack,
 }) {
   const [messages, setMessages] = useState([]);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -531,6 +532,12 @@ export default function ChatWindow({
   return (
     <Box className="chat-window">
       <Box className="chat-header">
+        {onBack && (
+  <button className="back-button" onClick={onBack}>
+    ← Back
+  </button>
+)}
+
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Box className="chat-avatar">
             {receiverImage ? (

@@ -13,7 +13,7 @@ export const useNavigateToProfile = () => {
   const navigateToProfile = (userId) => {
     // التحقق من وجود userId
   if (!userId) {
-      console.log("❌ userId is missing!");
+      console.log(" userId is missing!");
       return;
     }
     const currentUserId = localStorage.getItem("userId");

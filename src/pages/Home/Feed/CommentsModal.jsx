@@ -46,7 +46,7 @@ const style = {
 // Helper function to format time
 const formatTime = (time) => (time ? dayjs(time).format("DD MMM, hh:mm A") : "Just now");
 
-const Comment = ({ comment, onEdit, onDelete, currentUserName }) => {
+const Comment = ({ comment, onEdit, onDelete, currentUserName, currentUserAvatar}) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedContent, setEditedContent] = useState(comment.content);
@@ -250,6 +250,7 @@ function CommentsModal({
     onDeleteComment,
     onEditComment,
     currentUserName,
+    currentUserAvatar 
 }) {
     const [commentText, setCommentText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -295,7 +296,7 @@ function CommentsModal({
                     <Box sx={{ flexGrow: 1, overflowY: "auto", p: 2 }}>
                         <Box sx={{ mb: 2 }}>
                             <CardHeader
-                                avatar={<Avatar src={post?.user?.avatar} />}
+                                avatar={<Avatar src={post?.user?.avatar} />} 
                                 title={
                                     <Typography variant="subtitle1" fontWeight="bold">
                                         {post?.user?.name}
@@ -343,6 +344,7 @@ function CommentsModal({
                                         onDelete={onDeleteComment}
                                         onEdit={onEditComment}
                                         currentUserName={currentUserName}
+                                        currentUserAvatar={currentUserAvatar}
                                     />
                                 ))}
                             </Box>
@@ -355,6 +357,7 @@ function CommentsModal({
 
                     <Box sx={{ p: 2, borderTop: "1px solid #eee", flexShrink: 0 }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Avatar src={currentUserAvatar} sx={{ width: 32, height: 32 }} /> {/* ✅ صورتك أنت */}
                             <TextField
                                 placeholder="Add a comment..."
                                 variant="outlined"

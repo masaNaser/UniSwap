@@ -64,7 +64,9 @@ function PostCard({
   onLike,
   onShowComments,
   fetchRecentComments,
-  onAddCommentInline
+  onAddCommentInline,
+  currentUserAvatar, // ✅ إضافة
+
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [recentComments, setRecentComments] = useState(post.recentComments || []);
@@ -202,27 +204,27 @@ function PostCard({
         )}
 
         {/* Inline Comment */}
-        <Box component="form" onSubmit={handleInlineCommentSubmit} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar src={post.user.avatar} sx={{ width: 32, height: 32 }} />
-          <TextField
-            placeholder="Add a comment..."
-            variant="outlined"
-            fullWidth
-            size="small"
-            value={inlineCommentText}
-            onChange={(e) => setInlineCommentText(e.target.value)}
-            disabled={isCommenting}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleInlineCommentSubmit(e);
-              }
-            }}
-          />
-          <IconButton type="submit" color="primary" disabled={!inlineCommentText.trim() || isCommenting} size="small">
-            {isCommenting ? <CircularProgress size={20} /> : <ChatBubbleOutlineIcon fontSize="small" />}
-          </IconButton>
-        </Box>
+             <Box component="form" onSubmit={handleInlineCommentSubmit} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Avatar src={currentUserAvatar} sx={{ width: 32, height: 32 }} /> {/* ✅ التعديل */}
+        <TextField
+          placeholder="Add a comment..."
+          variant="outlined"
+          fullWidth
+          size="small"
+          value={inlineCommentText}
+          onChange={(e) => setInlineCommentText(e.target.value)}
+          disabled={isCommenting}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleInlineCommentSubmit(e);
+            }
+          }}
+        />
+        <IconButton type="submit" color="primary" disabled={!inlineCommentText.trim() || isCommenting} size="small">
+          {isCommenting ? <CircularProgress size={20} /> : <ChatBubbleOutlineIcon fontSize="small" />}
+        </IconButton>
+      </Box>
       </Box>
     </Card>
   );
