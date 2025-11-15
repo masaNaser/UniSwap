@@ -19,7 +19,7 @@ import {
   School,
   ElectricBoltSharp,
 } from "@mui/icons-material";
-import Logo from "../../../assets/images/logo.png";
+import Logo from "../../../assets/images/Logo.png";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
