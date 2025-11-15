@@ -24,7 +24,7 @@ import {
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import Logo from "../../../assets/images/Logo.png";
+import Logo from "../../../../assets/images/Logo.png";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import { register as registerApi } from "../../../services/authService";
 import * as yup from "yup";
