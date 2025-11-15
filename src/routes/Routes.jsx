@@ -13,6 +13,7 @@ import ProjectDetails from "../pages/Home/Browse/ProjectDetails";
 import Project from "../pages/Home/Project/Project";
 import Profile from "../pages/Profile/Profile";
 import ChatPage from '../components/Chat/ChatPage'
+import TrackTasks from "../pages/TrackTasks/TrackTasks";
 
 const router = createBrowserRouter([
   {
@@ -74,6 +75,10 @@ const router = createBrowserRouter([
         {
         path: "profile/:userId", 
         element: <Profile/>, 
+      },
+       {
+        path: "TrackTasks/:taskId", 
+        element: <TrackTasks/>, 
       },
     ],
   },

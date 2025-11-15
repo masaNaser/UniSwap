@@ -9,6 +9,7 @@ import {
   LinearProgress,
 } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import { useNavigate } from "react-router-dom"; // لازم React Router
 
 export default function AllStatusProjectCard({
   id,
@@ -31,6 +32,7 @@ export default function AllStatusProjectCard({
   createdAt,
 }) {
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const navigate = useNavigate();
 
   // Console to check field mapping
   console.log("🔵 AllStatusProjectCard - Props Received:", {
@@ -114,8 +116,26 @@ export default function AllStatusProjectCard({
 
   const formattedDeadline = formatDate(deadline);
 
+    const handleCardClick = () => {
+  navigate(`/app/TrackTasks/${id}`, { // هنا /app/TrackTasks/:taskId
+      state: {
+        id,
+        title,
+        description,
+        clientName,
+        clientInitials,
+        clientAvatar,
+        pointsOffered,
+        deadline,
+        category,
+        isProvider,
+        progressPercentage
+      },
+    });
+  };
   return (
     <Card
+      onClick={handleCardClick}
       sx={{
         borderRadius: "16px",
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
@@ -126,6 +146,7 @@ export default function AllStatusProjectCard({
         flexDirection: "column",
         transition: "0.3s",
         "&:hover": { transform: "translateY(-3px)", boxShadow: 3 },
+        cursor: "pointer",
       }}
     >
       <CardContent

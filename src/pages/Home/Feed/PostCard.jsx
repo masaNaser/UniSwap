@@ -57,7 +57,6 @@ const ActionButton = ({ icon, label, onClick }) => (
     <Typography variant="body2" color="text.secondary">{label}</Typography>
   </Box>
 );
-
 function PostCard({
   post,
   onDelete,
