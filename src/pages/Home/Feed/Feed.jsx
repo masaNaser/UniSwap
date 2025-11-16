@@ -559,7 +559,7 @@ function Feed() {
                 }}
             >
                 <DialogTitle>Edit Post</DialogTitle>
-                <DialogContent sx={{ pt: 2 }}>
+                <DialogContent sx={{ pt: 5 }}>
                     <TextField
                         fullWidth
                         multiline
@@ -567,7 +567,7 @@ function Feed() {
                         label="Content"
                         value={editDialog.content}
                         onChange={(e) => setEditDialog(prev => ({ ...prev, content: e.target.value }))}
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 3,mt:1 }}
                     />
                     <TextField
                         fullWidth
