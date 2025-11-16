@@ -9,11 +9,10 @@ import {
   LinearProgress,
 } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import { useNavigate } from "react-router-dom"; // لازم React Router
+import { useNavigate } from "react-router-dom";
 
 export default function AllStatusProjectCard({
   id,
-  // API Response Fields
   projectStatus,
   title,
   description,
@@ -27,60 +26,31 @@ export default function AllStatusProjectCard({
   category,
   pointsOffered,
   progressPercentage,
-  // Derived Props
-  isProvider = true, // true = show client info, false = show provider info
+  isProvider = true,
   createdAt,
 }) {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const navigate = useNavigate();
 
-  // Console to check field mapping
-  console.log("🔵 AllStatusProjectCard - Props Received:", {
-    id,
-    title,
-    projectStatus,
-    clientName,
-    providerName,
-    progressPercentage,
-    pointsOffered,
-    createdAt,
-    deadline,
-    isProvider,
-  });
-
-  // تحديد إذا كان الوصف طويل (أكثر من 50 حرف)
   const isLongDescription = description && description.length > 50;
   const displayedDescription = showFullDescription
     ? description
     : isLongDescription
-      ? description.substring(0, 50) + "..."
-      : description;
+    ? description.substring(0, 50) + "..."
+    : description;
 
   const getStatusStyles = (status) => {
     const styles = {
-      Active: {
-        bg: "#ECFDF5",
-        text: "#059669",
-      },
-      Completed: {
-        bg: "#EFF6FF",
-        text: "#0284C7",
-      },
-      Overdue: {
-        bg: "#FEF2F2",
-        text: "#DC2626",
-      },
-      Pending: {
-        bg: "#FEF3C7",
-        text: "#F59E0B",
-      },
+      Active: { bg: "#ECFDF5", text: "#059669" },
+      Completed: { bg: "#EFF6FF", text: "#0284C7" },
+      Overdue: { bg: "#FEF2F2", text: "#DC2626" },
+      Pending: { bg: "#FEF3C7", text: "#F59E0B" },
     };
     return styles[status] || styles.Active;
   };
 
   const statusStyles = getStatusStyles(projectStatus);
 
-  // Generate initials from name if not provided
   const generateInitials = (name) => {
     if (!name) return "NA";
     return name
@@ -91,7 +61,6 @@ export default function AllStatusProjectCard({
       .substring(0, 2);
   };
 
-  // Determine who to display (client or provider)
   const displayName = isProvider ? clientName : providerName;
   const displayInitials = isProvider
     ? clientInitials || generateInitials(clientName)
@@ -99,7 +68,6 @@ export default function AllStatusProjectCard({
   const displayAvatar = isProvider ? clientAvatar : providerAvatar;
   const displayRole = isProvider ? "Client" : "Service Provider";
 
-  // Format deadline date
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     try {
@@ -116,8 +84,8 @@ export default function AllStatusProjectCard({
 
   const formattedDeadline = formatDate(deadline);
 
-    const handleCardClick = () => {
-  navigate(`/app/TrackTasks/${id}`, { // هنا /app/TrackTasks/:taskId
+  const handleCardClick = () => {
+    navigate(`/app/TrackTasks/${id}`, {
       state: {
         id,
         title,
@@ -129,10 +97,11 @@ export default function AllStatusProjectCard({
         deadline,
         category,
         isProvider,
-        progressPercentage
+        progressPercentage,
       },
     });
   };
+
   return (
     <Card
       onClick={handleCardClick}
@@ -141,7 +110,7 @@ export default function AllStatusProjectCard({
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         transition: "transform 0.2s, box-shadow 0.2s",
         width: "350px",
-        minHeight: "330px",
+        minHeight: "290px",
         display: "flex",
         flexDirection: "column",
         transition: "0.3s",
@@ -158,7 +127,6 @@ export default function AllStatusProjectCard({
           "&:last-child": { pb: 2.5 },
         }}
       >
-        {/* Header: Client/Provider Info + Status Chip */}
         <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
           <Avatar
             src={displayAvatar}
@@ -194,7 +162,6 @@ export default function AllStatusProjectCard({
           />
         </Box>
 
-        {/* Title */}
         <Typography
           variant="h6"
           fontWeight="bold"
@@ -205,7 +172,7 @@ export default function AllStatusProjectCard({
           {title}
         </Typography>
 
-        {/* Description with Read More */}
+        {/* FIXED READ MORE (no navigation) */}
         <Box mb={1.5} flex={1}>
           <Typography
             variant="body2"
@@ -215,11 +182,12 @@ export default function AllStatusProjectCard({
             sx={{
               wordBreak: "break-word",
               overflowY: showFullDescription ? "auto" : "hidden",
-              maxHeight: showFullDescription ? 60 : "auto",
+              maxHeight: showFullDescription ? 80 : 40,
             }}
           >
             {displayedDescription}
           </Typography>
+
           {isLongDescription && (
             <Typography
               variant="caption"
@@ -228,18 +196,18 @@ export default function AllStatusProjectCard({
                 cursor: "pointer",
                 fontWeight: "500",
                 fontSize: "12px",
-                "&:hover": {
-                  textDecoration: "underline",
-                },
+                "&:hover": { textDecoration: "underline" },
               }}
-              onClick={() => setShowFullDescription(!showFullDescription)}
+              onClick={(e) => {
+                e.stopPropagation(); // prevent card navigation
+                setShowFullDescription(!showFullDescription);
+              }}
             >
               {showFullDescription ? "Show less" : "Read more"}
             </Typography>
           )}
         </Box>
 
-        {/* Due Date */}
         <Box display="flex" alignItems="center" gap={0.5} mb={2}>
           <CalendarMonthIcon sx={{ fontSize: 15, color: "text.secondary" }} />
           <Typography variant="caption" color="text.secondary" fontSize="12px">
@@ -247,28 +215,12 @@ export default function AllStatusProjectCard({
           </Typography>
         </Box>
 
-        {/* Progress Section */}
         <Box>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={0.5}
-          >
-            <Typography
-              variant="body2"
-              fontWeight="600"
-              fontSize="13px"
-              color="#1F2937"
-            >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+            <Typography variant="body2" fontWeight="600" fontSize="13px" color="#1F2937">
               Progress
             </Typography>
-            <Typography
-              variant="body2"
-              fontWeight="600"
-              fontSize="13px"
-              color="#3B82F6"
-            >
+            <Typography variant="body2" fontWeight="600" fontSize="13px" color="#3B82F6">
               {Math.round(progressPercentage)}%
             </Typography>
           </Box>

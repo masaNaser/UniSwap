@@ -180,7 +180,7 @@ export default function RequestProjectCard({
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           transition: "transform 0.3s, box-shadow 0.2s",
           width: "350px",
-          height: "330px",
+          height: "290px",
           display: "flex",
           flexDirection: "column",
           "&:hover": { transform: "translateY(-3px)", boxShadow: 3 },
