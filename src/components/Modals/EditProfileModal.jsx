@@ -190,8 +190,8 @@ const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
   // دالة لإعادة تعيين المودال عند الإغلاق
   const handleModalClose = () => {
     // نظف الصور المؤقتة
-    setProfilePicture(null);
-    setCoverPicture(null);
+    // setProfilePicture(null);
+    // setCoverPicture(null);
     onClose();
   };
 

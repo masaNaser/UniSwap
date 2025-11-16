@@ -32,6 +32,7 @@ const formatTime = (time) => (!time ? "Just now" : dayjs(time).format('DD MMM, h
 
 // Single Comment Bubble
 const CommentBubble = ({ comment }) => (
+  
   <Box sx={{ display: 'flex', gap: 1, mb: 1, minWidth: 0 }}>
     <Avatar src={comment.author?.avatar} sx={{ width: 24, height: 24, flexShrink: 0 }} />
     <Box sx={{
@@ -171,13 +172,28 @@ function PostCard({
           ))}
         </Box>
         {post.fileUrl && (
-          <Box sx={{ mt: 2, maxHeight: 400, overflow: 'hidden', borderRadius: 1 }}>
-            <img
-              src={post.fileUrl}
-              alt="Post content"
-              style={{ width: "100%", height: "auto", display: "block" }}
-            />
-          </Box>
+        <Box sx={{ 
+  mt: 2, 
+  maxHeight: 500, 
+  overflow: 'hidden', 
+  borderRadius: 2,
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  bgcolor: '#f5f5f5'
+}}>
+  <img
+    src={post.fileUrl}
+    alt="Post content"
+    style={{ 
+      width: "50%", 
+      height: "auto", 
+      display: "block", 
+      objectFit: "contain", // ✅ contain بدل fill عشان ما تتشوه
+      maxHeight: "500px"
+    }}
+  />
+</Box>
         )}
       </CardContent>
 

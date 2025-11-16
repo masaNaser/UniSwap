@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { Box, Tabs, Tab, Paper } from "@mui/material";
 import OverviewTab from "./OverviewTab/OverviewTab";
 import PortfolioTab from "./PortfolioTab";
+import PostsTab from "./PostsTab";
 // import ReviewsTab from "./tabs/ReviewsTab";
 // import AchievementsTab from "./tabs/AchievementsTab";
 
@@ -35,7 +36,7 @@ export default function ProfileTabs() {
       minHeight: 48,        // ارتفاع ثابت ومرتب
     }}
   >
-    {["Overview", "Portfolio", "Reviews", "Achievements"].map((label, index) => (
+    {["Overview", "Portfolio", "Posts"].map((label, index) => (
       <Tab
         key={label}
         label={label}
@@ -61,7 +62,7 @@ export default function ProfileTabs() {
       {/* المحتوى */}
       {currentTab === 0 && <OverviewTab />}
       {currentTab === 1 && <PortfolioTab />}
-      {/* {currentTab === 2 && <ReviewsTab />} */}
+      {currentTab === 2 && <PostsTab />}
       {/* {currentTab === 3 && <AchievementsTab />} */}
     </Box>
   );
