@@ -512,7 +512,7 @@ export default function Register() {
                 fullWidth
                 margin="normal"
                 label="Academic Year"
-                placeholder="5th year"
+                placeholder="5"
                 variant="outlined"
                 required
                 InputProps={{

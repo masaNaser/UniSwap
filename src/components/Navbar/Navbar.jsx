@@ -310,14 +310,14 @@ export default function PrimarySearchAppBar() {
                 color="inherit"
                 onClick={() => navigate("/chat")} // ✅ أضف هاي السطر
               >
-                <Badge badgeContent={4} color="error">
+                {/* <Badge badgeContent={4} color="error"> */}
                   <MailIcon />
-                </Badge>
+                {/* </Badge> */}
               </IconButton>
               <IconButton size="large" color="inherit">
-                <Badge badgeContent={5} color="error">
+                {/* <Badge badgeContent={5} color="error"> */}
                   <NotificationsIcon />
-                </Badge>
+                {/* </Badge> */}
               </IconButton>
 
               {/* ✅ Account Menu */}

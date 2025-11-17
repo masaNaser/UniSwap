@@ -2,7 +2,7 @@ import * as signalR from "@microsoft/signalr";
 import api from "./api";
 
 // روابط السيرفر
-const API_BASE_URL = "https://uni.runasp.net/api";
+// const API_BASE_URL = "https://uni.runasp.net/api";
 const HUB_BASE_URL = "https://uni.runasp.net";
 
 //  إنشاء اتصال SignalR
