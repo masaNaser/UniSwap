@@ -24,20 +24,9 @@ export const getClientReviewCard = async (taskId, token) => {
   });
 };
 
-// ===== Create/Update/Delete Tasks =====
-export const createTask = async (projectId, taskData, token) => {
-  const formData = new FormData();
-  formData.append('Title', taskData.title);
-  formData.append('Description', taskData.description || '');
-  
-  if (taskData.deadline) {
-    formData.append('Deadline', new Date(taskData.deadline).toISOString());
-  }
-  
-  if (taskData.file) {
-    formData.append('UploadFile', taskData.file);
-  }
 
+// ===== Create/Update/Delete Tasks =====
+export const createTask = async (projectId, formData, token) => {
   return await api.post(`/tasks/project/${projectId}`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -46,23 +35,7 @@ export const createTask = async (projectId, taskData, token) => {
   });
 };
 
-export const updateTask = async (taskId, taskData, token) => {
-  const formData = new FormData();
-  formData.append('Title', taskData.title);
-  formData.append('Description', taskData.description || '');
-  
-  if (taskData.deadline) {
-    formData.append('Deadline', new Date(taskData.deadline).toISOString());
-  }
-  
-  if (taskData.progressPercentage !== undefined) {
-    formData.append('ProgressPercentage', taskData.progressPercentage);
-  }
-  
-  if (taskData.file) {
-    formData.append('UploadFile', taskData.file);
-  }
-
+export const updateTask = async (taskId, formData, token) => {
   return await api.patch(`/tasks/${taskId}`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,

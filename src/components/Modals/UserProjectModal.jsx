@@ -28,11 +28,11 @@ export default function UserProjectModal({
     title: "",
     description: "",
     duration: "",
-    tags: [],
+     tags: [],
     coverImage: null,
     projectFile: null,
   });
-  const [tagInput, setTagInput] = useState("");
+   const [tagInput, setTagInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
 
@@ -42,7 +42,7 @@ export default function UserProjectModal({
         title: editData.title || "",
         description: editData.description || "",
         duration: editData.duration || "",
-        tags: editData.tags || [],
+         tags: editData.tags || [],
         coverImage: null,
         projectFile: null,
       });
@@ -51,12 +51,12 @@ export default function UserProjectModal({
         title: "",
         description: "",
         duration: "",
-        tags: [],
+         tags: [],
         coverImage: null,
         projectFile: null,
       });
     }
-    setTagInput("");
+     setTagInput("");
   }, [editData, open]);
 
   const handleChange = (e) => {
@@ -102,20 +102,22 @@ export default function UserProjectModal({
       data.append("Title", formData.title);
       data.append("Description", formData.description);
       data.append("Duration", formData.duration);
-      formData.tags.forEach((tag) => data.append("Tags", tag));
+       formData.tags.forEach((tag) => data.append("Tags", tag));
       if (formData.coverImage) data.append("CoverImage", formData.coverImage);
       if (formData.projectFile)
         data.append("ProjectFile", formData.projectFile);
       console.log("Submitting project with data:", formData);
       if (editData) {
-        await EditProject(token, data, editData.id);
+       const response =  await EditProject(token, data, editData.id);
+       console.log("Edit project response:", response);
         setSnackbar({
           open: true,
           message: "Project updated successfully!",
           severity: "success",
         });
       } else {
-        await CreateProject(token, data);
+       const respone =  await CreateProject(token, data);
+       console.log("Create project response:", respone);
         setSnackbar({
           open: true,
           message: "Project created successfully!",
@@ -211,34 +213,62 @@ export default function UserProjectModal({
         </Box>
 
         {/* Tags Input */}
-        <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Tags
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <TextField
-              size="small"
-              placeholder="Add tag"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-            />
-            <IconButton color="primary" onClick={handleAddTag}>
-              <AddIcon />
-            </IconButton>
-          </Box>
-          <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {formData.tags.map((tag, idx) => (
-              <Chip
-                key={idx}
-                label={tag}
-                onDelete={() => handleDeleteTag(tag)}
-                color="primary"
-                variant="outlined"
-              />
-            ))}
-          </Box>
-        </Box>
+       {/* Tags Input - بس اعرضها اذا مش Edit Mode */}
+{!editData && (
+  <Box>
+    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+      Tags
+    </Typography>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <TextField
+        size="small"
+        placeholder="Add tag"
+        value={tagInput}
+        onChange={(e) => setTagInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleAddTag();
+          }
+        }}
+      />
+      <IconButton color="primary" onClick={handleAddTag}>
+        <AddIcon />
+      </IconButton>
+    </Box>
+    <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
+      {formData.tags.map((tag, idx) => (
+        <Chip
+          key={idx}
+          label={tag}
+          onDelete={() => handleDeleteTag(tag)}
+          color="primary"
+          variant="outlined"
+        />
+      ))}
+    </Box>
+  </Box>
+)}
+
+{/* اعرض التاجز بس للقراءة في وضع Edit */}
+{editData && formData.tags.length > 0 && (
+  <Box>
+    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+      Tags
+    </Typography>
+    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+      {formData.tags.map((tag, idx) => (
+        <Chip
+          key={idx}
+          label={tag}
+          color="primary"
+          variant="outlined"
+          // بدون onDelete عشان ما يقدر يحذف
+        />
+      ))}
+    </Box>
+  </Box>
+)}
       </Stack>
     </GenericModal>
   );

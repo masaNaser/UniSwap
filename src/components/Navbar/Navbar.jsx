@@ -125,14 +125,17 @@ export default function PrimarySearchAppBar() {
                 component="img"
                 src={Logo}
                 alt="logo"
-                sx={{ width: 37, height: 37 }}
+                sx={{ width: 37, height: 37, cursor: "pointer" }}
+                onClick={() => navigate("/app/feed")}
               />
               <Typography
                 variant="h6"
+                onClick={() => navigate("/app/feed")}
                 sx={{
                   fontWeight: "bold",
                   color: "#74767a",
                   display: { xs: "none", sm: "block" },
+                  cursor: "pointer",
                 }}
               >
                 UniSwap

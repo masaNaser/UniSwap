@@ -1,13 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Button, Grid, Card, CardContent, Typography, IconButton, CircularProgress, Box, Chip, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions 
+import {
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  IconButton,
+  CircularProgress,
+  Box,
+  Chip,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import FolderIcon from "@mui/icons-material/Folder";
 import UserProjectModal from "../../../components/Modals/UserProjectModal";
-import { GetUserProject, DeleteProject } from "../../../services/profileService";
+import {
+  GetUserProject,
+  DeleteProject,
+} from "../../../services/profileService";
 import { useProfile } from "../../../Context/ProfileContext";
 import { getImageUrl } from "../../../utils/imageHelper";
 
@@ -27,8 +45,12 @@ export default function PortfolioTab() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const { data } = await GetUserProject(token, isMyProfile ? null : userData.id);
+      const { data } = await GetUserProject(
+        token,
+        isMyProfile ? null : userData.id
+      );
       setProjects(data);
+      console.log("Fetched projects:", data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -89,7 +111,7 @@ export default function PortfolioTab() {
   };
 
   return (
-    <Box sx={{ width: '100%'  , mb: 5 }}>
+    <Box sx={{ width: "100%", mb: 5 }}>
       {isMyProfile && (
         <Button
           variant="contained"
@@ -106,48 +128,54 @@ export default function PortfolioTab() {
       ) : projects.length === 0 ? (
         <Typography>No projects yet.</Typography>
       ) : (
-        <Box sx={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          gap: 2,
-          mt: 0
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 2,
+            mt: 0,
+          }}
+        >
           {projects.map((p) => (
-            <Box 
+            <Box
               key={p.id}
-              sx={{ 
-                width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(50% - 8px)' },
+              sx={{
+                width: {
+                  xs: "100%",
+                  sm: "calc(50% - 8px)",
+                  md: "calc(50% - 8px)",
+                },
                 flexGrow: 0,
-                flexShrink: 0
+                flexShrink: 0,
               }}
             >
               <Card
                 sx={{
                   borderRadius: 3,
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
+                  overflow: "hidden",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
                   },
-                  position: 'relative',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%'
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
                 }}
               >
                 {isMyProfile && (
                   <IconButton
                     onClick={(e) => handleClick(e, p)}
                     sx={{
-                      position: 'absolute',
+                      position: "absolute",
                       top: 8,
                       right: 8,
-                      bgcolor: 'white',
+                      bgcolor: "white",
                       boxShadow: 1,
                       zIndex: 1,
-                      '&:hover': { bgcolor: 'grey.100' }
+                      "&:hover": { bgcolor: "grey.100" },
                     }}
                   >
                     <MoreVertIcon />
@@ -160,23 +188,51 @@ export default function PortfolioTab() {
                     src={getImageUrl(p.coverImage, p.title)}
                     alt={p.title}
                     sx={{
-                      width: '100%',
+                      width: "100%",
                       height: { xs: 180, sm: 200, md: 220 },
-                      objectFit: 'cover',
-                      display: 'block'
+                      objectFit: "cover",
+                      display: "block",
                     }}
                   />
                 )}
 
-                <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <CardContent
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                  }}
+                >
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
                     {p.title}
                   </Typography>
 
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ lineHeight: 1.5 }}
+                  >
                     {p.description}
                   </Typography>
 
+                  {/* إضافة عرض ملف المشروع */}
+                  {p.projectFile && (
+                    <Box sx={{ mt: 1 }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<FolderIcon />}
+                        component="a"
+                        href={`https://uni.runasp.net/${p.projectFile}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ textTransform: "none" }}
+                      >
+                        View Project File
+                      </Button>
+                    </Box>
+                  )}
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                     {p.tags && p.tags.map((tag, idx) => (
                       <Chip key={idx} label={tag} size="small" sx={{ bgcolor: '#F3F4F6' }} />
@@ -189,11 +245,19 @@ export default function PortfolioTab() {
         </Box>
       )}
 
-      <Menu anchorEl={anchorEl} open={open} onClose={handleClose} sx={{ mt: 1 }}>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        sx={{ mt: 1 }}
+      >
         <MenuItem onClick={() => handleEdit(selectedProject)}>
           <EditIcon fontSize="small" sx={{ mr: 1.5 }} /> Edit Project
         </MenuItem>
-        <MenuItem onClick={() => handleDeleteClick(selectedProject)} sx={{ color: 'error.main' }}>
+        <MenuItem
+          onClick={() => handleDeleteClick(selectedProject)}
+          sx={{ color: "error.main" }}
+        >
           <DeleteIcon fontSize="small" sx={{ mr: 1.5 }} /> Delete Project
         </MenuItem>
       </Menu>
@@ -205,7 +269,9 @@ export default function PortfolioTab() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelDelete}>Cancel</Button>
-          <Button color="error" onClick={handleConfirmDelete}>Delete</Button>
+          <Button color="error" onClick={handleConfirmDelete}>
+            Delete
+          </Button>
         </DialogActions>
       </Dialog>
 

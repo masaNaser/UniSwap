@@ -40,7 +40,7 @@ export default function MainLayout() {
   const [isMyProfile, setIsMyProfile] = useState(false);
 
   // ⬅️ دالة لجلب البيانات (هاي الأهم!)
-  const fetchUserData = async (userId = null) => {
+  const fetchUserData = async (userId) => {
     const token = localStorage.getItem("accessToken");
     const currentUserId = localStorage.getItem("userId");
     
@@ -59,8 +59,12 @@ export default function MainLayout() {
       
       setUserData(res.data);
       console.log(" Profile data refreshed:", res.data);
+          return res.data;   // ⬅⬅⬅ المهم هذا
+
     } catch (error) {
       console.error(" Error fetching profile:", error);
+          return null;
+
     }
   };
 

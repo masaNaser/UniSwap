@@ -1,6 +1,15 @@
-import { Card, CardContent, Box, Typography, Avatar, IconButton, Chip } from '@mui/material';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import {
+  Card,
+  CardContent,
+  Box,
+  Typography,
+  IconButton,
+  Chip,
+  Button,
+} from "@mui/material";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 
 export default function TaskCard({
   task,
@@ -10,72 +19,144 @@ export default function TaskCard({
   onMenuOpen,
 }) {
   const getProgressColor = (percentage) => {
-    if (percentage === 100) return '#059669';
-    if (percentage >= 75) return '#0284C7';
-    if (percentage >= 50) return '#F59E0B';
-    return '#EF4444';
+    if (percentage === 100) return "#059669";
+    if (percentage >= 75) return "#0284C7";
+    if (percentage >= 50) return "#F59E0B";
+    return "#EF4444";
   };
+
+  const handleFileClick = () => {
+    if (task.uploadFile) {
+      // إذا كان File object
+      if (task.uploadFile instanceof File) {
+        const url = URL.createObjectURL(task.uploadFile);
+        window.open(url, "_blank");
+      }
+      // إذا كان رابط من الـ API
+      else if (typeof task.uploadFile === "string") {
+        const fileUrl = task.uploadFile.startsWith("http")
+          ? task.uploadFile
+          : `https://uni.runasp.net/${task.uploadFile}`;
+        window.open(fileUrl, "_blank");
+      }
+    }
+  };
+
+  console.log("Rendering TaskCard for task:", task);
 
   return (
     <Card
       draggable={isProvider}
       onDragStart={onDragStart}
       sx={{
-        cursor: isProvider ? 'grab' : 'default',
-        transition: 'all 0.2s ease',
-        backgroundColor: '#FFFFFF',
-        border: '1px solid #E5E7EB',
-        position: 'relative',
-        '&:hover': {
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          transform: isProvider ? 'translateY(-2px)' : 'none',
+        cursor: isProvider ? "grab" : "default",
+        transition: "all 0.2s ease",
+        backgroundColor: "#FFFFFF",
+        border: "1px solid #E5E7EB",
+        position: "relative",
+        "&:hover": {
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          transform: isProvider ? "translateY(-2px)" : "none",
         },
-        '&:active': {
-          cursor: isProvider ? 'grabbing' : 'default',
+        "&:active": {
+          cursor: isProvider ? "grabbing" : "default",
         },
       }}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+      <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 1,
+          }}
+        >
           <Box sx={{ flex: 1 }}>
             {isProvider && (
               <DragIndicatorIcon
                 sx={{
                   fontSize: 18,
-                  color: '#D1D5DB',
+                  color: "#D1D5DB",
                   mb: 0.5,
-                  display: 'inline-block',
+                  display: "inline-block",
                   mr: 0.5,
                 }}
               />
             )}
-            <Typography fontWeight="bold" variant="body2" sx={{ mb: 0.5, lineHeight: 1.3 }}>
+            <Typography
+              fontWeight="bold"
+              variant="body2"
+              sx={{ mb: 0.5, lineHeight: 1.3 }}
+            >
               {task.title}
             </Typography>
             {task.description && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mb: 1 }}
+              >
                 {task.description}
               </Typography>
             )}
 
+            {/* File Attachment */}
+            {task.uploadFile && (
+              <Button
+                size="small"
+                startIcon={<AttachFileIcon />}
+                onClick={handleFileClick}
+                sx={{
+                  textTransform: "none",
+                  fontSize: "11px",
+                  mb: 1,
+                  color: "#0284C7",
+                  "&:hover": {
+                    backgroundColor: "#F0F9FF",
+                  },
+                }}
+              >
+                View Attachment
+              </Button>
+            )}
+
             {/* Progress Bar */}
             <Box sx={{ mb: 1, mt: 1 }}>
-              <Box sx={{
-                height: 4,
-                backgroundColor: '#E5E7EB',
-                borderRadius: 2,
-                overflow: 'hidden',
-              }}>
-                <Box sx={{
-                  height: '100%',
-                  width: `${task.progressPercentage}%`,
-                  backgroundColor: getProgressColor(task.progressPercentage),
-                  transition: 'width 0.3s ease',
-                }} />
+              {" "}
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                <Typography variant="caption" sx={{ fontSize: "10px", color: "#6B7280", mt: 0.5 }}>
+                  Progress
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: "10px",
+                    color: "#9CA3AF",
+                    mt: 0.5,
+                    display: "block",
+                  }}
+                >
+                  {task.progressPercentage}%
+                </Typography>
               </Box>
-              <Typography variant="caption" sx={{ fontSize: '10px', color: '#9CA3AF', mt: 0.5, display: 'block' }}>
-                {task.progressPercentage}%
-              </Typography>
+              <Box
+                sx={{
+                  height: 4,
+                  backgroundColor: "#E5E7EB",
+                  borderRadius: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: `${task.progressPercentage}%`,
+                    backgroundColor: "#3B82F6",
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </Box>
             </Box>
 
             {/* Overdue Badge */}
@@ -84,16 +165,20 @@ export default function TaskCard({
                 label="Overdue"
                 size="small"
                 sx={{
-                  backgroundColor: '#FEE2E2',
-                  color: '#DC2626',
-                  fontSize: '11px',
-                  height: '20px',
+                  backgroundColor: "#FEE2E2",
+                  color: "#DC2626",
+                  fontSize: "11px",
+                  height: "20px",
                 }}
               />
             )}
           </Box>
           {isProvider && (
-            <IconButton size="small" onClick={onMenuOpen} sx={{ mt: -1, mr: -1 }}>
+            <IconButton
+              size="small"
+              onClick={onMenuOpen}
+              sx={{ mt: -1, mr: -1 }}
+            >
               <MoreVertIcon fontSize="small" />
             </IconButton>
           )}

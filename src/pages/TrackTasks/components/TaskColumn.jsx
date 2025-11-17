@@ -30,6 +30,8 @@ export default function TaskColumn({
     description: '',
     deadline: '',
     status: 'ToDo',
+    uploadFile: null, // أضف هذا
+
   });
 
   const handleAddClick = () => {
@@ -38,6 +40,8 @@ export default function TaskColumn({
       description: '',
       deadline: '',
       status: 'ToDo',
+      uploadFile: null, // أضف هذا
+
     });
     setOpenDialog(true);
   };

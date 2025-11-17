@@ -1,181 +1,432 @@
+// import React, { useState, useEffect } from "react";
+// import { Typography, Box, TextField, Avatar } from "@mui/material";
+// import EditIcon from "@mui/icons-material/Edit";
+// import GenericModal from "../Modals/GenericModal";
+// import CustomButton from "../CustomButton/CustomButton";
+// import { EditProfile } from "../../services/profileService";
+// import { getImageUrl } from "../../utils/imageHelper";
+
+// const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
+//   const [formData, setFormData] = useState({
+//     userName: "",
+//     bio: "",
+//     universityMajor: "",
+//     academicYear: "",
+//     socialLinks: "",
+//     skills: "",
+//   });
+
+//   const [profilePicture, setProfilePicture] = useState(null);
+//   const [coverPicture, setCoverPicture] = useState(null);
+//   const [profilePreview, setProfilePreview] = useState(null);
+//   const [coverPreview, setCoverPreview] = useState(null);
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+
+//   const [snackbar, setSnackbar] = useState({
+//     open: false,
+//     message: "",
+//     severity: "success",
+//   });
+
+//   useEffect(() => {
+//     if (userData && open) {
+//       setFormData({
+//         userName: userData.userName || "",
+//         bio: userData.bio || "",
+//         universityMajor: userData.universityMajor || "",
+//         academicYear: userData.academicYear || "",
+//         socialLinks: userData.socialLinks?.join(", ") || "",
+//         skills: userData.skills?.join(", ") || "",
+//       });
+//       // فقط نحدث الصور لو ما في preview جديد (يعني المستخدم ما غيرهم)
+//       if (!profilePicture) {
+//         setProfilePreview(getImageUrl(userData.profilePicture));
+//       }
+//       if (!coverPicture) {
+//         setCoverPreview(getImageUrl(userData.coverImg));
+//       }
+//     }
+//   }, [userData, open]);
+
+//   const handleChange = (field, value) => {
+//     setFormData((prev) => ({ ...prev, [field]: value }));
+//   };
+
+//   const handleProfilePictureChange = (e) => {
+//     const file = e.target.files?.[0];
+//     if (file) {
+//       setProfilePicture(file);
+//       setProfilePreview(URL.createObjectURL(file));
+//     }
+//   };
+
+//   const handleCoverPictureChange = (e) => {
+//     const file = e.target.files?.[0];
+//     if (file) {
+//       setCoverPicture(file);
+//       setCoverPreview(URL.createObjectURL(file));
+//     }
+//   };
+
+//   const handleSubmit = async () => {
+//     const token = localStorage.getItem("accessToken");
+
+//     if (!token) {
+//       setSnackbar({
+//         open: true,
+//         message: "Please login first!",
+//         severity: "error",
+//       });
+//       return;
+//     }
+
+//     try {
+//       setIsSubmitting(true);
+
+//       const formDataToSend = new FormData();
+
+//       if (formData.userName?.trim()) {
+//         formDataToSend.append("UserName", formData.userName.trim());
+//       }
+
+//       if (formData.bio?.trim()) {
+//         formDataToSend.append("Bio", formData.bio.trim());
+//       }
+
+//       if (formData.universityMajor?.trim()) {
+//         formDataToSend.append(
+//           "UniversityMajor",
+//           formData.universityMajor.trim()
+//         );
+//       }
+
+//       if (formData.academicYear) {
+//         const yearNumber = parseInt(formData.academicYear);
+//         if (!isNaN(yearNumber)) {
+//           formDataToSend.append("AcademicYear", yearNumber.toString());
+//         }
+//       }
+
+//       const skillsArray = formData.skills
+//         ?.split(",")
+//         .map((s) => s.trim())
+//         .filter(Boolean);
+
+//       if (skillsArray?.length > 0) {
+//         skillsArray.forEach((skill) => {
+//           formDataToSend.append("Skills", skill);
+//         });
+//       }
+
+//       const linksArray = formData.socialLinks
+//         ?.split(",")
+//         .map((l) => l.trim())
+//         .filter(Boolean);
+
+//       if (linksArray?.length > 0) {
+//         linksArray.forEach((link) => {
+//           formDataToSend.append("SocialLinks", link);
+//         });
+//       }
+
+//       if (profilePicture) {
+//         formDataToSend.append("ProfilePicture", profilePicture);
+//       }
+
+//       if (coverPicture) {
+//         formDataToSend.append("CoverImg", coverPicture);
+//       }
+
+//       console.log("=== FormData Contents ===");
+//       for (let pair of formDataToSend.entries()) {
+//         console.log(pair[0] + ": " + pair[1]);
+//       }
+
+//       const response = await EditProfile(token, formDataToSend);
+//       console.log("✅ Profile edit request sent successfully");
+
+//       // أغلق المودال أولاً
+//       onClose();
+
+//       // أظهر رسالة النجاح
+//       setSnackbar({
+//         open: true,
+//         message: "Profile updated successfully!",
+//         severity: "success",
+//       });
+
+//       // انتظر شوية عشان الصور تتحمل على السيرفر، بعدين حدث البيانات
+//       setTimeout(() => {
+//         if (onProfileUpdated) {
+//           onProfileUpdated();
+//         }
+//         // نظف الـ states
+//         setProfilePicture(null);
+//         setCoverPicture(null);
+//       }, 800);
+//     } catch (error) {
+//       console.error("Error updating profile:", error);
+
+//       const errorMessage =
+//         error.response?.data?.message ||
+//         error.response?.data?.title ||
+//         error.message ||
+//         "Failed to update profile";
+
+//       setSnackbar({
+//         open: true,
+//         message: errorMessage,
+//         severity: "error",
+//       });
+//     } finally {
+//       setIsSubmitting(false);
+//     }
+//   };
+
+//   const handleSnackbarClose = () => {
+//     setSnackbar((prev) => ({ ...prev, open: false }));
+//   };
+
+//   // دالة لإعادة تعيين المودال عند الإغلاق
+//   const handleModalClose = () => {
+//     // نظف الصور المؤقتة
+//     // setProfilePicture(null);
+//     // setCoverPicture(null);
+//     onClose();
+//   };
+
+//   const isFormValid = formData.userName?.trim() !== "";
+
+//   return (
+//     <GenericModal
+//       open={open}
+//       onClose={handleModalClose}
+//       title="Edit Profile"
+//       icon={<EditIcon sx={{ color: "#3b82f6" }} />}
+//       primaryButtonText="Save Changes"
+//       primaryButtonIcon={<EditIcon />}
+//       onPrimaryAction={handleSubmit}
+//       isPrimaryDisabled={!isFormValid}
+//       isSubmitting={isSubmitting}
+//       snackbar={snackbar}
+//       onSnackbarClose={handleSnackbarClose}
+//     >
+//       {/* Cover Picture */}
+//       <Box sx={{ mb: 3, textAlign: "center" }}>
+//         {coverPreview && (
+//           <Box
+//             sx={{
+//               width: "100%",
+//               height: 150,
+//               backgroundImage: `url(${coverPreview})`,
+//               backgroundSize: "cover",
+//               backgroundPosition: "center",
+//               borderRadius: 2,
+//               mb: 1,
+//             }}
+//           />
+//         )}
+//         <CustomButton component="label">
+//           Change Cover Picture
+//           <input
+//             type="file"
+//             hidden
+//             accept="image/*"
+//             onChange={handleCoverPictureChange}
+//           />
+//         </CustomButton>
+//       </Box>
+
+//       {/* Profile Picture */}
+//       <Box sx={{ mb: 2, textAlign: "center" }}>
+//         <Avatar
+//           src={profilePreview}
+//           sx={{ width: 100, height: 100, mx: "auto", mb: 1 }}
+//         />
+//         <CustomButton
+//           type="submit"
+//           component="label"
+//           fullWidth
+//           sx={{
+//             mt: 2,
+//             py: 1.5,
+//             fontSize: 16,
+//           }}
+//         >
+//           Change Profile Picture
+//           <input
+//             type="file"
+//             hidden
+//             accept="image/*"
+//             onChange={handleProfilePictureChange}
+//           />
+//         </CustomButton>
+//       </Box>
+
+//       {/* Text Fields */}
+//       <TextField
+//         fullWidth
+//         label="Username"
+//         value={formData.userName}
+//         onChange={(e) => handleChange("userName", e.target.value)}
+//         sx={{ mb: 2 }}
+//       />
+
+//       <TextField
+//         fullWidth
+//         multiline
+//         rows={3}
+//         label="Bio"
+//         value={formData.bio}
+//         onChange={(e) => handleChange("bio", e.target.value)}
+//         sx={{ mb: 2 }}
+//       />
+
+//       <TextField
+//         fullWidth
+//         label="University Major"
+//         value={formData.universityMajor}
+//         onChange={(e) => handleChange("universityMajor", e.target.value)}
+//         sx={{ mb: 2 }}
+//       />
+
+//       <TextField
+//         fullWidth
+//         label="Academic Year"
+//         value={formData.academicYear}
+//         onChange={(e) => handleChange("academicYear", e.target.value)}
+//         sx={{ mb: 2 }}
+//       />
+
+//       <TextField
+//         fullWidth
+//         label="Skills (comma separated)"
+//         placeholder="e.g., React, Node.js, Python"
+//         value={formData.skills}
+//         onChange={(e) => handleChange("skills", e.target.value)}
+//         sx={{ mb: 2 }}
+//       />
+
+//       <TextField
+//         fullWidth
+//         label="Social Links (comma separated)"
+//         placeholder="https://github.com/..., https://linkedin.com/..."
+//         value={formData.socialLinks}
+//         onChange={(e) => handleChange("socialLinks", e.target.value)}
+//       />
+//     </GenericModal>
+//   );
+// };
+
+// export default EditProfileModal;
+
 import React, { useState, useEffect } from "react";
-import { Typography, Box, TextField, Avatar } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import GenericModal from "../Modals/GenericModal";
-import CustomButton from "../CustomButton/CustomButton";
+import { Box, TextField, Avatar, IconButton } from "@mui/material";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import GenericModal from "./GenericModal";
 import { EditProfile } from "../../services/profileService";
 import { getImageUrl } from "../../utils/imageHelper";
 
 const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
+  const token = localStorage.getItem("accessToken");
+  
   const [formData, setFormData] = useState({
     userName: "",
-    bio: "",
-    universityMajor: "",
-    academicYear: "",
-    socialLinks: "",
-    skills: "",
+    Bio: "",
+    UniversityMajor: "",
+    AcademicYear: "",
+    SocialLinks: "",
+    Skills: "",
+    ProfilePicture: null,
+    CoverImg: null,
   });
 
-  const [profilePicture, setProfilePicture] = useState(null);
-  const [coverPicture, setCoverPicture] = useState(null);
-  const [profilePreview, setProfilePreview] = useState(null);
-  const [coverPreview, setCoverPreview] = useState(null);
+  const [preview, setPreview] = useState({
+    ProfilePicture: "",
+    CoverImg: "",
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [snackbar, setSnackbar] = useState(null);
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
+  // تحميل الداتا لأول مرة
   useEffect(() => {
     if (userData && open) {
+      console.log("📥 Loading userData into form:", userData);
+      
       setFormData({
         userName: userData.userName || "",
-        bio: userData.bio || "",
-        universityMajor: userData.universityMajor || "",
-        academicYear: userData.academicYear || "",
-        socialLinks: userData.socialLinks?.join(", ") || "",
-        skills: userData.skills?.join(", ") || "",
+        Bio: userData.bio || "",
+        UniversityMajor: userData.universityMajor || "",
+        AcademicYear: userData.academicYear || "",
+        SocialLinks: userData.socialLinks || "",
+        Skills: userData.skills || "",
+        ProfilePicture: null,
+        CoverImg: null,
       });
-      // فقط نحدث الصور لو ما في preview جديد (يعني المستخدم ما غيرهم)
-      if (!profilePicture) {
-        setProfilePreview(getImageUrl(userData.profilePicture));
-      }
-      if (!coverPicture) {
-        setCoverPreview(getImageUrl(userData.coverImg));
-      }
+
+      setPreview({
+        ProfilePicture: getImageUrl(userData.profilePicture, userData.userName),
+        CoverImg: getImageUrl(userData.coverImg, userData.userName),
+      });
     }
   }, [userData, open]);
 
-  const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (e) => {
+    setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
   };
 
-  const handleProfilePictureChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProfilePicture(file);
-      setProfilePreview(URL.createObjectURL(file));
-    }
-  };
+  const handleImageChange = (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const handleCoverPictureChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCoverPicture(file);
-      setCoverPreview(URL.createObjectURL(file));
-    }
+    setFormData((p) => ({ ...p, [type]: file }));
+    setPreview((p) => ({ ...p, [type]: URL.createObjectURL(file) }));
   };
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem("accessToken");
-
-    if (!token) {
-      setSnackbar({
-        open: true,
-        message: "Please login first!",
-        severity: "error",
-      });
-      return;
-    }
-
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
+      const form = new FormData();
+      form.append("userName", formData.userName);
+      form.append("Bio", formData.Bio);
+      form.append("UniversityMajor", formData.UniversityMajor);
+      form.append("AcademicYear", formData.AcademicYear);
+      form.append("SocialLinks", formData.SocialLinks);
+      form.append("Skills", formData.Skills);
 
-      const formDataToSend = new FormData();
-
-      if (formData.userName?.trim()) {
-        formDataToSend.append("UserName", formData.userName.trim());
+      if (formData.ProfilePicture) {
+        form.append("ProfilePicture", formData.ProfilePicture);
       }
 
-      if (formData.bio?.trim()) {
-        formDataToSend.append("Bio", formData.bio.trim());
+      if (formData.CoverImg) {
+        form.append("CoverImg", formData.CoverImg);
       }
 
-      if (formData.universityMajor?.trim()) {
-        formDataToSend.append(
-          "UniversityMajor",
-          formData.universityMajor.trim()
-        );
-      }
+      console.log("📤 Sending profile update...");
+      await EditProfile(token, form);
+      console.log("✅ Profile updated on server");
 
-      if (formData.academicYear) {
-        const yearNumber = parseInt(formData.academicYear);
-        if (!isNaN(yearNumber)) {
-          formDataToSend.append("AcademicYear", yearNumber.toString());
-        }
-      }
+      // ⬇️ الآن اجلب البيانات الجديدة (التأخير موجود في ProfileHeader)
+      const updatedData = await onProfileUpdated();
+      console.log("✅ Fresh data received:", updatedData);
 
-      const skillsArray = formData.skills
-        ?.split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      if (skillsArray?.length > 0) {
-        skillsArray.forEach((skill) => {
-          formDataToSend.append("Skills", skill);
-        });
-      }
-
-      const linksArray = formData.socialLinks
-        ?.split(",")
-        .map((l) => l.trim())
-        .filter(Boolean);
-
-      if (linksArray?.length > 0) {
-        linksArray.forEach((link) => {
-          formDataToSend.append("SocialLinks", link);
-        });
-      }
-
-      if (profilePicture) {
-        formDataToSend.append("ProfilePicture", profilePicture);
-      }
-
-      if (coverPicture) {
-        formDataToSend.append("CoverImg", coverPicture);
-      }
-
-      console.log("=== FormData Contents ===");
-      for (let pair of formDataToSend.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
-      }
-
-      const response = await EditProfile(token, formDataToSend);
-      console.log("✅ Profile edit request sent successfully");
-
-      // أغلق المودال أولاً
-      onClose();
-
-      // أظهر رسالة النجاح
       setSnackbar({
         open: true,
         message: "Profile updated successfully!",
         severity: "success",
       });
 
-      // انتظر شوية عشان الصور تتحمل على السيرفر، بعدين حدث البيانات
+      // أغلق المودال بعد ثانية واحدة
       setTimeout(() => {
-        if (onProfileUpdated) {
-          onProfileUpdated();
-        }
-        // نظف الـ states
-        setProfilePicture(null);
-        setCoverPicture(null);
-      }, 800);
-    } catch (error) {
-      console.error("Error updating profile:", error);
+        onClose();
+      }, 1000);
 
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.title ||
-        error.message ||
-        "Failed to update profile";
-
+    } catch (err) {
+      console.error("❌ Profile update error:", err);
       setSnackbar({
         open: true,
-        message: errorMessage,
+        message: err.response?.data?.message || "Something went wrong!",
         severity: "error",
       });
     } finally {
@@ -183,137 +434,109 @@ const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
     }
   };
 
-  const handleSnackbarClose = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
-
-  // دالة لإعادة تعيين المودال عند الإغلاق
-  const handleModalClose = () => {
-    // نظف الصور المؤقتة
-    // setProfilePicture(null);
-    // setCoverPicture(null);
-    onClose();
-  };
-
-  const isFormValid = formData.userName?.trim() !== "";
-
   return (
     <GenericModal
       open={open}
-      onClose={handleModalClose}
+      onClose={onClose}
       title="Edit Profile"
-      icon={<EditIcon sx={{ color: "#3b82f6" }} />}
-      primaryButtonText="Save Changes"
-      primaryButtonIcon={<EditIcon />}
+      primaryButtonText="Save"
       onPrimaryAction={handleSubmit}
-      isPrimaryDisabled={!isFormValid}
       isSubmitting={isSubmitting}
       snackbar={snackbar}
-      onSnackbarClose={handleSnackbarClose}
+      onSnackbarClose={() => setSnackbar(null)}
     >
-      {/* Cover Picture */}
-      <Box sx={{ mb: 3, textAlign: "center" }}>
-        {coverPreview && (
-          <Box
-            sx={{
+      <Box display="flex" flexDirection="column" gap={3}>
+        {/* صورة البروفايل */}
+        <Box textAlign="center">
+          <Avatar
+            src={preview.ProfilePicture}
+            sx={{ width: 90, height: 90, margin: "auto" }}
+          />
+          <IconButton component="label">
+            <PhotoCameraIcon />
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={(e) => handleImageChange(e, "ProfilePicture")}
+            />
+          </IconButton>
+        </Box>
+
+        {/* الغلاف */}
+        <Box textAlign="center">
+          <img
+            src={preview.CoverImg}
+            alt="cover"
+            style={{
               width: "100%",
-              height: 150,
-              backgroundImage: `url(${coverPreview})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              borderRadius: 2,
-              mb: 1,
+              height: 120,
+              objectFit: "cover",
+              borderRadius: 8,
             }}
           />
-        )}
-        <CustomButton component="label">
-          Change Cover Picture
-          <input
-            type="file"
-            hidden
-            accept="image/*"
-            onChange={handleCoverPictureChange}
-          />
-        </CustomButton>
-      </Box>
+          <IconButton component="label">
+            <PhotoCameraIcon />
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={(e) => handleImageChange(e, "CoverImg")}
+            />
+          </IconButton>
+        </Box>
 
-      {/* Profile Picture */}
-      <Box sx={{ mb: 2, textAlign: "center" }}>
-        <Avatar
-          src={profilePreview}
-          sx={{ width: 100, height: 100, mx: "auto", mb: 1 }}
-        />
-        <CustomButton
-          type="submit"
-          component="label"
+        {/* الحقول النصية */}
+        <TextField
+          label="Username"
+          name="userName"
+          value={formData.userName}
+          onChange={handleChange}
           fullWidth
-          sx={{
-            mt: 2,
-            py: 1.5,
-            fontSize: 16,
-          }}
-        >
-          Change Profile Picture
-          <input
-            type="file"
-            hidden
-            accept="image/*"
-            onChange={handleProfilePictureChange}
-          />
-        </CustomButton>
+        />
+
+        <TextField
+          label="Bio"
+          name="Bio"
+          value={formData.Bio}
+          onChange={handleChange}
+          fullWidth
+          multiline
+          rows={2}
+        />
+
+        <TextField
+          label="Major"
+          name="UniversityMajor"
+          value={formData.UniversityMajor}
+          onChange={handleChange}
+          fullWidth
+        />
+
+        <TextField
+          label="Academic Year"
+          name="AcademicYear"
+          value={formData.AcademicYear}
+          onChange={handleChange}
+          fullWidth
+        />
+
+        <TextField
+          label="Social Links (Comma separated)"
+          name="SocialLinks"
+          value={formData.SocialLinks}
+          onChange={handleChange}
+          fullWidth
+        />
+
+        <TextField
+          label="Skills (Comma separated)"
+          name="Skills"
+          value={formData.Skills}
+          onChange={handleChange}
+          fullWidth
+        />
       </Box>
-
-      {/* Text Fields */}
-      <TextField
-        fullWidth
-        label="Username"
-        value={formData.userName}
-        onChange={(e) => handleChange("userName", e.target.value)}
-        sx={{ mb: 2 }}
-      />
-
-      <TextField
-        fullWidth
-        multiline
-        rows={3}
-        label="Bio"
-        value={formData.bio}
-        onChange={(e) => handleChange("bio", e.target.value)}
-        sx={{ mb: 2 }}
-      />
-
-      <TextField
-        fullWidth
-        label="University Major"
-        value={formData.universityMajor}
-        onChange={(e) => handleChange("universityMajor", e.target.value)}
-        sx={{ mb: 2 }}
-      />
-
-      <TextField
-        fullWidth
-        label="Academic Year"
-        value={formData.academicYear}
-        onChange={(e) => handleChange("academicYear", e.target.value)}
-        sx={{ mb: 2 }}
-      />
-
-      <TextField
-        fullWidth
-        label="Skills (comma separated)"
-        placeholder="e.g., React, Node.js, Python"
-        value={formData.skills}
-        onChange={(e) => handleChange("skills", e.target.value)}
-        sx={{ mb: 2 }}
-      />
-
-      <TextField
-        fullWidth
-        label="Social Links (comma separated)"
-        placeholder="https://github.com/..., https://linkedin.com/..."
-        value={formData.socialLinks}
-        onChange={(e) => handleChange("socialLinks", e.target.value)}
-      />
     </GenericModal>
   );
 };

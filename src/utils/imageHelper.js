@@ -12,18 +12,22 @@
 
 const BASE_URL = import.meta.env.VITE_API_URL || "https://uni.runasp.net";
 
-export const getImageUrl = (path, fallbackName = "User") => {
+export const getImageUrl = (path, userName="") => {
   // إذا ما في صورة (null)، رجّع صورة افتراضية بأول حرفين من الاسم
+  // لو ما في صورة
   if (!path) {
-    // أخذ أول حرفين من الاسم
-    const initials = fallbackName
+    // لو ما في userName → رجّع null وخلي MUI Avatar يطلّع أول حرف
+    if (!userName || typeof userName !== "string") {
+      return null;
+    }    // أخذ أول حرفين من الاسم
+    const initials = userName
       .split(' ')
       .slice(0, 2)  // أول كلمتين
       .map(word => word[0])  // أول حرف من كل كلمة
       .join('')
       .toUpperCase();
     
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=4A90E2&color=fff&size=200&bold=true&length=2`;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=4A90E2&color=fff&&bold=true&length=2`;
   }
   
   // إذا في صورة وهي full URL

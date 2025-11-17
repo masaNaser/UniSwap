@@ -11,10 +11,11 @@ export default function TrackTasksHeader({
   isProvider,
   totalTasks,
   completedTasks,
+  progressPercentage,
   onBack,
 }) {
   if (!cardData) return <div>Loading...</div>;
-
+console.log('Rendering TrackTasksHeader with cardData:', cardData);
   const displayRole = cardData.isProvider ? 'Client' : 'Service Provider';
 
   // Format deadline date
@@ -36,7 +37,7 @@ export default function TrackTasksHeader({
 
   // Calculate progress based on completed tasks
   // Starts at 0% when no tasks are done, increases with each task moved to done column
-  const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  // const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
     <Box

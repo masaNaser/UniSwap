@@ -370,36 +370,39 @@ const RequestServiceModal = ({
       </Grid>
 
       {/* Deadline */}
-      <Box sx={{ mb: 1.5 }}>
-        <Typography
-          variant="body2"
-          sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
-        >
-          Deadline <span style={{ color: "red" }}>*</span>
-        </Typography>
-        <TextField
-          fullWidth
-          type="date"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-          disabled={isSubmitting}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <CalendarTodayIcon
-                  sx={{ color: "text.secondary", fontSize: 20 }}
-                />
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "8px",
-              height: "46px",
-            },
-          }}
-        />
-      </Box>
+     {serviceCategory === "Project" && (
+  <Box sx={{ mb: 1.5 }}>
+    <Typography
+      variant="body2"
+      sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
+    >
+      Deadline <span style={{ color: "red" }}>*</span>
+    </Typography>
+    <TextField
+      fullWidth
+      type="date"
+      value={deadline}
+      onChange={(e) => setDeadline(e.target.value)}
+      disabled={isSubmitting}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <CalendarTodayIcon
+              sx={{ color: "text.secondary", fontSize: 20 }}
+            />
+          </InputAdornment>
+        ),
+      }}
+      sx={{
+        "& .MuiOutlinedInput-root": {
+          borderRadius: "8px",
+          height: "46px",
+        },
+      }}
+    />
+  </Box>
+)}
+
     </GenericModal>
   );
 };

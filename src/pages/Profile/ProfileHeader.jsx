@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Box, Avatar, Typography, Button, Stack, Chip, IconButton } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EditIcon from "@mui/icons-material/Edit";
 import ReportIcon from '@mui/icons-material/Report';
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../Context/ProfileContext";
+import { useCurrentUser } from "../../Context/CurrentUserContext"; // ⬅️ أضف هذا
 import RequestServiceModal from "../../components/Modals/RequestServiceModal";
 import EditProfileModal from "../../components/Modals/EditProfileModal";
 import { getImageUrl } from "../../utils/imageHelper";
@@ -15,15 +15,28 @@ import ReportModal from "../../components/Modals/ReportModal";
 
 export default function ProfileHeader() {
   const { userData, isMyProfile, fetchUserData } = useProfile();
+  const { setCurrentUser } = useCurrentUser(); // ⬅️ أضف هذا
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const navigate = useNavigate();
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const handleProfileUpdated = async () => {
     console.log("🔄 Refreshing profile data...");
-    await fetchUserData();
-    setIsEditModalOpen(false);
+    
+    // انتظر قليلاً للسماح للسيرفر بمعالجة الصور
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const updatedData = await fetchUserData();
+    console.log("✅ Profile refreshed with new data:", updatedData);
+    
+    // ⬇️ إذا كان هذا بروفايلي، حدّث CurrentUser كمان
+    if (isMyProfile) {
+      console.log("🔄 Syncing CurrentUser context...");
+      setCurrentUser(updatedData);
+    }
+    
+    return updatedData;
   };
 
   const handleMessageClick = () => {
@@ -42,9 +55,11 @@ export default function ProfileHeader() {
   const handleRequestService = () => {
     setIsRequestModalOpen(true);
   };
- const handleReport = () => {
-  setIsReportModalOpen(true);
- }
+
+  const handleReport = () => {
+    setIsReportModalOpen(true);
+  };
+
   const handleCloseModal = () => {
     setIsRequestModalOpen(false);
     setIsReportModalOpen(false);
@@ -68,10 +83,7 @@ export default function ProfileHeader() {
           sx={{
             width: "100%",
             height: { xs: 200, sm: 220, md: 260 },
-            backgroundImage: `url(${
-              getImageUrl(userData?.coverImg) ||
-              "https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1000&q=80"
-            })`,
+            backgroundImage: `url(${getImageUrl(userData?.coverImg)})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             position: "relative",
@@ -80,20 +92,16 @@ export default function ProfileHeader() {
             p: { xs: 2, md: 3 },
           }}
         >
-          {/* فلتر غامق */}
           <Box
             sx={{
               position: "absolute",
               inset: 0,
-              background:
-                "linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.1))",
+              background: "linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.1))",
             }}
           />
 
-          {/* زر تعديل البروفايل */}
           {isMyProfile && (
             <>
-              {/* للشاشات الكبيرة */}
               <Button
                 variant="contained"
                 onClick={() => setIsEditModalOpen(true)}
@@ -115,7 +123,6 @@ export default function ProfileHeader() {
                 Edit Profile
               </Button>
 
-              {/* للموبايل - أيقونة فقط */}
               <IconButton
                 onClick={() => setIsEditModalOpen(true)}
                 sx={{
@@ -126,9 +133,7 @@ export default function ProfileHeader() {
                   backgroundColor: "rgba(255,255,255,0.2)",
                   color: "rgba(255,255,255,0.9)",
                   backdropFilter: "blur(4px)",
-                  "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.3)",
-                  },
+                  "&:hover": {backgroundColor: "rgba(255,255,255,0.3)",}
                 }}
               >
                 <EditIcon />
@@ -147,19 +152,15 @@ export default function ProfileHeader() {
               width: "100%",
             }}
           >
-            {/* الصورة والمعلومات */}
             <Stack 
-              direction={{ xs: "column", sm: "row" }} 
+              direction={"row" } 
               spacing={{ xs: 1, sm: 3 }} 
               alignItems={{ xs: "center", sm: "flex-end" }}
               sx={{ width: { xs: "100%", sm: "auto" } }}
             >
               <Box sx={{ position: "relative" }}>
                 <Avatar
-                  src={
-                    getImageUrl(userData?.profilePicture) ||
-                    "https://randomuser.me/api/portraits/men/75.jpg"
-                  }
+                  src={getImageUrl(userData?.profilePicture, userData?.userName)}
                   alt={userData?.userName}
                   sx={{
                     width: { xs: 70, sm: 80, md: 90 },
@@ -181,11 +182,11 @@ export default function ProfileHeader() {
                 />
               </Box>
 
-              <Box sx={{ textAlign: { xs: "center", sm: "left" },position: "relative",top: 8, }}>
+              <Box sx={{ textAlign: { xs: "center", sm: "left" }, position: "relative", top: 8 }}>
                 <Typography 
                   variant="h5" 
                   fontWeight="bold"
-                  sx={{ fontSize: { xs: "1.2rem", sm: "1.4rem", md: "1.5rem" } }}
+                  sx={{ fontSize: { xs: "1rem", sm: "1.4rem", md: "1.5rem" } }}
                 >
                   {userData?.userName}
                 </Typography>
@@ -208,25 +209,16 @@ export default function ProfileHeader() {
                       {userData?.averageRating} ({userData?.ratingCount} reviews)
                     </Typography>
                   </Stack>
-
-                  {/* <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <CalendarMonthIcon sx={{ fontSize: { xs: 16, md: 18 } }} />
-                    <Typography variant="body2" sx={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}>
-                      Joined
-                    </Typography>
-                  </Stack> */}
                 </Stack>
               </Box>
             </Stack>
 
-            {/* الأزرار */}
             {!isMyProfile && (
               <>
-                {/* للشاشات الكبيرة والمتوسطة */}
                 <Stack 
                   direction="row" 
                   spacing={1}
-                  sx={{ display: { xs: "none", md: "flex" } }}
+                  sx={{ display: { xs: "none", md: "flex" }, mt: { md: "-174px" },ml: { md: "-124px" }, }}
                 >
                   <Button
                     variant="contained"
@@ -266,7 +258,7 @@ export default function ProfileHeader() {
                     onClick={handleReport}
                     sx={{
                       textTransform: "none",
-                      backgroundColor: "rgba(255,0,0,0.2)",
+                      backgroundColor: "rgb(214 12 12 / 71%)",
                       color: "white",
                       backdropFilter: "blur(4px)",
                       "&:hover": {
@@ -278,7 +270,6 @@ export default function ProfileHeader() {
                   </Button>
                 </Stack>
 
-                {/* للموبايل - أيقونات فقط */}
                 <Stack 
                   direction="row" 
                   spacing={1}
@@ -330,7 +321,6 @@ export default function ProfileHeader() {
         </Box>
       </Box>
 
-      {/* المودالات */}
       <RequestServiceModal
         open={isRequestModalOpen}
         onClose={handleCloseModal}
@@ -344,11 +334,12 @@ export default function ProfileHeader() {
         userData={userData}
         onProfileUpdated={handleProfileUpdated}
       />
+      
       <ReportModal
-      open={isReportModalOpen}
-      onClose={() => setIsReportModalOpen(false)}
-       userId={userData?.id}
-       userName={userData?.userName}
+        open={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        userId={userData?.id}
+        userName={userData?.userName}
       />
     </>
   );
