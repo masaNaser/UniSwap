@@ -29,6 +29,7 @@ import Logout from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import StarIcon from "@mui/icons-material/Star";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import { useLocation } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
 // import Point from "../../assets/images/Point.svg";
 import { Link, useNavigate } from "react-router-dom";
@@ -73,6 +74,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export default function PrimarySearchAppBar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const userName = localStorage.getItem("userName");
 
   // ✅ استخدام currentUser بدل userData من ProfileContext
@@ -99,6 +101,7 @@ export default function PrimarySearchAppBar() {
   }, []);
 
   const toggleMobileMenu = () => setMobileOpen((prev) => !prev);
+  const isActive = (path) => location.pathname === path;
 
   return (
     <>
@@ -122,7 +125,7 @@ export default function PrimarySearchAppBar() {
                 component="img"
                 src={Logo}
                 alt="logo"
-                sx={{ width: 32, height: 32 }}
+                sx={{ width: 37, height: 37 }}
               />
               <Typography
                 variant="h6"
@@ -146,7 +149,20 @@ export default function PrimarySearchAppBar() {
                   sx={{
                     textTransform: "none",
                     fontSize: "18px",
-                    color: "rgba(71, 85, 105, 1)",
+                    color: isActive("/app/feed")
+                      ? "#3B82F6"
+                      : "rgba(71, 85, 105, 1)",
+                    backgroundColor: isActive("/app/feed")
+                      ? "#E0EEFF"
+                      : "transparent",
+                    borderRadius: "8px",
+                    px: 2,
+                    py: 1,
+                    fontWeight: isActive("/app/feed") ? "600" : "500",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      backgroundColor: "#E0EEFF",
+                    },
                   }}
                 >
                   Feed
@@ -157,7 +173,20 @@ export default function PrimarySearchAppBar() {
                   sx={{
                     textTransform: "none",
                     fontSize: "18px",
-                    color: "rgba(71, 85, 105, 1)",
+                    color: isActive("/app/browse")
+                      ? "#3B82F6"
+                      : "rgba(71, 85, 105, 1)",
+                    backgroundColor: isActive("/app/browse")
+                      ? "#E0EEFF"
+                      : "transparent",
+                    borderRadius: "8px",
+                    px: 2,
+                    py: 1,
+                    fontWeight: isActive("/app/browse") ? "600" : "500",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      backgroundColor: "#E0EEFF",
+                    },
                   }}
                 >
                   Browse
@@ -168,7 +197,20 @@ export default function PrimarySearchAppBar() {
                   sx={{
                     textTransform: "none",
                     fontSize: "18px",
-                    color: "rgba(71, 85, 105, 1)",
+                    color: isActive("/app/project")
+                      ? "#3B82F6"
+                      : "rgba(71, 85, 105, 1)",
+                    backgroundColor: isActive("/app/project")
+                      ? "#E0EEFF"
+                      : "transparent",
+                    borderRadius: "8px",
+                    px: 2,
+                    py: 1,
+                    fontWeight: isActive("/app/project") ? "600" : "500",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      backgroundColor: "#E0EEFF",
+                    },
                   }}
                 >
                   Projects
@@ -328,7 +370,7 @@ export default function PrimarySearchAppBar() {
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               >
                 <Box
-                  sx={{ display: "flex", alignItems: "center", px: 2, py: 1 ,gap:1}}
+                  sx={{ display: "flex", alignItems: "center", px: 2, py: 1, gap: 1 }}
                 >
                   <Avatar
                     alt={currentUser?.userName || "User"}
@@ -516,36 +558,36 @@ export default function PrimarySearchAppBar() {
                 }}
               >
                 <Box
-              
+
                 />
-                   <Typography
-                    sx={{
-                      color: "#3b82f6",
-                      fontWeight: "bold",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                    }}
+                <Typography
+                  sx={{
+                    color: "#3b82f6",
+                    fontWeight: "bold",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="rgba(0, 75, 173, 0.84"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="rgba(0, 75, 173, 0.84"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <circle cx="8" cy="8" r="6"></circle>
-                      <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-                      <path d="M7 6h1v4"></path>
-                      <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-                    </svg>
-                    {currentUser?.totalPoints || 0}
-                  </Typography>
+                    <circle cx="8" cy="8" r="6"></circle>
+                    <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                    <path d="M7 6h1v4"></path>
+                    <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                  </svg>
+                  {currentUser?.totalPoints || 0}
+                </Typography>
               </Box>
             </Box>
           </Container>
