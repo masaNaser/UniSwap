@@ -286,6 +286,7 @@ import Box from "@mui/material/Box";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 import { getImageUrl } from "../../utils/imageHelper";
+import { useNavigateToProfile } from "../../hooks/useNavigateToProfile";
 
 export default function ChatWindow({
   conversationId,
@@ -295,6 +296,8 @@ export default function ChatWindow({
   receiverImage,
   onBack,
 }) {
+  const navigateToProfile = useNavigateToProfile();
+
   const [messages, setMessages] = useState([]);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const messagesEndRef = useRef(null);
@@ -538,7 +541,9 @@ export default function ChatWindow({
   </button>
 )}
 
-        <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+               onClick={() => navigateToProfile(receiverId)}>
+
           <Box className="chat-avatar">
             {receiverImage ? (
              <img

@@ -384,55 +384,68 @@ const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
     setPreview((p) => ({ ...p, [type]: URL.createObjectURL(file) }));
   };
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      const form = new FormData();
-      form.append("userName", formData.userName);
-      form.append("Bio", formData.Bio);
-      form.append("UniversityMajor", formData.UniversityMajor);
-      form.append("AcademicYear", formData.AcademicYear);
-      form.append("SocialLinks", formData.SocialLinks);
-      form.append("Skills", formData.Skills);
+const handleSubmit = async () => {
+  setIsSubmitting(true);
+  try {
+    const form = new FormData();
 
-      if (formData.ProfilePicture) {
-        form.append("ProfilePicture", formData.ProfilePicture);
-      }
+    // الحقول النصية
+    if (formData.userName?.trim()) form.append("UserName", formData.userName.trim());
+    if (formData.Bio?.trim()) form.append("Bio", formData.Bio.trim());
+    if (formData.UniversityMajor?.trim()) form.append("UniversityMajor", formData.UniversityMajor.trim());
+    if (formData.AcademicYear) form.append("AcademicYear", formData.AcademicYear);
 
-      if (formData.CoverImg) {
-        form.append("CoverImg", formData.CoverImg);
-      }
+    // Skills → تحويل لمصفوفة
+  if (formData.Skills) {
+  let skillsArray = [];
 
-      console.log("📤 Sending profile update...");
-      await EditProfile(token, form);
-      console.log("✅ Profile updated on server");
+  if (Array.isArray(formData.Skills)) {
+    skillsArray = formData.Skills; // Already an array
+  } else if (typeof formData.Skills === "string") {
+    skillsArray = formData.Skills.split(",").map(s => s.trim()).filter(Boolean);
+  }
 
-      // ⬇️ الآن اجلب البيانات الجديدة (التأخير موجود في ProfileHeader)
-      const updatedData = await onProfileUpdated();
-      console.log("✅ Fresh data received:", updatedData);
+  skillsArray.forEach(skill => form.append("Skills", skill));
+}
 
-      setSnackbar({
-        open: true,
-        message: "Profile updated successfully!",
-        severity: "success",
-      });
+    // SocialLinks → تحويل لمصفوفة
+  if (formData.SocialLinks) {
+  let linksArray = [];
 
-      // أغلق المودال بعد ثانية واحدة
-      setTimeout(() => {
-        onClose();
-      }, 1000);
+  if (Array.isArray(formData.SocialLinks)) {
+    linksArray = formData.SocialLinks; // Already an array
+  } else if (typeof formData.SocialLinks === "string") {
+    linksArray = formData.SocialLinks.split(",").map(l => l.trim()).filter(Boolean);
+  }
 
-    } catch (err) {
-      console.error("❌ Profile update error:", err);
-      setSnackbar({
-        open: true,
-        message: err.response?.data?.message || "Something went wrong!",
-        severity: "error",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  linksArray.forEach(link => form.append("SocialLinks", link));
+}
+
+
+    // الصور: نرسل فقط إذا اخترت جديد
+    if (formData.ProfilePicture) form.append("ProfilePicture", formData.ProfilePicture);
+    if (formData.CoverImg) form.append("CoverImg", formData.CoverImg);
+
+    // إرسال البيانات للسيرفر
+    await EditProfile(token, form);
+    console.log("✅ Profile updated on server");
+
+    // جلب البيانات الجديدة
+    if (onProfileUpdated) await onProfileUpdated();
+
+    // إظهار رسالة نجاح
+    setSnackbar({ open: true, message: "Profile updated successfully!", severity: "success" });
+
+    // إغلاق المودال بعد ثانية
+    setTimeout(() => onClose(), 1000);
+
+  } catch (err) {
+    console.error("❌ Profile update error:", err);
+    setSnackbar({ open: true, message: err.response?.data?.message || "Something went wrong!", severity: "error" });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <GenericModal
