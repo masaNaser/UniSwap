@@ -7,6 +7,8 @@ import KanbanBoard from './components/KanbanBoard';
 import TaskDialog from './components/TaskDialog';
 import TaskMenu from './components/TaskMenu';
 import TaskSnackbar from './components/TaskSnackbar';
+import ReviewDialog from './components/ReviewDialog';
+import ViewReviewDialog from './components/ViewReviewDialog';
 import * as taskService from '../../services/taskService';
 
 const statuses = ['ToDo', 'InProgress', 'InReview', 'Done'];
@@ -37,11 +39,16 @@ export default function TrackTasks() {
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-  const [newTask, setNewTask] = useState({ title: '', description: '', deadline: '', status: 'ToDo' ,UploadFile: null});
+  const [newTask, setNewTask] = useState({ title: '', description: '', deadline: '', status: 'ToDo', UploadFile: null });
   const [draggedTask, setDraggedTask] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [openReviewDialog, setOpenReviewDialog] = useState(false);
+  const [reviewingTask, setReviewingTask] = useState(null);
+  const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
+  const [viewingReviewTask, setViewingReviewTask] = useState(null);
+
 
   // Fetch project details and tasks
   useEffect(() => {
@@ -92,37 +99,28 @@ export default function TrackTasks() {
     fetchData();
   }, [cardData?.id, token]);
 
-  // Task management functions
-const handleAddTask = async () => {
-  if (!newTask.title.trim()) {
-    setSnackbar({ open: true, message: 'Please enter a task title', severity: 'error' });
-    return;
-  }
+  // Handle review submission
+  const handleSubmitReview = async (taskId, decision, comment) => {
+    try {
+      if (decision === 'accept') {
+        await taskService.acceptTask(taskId, comment, token);
+      } else {
+        // Reject first (stores the comment and decision)
+        await taskService.rejectTask(taskId, comment, token);
 
-  try {
-    // هون بتحضر الـ FormData
-    const formData = new FormData();
-    formData.append('Title', newTask.title);
-    formData.append('Description', newTask.description || '');
-    
-    if (newTask.deadline) {
-      formData.append('Deadline', new Date(newTask.deadline).toISOString());
-    }
-    
-    if (newTask.uploadFile) {
-      formData.append('UploadFile', newTask.uploadFile);
-    }
-     // 🔥 أضف الـ Progress إذا موجود
-    if (editingTask && newTask.progressPercentage !== undefined) {
-      formData.append('ProgressPercentage', newTask.progressPercentage);
-    }
-       
-     if (editingTask) {
-      const res = await taskService.updateTask(editingTask.id, formData, token);
-      
-      // 🔥 بعد التحديث، اعمل refresh للبيانات
+        // Then move back to InProgress (backend requires this separate call)
+        try {
+          await taskService.moveToInProgress(taskId, token);
+        } catch (moveError) {
+          console.warn('Task rejected but could not auto-move to InProgress:', moveError);
+          // Continue anyway - the rejection was saved
+        }
+      }
+
+      // Update project progress
       await taskService.updateProjectProgress(cardData.id, token);
-      
+
+      // Refresh tasks and project details
       const [tasksRes, detailsRes] = await Promise.all([
         taskService.getTasksByStatus(cardData.id, null, token),
         taskService.getProjectTaskDetails(cardData.id, token)
@@ -143,68 +141,148 @@ const handleAddTask = async () => {
 
       setTasks(tasksByStatus);
       setProjectDetails(detailsRes.data);
-      
-      setSnackbar({ open: true, message: 'Task updated successfully!', severity: 'success' });
-    } else {
-      const res = await taskService.createTask(cardData.id, formData, token);
+
+      setSnackbar({
+        open: true,
+        message: decision === 'accept' ? 'Task accepted successfully!' : 'Task rejected and sent back for revision',
+        severity: 'success',
+      });
+    } catch (error) {
+      console.error('Error submitting review:', error);
+
+      // Log more details about the error
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
+
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Failed to submit review',
+        severity: 'error',
+      });
+    }
+  };
+
+  const handleReviewClick = (task) => {
+    setReviewingTask(task);
+    setOpenReviewDialog(true);
+  };
+
+  const handleViewReview = (task) => {
+    setViewingReviewTask(task);
+    setOpenViewReviewDialog(true);
+  };
+
+  // Task management functions
+  const handleAddTask = async () => {
+    if (!newTask.title.trim()) {
+      setSnackbar({ open: true, message: 'Please enter a task title', severity: 'error' });
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('Title', newTask.title);
+      formData.append('Description', newTask.description || '');
+
+      if (newTask.deadline) {
+        formData.append('Deadline', new Date(newTask.deadline).toISOString());
+      }
+
+      if (newTask.uploadFile) {
+        formData.append('UploadFile', newTask.uploadFile);
+      }
+
+      if (editingTask && newTask.progressPercentage !== undefined) {
+        formData.append('ProgressPercentage', newTask.progressPercentage);
+      }
+
+      if (editingTask) {
+        const res = await taskService.updateTask(editingTask.id, formData, token);
+
+        await taskService.updateProjectProgress(cardData.id, token);
+
+        const [tasksRes, detailsRes] = await Promise.all([
+          taskService.getTasksByStatus(cardData.id, null, token),
+          taskService.getProjectTaskDetails(cardData.id, token)
+        ]);
+
+        const tasksByStatus = {
+          ToDo: [],
+          InProgress: [],
+          InReview: [],
+          Done: [],
+        };
+
+        tasksRes.data.forEach(task => {
+          if (tasksByStatus[task.status]) {
+            tasksByStatus[task.status].push(task);
+          }
+        });
+
+        setTasks(tasksByStatus);
+        setProjectDetails(detailsRes.data);
+
+        setSnackbar({ open: true, message: 'Task updated successfully!', severity: 'success' });
+      } else {
+        const res = await taskService.createTask(cardData.id, formData, token);
+        const createdTask = res.data;
+        setTasks(prev => ({
+          ...prev,
+          [createdTask.status]: [...prev[createdTask.status], createdTask],
+        }));
+        setSnackbar({ open: true, message: 'Task added successfully!', severity: 'success' });
+      }
+
+      setOpenDialog(false);
+      setNewTask({ title: '', description: '', deadline: '', status: 'ToDo', uploadFile: null, progressPercentage: 0 });
+      setEditingTask(null);
+    } catch (error) {
+      console.error('Error saving task:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Failed to save task',
+        severity: 'error',
+      });
+    }
+  };
+
+  const handleTaskFromColumn = async (formData) => {
+    if (!formData.title.trim()) {
+      setSnackbar({ open: true, message: 'Please enter a task title', severity: 'error' });
+      return;
+    }
+
+    try {
+      const data = new FormData();
+      data.append('Title', formData.title);
+      data.append('Description', formData.description || '');
+
+      if (formData.deadline) {
+        data.append('Deadline', new Date(formData.deadline).toISOString());
+      }
+
+      if (formData.uploadFile) {
+        data.append('UploadFile', formData.uploadFile);
+      }
+
+      const res = await taskService.createTask(cardData.id, data, token);
+      console.log('Created Task:', res.data);
       const createdTask = res.data;
       setTasks(prev => ({
         ...prev,
         [createdTask.status]: [...prev[createdTask.status], createdTask],
       }));
       setSnackbar({ open: true, message: 'Task added successfully!', severity: 'success' });
+    } catch (error) {
+      console.error('Error saving task:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Failed to save task',
+        severity: 'error',
+      });
     }
-
-    setOpenDialog(false);
-    setNewTask({ title: '', description: '', deadline: '', status: 'ToDo', uploadFile: null, progressPercentage: 0 });
-    setEditingTask(null);
-  } catch (error) {
-    console.error('Error saving task:', error);
-    setSnackbar({
-      open: true,
-      message: error.response?.data?.message || 'Failed to save task',
-      severity: 'error',
-    });
-  }
-};
-
-const handleTaskFromColumn = async (formData) => {
-  if (!formData.title.trim()) {
-    setSnackbar({ open: true, message: 'Please enter a task title', severity: 'error' });
-    return;
-  }
-
-  try {
-    // هون بتحضر الـ FormData
-    const data = new FormData();
-    data.append('Title', formData.title);
-    data.append('Description', formData.description || '');
-    
-    if (formData.deadline) {
-      data.append('Deadline', new Date(formData.deadline).toISOString());
-    }
-    
-    if (formData.uploadFile) {
-      data.append('UploadFile', formData.uploadFile);
-    }
-
-    const res = await taskService.createTask(cardData.id, data, token);
-    console.log('Created Task:', res.data);
-    const createdTask = res.data;
-    setTasks(prev => ({
-      ...prev,
-      [createdTask.status]: [...prev[createdTask.status], createdTask],
-    }));
-    setSnackbar({ open: true, message: 'Task added successfully!', severity: 'success' });
-  } catch (error) {
-    console.error('Error saving task:', error);
-    setSnackbar({
-      open: true,
-      message: error.response?.data?.message || 'Failed to save task',
-      severity: 'error',
-    });
-  }
-};
+  };
 
   const handleDeleteTask = async (status, taskId) => {
     try {
@@ -225,19 +303,19 @@ const handleTaskFromColumn = async (formData) => {
     }
   };
 
-const handleEditTask = (task, status) => {
-  setEditingTask({ ...task, status });
-  setNewTask({
-    title: task.title,
-    description: task.description || '',
-    deadline: task.deadline || '',
-    status,
-    uploadFile: null, // الملف القديم موجود بس ما بنقدر نعدله
-    progressPercentage: task.progressPercentage || 0, // 🔥 أضف الـ Progress
-  });
-  setOpenDialog(true);
-  setAnchorEl(null);
-};
+  const handleEditTask = (task, status) => {
+    setEditingTask({ ...task, status });
+    setNewTask({
+      title: task.title,
+      description: task.description || '',
+      deadline: task.deadline || '',
+      status,
+      uploadFile: null,
+      progressPercentage: task.progressPercentage || 0,
+    });
+    setOpenDialog(true);
+    setAnchorEl(null);
+  };
 
   const handleDragStart = (e, task) => {
     setDraggedTask(task);
@@ -249,97 +327,92 @@ const handleEditTask = (task, status) => {
     e.dataTransfer.dropEffect = 'move';
   };
 
- const handleDrop = async (e, targetStatus) => {
-  e.preventDefault();
-  if (!draggedTask) return;
+  const handleDrop = async (e, targetStatus) => {
+    e.preventDefault();
+    if (!draggedTask) return;
 
-  let currentStatus = null;
-  for (const status of statuses) {
-    if (tasks[status].find(t => t.id === draggedTask.id)) {
-      currentStatus = status;
-      break;
-    }
-  }
-
-  if (currentStatus === targetStatus) {
-    setDraggedTask(null);
-    return;
-  }
-
-  // Define allowed transitions
-  const allowedTransitions = {
-    'ToDo': ['InProgress'],
-    'InProgress': ['InReview'],
-    'InReview': ['InProgress', 'Done'],
-    'Done': [],
-  };
-
-  if (!allowedTransitions[currentStatus].includes(targetStatus)) {
-    setSnackbar({
-      open: true,
-      message: `Cannot move task from ${statusLabels[currentStatus]} to ${statusLabels[targetStatus]}`,
-      severity: 'warning',
-    });
-    setDraggedTask(null);
-    return;
-  }
-
-  try {
-    // Handle different status transitions
-    if (targetStatus === 'InProgress' && currentStatus === 'ToDo') {
-      await taskService.moveToInProgress(draggedTask.id, token);
-    } else if (targetStatus === 'InReview' && currentStatus === 'InProgress') {
-      const reviewDueAt = new Date();
-      reviewDueAt.setDate(reviewDueAt.getDate() + 7);
-      await taskService.submitForReview(draggedTask.id, reviewDueAt.toISOString(), token);
-    } else if (targetStatus === 'InProgress' && currentStatus === 'InReview') {
-      await taskService.moveToInProgress(draggedTask.id, token);
-    } else if (targetStatus === 'Done' && currentStatus === 'InReview') {
-      await taskService.acceptTask(draggedTask.id, '', token);
+    let currentStatus = null;
+    for (const status of statuses) {
+      if (tasks[status].find(t => t.id === draggedTask.id)) {
+        currentStatus = status;
+        break;
+      }
     }
 
-    // 🔥 حدّث الـ project progress أول شي
-    await taskService.updateProjectProgress(cardData.id, token);
+    if (currentStatus === targetStatus) {
+      setDraggedTask(null);
+      return;
+    }
 
-    // 🔥 بعدين اجلب كل شي من جديد
-    const [tasksRes, detailsRes] = await Promise.all([
-      taskService.getTasksByStatus(cardData.id, null, token),
-      taskService.getProjectTaskDetails(cardData.id, token)
-    ]);
-
-    // 🔥 حدّث التاسكات بالبيانات الجديدة من الـ API
-    const tasksByStatus = {
-      ToDo: [],
-      InProgress: [],
-      InReview: [],
-      Done: [],
+    const allowedTransitions = {
+      'ToDo': ['InProgress'],
+      'InProgress': ['InReview'],
+      'InReview': ['InProgress', 'Done'],
+      'Done': [],
     };
 
-    tasksRes.data.forEach(task => {
-      if (tasksByStatus[task.status]) {
-        tasksByStatus[task.status].push(task);
+    if (!allowedTransitions[currentStatus].includes(targetStatus)) {
+      setSnackbar({
+        open: true,
+        message: `Cannot move task from ${statusLabels[currentStatus]} to ${statusLabels[targetStatus]}`,
+        severity: 'warning',
+      });
+      setDraggedTask(null);
+      return;
+    }
+
+    try {
+      if (targetStatus === 'InProgress' && currentStatus === 'ToDo') {
+        await taskService.moveToInProgress(draggedTask.id, token);
+      } else if (targetStatus === 'InReview' && currentStatus === 'InProgress') {
+        const reviewDueAt = new Date();
+        reviewDueAt.setDate(reviewDueAt.getDate() + 7);
+        await taskService.submitForReview(draggedTask.id, reviewDueAt.toISOString(), token);
+      } else if (targetStatus === 'InProgress' && currentStatus === 'InReview') {
+        await taskService.moveToInProgress(draggedTask.id, token);
+      } else if (targetStatus === 'Done' && currentStatus === 'InReview') {
+        await taskService.acceptTask(draggedTask.id, '', token);
       }
-    });
 
-    setTasks(tasksByStatus);
-    setProjectDetails(detailsRes.data);
+      await taskService.updateProjectProgress(cardData.id, token);
 
-    setSnackbar({
-      open: true,
-      message: `Task moved to ${statusLabels[targetStatus]}!`,
-      severity: 'success',
-    });
-  } catch (error) {
-    console.error('Error moving task:', error);
-    setSnackbar({
-      open: true,
-      message: 'Failed to move task',
-      severity: 'error',
-    });
-  }
+      const [tasksRes, detailsRes] = await Promise.all([
+        taskService.getTasksByStatus(cardData.id, null, token),
+        taskService.getProjectTaskDetails(cardData.id, token)
+      ]);
 
-  setDraggedTask(null);
-};
+      const tasksByStatus = {
+        ToDo: [],
+        InProgress: [],
+        InReview: [],
+        Done: [],
+      };
+
+      tasksRes.data.forEach(task => {
+        if (tasksByStatus[task.status]) {
+          tasksByStatus[task.status].push(task);
+        }
+      });
+
+      setTasks(tasksByStatus);
+      setProjectDetails(detailsRes.data);
+
+      setSnackbar({
+        open: true,
+        message: `Task moved to ${statusLabels[targetStatus]}!`,
+        severity: 'success',
+      });
+    } catch (error) {
+      console.error('Error moving task:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to move task',
+        severity: 'error',
+      });
+    }
+
+    setDraggedTask(null);
+  };
 
   const handleOpenMenu = (e, task, status) => {
     setSelectedTask({ task, status });
@@ -375,7 +448,7 @@ const handleEditTask = (task, status) => {
         isProvider={isProvider}
         totalTasks={totalTasks}
         completedTasks={completedTasks}
-        progressPercentage={progressPercentage} 
+        progressPercentage={progressPercentage}
         onBack={() => navigate(-1)}
       />
 
@@ -397,6 +470,8 @@ const handleEditTask = (task, status) => {
         onDrop={handleDrop}
         onMenuOpen={handleOpenMenu}
         onAddTask={handleTaskFromColumn}
+        onReviewClick={handleReviewClick}
+        onViewReview={handleViewReview}
       />
 
       <TaskDialog
@@ -406,8 +481,20 @@ const handleEditTask = (task, status) => {
         newTask={newTask}
         onTaskChange={setNewTask}
         onSubmit={handleAddTask}
-        isProvider={isProvider} // 🔥 أضف هذا
+        isProvider={isProvider}
+      />
 
+      <ReviewDialog
+        open={openReviewDialog}
+        onClose={() => setOpenReviewDialog(false)}
+        task={reviewingTask}
+        onSubmitReview={handleSubmitReview}
+      />
+
+      <ViewReviewDialog
+        open={openViewReviewDialog}
+        onClose={() => setOpenViewReviewDialog(false)}
+        task={viewingReviewTask}
       />
 
       <TaskMenu

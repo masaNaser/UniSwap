@@ -12,6 +12,8 @@ export default function KanbanBoard({
   onDrop,
   onMenuOpen,
   onAddTask,
+  onReviewClick,
+  onViewReview,
 }) {
   return (
     <Box
@@ -35,6 +37,7 @@ export default function KanbanBoard({
           onDrop={onDrop}
           onMenuOpen={onMenuOpen}
           onAddTask={onAddTask}
+          onReviewClick={onReviewClick}
         />
       ))}
     </Box>

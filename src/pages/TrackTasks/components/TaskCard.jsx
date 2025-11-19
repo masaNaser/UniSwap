@@ -10,6 +10,10 @@ import {
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import CustomButton from "../../../components/CustomButton/CustomButton";
 
 export default function TaskCard({
   task,
@@ -17,6 +21,8 @@ export default function TaskCard({
   isProvider,
   onDragStart,
   onMenuOpen,
+  onReviewClick,
+  onViewReview,
 }) {
   const getProgressColor = (percentage) => {
     if (percentage === 100) return "#059669";
@@ -41,6 +47,9 @@ export default function TaskCard({
       }
     }
   };
+
+  // Show review button only for clients (non-providers) in InReview status
+  const showReviewButton = !isProvider && status === 'InReview';
 
   console.log("Rendering TaskCard for task:", task);
 
@@ -123,7 +132,6 @@ export default function TaskCard({
 
             {/* Progress Bar */}
             <Box sx={{ mb: 1, mt: 1 }}>
-              {" "}
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
                 <Typography variant="caption" sx={{ fontSize: "10px", color: "#6B7280", mt: 0.5 }}>
                   Progress
@@ -159,6 +167,48 @@ export default function TaskCard({
               </Box>
             </Box>
 
+            {/* Review Button for Clients */}
+            {showReviewButton && (
+              <CustomButton
+                fullWidth
+                size="small"
+                startIcon={<RateReviewIcon />}
+                onClick={() => onReviewClick(task)}
+                sx={{
+                  textTransform: "none",
+                  fontSize: "12px",
+                  mt: 1,
+                  py: 0.75,
+                }}
+              >
+                Click for Review
+              </CustomButton>
+            )}
+
+            {/* View Review Button - Show for providers when task has been reviewed */}
+            {isProvider && task.lastClientDecision && (status === 'InProgress' || status === 'Done') && (
+              <Button
+                fullWidth
+                size="small"
+                startIcon={task.lastClientDecision === 'Accepted' ? <CheckCircleIcon /> : <ErrorOutlineIcon />}
+                onClick={() => onViewReview && onViewReview(task)}
+                sx={{
+                  textTransform: "none",
+                  fontSize: "12px",
+                  mt: 1,
+                  py: 0.75,
+                  color: task.lastClientDecision === 'Accepted' ? '#059669' : '#DC2626',
+                  borderColor: task.lastClientDecision === 'Accepted' ? '#059669' : '#DC2626',
+                  backgroundColor: task.lastClientDecision === 'Accepted' ? '#ECFDF5' : '#FEE2E2',
+                  '&:hover': {
+                    backgroundColor: task.lastClientDecision === 'Accepted' ? '#D1FAE5' : '#FEE2E2',
+                  },
+                }}
+              >
+                View Client Review
+              </Button>
+            )}
+
             {/* Overdue Badge */}
             {task.isOverdue && (
               <Chip
@@ -169,6 +219,7 @@ export default function TaskCard({
                   color: "#DC2626",
                   fontSize: "11px",
                   height: "20px",
+                  mt: 1,
                 }}
               />
             )}

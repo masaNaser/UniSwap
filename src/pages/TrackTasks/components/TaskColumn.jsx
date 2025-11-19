@@ -22,6 +22,8 @@ export default function TaskColumn({
   onDrop,
   onMenuOpen,
   onAddTask,
+  onReviewClick,
+  onViewReview,
 }) {
   const isToDoColumn = status === 'ToDo';
   const [openDialog, setOpenDialog] = useState(false);
@@ -30,8 +32,7 @@ export default function TaskColumn({
     description: '',
     deadline: '',
     status: 'ToDo',
-    uploadFile: null, // أضف هذا
-
+    uploadFile: null,
   });
 
   const handleAddClick = () => {
@@ -40,8 +41,7 @@ export default function TaskColumn({
       description: '',
       deadline: '',
       status: 'ToDo',
-      uploadFile: null, // أضف هذا
-
+      uploadFile: null,
     });
     setOpenDialog(true);
   };
@@ -158,6 +158,8 @@ export default function TaskColumn({
                 isProvider={isProvider}
                 onDragStart={(e) => isProvider && onDragStart(e, task)}
                 onMenuOpen={(e) => isProvider && onMenuOpen(e, task, status)}
+                onReviewClick={onReviewClick}
+                onViewReview={onViewReview}
               />
             ))
           )}
