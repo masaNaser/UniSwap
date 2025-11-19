@@ -18,7 +18,7 @@ export const getProjectTaskDetails = async (projectId, token) => {
   });
 };
 
-export const getClientReviewCard = async (taskId, token) => {
+export const getClientReviewTask = async (taskId, token) => {
   return await api.get(`/tasks/${taskId}/review-card`, {
     headers: { Authorization: `Bearer ${token}` },
   });

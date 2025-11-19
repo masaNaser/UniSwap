@@ -208,21 +208,6 @@ export default function TaskCard({
                 View Client Review
               </Button>
             )}
-
-            {/* Overdue Badge */}
-            {task.isOverdue && (
-              <Chip
-                label="Overdue"
-                size="small"
-                sx={{
-                  backgroundColor: "#FEE2E2",
-                  color: "#DC2626",
-                  fontSize: "11px",
-                  height: "20px",
-                  mt: 1,
-                }}
-              />
-            )}
           </Box>
           {isProvider && (
             <IconButton

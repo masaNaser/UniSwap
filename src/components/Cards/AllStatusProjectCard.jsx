@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { useNavigate } from "react-router-dom";
-import { getImageUrl } from "../../utils/imageHelper"; // ✅ استيراد الـ helper
+import { getImageUrl } from "../../utils/imageHelper";
 
 export default function AllStatusProjectCard({
   id,
@@ -29,8 +29,6 @@ export default function AllStatusProjectCard({
   isProvider = true,
   createdAt,
 }) {
-
-  
   const [showFullDescription, setShowFullDescription] = useState(false);
   const navigate = useNavigate();
 
@@ -43,11 +41,10 @@ export default function AllStatusProjectCard({
 
   const getStatusStyles = (status) => {
     const styles = {
-      Active: { bg: "#DBEAFE", text: "#2563EB" },
-      Completed: { bg: "#D1FAE5", text: "#059669" },
-      Overdue: { bg: "#FEE2E2", text: "#DC2626" },
+      Active: { bg: "#D1FAE5", text: "#059669" },
       Pending: { bg: "#FEF3C7", text: "#F59E0B" },
-      Requesting: { bg: "#DBEAFE", text: "#2563EB" },
+      Completed: { bg: "#DBEAFE", text: "#0284C7" },
+      Overdue: { bg: "#FEE2E2", text: "#DC2626" },
     };
     return styles[status] || styles.Active;
   };
@@ -68,11 +65,10 @@ export default function AllStatusProjectCard({
   const displayInitials = isProvider
     ? clientInitials || generateInitials(clientName)
     : providerInitials || generateInitials(providerName);
-  
-  // ✅ استخدام getImageUrl بدل الصورة المباشرة
+
   const rawAvatar = isProvider ? clientAvatar : providerAvatar;
   const displayAvatar = getImageUrl(rawAvatar, displayName);
-  
+
   const displayRole = isProvider ? "Client" : "Service Provider";
 
   const formatDate = (dateString) => {
@@ -90,19 +86,19 @@ export default function AllStatusProjectCard({
   };
 
   const formattedDeadline = formatDate(deadline);
-  
+
   const formatCreatedAt = (dateString) => {
     if (!dateString || dateString.startsWith("0001-01-01")) return "";
-    
+
     try {
       const date = new Date(dateString);
-      
+
       if (isNaN(date.getTime())) return "";
-      
+
       const now = new Date();
       const diffTime = Math.abs(now - date);
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 0) return "Today";
       if (diffDays === 1) return "Yesterday";
       if (diffDays < 7) return `${diffDays} days ago`;
@@ -141,7 +137,7 @@ export default function AllStatusProjectCard({
         boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
         transition: "all 0.3s ease",
         width: "320px",
-        height: "420px",
+        height: "360px", // Reduced from 420px
         display: "flex",
         flexDirection: "column",
         border: "1px solid #F3F4F6",
@@ -159,12 +155,12 @@ export default function AllStatusProjectCard({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          p: 3,
-          "&:last-child": { pb: 3 },
+          p: 2.5, // Reduced from 3
+          "&:last-child": { pb: 2.5 }, // Reduced from 3
         }}
       >
         {/* Status Chip at Top */}
-        <Box mb={2}>
+        <Box mb={1.5}> {/* Reduced from 2 */}
           <Chip
             label={projectStatus}
             size="small"
@@ -173,10 +169,9 @@ export default function AllStatusProjectCard({
               color: statusStyles.text,
               fontWeight: 600,
               fontSize: "12px",
-              height: "28px",
+              height: "26px", // Reduced from 28px
               px: 1.5,
               borderRadius: "6px",
-              textTransform: "capitalize",
             }}
           />
         </Box>
@@ -185,8 +180,8 @@ export default function AllStatusProjectCard({
         <Typography
           variant="h6"
           fontWeight="700"
-          mb={1.5}
-          fontSize="20px"
+          mb={1} // Reduced from 1.5
+          fontSize="18px" // Reduced from 20px
           lineHeight={1.3}
           color="#1F2937"
           sx={{
@@ -200,25 +195,63 @@ export default function AllStatusProjectCard({
           {title}
         </Typography>
 
-        {/* Description with Read More */}
-        <Box mb={2.5}>
-          <Typography
-            variant="body2"
-            color="#6B7280"
-            fontSize="14px"
-            lineHeight={1.6}
-            sx={{
-              wordBreak: "break-word",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: "-webkit-box",
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: "vertical",
-              maxHeight: showFullDescription ? "none" : "63px",
-            }}
-          >
-            {displayedDescription}
-          </Typography>
+        {/* Description with Read More and Scroll */}
+        <Box mb={1.5}> {/* Reduced from 2.5 */}
+          {!showFullDescription ? (
+            // Collapsed view - shows 2 lines max
+            <Typography
+              variant="body2"
+              color="#6B7280"
+              fontSize="13px"
+              lineHeight={1.5}
+              sx={{
+                wordBreak: "break-word",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+              }}
+            >
+              {displayedDescription}
+            </Typography>
+          ) : (
+            // Expanded view - scrollable
+            <Box
+              sx={{
+                maxHeight: "70px",
+                overflowY: "auto",
+                overflowX: "hidden",
+                pr: 0.5,
+                "&::-webkit-scrollbar": {
+                  width: "4px",
+                },
+                "&::-webkit-scrollbar-track": {
+                  background: "#F3F4F6",
+                  borderRadius: "4px",
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  background: "#D1D5DB",
+                  borderRadius: "4px",
+                  "&:hover": {
+                    background: "#9CA3AF",
+                  },
+                },
+              }}
+            >
+              <Typography
+                variant="body2"
+                color="#6B7280"
+                fontSize="13px"
+                lineHeight={1.5}
+                sx={{
+                  wordBreak: "break-word",
+                }}
+              >
+                {description}
+              </Typography>
+            </Box>
+          )}
           {isLongDescription && (
             <Typography
               variant="caption"
@@ -226,7 +259,7 @@ export default function AllStatusProjectCard({
                 color: "#3B82F6",
                 cursor: "pointer",
                 fontWeight: "500",
-                fontSize: "12px",
+                fontSize: "11px",
                 mt: 0.5,
                 display: "inline-block",
                 "&:hover": {
@@ -244,26 +277,25 @@ export default function AllStatusProjectCard({
         </Box>
 
         {/* Client/Provider Info */}
-        <Box display="flex" alignItems="center" gap={1.5} mb={3}>
+        <Box display="flex" alignItems="center" gap={1.5} mb={2}> {/* Reduced from 3 */}
           <Avatar
-            src={displayAvatar} // ✅ هون رح تظهر الصورة الحقيقية أو الـ fallback
+            src={displayAvatar}
             sx={{
-              width: 48,
-              height: 48,
+              width: 42, // Reduced from 48
+              height: 42, // Reduced from 48
               bgcolor: "#3B82F6",
               fontWeight: "bold",
-              fontSize: "16px",
+              fontSize: "15px", // Reduced from 16px
               flexShrink: 0,
             }}
           >
-            {/* ✅ الـ initials رح تظهر بس إذا الصورة ما اشتغلت */}
             {!displayAvatar && displayInitials}
           </Avatar>
           <Box flex={1} minWidth={0}>
             <Typography
               variant="body2"
               fontWeight="700"
-              fontSize="15px"
+              fontSize="14px" // Reduced from 15px
               color="#1F2937"
               sx={{
                 overflow: "hidden",
@@ -276,7 +308,7 @@ export default function AllStatusProjectCard({
             <Typography
               variant="caption"
               color="#6B7280"
-              fontSize="13px"
+              fontSize="12px" // Reduced from 13px
               fontWeight="400"
               sx={{
                 overflow: "hidden",
@@ -290,17 +322,17 @@ export default function AllStatusProjectCard({
         </Box>
 
         {/* Progress Section */}
-        <Box mb={2.5}>
+        <Box mb={1.5}> {/* Reduced from 2.5 */}
           <Box
             display="flex"
             justifyContent="space-between"
             alignItems="center"
-            mb={1}
+            mb={0.75} // Reduced from 1
           >
             <Typography
               variant="body2"
               fontWeight="600"
-              fontSize="14px"
+              fontSize="13px" // Reduced from 14px
               color="#1F2937"
             >
               Progress
@@ -308,7 +340,7 @@ export default function AllStatusProjectCard({
             <Typography
               variant="body2"
               fontWeight="700"
-              fontSize="16px"
+              fontSize="15px" // Reduced from 16px
               color="#1F2937"
             >
               {Math.round(progressPercentage)}%
@@ -318,7 +350,7 @@ export default function AllStatusProjectCard({
             variant="determinate"
             value={progressPercentage}
             sx={{
-              height: 10,
+              height: 8, // Reduced from 10
               borderRadius: 5,
               backgroundColor: "#E5E7EB",
               "& .MuiLinearProgress-bar": {
@@ -334,15 +366,15 @@ export default function AllStatusProjectCard({
           display="flex"
           justifyContent="space-between"
           alignItems="center"
-          pt={2}
+          pt={1.5} // Reduced from 2
           borderTop="1px solid #F3F4F6"
         >
           <Box display="flex" alignItems="center" gap={0.75}>
-            <CalendarMonthIcon sx={{ fontSize: 18, color: "#9CA3AF" }} />
+            <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF" }} /> {/* Reduced from 18 */}
             <Typography
               variant="caption"
               color="#6B7280"
-              fontSize="13px"
+              fontSize="12px" // Reduced from 13px
               fontWeight="500"
             >
               Due: {formattedDeadline}

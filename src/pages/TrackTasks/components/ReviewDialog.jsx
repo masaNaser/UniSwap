@@ -20,7 +20,7 @@ export default function ReviewDialog({
   task,
   onSubmitReview,
 }) {
-  const [reviewDecision, setReviewDecision] = React.useState('accept');
+  const [reviewDecision, setReviewDecision] = React.useState('');
   const [reviewComment, setReviewComment] = React.useState('');
 
   const handleSubmit = () => {
@@ -32,7 +32,7 @@ export default function ReviewDialog({
   };
 
   const handleClose = () => {
-    setReviewDecision('accept');
+    setReviewDecision('');
     setReviewComment('');
     onClose();
   };

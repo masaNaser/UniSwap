@@ -45,12 +45,11 @@ export default function RequestProjectCard({
   onEditRequest,
   sentDate,
 }) {
-
   const [loading, setLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
-    type: "", // "cancel", "reject", "approve"
+    type: "",
     title: "",
     message: "",
   });
@@ -61,19 +60,18 @@ export default function RequestProjectCard({
   });
   const token = localStorage.getItem("accessToken");
   console.log("clientImage:", clientImage);
-  const isLongDescription = description && description.length > 50;
+
+  const isLongDescription = description && description.length > 100;
   const displayedDescription = showFullDescription
     ? description
     : isLongDescription
-    ? description.substring(0, 50) + "..."
-    : description;
+      ? description.substring(0, 100) + "..."
+      : description;
 
-  // Handle Snackbar Close
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // Open Confirmation Dialog
   const openConfirmDialog = (type) => {
     const dialogConfig = {
       cancel: {
@@ -98,12 +96,10 @@ export default function RequestProjectCard({
     });
   };
 
-  // Close Confirmation Dialog
   const closeConfirmDialog = () => {
     setConfirmDialog({ ...confirmDialog, open: false });
   };
 
-  // Handle Confirm Action
   const handleConfirmAction = async () => {
     closeConfirmDialog();
 
@@ -177,13 +173,18 @@ export default function RequestProjectCard({
       <Card
         sx={{
           borderRadius: "16px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          transition: "transform 0.3s, box-shadow 0.2s",
-          width: "350px",
-          height: "350px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          transition: "all 0.3s ease",
+          width: "320px",
+          height: "380px",
           display: "flex",
           flexDirection: "column",
-          "&:hover": { transform: "translateY(-3px)", boxShadow: 3 },
+          border: "1px solid #F3F4F6",
+          "&:hover": {
+            transform: "translateY(-4px)",
+            boxShadow: "0 8px 16px rgba(0,0,0,0.12)",
+          },
+          bgcolor: "#FFFFFF",
         }}
       >
         <CardContent
@@ -191,60 +192,24 @@ export default function RequestProjectCard({
             flex: 1,
             display: "flex",
             flexDirection: "column",
+            justifyContent: "space-between",
             p: 2.5,
             "&:last-child": { pb: 2.5 },
           }}
         >
-          {/* Header: Client/Provider Info */}
-          <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
-            <Avatar
-              alt="client-avatar"
-              src={getImageUrl(clientImage, clientName)}
-              sx={{
-                width: 40,
-                height: 40,
-                bgcolor: "#3b82f6",
-                fontWeight: "bold",
-                fontSize: "14px",
-              }}
-            >
-              {!clientImage && clientInitials}
-            </Avatar>
-
-            <Box flex={1}>
-              <Typography variant="body2" fontWeight="bold" fontSize="14px">
-                {clientName}
-              </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontSize="11px"
-              >
-                {isProvider
-                  ? `Requesting ${category?.replace("Request", "")}`
-                  : `Providing ${category?.replace("Request", "")}`}
-              </Typography>
-              {sentDate && (
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  fontSize="10px"
-                  display="block"
-                >
-                  Sent: {sentDate}
-                </Typography>
-              )}
-            </Box>
+          {/* Status Chip at Top */}
+          <Box mb={1.5}>
             <Chip
               label="Pending"
               size="small"
               sx={{
                 bgcolor: "#FEF3C7",
                 color: "#F59E0B",
-                fontWeight: "bold",
+                fontWeight: 600,
                 fontSize: "12px",
-                height: "25px",
-                width: "70px",
+                height: "26px",
+                px: 1.5,
+                borderRadius: "6px",
               }}
             />
           </Box>
@@ -252,29 +217,77 @@ export default function RequestProjectCard({
           {/* Title */}
           <Typography
             variant="h6"
-            fontWeight="bold"
+            fontWeight="700"
             mb={1}
-            fontSize="16px"
+            fontSize="18px"
             lineHeight={1.3}
+            color="#1F2937"
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
           >
             {title}
           </Typography>
 
-          {/* Description with Read More */}
-          <Box mb={1.5} flex={1}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              fontSize="13px"
-              lineHeight={1.4}
-              sx={{
-                wordBreak: "break-word",
-                overflowY: showFullDescription ? "auto" : "hidden",
-                maxHeight: showFullDescription ? 60 : "auto",
-              }}
-            >
-              {displayedDescription}
-            </Typography>
+          {/* Description with Read More and Scroll */}
+          <Box mb={1.5}>
+            {!showFullDescription ? (
+              <Typography
+                variant="body2"
+                color="#6B7280"
+                fontSize="13px"
+                lineHeight={1.5}
+                sx={{
+                  wordBreak: "break-word",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                }}
+              >
+                {displayedDescription}
+              </Typography>
+            ) : (
+              <Box
+                sx={{
+                  maxHeight: "70px",
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                  pr: 0.5,
+                  "&::-webkit-scrollbar": {
+                    width: "4px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    background: "#F3F4F6",
+                    borderRadius: "4px",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    background: "#D1D5DB",
+                    borderRadius: "4px",
+                    "&:hover": {
+                      background: "#9CA3AF",
+                    },
+                  },
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="#6B7280"
+                  fontSize="13px"
+                  lineHeight={1.5}
+                  sx={{
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {description}
+                </Typography>
+              </Box>
+            )}
             {isLongDescription && (
               <Typography
                 variant="caption"
@@ -282,7 +295,9 @@ export default function RequestProjectCard({
                   color: "#3B82F6",
                   cursor: "pointer",
                   fontWeight: "500",
-                  fontSize: "12px",
+                  fontSize: "11px",
+                  mt: 0.5,
+                  display: "inline-block",
                   "&:hover": {
                     textDecoration: "underline",
                   },
@@ -294,20 +309,82 @@ export default function RequestProjectCard({
             )}
           </Box>
 
+          {/* Client/Provider Info */}
+          <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+            <Avatar
+              src={getImageUrl(clientImage, clientName)}
+              sx={{
+                width: 42,
+                height: 42,
+                bgcolor: "#3B82F6",
+                fontWeight: "bold",
+                fontSize: "15px",
+                flexShrink: 0,
+              }}
+            >
+              {!clientImage && clientInitials}
+            </Avatar>
+            <Box flex={1} minWidth={0}>
+              <Typography
+                variant="body2"
+                fontWeight="700"
+                fontSize="14px"
+                color="#1F2937"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {clientName || "Unknown"}
+              </Typography>
+              <Typography
+                variant="caption"
+                color="#6B7280"
+                fontSize="12px"
+                fontWeight="400"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {isProvider
+                  ? `Requesting ${category?.replace("Request", "")}`
+                  : `Providing ${category?.replace("Request", "")}`}
+
+                {sentDate && (
+                  <Typography
+                    variant="caption"
+                    color="#6B7280"
+                    fontSize="12px"
+                    fontWeight="400"
+                    sx={{ display: "block", mt: 0.3 }}
+                  >
+                    Sent: {sentDate}
+                  </Typography>
+                )}
+
+              </Typography>
+            </Box>
+          </Box>
+
           {/* Points & Deadline */}
           <Box
             display="flex"
             justifyContent="space-between"
             alignItems="center"
             mb={1.5}
+            pb={1.5}
+            borderBottom="1px solid #F3F4F6"
           >
             <Box display="flex" alignItems="center" gap={0.5}>
               <Box
                 sx={{
                   width: 20,
                   height: 20,
-                  backgroundColor: "#3B82F6", // لون الخلفية
-                  borderRadius: "50%", // دائري
+                  backgroundColor: "#3B82F6",
+                  borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -329,7 +406,7 @@ export default function RequestProjectCard({
                   <path d="M7 6h1v4"></path>
                   <path d="m16.71 13.88.7.71-2.82 2.82"></path>
                 </svg>
-              </Box>{" "}
+              </Box>
               <Typography
                 variant="body2"
                 fontWeight="bold"
@@ -339,19 +416,21 @@ export default function RequestProjectCard({
                 {pointsOffered} Points
               </Typography>
             </Box>
-  {/* إخفاء الـ deadline إذا كان Type يحتوي على "Request" */}
-  {deadline && 
-   !category?.toLowerCase().includes("request") && 
-   new Date(deadline).getFullYear() > 1970 && (
-    <Box display="flex" alignItems="center" gap={0.5}>
-      <CalendarMonthIcon sx={{ fontSize: 15, color: "text.secondary" }} />
-      <Typography variant="caption" color="text.secondary" fontSize="12px">
-        Due: {deadline}
-      </Typography>
-    </Box>
-  )}
-
-
+            {deadline &&
+              !category?.toLowerCase().includes("request") &&
+              new Date(deadline).getFullYear() > 1970 && (
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF" }} />
+                  <Typography
+                    variant="caption"
+                    color="#6B7280"
+                    fontSize="12px"
+                    fontWeight="500"
+                  >
+                    Due: {deadline}
+                  </Typography>
+                </Box>
+              )}
           </Box>
 
           {/* Action Buttons - For Provider (Accept/Reject) */}
@@ -539,8 +618,8 @@ export default function RequestProjectCard({
               snackbar.severity === "success"
                 ? "#3b82f6"
                 : snackbar.severity === "info"
-                ? "#3b82f6"
-                : "#EF4444",
+                  ? "#3b82f6"
+                  : "#EF4444",
             color: "white",
             "& .MuiAlert-icon": {
               color: "white",

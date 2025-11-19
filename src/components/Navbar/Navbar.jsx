@@ -144,11 +144,11 @@ export default function PrimarySearchAppBar() {
                 src={Logo}
                 alt="logo"
                 sx={{ width: 37, height: 37, cursor: "pointer" }}
-                onClick={() => navigate("/app/feed")}
+                onClick={() => navigate("/")}
               />
               <Typography
                 variant="h6"
-                onClick={() => navigate("/app/feed")}
+                onClick={() => navigate("/")}
                 sx={{
                   fontWeight: "bold",
                   color: "#74767a",
