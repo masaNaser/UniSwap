@@ -339,18 +339,19 @@ export default function RequestProjectCard({
                 {pointsOffered} Points
               </Typography>
             </Box>
-            <Box display="flex" alignItems="center" gap={0.5}>
-              <CalendarMonthIcon
-                sx={{ fontSize: 15, color: "text.secondary" }}
-              />
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontSize="12px"
-              >
-                Due: {deadline}
-              </Typography>
-            </Box>
+  {/* إخفاء الـ deadline إذا كان Type يحتوي على "Request" */}
+  {deadline && 
+   !category?.toLowerCase().includes("request") && 
+   new Date(deadline).getFullYear() > 1970 && (
+    <Box display="flex" alignItems="center" gap={0.5}>
+      <CalendarMonthIcon sx={{ fontSize: 15, color: "text.secondary" }} />
+      <Typography variant="caption" color="text.secondary" fontSize="12px">
+        Due: {deadline}
+      </Typography>
+    </Box>
+  )}
+
+
           </Box>
 
           {/* Action Buttons - For Provider (Accept/Reject) */}

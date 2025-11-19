@@ -42,7 +42,7 @@ export default function ChatList({
   }, []);
 
   return (
-    <div  className={`chat-list ${className}`}>
+    <div className={`chat-list ${className}`}>
       <h3 className="chat-list-header">Messages</h3>
       <div className="chat-list-items">
         {conversations.length === 0 ? (
@@ -78,7 +78,6 @@ export default function ChatList({
                   return isToday
                     ? "Today"
                     : msgDate.toLocaleDateString("en-GB"); // ✅ هون استخدم en-GB
-
                 })()
               : "";
             // أول حرفين من اسم الطرف الآخر
@@ -99,12 +98,11 @@ export default function ChatList({
               >
                 <div className="chat-avatar">
                   {conv.partnerImage ? (
-                 <img
-  src={getImageUrl(conv.partnerImage, conv.partnerName)}
-  alt={conv.partnerName}
-  className="avatar-img"
-/>
-
+                    <img
+                      src={getImageUrl(conv.partnerImage, conv.partnerName)}
+                      alt={conv.partnerName}
+                      className="avatar-img"
+                    />
                   ) : (
                     <div className="avatar-fallback">{initials}</div>
                   )}
@@ -116,8 +114,9 @@ export default function ChatList({
                 <div className="chat-time">
                   <div>{lastTime}</div>
                   <div className="chat-date">
-                    {lastDate}  {/* ✅ التاريخ */}
-                  </div> 
+                    {lastDate} {/* ✅ التاريخ */}
+                  </div>
+                  
                 </div>{" "}
               </div>
             );

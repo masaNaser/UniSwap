@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { 
     Container, 
     Box, 
@@ -34,13 +34,13 @@ import {
     deleteComment as deleteCommentApi,
     editComment as editCommentApi,
 } from "../../../services/postService";
-import ProfilePic from "../../../assets/images/ProfilePic.jpg";
 import dayjs from 'dayjs';
-import { getImageUrl } from "../../../utils/imageHelper"; // أضف هذا
-import { useCurrentUser } from "../../../Context/CurrentUserContext"; // ✅ إضافة
+import { getImageUrl } from "../../../utils/imageHelper";
+import { useCurrentUser } from "../../../Context/CurrentUserContext";
+import { useSearchParams } from 'react-router-dom'; // ✅ إضافة
+
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
-    // إذا الـ comment من المستخدم الحالي، استخدم صورته من الـ Context
     const isCurrentUserComment = comment.user?.userName === currentUser?.userName;
     
     return {
@@ -51,18 +51,23 @@ const normalizeComment = (comment, userName, currentUser) => {
         author: {
             userName: comment.user?.userName,
             avatar: isCurrentUserComment 
-                ? getImageUrl(currentUser?.profilePicture, currentUser?.userName) // ✅ صورتك من Context
-                : getImageUrl(comment.user?.profilePictureUrl, comment.user?.userName), // صورة الآخرين (أو افتراضية)
+                ? getImageUrl(currentUser?.profilePicture, currentUser?.userName)
+                : getImageUrl(comment.user?.profilePictureUrl, comment.user?.userName),
         }
     };
 };
+
 // update post by ID
 const updatePost = (posts, postId, newData) =>
     posts.map(p => (p.id === postId ? { ...p, ...newData } : p));
 
-function Feed() {
-     const { currentUser, loading } = useCurrentUser(); // ✅ استخدام Context
+export default function Feed() {
+    const { currentUser, loading } = useCurrentUser();
     const [posts, setPosts] = useState([]);
+    const [searchParams, setSearchParams] = useSearchParams(); // ✅ إضافة
+    const [highlightedPostId, setHighlightedPostId] = useState(null); // ✅ إضافة
+    const postRefs = useRef({}); // ✅ إضافة
+    
     const userToken = localStorage.getItem("accessToken");
     const userName = localStorage.getItem("userName");
 
@@ -71,6 +76,7 @@ function Feed() {
     const [currentComments, setCurrentComments] = useState([]);
     const [modalPost, setModalPost] = useState(null);
     const [userIdCommenting, setUserIdCommenting] = useState(null);
+    
     // Delete Dialog State
     const [deleteDialog, setDeleteDialog] = useState({
         open: false,
@@ -110,7 +116,11 @@ function Feed() {
                 id: p.id,
                 content: p.content,
                 selectedTags: p.tags?.[0]?.split(",") || [],
-                user: { name: p.author.userName, avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName), id: p.author.id },
+                user: { 
+                    name: p.author.userName, 
+                    avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName), 
+                    id: p.author.id 
+                },
                 time: dayjs(p.createdAt).format('DD MMM, hh:mm A'),
                 likes: p.likesCount,
                 comments: p.commentsCount,
@@ -157,6 +167,38 @@ function Feed() {
             });
         }
     }, [posts.length, fetchRecentComments]);
+
+    // ✅ Scroll to post when URL has postId parameter
+    useEffect(() => {
+        const postId = searchParams.get('postId');
+        
+        if (postId && posts.length > 0) {
+            // انتظر شوي للتأكد إن كل شي تحمل
+            setTimeout(() => {
+                const postElement = postRefs.current[postId];
+                
+                if (postElement) {
+                    // Scroll للبوست
+                    postElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                    
+                    // Highlight البوست
+                    setHighlightedPostId(postId);
+                    
+                    // إزالة الـ highlight بعد 3 ثواني
+                    setTimeout(() => {
+                        setHighlightedPostId(null);
+                        // إزالة الـ postId من الـ URL
+                        setSearchParams({});
+                    }, 3000);
+                } else {
+                    console.log('Post not found, might be on different page or deleted');
+                }
+            }, 500);
+        }
+    }, [posts, searchParams, setSearchParams]);
 
     const addPost = (newPost) =>
         setPosts([{ ...newPost, isLiked: false, recentComments: [] }, ...posts]);
@@ -289,7 +331,10 @@ function Feed() {
         const isCurrentlyLiked = postToUpdate.isLiked;
         const originalLikes = postToUpdate.likes;
 
-        setPosts(prev => updatePost(prev, postId, { isLiked: !isCurrentlyLiked, likes: isCurrentlyLiked ? originalLikes - 1 : originalLikes + 1 }));
+        setPosts(prev => updatePost(prev, postId, { 
+            isLiked: !isCurrentlyLiked, 
+            likes: isCurrentlyLiked ? originalLikes - 1 : originalLikes + 1 
+        }));
 
         try {
             const response = isCurrentlyLiked
@@ -297,11 +342,17 @@ function Feed() {
                 : await likePostApi(userToken, postId);
 
             if (response.data?.likesCount !== undefined) {
-                setPosts(prev => updatePost(prev, postId, { isLiked: response.data.isLikedByMe || !isCurrentlyLiked, likes: response.data.likesCount }));
+                setPosts(prev => updatePost(prev, postId, { 
+                    isLiked: response.data.isLikedByMe || !isCurrentlyLiked, 
+                    likes: response.data.likesCount 
+                }));
             }
         } catch (error) {
             console.error(`Error ${isCurrentlyLiked ? 'unliking' : 'liking'} post:`, error);
-            setPosts(prev => updatePost(prev, postId, { isLiked: isCurrentlyLiked, likes: originalLikes }));
+            setPosts(prev => updatePost(prev, postId, { 
+                isLiked: isCurrentlyLiked, 
+                likes: originalLikes 
+            }));
             setSnackbar({
                 open: true,
                 message: `Failed to ${isCurrentlyLiked ? 'unlike' : 'like'} post.`,
@@ -321,14 +372,14 @@ function Feed() {
 
         try {
             const response = await getCommentsApi(userToken, postId);
-        console.log("Comments fetched:",response.data);
-            console.log("First comment user:", response.data[0]?.user); // ✅ شوف بيانات اليوزر
+            console.log("Comments fetched:", response.data);
+            console.log("First comment user:", response.data[0]?.user);
 
             const sortedComments = response.data
                 .map(comment => normalizeComment(comment, userName, currentUser))
                 .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf());
             setCurrentComments(sortedComments);
-            console.log("Sorted Comments:",sortedComments);
+            console.log("Sorted Comments:", sortedComments);
         } catch (error) {
             console.error("Error fetching comments:", error);
             setSnackbar({
@@ -339,34 +390,55 @@ function Feed() {
             setCommentsModalVisible(false);
             setModalPost(null);
         }
+    };
 
-    }
     const handleAddComment = async (postId, content) => {
         const tempCommentId = Date.now();
-        const currentUserId = localStorage.getItem("userId"); // أو من أي مكان تاني عندك الـ userId
-       const currentUserAvatar = getImageUrl(currentUser?.profilePicture, userName);  
-       console.log("currentUserAvatar:", currentUserAvatar);
-        const newComment = { id: tempCommentId,
-             content,
-              createdAt: new Date().toISOString(),
-               author:
-                {
-                 userName, 
-                 avatar: currentUserAvatar // ✅ هنا
-                },
-                authorId: currentUserId,
-            };
+        const currentUserId = localStorage.getItem("userId");
+        const currentUserAvatar = getImageUrl(currentUser?.profilePicture, userName);  
+        console.log("currentUserAvatar:", currentUserAvatar);
+        
+        const newComment = { 
+            id: tempCommentId,
+            content,
+            createdAt: new Date().toISOString(),
+            author: {
+                userName, 
+                avatar: currentUserAvatar
+            },
+            authorId: currentUserId,
+        };
 
         // Update modal and posts instantly
         if (currentPostId === postId) setCurrentComments(prev => [newComment, ...prev]);
-        setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: p.comments + 1, recentComments: [newComment, ...p.recentComments].slice(0, 2) } : p));
+        setPosts(prev => prev.map(p => 
+            p.id === postId 
+                ? { 
+                    ...p, 
+                    comments: p.comments + 1, 
+                    recentComments: [newComment, ...p.recentComments].slice(0, 2) 
+                  } 
+                : p
+        ));
 
         try {
             const response = await addCommentApi(userToken, postId, content);
             if (response.data?.id) {
                 const finalComment = normalizeComment(response.data, userName, currentUser);
-                setCurrentComments(prev => prev.map(c => c.id === tempCommentId ? finalComment : c));
-                setPosts(prev => prev.map(p => p.id === postId ? { ...p, recentComments: [finalComment, ...p.recentComments.filter(c => c.id !== tempCommentId)].slice(0, 2) } : p));
+                setCurrentComments(prev => prev.map(c => 
+                    c.id === tempCommentId ? finalComment : c
+                ));
+                setPosts(prev => prev.map(p => 
+                    p.id === postId 
+                        ? { 
+                            ...p, 
+                            recentComments: [
+                                finalComment, 
+                                ...p.recentComments.filter(c => c.id !== tempCommentId)
+                            ].slice(0, 2) 
+                          } 
+                        : p
+                ));
             }
         } catch (error) {
             console.error("Error adding comment:", error);
@@ -376,7 +448,15 @@ function Feed() {
                 severity: "error",
             });
             setCurrentComments(prev => prev.filter(c => c.id !== tempCommentId));
-            setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: p.comments - 1, recentComments: p.recentComments.filter(c => c.id !== tempCommentId) } : p));
+            setPosts(prev => prev.map(p => 
+                p.id === postId 
+                    ? { 
+                        ...p, 
+                        comments: p.comments - 1, 
+                        recentComments: p.recentComments.filter(c => c.id !== tempCommentId) 
+                      } 
+                    : p
+            ));
         }
     };
 
@@ -392,7 +472,11 @@ function Feed() {
             if (p.id === postId) {
                 originalRecentComments = p.recentComments;
                 if (p.recentComments.some(c => c.id === commentId)) shouldRefetchRecent = true;
-                return { ...p, comments: p.comments - 1, recentComments: p.recentComments.filter(c => c.id !== commentId) };
+                return { 
+                    ...p, 
+                    comments: p.comments - 1, 
+                    recentComments: p.recentComments.filter(c => c.id !== commentId) 
+                };
             }
             return p;
         }));
@@ -412,7 +496,10 @@ function Feed() {
                     severity: "error",
                 });
                 setCurrentComments(originalComments);
-                setPosts(prev => updatePost(prev, postId, { comments: originalRecentComments.length, recentComments: originalRecentComments }));
+                setPosts(prev => updatePost(prev, postId, { 
+                    comments: originalRecentComments.length, 
+                    recentComments: originalRecentComments 
+                }));
             }
         }
     };
@@ -423,15 +510,41 @@ function Feed() {
         const originalContent = originalComment?.content;
         const postId = currentPostId;
 
-        setCurrentComments(prev => prev.map(c => c.id === commentId ? { ...c, content: newContent, createdAt: new Date().toISOString() } : c));
-        setPosts(prev => prev.map(p => p.id === postId ? { ...p, recentComments: p.recentComments.map(c => c.id === commentId ? { ...c, content: newContent, createdAt: new Date().toISOString() } : c) } : p));
+        setCurrentComments(prev => prev.map(c => 
+            c.id === commentId 
+                ? { ...c, content: newContent, createdAt: new Date().toISOString() } 
+                : c
+        ));
+        setPosts(prev => prev.map(p => 
+            p.id === postId 
+                ? { 
+                    ...p, 
+                    recentComments: p.recentComments.map(c => 
+                        c.id === commentId 
+                            ? { ...c, content: newContent, createdAt: new Date().toISOString() } 
+                            : c
+                    ) 
+                  } 
+                : p
+        ));
 
         try {
             await editCommentApi(userToken, commentId, newContent);
         } catch (error) {
             console.error("Error editing comment:", error);
             setCurrentComments(originalComments);
-            setPosts(prev => prev.map(p => p.id === postId ? { ...p, recentComments: p.recentComments.map(c => c.id === commentId ? { ...c, content: originalContent, createdAt: originalComment.createdAt } : c) } : p));
+            setPosts(prev => prev.map(p => 
+                p.id === postId 
+                    ? { 
+                        ...p, 
+                        recentComments: p.recentComments.map(c => 
+                            c.id === commentId 
+                                ? { ...c, content: originalContent, createdAt: originalComment.createdAt } 
+                                : c
+                        ) 
+                      } 
+                    : p
+            ));
             setSnackbar({
                 open: true,
                 message: "Failed to update comment.",
@@ -440,7 +553,21 @@ function Feed() {
         }
     };
 
-    useEffect(() => { fetchPosts(); }, [userToken]);
+    // Share Post Handler
+    const handleSharePost = (postId) => {
+        setPosts(prev => 
+            prev.map(p => 
+                p.id === postId 
+                    ? { ...p, shares: p.shares + 1 } 
+                    : p
+            )
+        );
+    };
+
+    // Fetch posts on mount
+    useEffect(() => { 
+        fetchPosts(); 
+    }, [userToken]);
 
     return (
         <>
@@ -462,21 +589,49 @@ function Feed() {
 
                 <div className="post-section">
                     <div className="create-post-main">
-                        <CreatePost addPost={addPost} token={userToken}  />
+                        <CreatePost addPost={addPost} token={userToken} />
                         <Box mt={3}>
                             {posts.map(post => (
-                                <PostCard
+                                <Box
                                     key={post.id}
-                                    post={post}
-                                    onDelete={openDeleteDialog}
-                                    onEdit={openEditDialog}
-                                    onLike={handleLikePost}
-                                    onShowComments={handleShowComments}
-                                    onAddCommentInline={handleAddComment}
-                                    fetchRecentComments={fetchRecentComments}
-                                    currentUserAvatar={getImageUrl(currentUser?.profilePicture, currentUser?.userName || userName)} // ✅ تمرير الصورة
-
-                                />
+                                    ref={(el) => (postRefs.current[post.id] = el)} // ✅ ref للبوست
+                                    sx={{
+                                        transition: 'all 0.3s ease',
+                                        // ✅ Highlight effect
+                                        ...(highlightedPostId === post.id && {
+                                            animation: 'highlight 2s ease-in-out',
+                                            '@keyframes highlight': {
+                                                '0%': { 
+                                                    boxShadow: '0 0 0 0 rgba(59, 130, 246, 0.7)',
+                                                    transform: 'scale(1)',
+                                                },
+                                                '50%': { 
+                                                    boxShadow: '0 0 20px 10px rgba(59, 130, 246, 0.4)',
+                                                    transform: 'scale(1.02)',
+                                                },
+                                                '100%': { 
+                                                    boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)',
+                                                    transform: 'scale(1)',
+                                                },
+                                            },
+                                        }),
+                                    }}
+                                >
+                                    <PostCard
+                                        post={post}
+                                        onDelete={openDeleteDialog}
+                                        onEdit={openEditDialog}
+                                        onLike={handleLikePost}
+                                        onShowComments={handleShowComments}
+                                        onShare={handleSharePost}
+                                        onAddCommentInline={handleAddComment}
+                                        fetchRecentComments={fetchRecentComments}
+                                        currentUserAvatar={getImageUrl(
+                                            currentUser?.profilePicture, 
+                                            currentUser?.userName || userName
+                                        )}
+                                    />
+                                </Box>
                             ))}
                         </Box>
                     </div>
@@ -495,7 +650,10 @@ function Feed() {
                     onDeleteComment={handleDeleteComment}
                     onEditComment={handleEditComment}
                     currentUserName={userName}
-                    currentUserAvatar={getImageUrl(currentUser?.profilePicture, currentUser?.userName || userName)} // ✅ إضافة
+                    currentUserAvatar={getImageUrl(
+                        currentUser?.profilePicture, 
+                        currentUser?.userName || userName
+                    )}
                 />
             </Container>
 
@@ -567,7 +725,7 @@ function Feed() {
                         label="Content"
                         value={editDialog.content}
                         onChange={(e) => setEditDialog(prev => ({ ...prev, content: e.target.value }))}
-                        sx={{ mb: 3,mt:1 }}
+                        sx={{ mb: 3, mt: 1 }}
                     />
                     <TextField
                         fullWidth
@@ -652,5 +810,3 @@ function Feed() {
         </>
     );
 }
-
-export default Feed;   

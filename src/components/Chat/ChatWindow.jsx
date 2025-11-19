@@ -1,4 +1,3 @@
-
 // import { useEffect, useState, useRef } from "react";
 // import {
 //   sendMessage,
@@ -27,7 +26,7 @@
 //   const token = localStorage.getItem("accessToken");
 //   const currentUserId = localStorage.getItem("userId");
 //   const initials = receiverName?.substring(0, 2).toUpperCase(); // لأخذ أول حرفين من اسم المستقبل
- 
+
 //   // تمرير تلقائي للرسائل الجديدة
 //   const [initialScrollDone, setInitialScrollDone] = useState(false);
 
@@ -197,7 +196,7 @@
 //           20,
 //           token
 //         );
-        
+
 //         // إذا السيرفر رجع محادثة موجودة
 //         if (response.data && response.data.conversationId) {
 //           setMessages(response.data.messages || []);
@@ -271,7 +270,6 @@
 //   );
 // }
 
-
 import { useEffect, useState, useRef } from "react";
 import {
   sendMessage,
@@ -283,8 +281,6 @@ import Message from "./Message";
 import MessageInput from "./MessageInput";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
-import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 import { getImageUrl } from "../../utils/imageHelper";
 import { useNavigateToProfile } from "../../hooks/useNavigateToProfile";
 
@@ -306,7 +302,7 @@ export default function ChatWindow({
   const token = localStorage.getItem("accessToken");
   const currentUserId = localStorage.getItem("userId");
   const initials = receiverName?.substring(0, 2).toUpperCase();
- 
+
   const [initialScrollDone, setInitialScrollDone] = useState(false);
 
   // تمرير تلقائي للرسائل الجديدة
@@ -321,15 +317,16 @@ export default function ChatWindow({
   useEffect(() => {
     const initChat = async () => {
       try {
-         // ⬅️ مهم: نتأكد إن conversationId مش string "null"
-        const convId = conversationId === "null" || !conversationId ? null : conversationId;
+        // ⬅️ مهم: نتأكد إن conversationId مش string "null"
+        const convId =
+          conversationId === "null" || !conversationId ? null : conversationId;
         const response = await getOneConversation(
-           convId,
+          convId,
           receiverId,
           20,
           token
         );
-        
+
         if (response.data) {
           if (Array.isArray(response.data)) {
             setMessages(response.data);
@@ -341,7 +338,7 @@ export default function ChatWindow({
         }
       } catch (err) {
         console.error("فشل جلب المحادثة:", err);
-      setMessages([]); // ⬅️ نبدأ محادثة فارغة إذا حصل خطأ
+        setMessages([]); // ⬅️ نبدأ محادثة فارغة إذا حصل خطأ
       }
     };
 
@@ -360,7 +357,7 @@ export default function ChatWindow({
         .reverse()
         .find((m) => !m.id.startsWith("temp-"));
       if (!lastRealMessage) return;
-      
+
       const afterId = lastRealMessage.id;
       try {
         const response = await getNewMessages(
@@ -380,7 +377,7 @@ export default function ChatWindow({
         console.error("فشل جلب الرسائل الجديدة:", err);
       }
     };
-    
+
     const interval = setInterval(fetchNewMessages, 5000);
     return () => clearInterval(interval);
   }, [conversationId, messages, token]);
@@ -407,7 +404,7 @@ export default function ChatWindow({
         token
       );
       const older = response.data || [];
-      
+
       if (older.length === 0) {
         hasMoreRef.current = false;
       } else {
@@ -462,96 +459,95 @@ export default function ChatWindow({
     ]);
 
     try {
-          // ⬅️ نتأكد من conversationId
-          const convId = conversationId === "null" || !conversationId ? null : conversationId;
+      // ⬅️ نتأكد من conversationId
+      const convId =
+        conversationId === "null" || !conversationId ? null : conversationId;
       const res = await sendMessage(receiverId, text, conversationId, files);
-         // 🔥 تحديث الرسائل بالرسالة الجديدة
-    setMessages((prev) =>
-      prev.map((m) => 
-        m.id === tempId 
-          ? { ...res, status: "delivered" } 
-          : m
-      ));
-        // 🔥 تحديث conversationId إذا كانت محادثة جديدة
-    if (!convId && res.conversationId) {
-      // نحدث الـ URL state عشان المحادثة تصير معروفة
-      window.history.replaceState(
-        { 
-          convId: res.conversationId,
-          receiverId,
-          receiverName,
-          receiverImage
-        },
-        ''
+      // 🔥 تحديث الرسائل بالرسالة الجديدة
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...res, status: "delivered" } : m))
+      );
+      // 🔥 تحديث conversationId إذا كانت محادثة جديدة
+      if (!convId && res.conversationId) {
+        // نحدث الـ URL state عشان المحادثة تصير معروفة
+        window.history.replaceState(
+          {
+            convId: res.conversationId,
+            receiverId,
+            receiverName,
+            receiverImage,
+          },
+          ""
+        );
+      }
+      // تحديث ترتيب المحادثات
+      setConversations((prev) => {
+        const existingConv = prev.find(
+          (c) => c.id === (res.conversationId || convId)
+        );
+
+        if (existingConv) {
+          // تحديث محادثة موجودة
+          return prev
+            .map((c) =>
+              c.id === existingConv.id
+                ? {
+                    ...c,
+                    lastMessage: { text, createdAt: new Date().toISOString() },
+                  }
+                : c
+            )
+            .sort(
+              (a, b) =>
+                new Date(b.lastMessage?.createdAt) -
+                new Date(a.lastMessage?.createdAt)
+            );
+        } else {
+          // إضافة محادثة جديدة
+          return [
+            {
+              id: res.conversationId,
+              partnerId: receiverId,
+              partnerName: receiverName,
+              partnerImage: receiverImage,
+              lastMessage: { text, createdAt: new Date().toISOString() },
+            },
+            ...prev,
+          ];
+        }
+      });
+    } catch (err) {
+      console.error("فشل إرسال الرسالة:", err);
+      // تحديث حالة الرسالة لـ failed
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, status: "failed" } : m))
       );
     }
-      // تحديث ترتيب المحادثات
-    setConversations((prev) => {
-      const existingConv = prev.find(c => c.id === (res.conversationId || convId));
-      
-      if (existingConv) {
-        // تحديث محادثة موجودة
-        return prev
-          .map((c) =>
-            c.id === existingConv.id
-              ? {
-                  ...c,
-                  lastMessage: { text, createdAt: new Date().toISOString() },
-                }
-              : c
-          )
-          .sort(
-            (a, b) =>
-              new Date(b.lastMessage?.createdAt) -
-              new Date(a.lastMessage?.createdAt)
-          );
-      } else {
-        // إضافة محادثة جديدة
-        return [
-          {
-            id: res.conversationId,
-            partnerId: receiverId,
-            partnerName: receiverName,
-            partnerImage: receiverImage,
-            lastMessage: { text, createdAt: new Date().toISOString() },
-          },
-          ...prev
-        ];
-      }
-    });
-  } catch (err) {
-    console.error("فشل إرسال الرسالة:", err);
-    // تحديث حالة الرسالة لـ failed
-    setMessages((prev) =>
-      prev.map((m) => 
-        m.id === tempId 
-          ? { ...m, status: "failed" } 
-          : m
-      )
-    );
-  }
   };
 
   return (
     <Box className="chat-window">
       <Box className="chat-header">
         {onBack && (
-  <button className="back-button" onClick={onBack}>
-    ← Back
-  </button>
-)}
+          <button className="back-button" onClick={onBack}>
+            ← Back
+          </button>
+        )}
 
-        <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
-               onClick={() => navigateToProfile(receiverId)}>
-
+        <Box
+          sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+          onClick={() => {
+             console.log("receiverId clicked:", receiverId);
+  console.log("currentUserId:", localStorage.getItem("userId"));
+            navigateToProfile(receiverId)}}
+        >
           <Box className="chat-avatar">
             {receiverImage ? (
-             <img
-  src={getImageUrl(receiverImage, receiverName)}
-  alt={receiverName}
-  className="avatar-img"
-/>
-
+              <img
+                src={getImageUrl(receiverImage, receiverName)}
+                alt={receiverName}
+                className="avatar-img"
+              />
             ) : (
               <Box className="avatar-fallback">{initials}</Box>
             )}
@@ -564,7 +560,7 @@ export default function ChatWindow({
           <VideocamOutlinedIcon sx={{ color: "#0078ff" }} />
         </Box> */}
       </Box>
-      
+
       <Box className="messages" ref={messagesContainerRef}>
         <Box sx={{ display: "flex", justifyContent: "center", padding: "8px" }}>
           {loadingOlder && <CircularProgress size={24} />}
@@ -584,7 +580,7 @@ export default function ChatWindow({
         )}
         <div ref={messagesEndRef} />
       </Box>
-      
+
       <MessageInput onSend={handleSend} />
     </Box>
   );

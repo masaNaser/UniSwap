@@ -1,6 +1,5 @@
-
-
 import * as React from "react";
+import { useState, useEffect } from "react";
 import { styled, alpha } from "@mui/material/styles";
 import {
   AppBar,
@@ -18,10 +17,9 @@ import {
   Divider,
   ListItemIcon,
 } from "@mui/material";
-import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ التغيير الأساسي
+import { useCurrentUser } from "../../Context/CurrentUserContext";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-// import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Settings from "@mui/icons-material/Settings";
@@ -31,10 +29,10 @@ import StarIcon from "@mui/icons-material/Star";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import { useLocation } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
-// import Point from "../../assets/images/Point.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../services/authService";
 import { getImageUrl } from "../../utils/imageHelper";
+import { getUnreadCount } from "../../services/chatService"; // ✅ إضافة
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -76,25 +74,45 @@ export default function PrimarySearchAppBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const userName = localStorage.getItem("userName");
+  const token = localStorage.getItem("accessToken"); // ✅ إضافة
 
-  // ✅ استخدام currentUser بدل userData من ProfileContext
   const { currentUser } = useCurrentUser();
-  console.log("currentUser", currentUser);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [unreadCount, setUnreadCount] = useState(0); // ✅ إضافة
 
-  // ✅ Toggle menu on/off
+  // ✅ جلب عدد الرسائل غير المقروءة
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!token) return;
+      
+      try {
+        const response = await getUnreadCount(token);
+        setUnreadCount(response.data || 0);
+      } catch (error) {
+        console.error("❌ Error fetching unread count:", error);
+      }
+    };
+
+    fetchUnreadCount();
+    
+    // تحديث كل 30 ثانية
+    const interval = setInterval(fetchUnreadCount, 30000);
+    
+    return () => clearInterval(interval);
+  }, [token]);
+
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  // ✅ Close when clicking outside or choosing option
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -266,8 +284,8 @@ export default function PrimarySearchAppBar() {
                     sx={{
                       width: 35,
                       height: 35,
-                      backgroundColor: "#3B82F6", // لون الخلفية
-                      borderRadius: "50%", // دائري
+                      backgroundColor: "#3B82F6",
+                      borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -298,7 +316,6 @@ export default function PrimarySearchAppBar() {
                       fontSize: "20px",
                     }}
                   >
-                    {/* ✅ استخدام currentUser بدل userData */}
                     {currentUser?.totalPoints || 0}{" "}
                     <Typography component="span" sx={{ fontWeight: "normal" }}>
                       pts
@@ -308,22 +325,36 @@ export default function PrimarySearchAppBar() {
               )}
 
               {/* Icons */}
+              {/* ✅ أيقونة Messages مع العداد */}
               <IconButton
                 size="large"
                 color="inherit"
-                onClick={() => navigate("/chat")} // ✅ أضف هاي السطر
+                onClick={() => {
+                  navigate("/chat");
+                  setUnreadCount(0); // إعادة تعيين عند الضغط
+                }}
               >
-                {/* <Badge badgeContent={4} color="error"> */}
+                <Badge 
+                  badgeContent={unreadCount} 
+                  color="error"
+                  max={99}
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      fontSize: '0.65rem',
+                      height: '18px',
+                      minWidth: '18px',
+                    }
+                  }}
+                >
                   <MailIcon />
-                {/* </Badge> */}
-              </IconButton>
-              <IconButton size="large" color="inherit">
-                {/* <Badge badgeContent={5} color="error"> */}
-                  <NotificationsIcon />
-                {/* </Badge> */}
+                </Badge>
               </IconButton>
 
-              {/* ✅ Account Menu */}
+              <IconButton size="large" color="inherit">
+                <NotificationsIcon />
+              </IconButton>
+
+              {/* Account Menu */}
               <IconButton
                 size="large"
                 edge="end"
@@ -345,8 +376,8 @@ export default function PrimarySearchAppBar() {
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
-                onClose={handleMenuClose} //  بيشتغل لما تضغط برا
-                onClick={handleMenuClose} //  بيشتغل لما تضغط جوا على item
+                onClose={handleMenuClose}
+                onClick={handleMenuClose}
                 PaperProps={{
                   elevation: 3,
                   sx: {
@@ -382,7 +413,7 @@ export default function PrimarySearchAppBar() {
                       currentUser?.userName
                     )}
                     sx={{ width: 30, height: 30 }}
-                  />{" "}
+                  />
                   <Box>
                     <Typography sx={{ fontWeight: "bold" }}>
                       {userName}
@@ -401,7 +432,6 @@ export default function PrimarySearchAppBar() {
                       color: "#555",
                     }}
                   >
-                    {/* ✅ استخدام currentUser.averageRating */}
                     {currentUser?.averageRating || "0"}
                   </Typography>
                   <Box sx={{ flex: 1 }} />
@@ -560,9 +590,6 @@ export default function PrimarySearchAppBar() {
                   justifyContent: "center",
                 }}
               >
-                <Box
-
-                />
                 <Typography
                   sx={{
                     color: "#3b82f6",

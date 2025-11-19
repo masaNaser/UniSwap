@@ -27,6 +27,8 @@ import {
 } from "@mui/icons-material";
 import dayjs from 'dayjs';
 import {useNavigateToProfile} from "../../../hooks/useNavigateToProfile"
+import ShareDialog from '../../../components/Modals/ShareDialog'; // ✅ استيراد الـ Share Dialog
+
 // Format comment/post time
 const formatTime = (time) => (!time ? "Just now" : dayjs(time).format('DD MMM, hh:mm A'));
 
@@ -58,21 +60,23 @@ const ActionButton = ({ icon, label, onClick }) => (
     <Typography variant="body2" color="text.secondary">{label}</Typography>
   </Box>
 );
+
 function PostCard({
   post,
   onDelete,
   onEdit,
   onLike,
   onShowComments,
+  onShare, // ✅ إضافة
   fetchRecentComments,
   onAddCommentInline,
-  currentUserAvatar, // ✅ إضافة
-
+  currentUserAvatar,
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [recentComments, setRecentComments] = useState(post.recentComments || []);
   const [inlineCommentText, setInlineCommentText] = useState('');
   const [isCommenting, setIsCommenting] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false); // ✅ State للـ Share Dialog
 
   const open = Boolean(anchorEl);
   const currentUserName = localStorage.getItem("userName");
@@ -102,8 +106,20 @@ function PostCard({
   const handleEditClick = () => { onEdit(post.id); handleClose(); };
   const handleLikeClick = () => onLike(post.id);
   const handleCommentClick = () => onShowComments(post.id);
+  
+  // ✅ Handle Share Click
+  const handleShareClick = () => {
+    setShareDialogOpen(true);
+  };
+
+  // ✅ Handle Share Success
+  const handleShareSuccess = (postId) => {
+    if (onShare) {
+      onShare(postId);
+    }
+  };
  
-    const navigateToProfile = useNavigateToProfile();
+  const navigateToProfile = useNavigateToProfile();
 
   const handleInlineCommentSubmit = async (e) => {
     e.preventDefault();
@@ -119,130 +135,126 @@ function PostCard({
       setIsCommenting(false);
     }
   };
- // دالة للانتقال للبروفايل
-  //  const handleNavigateToProfile = () => {
-  //        if (!post.user.id) return;
-  
-  //  const currentUserId = localStorage.getItem("userId");
-  
-  //  // إذا بروفايلي، روح على /app/profile بدون userId
-  //  // حطينا نمبر لأن الـ userId في الـ localStorage مخزن كنص
-  //  if (post.user.id === Number(currentUserId)) {
-  //    navigate('/app/profile');
-  //  } else {
-  //    // إذا بروفايل شخص تاني، مرر الـ userId
-  //    navigate(`/app/profile/${post.user.id}`);
-  //  }
-  // };
+
   return (
-    <Card sx={{ mb: 3, borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-      {/* Header */}
-      <CardHeader
-        avatar={<Avatar src={post.user.avatar} />}
-        action={isPostAuthor && (
-          <IconButton aria-label="settings" onClick={handleClick}><MoreVertIcon /></IconButton>
-        )}
-        title={
-        <Typography variant="subtitle1" fontWeight="bold" 
-          sx={{ 
-              cursor: 'pointer',
-              '&:hover': { 
-                textDecoration: 'underline',
-                color: 'primary.main'
-              }
-            }}     
-           onClick={() => navigateToProfile(post.user.id)}>
-            {post.user.name}
-            </Typography>}
-        subheader={post.time}
-      />
-
-      {/* Menu */}
-      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem onClick={handleEditClick}><EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit Post</MenuItem>
-        <MenuItem onClick={handleDeleteClick}><DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete Post</MenuItem>
-      </Menu>
-
-      {/* Content */}
-      <CardContent>
-        <Typography variant="body1" color="text.primary" paragraph>{post.content}</Typography>
-        <Box sx={{ mb: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-          {post.selectedTags.map((tag, index) => (
-            <Chip key={index} label={tag} size="small" variant="outlined" color="primary" />
-          ))}
-        </Box>
-        {post.fileUrl && (
-        <Box sx={{ 
-  mt: 2, 
-  maxHeight: 500, 
-  overflow: 'hidden', 
-  borderRadius: 2,
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  bgcolor: '#f5f5f5'
-}}>
-  <img
-    src={post.fileUrl}
-    alt="Post content"
-    style={{ 
-      width: "50%", 
-      height: "auto", 
-      display: "block", 
-      objectFit: "contain", // ✅ contain بدل fill عشان ما تتشوه
-      maxHeight: "500px"
-    }}
-  />
-</Box>
-        )}
-      </CardContent>
-
-      <Divider />
-
-      <CardActions disableSpacing sx={{ justifyContent: "space-around" }}>
-        <ActionButton icon={post.isLiked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />} label={`${post.likes} Likes`} onClick={handleLikeClick} />
-        <ActionButton icon={<ChatBubbleOutlineIcon />} label={`${post.comments} Comments`} onClick={handleCommentClick} />
-        <ActionButton icon={<ShareIcon />} label={`${post.shares} Shares`} />
-      </CardActions>
-
-      <Divider />
-
-      {/* Comments */}
-      <Box sx={{ px: 2, pb: 1, pt: 1, bgcolor: '#fbfbfb' }}>
-        {recentComments.length > 0 && recentComments.map((comment, index) => (
-          <CommentBubble key={comment.id || index} comment={comment} />
-        ))}
-
-        {post.comments > recentComments.length && (
-          <Button variant="text" size="small" onClick={handleCommentClick} sx={{ justifyContent: 'flex-start', p: 0, mb: 1, fontWeight: 'bold' }}>
-            VIEW ALL {post.comments} COMMENTS
-          </Button>
-        )}
-
-        {/* Inline Comment */}
-             <Box component="form" onSubmit={handleInlineCommentSubmit} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Avatar src={currentUserAvatar} sx={{ width: 32, height: 32 }} /> {/* ✅ التعديل */}
-        <TextField
-          placeholder="Add a comment..."
-          variant="outlined"
-          fullWidth
-          size="small"
-          value={inlineCommentText}
-          onChange={(e) => setInlineCommentText(e.target.value)}
-          disabled={isCommenting}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleInlineCommentSubmit(e);
-            }
-          }}
+    <>
+      <Card sx={{ mb: 3, borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+        {/* Header */}
+        <CardHeader
+          avatar={<Avatar src={post.user.avatar} />}
+          action={isPostAuthor && (
+            <IconButton aria-label="settings" onClick={handleClick}><MoreVertIcon /></IconButton>
+          )}
+          title={
+          <Typography variant="subtitle1" fontWeight="bold" 
+            sx={{ 
+                cursor: 'pointer',
+                '&:hover': { 
+                  textDecoration: 'underline',
+                  color: 'primary.main'
+                }
+              }}     
+             onClick={() => navigateToProfile(post.user.id)}>
+              {post.user.name}
+              </Typography>}
+          subheader={post.time}
         />
-        <IconButton type="submit" color="primary" disabled={!inlineCommentText.trim() || isCommenting} size="small">
-          {isCommenting ? <CircularProgress size={20} /> : <ChatBubbleOutlineIcon fontSize="small" />}
-        </IconButton>
-      </Box>
-      </Box>
-    </Card>
+
+        {/* Menu */}
+        <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+          <MenuItem onClick={handleEditClick}><EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit Post</MenuItem>
+          <MenuItem onClick={handleDeleteClick}><DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete Post</MenuItem>
+        </Menu>
+
+        {/* Content */}
+        <CardContent>
+          <Typography variant="body1" color="text.primary" paragraph>{post.content}</Typography>
+          <Box sx={{ mb: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {post.selectedTags.map((tag, index) => (
+              <Chip key={index} label={tag} size="small" variant="outlined" color="primary" />
+            ))}
+          </Box>
+          {post.fileUrl && (
+          <Box sx={{ 
+            mt: 2, 
+            maxHeight: 500, 
+            overflow: 'hidden', 
+            borderRadius: 2,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            bgcolor: '#f5f5f5'
+          }}>
+            <img
+              src={post.fileUrl}
+              alt="Post content"
+              style={{ 
+                width: "50%", 
+                height: "auto", 
+                display: "block", 
+                objectFit: "contain",
+                maxHeight: "500px"
+              }}
+            />
+          </Box>
+          )}
+        </CardContent>
+
+        <Divider />
+
+        <CardActions disableSpacing sx={{ justifyContent: "space-around" }}>
+          <ActionButton icon={post.isLiked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />} label={`${post.likes} Likes`} onClick={handleLikeClick} />
+          <ActionButton icon={<ChatBubbleOutlineIcon />} label={`${post.comments} Comments`} onClick={handleCommentClick} />
+          <ActionButton icon={<ShareIcon />} label={`${post.shares} Shares`} onClick={handleShareClick} /> {/* ✅ إضافة onClick */}
+        </CardActions>
+
+        <Divider />
+
+        {/* Comments */}
+        <Box sx={{ px: 2, pb: 1, pt: 1, bgcolor: '#fbfbfb' }}>
+          {recentComments.length > 0 && recentComments.map((comment, index) => (
+            <CommentBubble key={comment.id || index} comment={comment} />
+          ))}
+
+          {post.comments > recentComments.length && (
+            <Button variant="text" size="small" onClick={handleCommentClick} sx={{ justifyContent: 'flex-start', p: 0, mb: 1, fontWeight: 'bold' }}>
+              VIEW ALL {post.comments} COMMENTS
+            </Button>
+          )}
+
+          {/* Inline Comment */}
+          <Box component="form" onSubmit={handleInlineCommentSubmit} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar src={currentUserAvatar} sx={{ width: 32, height: 32 }} />
+            <TextField
+              placeholder="Add a comment..."
+              variant="outlined"
+              fullWidth
+              size="small"
+              value={inlineCommentText}
+              onChange={(e) => setInlineCommentText(e.target.value)}
+              disabled={isCommenting}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleInlineCommentSubmit(e);
+                }
+              }}
+            />
+            <IconButton type="submit" color="primary" disabled={!inlineCommentText.trim() || isCommenting} size="small">
+              {isCommenting ? <CircularProgress size={20} /> : <ChatBubbleOutlineIcon fontSize="small" />}
+            </IconButton>
+          </Box>
+        </Box>
+      </Card>
+
+      {/* ✅ Share Dialog */}
+      <ShareDialog
+        open={shareDialogOpen}
+        onClose={() => setShareDialogOpen(false)}
+        post={post}
+        onShareSuccess={handleShareSuccess}
+      />
+    </>
   );
 }
 

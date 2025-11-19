@@ -39,7 +39,7 @@ const RequestServiceModal = ({
   const [deadline, setDeadline] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const token = localStorage.getItem("accessToken");
-const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
+  const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -47,12 +47,14 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
     severity: "success",
   });
 
+  const isDeadlineRequired = serviceCategory === "Project";
+
   const isRequestFormValid =
     serviceTitle.trim() !== "" &&
     serviceDescription.trim() !== "" &&
     serviceCategory !== "" &&
     pointsBudget !== "" &&
-    deadline !== "";
+    (!isDeadlineRequired || deadline !== "");
 
   useEffect(() => {
     if (open) {
@@ -63,7 +65,6 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
         setServiceDescription(editData.description || "");
         setPointsBudget(editData.pointsOffered || "");
         setClientAcceptPublished(editData.clientAcceptPublished || false);
-
 
         if (editData.deadline) {
           let formattedDate;
@@ -77,20 +78,20 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
             const date = new Date(editData.deadline);
             formattedDate = date.toISOString().split("T")[0];
           }
-          console.log(" Formatted date:", formattedDate);
+          console.log("📅 Formatted date:", formattedDate);
           setDeadline(formattedDate);
         }
 
         let categoryValue = "";
         if (editData.category) {
           categoryValue = editData.category.replace("Request", "");
-          console.log(" Category from editData.category:", categoryValue);
+          console.log("🏷️ Category from editData.category:", categoryValue);
         } else if (editData.type) {
           categoryValue = editData.type.replace("Request", "");
-          console.log(" Category extracted from type:", categoryValue);
+          console.log("🏷️ Category extracted from type:", categoryValue);
         }
 
-        console.log(" Final category value:", categoryValue);
+        console.log("🏷️ Final category value:", categoryValue);
         setServiceCategory(categoryValue);
       } else {
         if (projectTitle) setServiceTitle(projectTitle);
@@ -116,18 +117,22 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
         title: serviceTitle,
         description: serviceDescription,
         pointsOffered: parseInt(pointsBudget),
-        deadline: deadline,
-        type: serviceCategory === "Project" ? "RequestProject" : "Course",
-        clientAcceptPublished: serviceCategory === "Project" ? clientAcceptPublished : undefined,
-
+        deadline: serviceCategory === "Project" ? deadline : null,
       };
 
+      // ✅ أضف Type فقط في حالة Create (مش Edit)
       if (!isEditMode) {
+        requestData.type = serviceCategory === "Project" ? "RequestProject" : "Course";
         requestData.providerId = providerId;
       }
 
+      // ✅ أضف clientAcceptPublished فقط للـ Project
+      if (serviceCategory === "Project") {
+        requestData.clientAcceptPublished = clientAcceptPublished;
+      }
+
       console.log(
-        isEditMode ? "Editing request data:" : "Creating request data:",
+        isEditMode ? "✏️ Editing request data:" : "➕ Creating request data:",
         requestData
       );
 
@@ -148,10 +153,10 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
           editData.id,
           requestData
         );
-        console.log(" Request edited successfully:", response);
+        console.log("✅ Request edited successfully:", response);
       } else {
         response = await createCollaborationRequest(token, requestData);
-        console.log(" Request created successfully:", response);
+        console.log("✅ Request created successfully:", response);
       }
 
       setSnackbar({
@@ -244,7 +249,7 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          Service Title <span style={{ color: "red" }}>*</span>
+          Service Title
         </Typography>
         <TextField
           fullWidth
@@ -267,7 +272,7 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          Description <span style={{ color: "red" }}>*</span>
+          Description
         </Typography>
         <TextField
           fullWidth
@@ -292,14 +297,14 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Request Type <span style={{ color: "red" }}>*</span>
+            Request Type 
           </Typography>
           <FormControl fullWidth>
             <Select
               value={serviceCategory}
               onChange={(e) => setServiceCategory(e.target.value)}
               displayEmpty
-              disabled={isSubmitting}
+              disabled={isSubmitting || isEditMode} // ✅ منع التعديل في Edit Mode
               sx={{
                 borderRadius: "8px",
                 height: "46px",
@@ -307,6 +312,11 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
                   display: "flex",
                   alignItems: "center",
                 },
+                // ✅ ستايل للـ disabled state
+                ...(isEditMode && {
+                  backgroundColor: "#f3f4f6",
+                  cursor: "not-allowed",
+                }),
               }}
             >
               <MenuItem value="" disabled>
@@ -316,6 +326,21 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
               <MenuItem value="Course">Course</MenuItem>
             </Select>
           </FormControl>
+          
+          {/* ✅ رسالة توضيحية في وضع Edit */}
+          {isEditMode && (
+            <Typography
+              variant="caption"
+              sx={{ 
+                color: "text.secondary", 
+                fontSize: "11px",
+                mt: 0.5,
+                display: "block"
+              }}
+            >
+              Request type cannot be changed after creation
+            </Typography>
+          )}
         </Grid>
 
         <Grid item xs={6}>
@@ -323,7 +348,7 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Points Budget <span style={{ color: "red" }}>*</span>
+            Points Budget
           </Typography>
           <TextField
             fullWidth
@@ -339,8 +364,8 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
                     sx={{
                       width: 20,
                       height: 20,
-                      backgroundColor: "#3B82F6", // لون الخلفية
-                      borderRadius: "50%", // دائري
+                      backgroundColor: "#3B82F6",
+                      borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -376,53 +401,54 @@ const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
         </Grid>
       </Grid>
 
-      {/* Deadline */}
-     {serviceCategory === "Project" && (
-  <Box sx={{ mb: 1.5 }}>
-    <Typography
-      variant="body2"
-      sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
-    >
-      Deadline <span style={{ color: "red" }}>*</span>
-    </Typography>
-    <TextField
-      fullWidth
-      type="date"
-      value={deadline}
-      onChange={(e) => setDeadline(e.target.value)}
-      disabled={isSubmitting}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <CalendarTodayIcon
-              sx={{ color: "text.secondary", fontSize: 20 }}
-            />
-          </InputAdornment>
-        ),
-      }}
-      sx={{
-        "& .MuiOutlinedInput-root": {
-          borderRadius: "8px",
-          height: "46px",
-        },
-      }}
-    />
-  </Box>
-)}
-{serviceCategory === "Project" && (
-  <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
-    <input
-      type="checkbox"
-      checked={clientAcceptPublished}
-      onChange={(e) => setClientAcceptPublished(e.target.checked)}
-      disabled={isSubmitting}
-    />
-    <Typography variant="span" sx={{ fontWeight: "medium", color: "text.primary" }}>
-      Do you agree to allow this project to be published on the Browse page?
-    </Typography>
-  </Box>
-)}
+      {/* Deadline - يظهر فقط للـ Project */}
+      {serviceCategory === "Project" && (
+        <Box sx={{ mb: 1.5 }}>
+          <Typography
+            variant="body2"
+            sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
+          >
+            Deadline
+          </Typography>
+          <TextField
+            fullWidth
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            disabled={isSubmitting}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <CalendarTodayIcon
+                    sx={{ color: "text.secondary", fontSize: 20 }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                height: "46px",
+              },
+            }}
+          />
+        </Box>
+      )}
 
+      {/* Checkbox للـ Published - يظهر فقط للـ Project */}
+      {serviceCategory === "Project" && (
+        <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <input
+            type="checkbox"
+            checked={clientAcceptPublished}
+            onChange={(e) => setClientAcceptPublished(e.target.checked)}
+            disabled={isSubmitting}
+          />
+          <Typography variant="span" sx={{ fontWeight: "medium", color: "text.primary" }}>
+            Do you agree to allow this project to be published on the Browse page?
+          </Typography>
+        </Box>
+      )}
     </GenericModal>
   );
 };

@@ -148,3 +148,9 @@ export const getNewMessages = async (conversationId, afterId, take, token) => {
     headers: { Authorization: `Bearer ${token}` }
   });
 };
+
+export const getUnreadCount = async (token) => {
+  return await api.get('/Chats/unread-count', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
