@@ -8,6 +8,8 @@ import {
   MenuItem,
   Select,
   FormControl,
+  Checkbox, 
+  FormControlLabel
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import SendIcon from "@mui/icons-material/Send";
@@ -37,6 +39,7 @@ const RequestServiceModal = ({
   const [deadline, setDeadline] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const token = localStorage.getItem("accessToken");
+const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -59,6 +62,8 @@ const RequestServiceModal = ({
         setServiceTitle(editData.title || "");
         setServiceDescription(editData.description || "");
         setPointsBudget(editData.pointsOffered || "");
+        setClientAcceptPublished(editData.clientAcceptPublished || false);
+
 
         if (editData.deadline) {
           let formattedDate;
@@ -113,6 +118,8 @@ const RequestServiceModal = ({
         pointsOffered: parseInt(pointsBudget),
         deadline: deadline,
         type: serviceCategory === "Project" ? "RequestProject" : "Course",
+        clientAcceptPublished: serviceCategory === "Project" ? clientAcceptPublished : undefined,
+
       };
 
       if (!isEditMode) {
@@ -400,6 +407,19 @@ const RequestServiceModal = ({
         },
       }}
     />
+  </Box>
+)}
+{serviceCategory === "Project" && (
+  <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
+    <input
+      type="checkbox"
+      checked={clientAcceptPublished}
+      onChange={(e) => setClientAcceptPublished(e.target.checked)}
+      disabled={isSubmitting}
+    />
+    <Typography variant="span" sx={{ fontWeight: "medium", color: "text.primary" }}>
+      Do you agree to allow this project to be published on the Browse page?
+    </Typography>
   </Box>
 )}
 

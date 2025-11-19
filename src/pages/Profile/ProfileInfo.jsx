@@ -14,86 +14,74 @@ export default function ProfileInfo() {
     return userName?.match(/^[A-Z][a-z]*/)?.[0] || userName;
   };
 
-  // Function to detect platform from URL
-  const detectPlatform = (url) => {
+const detectPlatform = (url) => {
     if (!url) return 'website';
-    const urlLower = url.toLowerCase();
-    if (urlLower.includes('github.com')) return 'github';
-    if (urlLower.includes('linkedin.com')) return 'linkedin';
-    if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'twitter';
-    if (urlLower.includes('facebook.com')) return 'facebook';
-    if (urlLower.includes('mailto:') || urlLower.includes('@')) return 'email';
+    const u = url.toLowerCase();
+    if (u.includes('github.com')) return 'github';
+    if (u.includes('linkedin.com')) return 'linkedin';
+    if (u.includes('twitter.com') || u.includes('x.com')) return 'twitter';
+    if (u.includes('facebook.com')) return 'facebook';
+    if (u.includes('mailto:') || u.includes('@')) return 'email';
     return 'website';
   };
 
-  // Function to get icon based on platform
-  const getSocialIcon = (platform) => {
-    const iconStyle = { fontSize: 20, color: "rgba(0, 0, 0, 0.6)" };
-    
+  const getIcon = (platform) => {
+    const style = { fontSize: 20, color: "rgba(0,0,0,0.6)" };
     switch (platform) {
-      case 'email':
-        return <EmailOutlinedIcon sx={iconStyle} />;
-      case 'github':
-        return <GitHubIcon sx={iconStyle} />;
-      case 'linkedin':
-        return <LinkedInIcon sx={iconStyle} />;
-      case 'twitter':
-        return <TwitterIcon sx={iconStyle} />;
-      case 'facebook':
-        return <FacebookIcon sx={iconStyle} />;
-      default:
-        return <LanguageIcon sx={iconStyle} />;
+      case 'email': return <EmailOutlinedIcon sx={style} />;
+      case 'github': return <GitHubIcon sx={style} />;
+      case 'linkedin': return <LinkedInIcon sx={style} />;
+      case 'twitter': return <TwitterIcon sx={style} />;
+      case 'facebook': return <FacebookIcon sx={style} />;
+      default: return <LanguageIcon sx={style} />;
     }
   };
 
-  // Parse and render social links
-  const renderSocialLinks = () => {
-    // Check if socialLinks exists and is an array with items
-    if (!userData.socialLinks || !Array.isArray(userData.socialLinks) || userData.socialLinks.length === 0) {
-      return (
-        <Typography sx={{ color: "rgba(0, 0, 0, 0.5)", fontSize: "14px" }}>
-          No contact info
-        </Typography>
-      );
-    }
+  const renderLinks = () => {
+    if (!userData.socialLinks) return <Typography>No contact info</Typography>;
 
-    return userData.socialLinks.map((link, index) => {
-      if (!link || link.trim() === '') return null;
+    const links = Array.isArray(userData.socialLinks)
+      ? userData.socialLinks
+      : userData.socialLinks
+        .split(/[\n,]+/)       // تفصل على الفاصلة أو سطر جديد
+          .map(l => l.trim()) // إزالة الفراغات
+          .filter(Boolean); // إزالة الفراغات الفارغة
 
+    if (!links.length) return <Typography>No contact info</Typography>;
+
+    return links.map((link, i) => {
       const platform = detectPlatform(link);
-      const isEmail = platform === 'email';
-      const href = isEmail && !link.startsWith('mailto:') 
-        ? `mailto:${link}` 
-        : link.startsWith('http') ? link : `https://${link}`;
+      const href = platform === 'email' && !link.startsWith('mailto:')
+        ? `mailto:${link}`
+        : link.startsWith('http')
+          ? link
+          : `https://${link}`;
 
       return (
         <Box
-          key={index}
+          key={i}
           component="a"
           href={href}
-          target={isEmail ? undefined : "_blank"}
+          target={platform === 'email' ? undefined : "_blank"}
           rel="noopener noreferrer"
           sx={{
             width: 36,
             height: 36,
-            borderRadius: "8px",
-            backgroundColor: "rgba(241, 245, 249, 1)",
+            borderRadius: 1,
+            backgroundColor: "rgba(241,245,249,1)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            cursor: "pointer",
-            transition: "all 0.2s",
+            "&:hover": { backgroundColor: "rgba(226,232,240,1)" },
             textDecoration: "none",
-            "&:hover": {
-              backgroundColor: "rgba(226, 232, 240, 1)",
-            },
           }}
         >
-          {getSocialIcon(platform)}
+          {getIcon(platform)}
         </Box>
       );
     });
   };
+
 
   return (
     <Box
@@ -237,7 +225,7 @@ export default function ProfileInfo() {
       Contact
     </Typography>
     <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-      {renderSocialLinks()}
+        {renderLinks()}
     </Box>
   </Box>
 </Box>
