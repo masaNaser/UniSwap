@@ -23,7 +23,7 @@ export default function TaskColumn({
   onMenuOpen,
   onAddTask,
   onReviewClick,
-  onViewReview,
+  onViewReview,  // MAKE SURE THIS IS IN THE PROPS
 }) {
   const isToDoColumn = status === 'ToDo';
   const [openDialog, setOpenDialog] = useState(false);
@@ -67,6 +67,7 @@ export default function TaskColumn({
         description: '',
         deadline: '',
         status: 'ToDo',
+        uploadFile: null,
       });
     }
   };

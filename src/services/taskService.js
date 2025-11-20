@@ -1,11 +1,11 @@
 // src/services/taskService.js
-import api from './api';
+import api from "./api";
 
 // ===== Get Tasks =====
 export const getTasksByStatus = async (projectId, status = null, token) => {
   const params = {};
   if (status) params.status = status;
-  
+
   return await api.get(`/tasks/project/${projectId}`, {
     params,
     headers: { Authorization: `Bearer ${token}` },
@@ -18,19 +18,12 @@ export const getProjectTaskDetails = async (projectId, token) => {
   });
 };
 
-export const getClientReviewTask = async (taskId, token) => {
-  return await api.get(`/tasks/${taskId}/review-card`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-};
-
-
 // ===== Create/Update/Delete Tasks =====
 export const createTask = async (projectId, formData, token) => {
   return await api.post(`/tasks/project/${projectId}`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data',
+      "Content-Type": "multipart/form-data",
     },
   });
 };
@@ -39,7 +32,7 @@ export const updateTask = async (taskId, formData, token) => {
   return await api.patch(`/tasks/${taskId}`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data',
+      "Content-Type": "multipart/form-data",
     },
   });
 };
@@ -52,9 +45,13 @@ export const deleteTask = async (taskId, token) => {
 
 // ===== Task Status Transitions =====
 export const moveToInProgress = async (taskId, token) => {
-  return await api.post(`/tasks/${taskId}/MoveToInProgress`, {}, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return await api.post(
+    `/tasks/${taskId}/MoveToInProgress`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
 };
 
 export const submitForReview = async (taskId, reviewDueAt, token) => {
@@ -71,7 +68,7 @@ export const submitForReview = async (taskId, reviewDueAt, token) => {
 export const acceptTask = async (taskId, comment, token) => {
   return await api.post(
     `/tasks/${taskId}/accept`,
-    { comment: comment || '' },
+    { comment: comment || "" },
     {
       headers: { Authorization: `Bearer ${token}` },
     }
@@ -81,7 +78,7 @@ export const acceptTask = async (taskId, comment, token) => {
 export const rejectTask = async (taskId, comment, token) => {
   return await api.post(
     `/tasks/${taskId}/reject`,
-    { comment: comment || '' },
+    { comment: comment || "" },
     {
       headers: { Authorization: `Bearer ${token}` },
     }

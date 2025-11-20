@@ -10,15 +10,15 @@ import {
   Chip,
   Divider,
 } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 export default function ViewReviewDialog({ open, onClose, task }) {
-  if (!task) return null;
+  if (!task) {
+    return null;
+  }
 
-  const isAccepted = task.lastClientDecision === 'Accepted';
-  const isRejected = task.lastClientDecision === 'Rejected';
+  const comment = task.clientReviewComment || 'No comment provided';
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -40,14 +40,9 @@ export default function ViewReviewDialog({ open, onClose, task }) {
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ pb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {isAccepted && (
-            <CheckCircleIcon sx={{ color: '#3B82F6', fontSize: 28 }} />
-          )}
-          {isRejected && (
-            <CancelIcon sx={{ color: '#DC2626', fontSize: 28 }} />
-          )}
+          <CancelIcon sx={{ color: '#DC2626', fontSize: 28 }} />
           <Typography variant="h6" fontWeight="bold">
-            Client Review
+            Task Rejected - Needs Revision
           </Typography>
         </Box>
       </DialogTitle>
@@ -68,19 +63,19 @@ export default function ViewReviewDialog({ open, onClose, task }) {
         {/* Review Decision */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
-            Decision
+            Client Decision
           </Typography>
           <Chip
-            icon={isAccepted ? <CheckCircleIcon /> : <CancelIcon />}
-            label={isAccepted ? 'Accepted' : 'Rejected - Needs Revision'}
+            icon={<CancelIcon />}
+            label="Rejected - Revision Required"
             sx={{
-              backgroundColor: isAccepted ? '#EFF6FF' : '#FEE2E2',
-              color: isAccepted ? '#3B82F6' : '#DC2626',
+              backgroundColor: '#FEE2F2',
+              color: '#DC2626',
               fontWeight: 'bold',
               fontSize: '14px',
               height: '36px',
               '& .MuiChip-icon': {
-                color: isAccepted ? '#3B82F6' : '#DC2626',
+                color: '#DC2626',
               },
             }}
           />
@@ -88,7 +83,7 @@ export default function ViewReviewDialog({ open, onClose, task }) {
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Review Comment */}
+        {/* Client Feedback */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
             Client Feedback
@@ -96,13 +91,13 @@ export default function ViewReviewDialog({ open, onClose, task }) {
           <Box
             sx={{
               p: 2,
-              bgcolor: isAccepted ? '#F0F9FF' : '#FEF2F2',
+              bgcolor: '#FEF2F2',
               borderRadius: 1,
-              borderLeft: `4px solid ${isAccepted ? '#3B82F6' : '#DC2626'}`,
+              borderLeft: '4px solid #DC2626',
             }}
           >
             <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-              {task.clientReviewComment || 'No comment provided'}
+              {comment}
             </Typography>
           </Box>
         </Box>
@@ -119,7 +114,14 @@ export default function ViewReviewDialog({ open, onClose, task }) {
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={onClose} variant="contained" sx={{ textTransform: 'none' }}>
+        <Button
+          onClick={onClose}
+          variant="contained"
+          sx={{
+            textTransform: 'none',
+            background: 'linear-gradient(to right, #3B82F6, #60A5FA)',
+          }}
+        >
           Close
         </Button>
       </DialogActions>

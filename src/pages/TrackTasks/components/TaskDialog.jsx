@@ -44,9 +44,9 @@ export default function TaskDialog({
     if (fileInput) fileInput.value = '';
   };
   // 🔥 تحديد إذا نعرض حقل الـ Progress
-  const showProgressField = editingTask && 
-                           editingTask.status === 'InProgress' && 
-                           isProvider;
+  const showProgressField = editingTask &&
+    editingTask.status === 'InProgress' &&
+    isProvider;
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ fontWeight: 'bold' }}>
@@ -82,8 +82,8 @@ export default function TaskDialog({
             shrink: true,
           }}
         />
-        
-         {/* 🔥 Progress Slider - بس للـ InProgress Tasks */}
+
+        {/* 🔥 Progress Slider - بس للـ InProgress Tasks */}
         {showProgressField && (
           <Box sx={{ mt: 3, mb: 2 }}>
             <Typography variant="subtitle2" sx={{ mb: 2 }}>
@@ -91,9 +91,9 @@ export default function TaskDialog({
             </Typography>
             <Slider
               value={newTask?.progressPercentage || 0}
-              onChange={(e, value) => onTaskChange(prev => ({ 
-                ...prev, 
-                progressPercentage: value 
+              onChange={(e, value) => onTaskChange(prev => ({
+                ...prev,
+                progressPercentage: value
               }))}
               min={0}
               max={90}
@@ -142,12 +142,12 @@ export default function TaskDialog({
               {newTask?.uploadFile ? 'Change File' : 'Choose File'}
             </Button>
           </label>
-          
+
           {newTask?.uploadFile && (
-            <Box sx={{ 
-              mt: 1, 
-              p: 1, 
-              bgcolor: '#F3F4F6', 
+            <Box sx={{
+              mt: 1,
+              p: 1,
+              bgcolor: '#F3F4F6',
               borderRadius: 1,
               display: 'flex',
               alignItems: 'center',
