@@ -22,8 +22,10 @@ const statusLabels = {
 export default function TrackTasks() {
     const navigate = useNavigate();
     const location = useLocation();
-    const cardData = location.state;
+    const initialCardData = location.state;
 
+    // ✅ FIXED: Convert cardData to state so it can be updated
+    const [cardData, setCardData] = useState(initialCardData);
     const isProvider = cardData?.isProvider || false;
     const token = localStorage.getItem('accessToken');
 
@@ -49,58 +51,64 @@ export default function TrackTasks() {
     const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
     const [viewingReviewTask, setViewingReviewTask] = useState(null);
 
+    // ✅ FIXED: Extract fetch logic into a separate function
+    const fetchProjectData = async () => {
+        if (!cardData?.id || !token) {
+            setLoading(false);
+            return;
+        }
 
-    // Fetch project details and tasks
+        try {
+            setLoading(true);
+
+            // Fetch project details
+            const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
+            console.log('Project Details:', detailsRes.data);
+            setProjectDetails(detailsRes.data);
+
+            // Fetch all tasks
+            const tasksRes = await taskService.getTasksByStatus(cardData.id, null, token);
+            console.log('All Tasks:', tasksRes.data);
+
+            const allTasks = tasksRes.data;
+
+            const tasksByStatus = {
+                ToDo: [],
+                InProgress: [],
+                InReview: [],
+                Done: [],
+            };
+
+            allTasks.forEach(task => {
+                const status = task.status;
+                if (tasksByStatus[status]) {
+                    tasksByStatus[status].push(task);
+                }
+            });
+
+            setTasks(tasksByStatus);
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+            setSnackbar({
+                open: true,
+                message: 'Failed to load tasks',
+                severity: 'error',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fetch project details and tasks on mount
     useEffect(() => {
-        const fetchData = async () => {
-            if (!cardData?.id || !token) {
-                setLoading(false);
-                return;
-            }
-
-            try {
-                setLoading(true);
-
-                // Fetch project details
-                const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
-                console.log('Project Details:', detailsRes.data);
-                setProjectDetails(detailsRes.data);
-
-                // Fetch all tasks
-                const tasksRes = await taskService.getTasksByStatus(cardData.id, null, token);
-                console.log('All Tasks:', tasksRes.data);
-
-                const allTasks = tasksRes.data;
-
-                const tasksByStatus = {
-                    ToDo: [],
-                    InProgress: [],
-                    InReview: [],
-                    Done: [],
-                };
-
-                allTasks.forEach(task => {
-                    const status = task.status;
-                    if (tasksByStatus[status]) {
-                        tasksByStatus[status].push(task);
-                    }
-                });
-
-                setTasks(tasksByStatus);
-            } catch (error) {
-                console.error('Error fetching tasks:', error);
-                setSnackbar({
-                    open: true,
-                    message: 'Failed to load tasks',
-                    severity: 'error',
-                });
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+        fetchProjectData();
     }, [cardData?.id, token]);
+
+    // ✅ FIXED: Handler to update deadline in both states
+    const handleDeadlineUpdate = (newDeadline) => {
+        setCardData(prev => ({ ...prev, deadline: newDeadline }));
+        setProjectDetails(prev => ({ ...prev, deadline: newDeadline }));
+    };
 
     // Handle review submission
     const handleSubmitReview = async (taskId, decision, comment) => {
@@ -444,6 +452,7 @@ export default function TrackTasks() {
                 completedTasks={completedTasks}
                 progressPercentage={progressPercentage}
                 onBack={() => navigate(-1)}
+                onDeadlineUpdate={handleDeadlineUpdate}
             />
 
             <StatsSection

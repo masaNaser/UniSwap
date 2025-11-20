@@ -11,7 +11,6 @@ import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import RateReviewIcon from "@mui/icons-material/RateReview";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 
@@ -39,13 +38,15 @@ export default function TaskCard({
     };
 
     // Show review button only for clients (non-providers) in InReview status
-    const showReviewButton = !isProvider && status === 'InReview';
+    // AND only if the task hasn't been reviewed yet (lastClientDecision is pending or undefined)
+    const hasNotBeenReviewed = !task.lastClientDecision || 
+                                task.lastClientDecision.toLowerCase() === 'pending';
+    const showReviewButton = !isProvider && status === 'InReview' && hasNotBeenReviewed;
 
     // Check if task has been reviewed
     const isRejected = task.lastClientDecision?.toLowerCase() === 'rejected';
 
-    // ✅ CORRECTED: Only show button for rejected tasks (they have comments)
-    // Accepted tasks don't have comments, so no need to show the button
+    // Only show button for rejected tasks (they have comments)
     const showViewReviewButton = isProvider && isRejected;
 
     const handleViewReviewClick = (e) => {

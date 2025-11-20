@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { getImageUrl } from '../../../utils/imageHelper';
 import CustomButton from '../../../components/CustomButton/CustomButton';
 import ProgressSection from './ProgressSection';
-import { updateTask } from '../../../services/taskService';
+import { editCollaborationRequest } from '../../../services/collaborationService';
 
 export default function TrackTasksHeader({
   cardData,
@@ -17,15 +17,18 @@ export default function TrackTasksHeader({
   completedTasks,
   progressPercentage,
   onBack,
-  token,        // IMPORTANT: make sure you pass token
+  onDeadlineUpdate, // ✅ Callback to update parent state
 }) {
   if (!cardData) return <div>Loading...</div>;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [newDeadline, setNewDeadline] = useState(cardData.deadline);
+  const [newDeadline, setNewDeadline] = useState(
+    cardData.deadline ? new Date(cardData.deadline).toISOString().split('T')[0] : ''
+  );
   const [loading, setLoading] = useState(false);
 
   const displayRole = cardData.isProvider ? 'Client' : 'Service Provider';
+  const token = localStorage.getItem('accessToken');
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -36,8 +39,6 @@ export default function TrackTasksHeader({
     });
   };
 
-  const formattedDeadline = formatDate(cardData.deadline);
-
   // Min date = current deadline + 1 day
   const minSelectableDate = (() => {
     const d = new Date(cardData.deadline);
@@ -45,7 +46,7 @@ export default function TrackTasksHeader({
     return d.toISOString().split("T")[0];
   })();
 
-  // ------------ Save Deadline (PATCH) -------------
+  // ------------ Save Deadline using Collaboration Edit Endpoint -------------
   const handleSaveDeadline = async () => {
     const chosen = new Date(newDeadline);
     const current = new Date(cardData.deadline);
@@ -58,20 +59,48 @@ export default function TrackTasksHeader({
     try {
       setLoading(true);
 
-      const formData = new FormData();
-      formData.append("deadline", newDeadline);
+      // Get collaborationRequestId from projectDetails (after backend fix)
+      const collaborationId = projectDetails?.collaborationRequestId;
+      
+      if (!collaborationId) {
+        throw new Error(
+          "Collaboration Request ID is missing. Please make sure your backend returns 'collaborationRequestId' in the project details response."
+        );
+      }
 
-      await updateTask(cardData.id, formData, token);
+      // Format deadline as ISO string (backend expects DateTime)
+      const deadlineISO = new Date(newDeadline).toISOString();
 
-      // Update UI
-      cardData.deadline = newDeadline;
+      // Call the existing edit collaboration endpoint
+      await editCollaborationRequest(token, collaborationId, {
+        deadline: deadlineISO
+      });
+
+      // ✅ FIXED: Update parent state via callback
+      if (onDeadlineUpdate) {
+        onDeadlineUpdate(deadlineISO);
+      }
+
       setIsEditing(false);
+      alert("Deadline updated successfully!");
+      
     } catch (err) {
-      console.error(err);
-      alert("Failed to update deadline.");
+      console.error("Error updating deadline:", err);
+      const errorMessage = err.response?.data?.message || 
+                          err.message || 
+                          "Failed to update deadline.";
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ FIXED: Reset newDeadline when opening edit dialog
+  const handleOpenEdit = () => {
+    setNewDeadline(
+      cardData.deadline ? new Date(cardData.deadline).toISOString().split('T')[0] : ''
+    );
+    setIsEditing(true);
   };
 
   return (
@@ -90,7 +119,7 @@ export default function TrackTasksHeader({
       {/* EDIT BUTTON (CLIENT ONLY) */}
       {!isProvider && (
         <IconButton
-          onClick={() => setIsEditing(true)}
+          onClick={handleOpenEdit}
           sx={{ position: 'absolute', top: 16, right: 16 }}
         >
           <EditIcon />
@@ -131,7 +160,18 @@ export default function TrackTasksHeader({
             sx={{ mb: 2 }}
           />
 
-          <Button variant="contained" fullWidth onClick={handleSaveDeadline} disabled={loading}>
+          <Button 
+            variant="contained" 
+            fullWidth 
+            onClick={handleSaveDeadline} 
+            disabled={loading}
+            sx={{
+              background: 'linear-gradient(to right, #0EA4E8 0%, #0284C7 100%)',
+              '&:hover': {
+                background: 'linear-gradient(to right, #0284C7 0%, #0EA4E8 100%)',
+              }
+            }}
+          >
             {loading ? "Saving..." : "Save"}
           </Button>
         </Box>
