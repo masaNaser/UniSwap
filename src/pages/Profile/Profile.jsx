@@ -66,7 +66,7 @@ export default function Profile() {
       </Box>
 
 
-      <ProfileTabs/>
+      <ProfileTabs  userData={userData}/>
     </Container>
   );
 }

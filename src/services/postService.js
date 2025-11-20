@@ -101,3 +101,13 @@ export const deleteComment = async (token, commentId) => {
   });
 };
 
+
+export const closeCommentPost = async (token, postId) => {
+  return await api.put(`/Posts/${postId}/close`,
+    {}, 
+{
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
