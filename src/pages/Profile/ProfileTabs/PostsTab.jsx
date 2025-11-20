@@ -1,30 +1,38 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useProfile } from "../../../Context/ProfileContext";
-import { useCurrentUser } from "../../../Context/CurrentUserContext";
-import PostCard from "../../Home/Feed/PostCard";
-import { getImageUrl } from "../../../utils/imageHelper";
 import {
   Box,
-  CircularProgress,
-  Typography,
-  Button,
-  Snackbar,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
+  Button,
+  Snackbar,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import {deletePost,editPost,getComments} from "../../../services/postService";
+import PostCard from "../../Home/Feed/PostCard";
+import CommentsModal from "../../Home/Feed/CommentsModal";
 import { GetAllPost } from "../../../services/profileService";
+import {
+  deletePost,
+  editPost,
+  likePost,
+  unlikePost,
+  getComments,
+  addComment,
+  deleteComment,
+  editComment,
+  closeCommentPost,
+} from "../../../services/postService";
 import dayjs from "dayjs";
+import { getImageUrl } from "../../../utils/imageHelper";
+import { useCurrentUser } from "../../../Context/CurrentUserContext";
 
-// normalize comment - تحويل التعليق للصيغة المطلوبة
-const normalizeComment = (comment, currentUser) => {
+// normalize comment
+const normalizeComment = (comment, userName, currentUser) => {
   const isCurrentUserComment = comment.user?.userName === currentUser?.userName;
-
   return {
     id: comment.id,
     content: comment.content,
@@ -39,29 +47,23 @@ const normalizeComment = (comment, currentUser) => {
   };
 };
 
-// update post by ID - تحديث بوست معين
+// update post by ID
 const updatePost = (posts, postId, newData) =>
   posts.map((p) => (p.id === postId ? { ...p, ...newData } : p));
 
-export default function PostsTab() {
-  const { userData } = useProfile();
-  const { currentUser } = useCurrentUser();
-  const username = userData?.userName;
-  const token = localStorage.getItem("accessToken");
-  const userName = localStorage.getItem("userName");
-  const currentUserId = localStorage.getItem("userId");
-  const currentUserAvatar = getImageUrl(currentUser?.profilePicture, currentUser?.userName);
-
+export default function PostsTab({ username }) {
+  const { currentUser, loading } = useCurrentUser();
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const pageSize = 4;
+  const [loadingPosts, setLoadingPosts] = useState(true);
+  const userName = localStorage.getItem("userName");
 
-  // التحقق إذا البروفايل لليوزر الحالي
-  const isOwnProfile = userData?.id === Number(currentUserId);
+  const userToken = localStorage.getItem("accessToken");
+  const currentUserName = localStorage.getItem("userName");
+
+  const [commentsModalVisible, setCommentsModalVisible] = useState(false);
+  const [currentPostId, setCurrentPostId] = useState(null);
+  const [currentComments, setCurrentComments] = useState([]);
+  const [modalPost, setModalPost] = useState(null);
 
   // Delete Dialog State
   const [deleteDialog, setDeleteDialog] = useState({
@@ -80,6 +82,8 @@ export default function PostsTab() {
     previewUrl: "",
   });
 
+  const [isUpdating, setIsUpdating] = useState(false);
+
   // Snackbar State
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -87,64 +91,51 @@ export default function PostsTab() {
     severity: "success",
   });
 
+  // Handle Snackbar Close
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // جلب البوستات من الـ API
-  const fetchPosts = async (currentPage = 1) => {
+  // ✅ Fetch user posts from API
+  const fetchUserPosts = async () => {
+    setLoadingPosts(true);
     try {
-      setLoading(true);
-      const response = await GetAllPost(token, username, currentPage, pageSize);
-      console.log("Posts Response:", response);
-
-      const newPosts = response.data?.data || response.data || [];
-
-      // تحويل البوستات للصيغة المطلوبة
-      const formattedPosts = newPosts.map((post) => ({
-        id: post.id,
-        content: post.content,
-        fileUrl: post.fileUrl ? `https://uni.runasp.net/${post.fileUrl}` : null,
-        likes: post.likesCount || 0,
-        comments: post.commentsCount || 0,
-        shares: post.sharesCount || 0,
-        isLiked: post.isLikedByMe || false,
-        time: dayjs(post.createdAt).format("DD MMM, hh:mm A"),
-        selectedTags: post.tags?.[0]?.split(",") || [],
+      const response = await GetAllPost(userToken, username);
+      const postsData = response.data.map((p) => ({
+        id: p.id,
+        content: p.content,
+        selectedTags: p.tags?.[0]?.split(",") || [],
         user: {
-          id: post.author?.id || post.userId || userData?.id,
-          name: userName, // ✅ استخدم الـ userName من localStorage مباشرة
-          avatar: getImageUrl(
-            post.author?.profilePictureUrl ||
-              post.userProfilePicture ||
-              userData?.profilePicture,
-            userName
-          ),
+          name: p.author.userName,
+          avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
+          id: p.author.id,
         },
+        time: dayjs(p.createdAt).format("DD MMM, hh:mm A"),
+        likes: p.likesCount,
+        comments: p.commentsCount,
+        shares: "",
+        fileUrl: p.fileUrl ? `https://uni.runasp.net/${p.fileUrl}` : null,
+        isLiked: p.isLikedByMe || false,
         recentComments: [],
+        isClosed: p.postStatus === "Closed", // ✅ تحديث: استخدام postStatus بدل isCommentsClosed
       }));
-
-      if (currentPage === 1) {
-        setPosts(formattedPosts);
-      } else {
-        setPosts((prev) => [...prev, ...formattedPosts]);
-      }
-
-      setHasMore(formattedPosts.length === pageSize);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching posts:", err);
-      setError("Failed to load posts");
+      setPosts(postsData);
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Failed to fetch posts.",
+        severity: "error",
+      });
+      console.error("Error fetching posts:", error);
     } finally {
-      setLoading(false);
+      setLoadingPosts(false);
     }
   };
 
-  // جلب آخر تعليقين لكل بوست
   const fetchRecentComments = useCallback(
     async (postId) => {
       try {
-        const response = await getComments(token, postId);
+        const response = await getComments(userToken, postId);
         if (response.data?.length) {
           return response.data
             .sort(
@@ -152,7 +143,7 @@ export default function PostsTab() {
                 dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf()
             )
             .slice(0, 2)
-            .map((c) => normalizeComment(c, currentUser));
+            .map((c) => normalizeComment(c, currentUserName, currentUser));
         }
         return [];
       } catch (error) {
@@ -160,10 +151,9 @@ export default function PostsTab() {
         return [];
       }
     },
-    [token, currentUser]
+    [userToken, currentUserName, currentUser]
   );
 
-  // جلب التعليقات للبوستات اللي عندها تعليقات
   useEffect(() => {
     if (posts.length) {
       posts.forEach(async (post) => {
@@ -175,43 +165,33 @@ export default function PostsTab() {
     }
   }, [posts.length, fetchRecentComments]);
 
-  // جلب البوستات أول ما يفتح التاب
+  // Fetch posts on mount or when username changes
   useEffect(() => {
-    if (token && username) {
-      fetchPosts(1);
+    if (username && userToken) {
+      fetchUserPosts();
     }
-  }, [token, username]);
+  }, [username, userToken]);
 
-  // تحميل المزيد من البوستات
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchPosts(nextPage);
-  };
-
-  // فتح نافذة تأكيد الحذف - فقط للبروفايل الشخصي
+  // Delete handlers
   const openDeleteDialog = (postId) => {
-    if (!isOwnProfile) return;
     setDeleteDialog({ open: true, postId });
   };
 
-  // إغلاق نافذة الحذف
   const closeDeleteDialog = () => {
     setDeleteDialog({ open: false, postId: null });
   };
 
-  // تأكيد حذف البوست
   const handleDeletePost = async () => {
     const postId = deleteDialog.postId;
     closeDeleteDialog();
 
     try {
-      const response = await deletePost(token, postId);
+      const response = await deletePost(userToken, postId);
       if (response.status === 204) {
         setPosts(posts.filter((p) => p.id !== postId));
         setSnackbar({
           open: true,
-          message: "Your post has been deleted. ✓",
+          message: "Post has been deleted. ✓",
           severity: "success",
         });
       }
@@ -219,16 +199,14 @@ export default function PostsTab() {
       console.error("Error deleting post:", error);
       setSnackbar({
         open: true,
-        message: "Failed to delete post. Please try again.",
+        message: "Failed to delete post.",
         severity: "error",
       });
     }
   };
 
-  // فتح نافذة التعديل - فقط للبروفايل الشخصي
+  // Edit handlers
   const openEditDialog = (postId) => {
-    if (!isOwnProfile) return;
-
     const postToEdit = posts.find((p) => p.id === postId);
     if (!postToEdit) return;
 
@@ -243,7 +221,6 @@ export default function PostsTab() {
     });
   };
 
-  // إغلاق نافذة التعديل
   const closeEditDialog = () => {
     setEditDialog({
       open: false,
@@ -256,7 +233,6 @@ export default function PostsTab() {
     });
   };
 
-  // معالجة تغيير الملف في نافذة التعديل
   const handleEditFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -268,10 +244,8 @@ export default function PostsTab() {
     }
   };
 
-  // تأكيد تعديل البوست
   const handleEditPost = async () => {
     const { postId, content, tags, file } = editDialog;
-
     setIsUpdating(true);
 
     try {
@@ -280,7 +254,7 @@ export default function PostsTab() {
       formData.append("Tags", tags);
       if (file) formData.append("File", file);
 
-      const response = await editPost(formData, token, postId);
+      const response = await editPost(formData, userToken, postId);
 
       if (response.status === 204) {
         const postToEdit = posts.find((p) => p.id === postId);
@@ -288,7 +262,7 @@ export default function PostsTab() {
           ...postToEdit,
           content,
           selectedTags: tags ? tags.split(",") : [],
-          time: dayjs().format("DD MMM, hh:mm A"),
+          time: new Date().toLocaleString(),
           fileUrl: file ? URL.createObjectURL(file) : postToEdit.fileUrl,
         };
         setPosts((prev) => updatePost(prev, postId, updatedPost));
@@ -296,7 +270,7 @@ export default function PostsTab() {
         closeEditDialog();
         setSnackbar({
           open: true,
-          message: "Your post has been updated. ✓",
+          message: "Post has been updated. ✓",
           severity: "success",
         });
       }
@@ -312,62 +286,321 @@ export default function PostsTab() {
     }
   };
 
-  // وظائف فارغة - بدون تفاعل للبروفايلات (عرض فقط)
-  const handleLikePost = () => {
-    // ما في لايك في البروفايل - عرض العدد فقط
+  // Like handlers
+  const handleLikePost = async (postId) => {
+    const postToUpdate = posts.find((p) => p.id === postId);
+    if (!postToUpdate) return;
+
+    const isCurrentlyLiked = postToUpdate.isLiked;
+    const originalLikes = postToUpdate.likes;
+
+    setPosts((prev) =>
+      updatePost(prev, postId, {
+        isLiked: !isCurrentlyLiked,
+        likes: isCurrentlyLiked ? originalLikes - 1 : originalLikes + 1,
+      })
+    );
+
+    try {
+      const response = isCurrentlyLiked
+        ? await unlikePost(userToken, postId)
+        : await likePost(userToken, postId);
+
+      if (response.data?.likesCount !== undefined) {
+        setPosts((prev) =>
+          updatePost(prev, postId, {
+            isLiked: response.data.isLikedByMe || !isCurrentlyLiked,
+            likes: response.data.likesCount,
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Error liking post:", error);
+      setPosts((prev) =>
+        updatePost(prev, postId, {
+          isLiked: isCurrentlyLiked,
+          likes: originalLikes,
+        })
+      );
+      setSnackbar({
+        open: true,
+        message: "Failed to update like status.",
+        severity: "error",
+      });
+    }
   };
 
-  const handleShowComments = () => {
-    // ما في فتح modal للتعليقات - عرض آخر تعليقين فقط
+  // Comments handlers
+  const handleShowComments = async (postId) => {
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
+
+    setCurrentPostId(postId);
+    setModalPost(post);
+    setCommentsModalVisible(true);
+    setCurrentComments([]);
+
+    try {
+      const response = await getComments(userToken, postId);
+      const sortedComments = response.data
+        .map((comment) => normalizeComment(comment, currentUserName, currentUser))
+        .sort(
+          (a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf()
+        );
+      setCurrentComments(sortedComments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to load comments.",
+        severity: "error",
+      });
+      setCommentsModalVisible(false);
+    }
   };
 
-  const handleAddCommentInline = () => {
-    // ما في إضافة تعليقات - عرض فقط
+  const handleAddComment = async (postId, content) => {
+    const tempCommentId = Date.now();
+    const currentUserAvatar = getImageUrl(
+      currentUser?.profilePicture,
+      currentUserName
+    );
+
+    const newComment = {
+      id: tempCommentId,
+      content,
+      createdAt: new Date().toISOString(),
+      author: {
+        userName: currentUserName,
+        avatar: currentUserAvatar,
+      },
+      authorId: localStorage.getItem("userId"),
+    };
+
+    if (currentPostId === postId)
+      setCurrentComments((prev) => [newComment, ...prev]);
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              comments: p.comments + 1,
+              recentComments: [newComment, ...p.recentComments].slice(0, 2),
+            }
+          : p
+      )
+    );
+
+    try {
+      const response = await addComment(userToken, postId, content);
+      if (response.data?.id) {
+        const finalComment = normalizeComment(
+          response.data,
+          currentUserName,
+          currentUser
+        );
+        setCurrentComments((prev) =>
+          prev.map((c) => (c.id === tempCommentId ? finalComment : c))
+        );
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? {
+                  ...p,
+                  recentComments: [
+                    finalComment,
+                    ...p.recentComments.filter((c) => c.id !== tempCommentId),
+                  ].slice(0, 2),
+                }
+              : p
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to add comment.",
+        severity: "error",
+      });
+      setCurrentComments((prev) => prev.filter((c) => c.id !== tempCommentId));
+    }
   };
 
-  // Loading State
-  if (loading && posts.length === 0) {
+  const handleDeleteComment = async (commentId) => {
+    const postId = currentPostId;
+    const originalComments = currentComments;
+    setCurrentComments((prev) => prev.filter((c) => c.id !== commentId));
+
+    let shouldRefetchRecent = false;
+    let originalRecentComments = [];
+
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id === postId) {
+          originalRecentComments = p.recentComments;
+          if (p.recentComments.some((c) => c.id === commentId))
+            shouldRefetchRecent = true;
+          return {
+            ...p,
+            comments: p.comments - 1,
+            recentComments: p.recentComments.filter((c) => c.id !== commentId),
+          };
+        }
+        return p;
+      })
+    );
+
+    try {
+      await deleteComment(userToken, commentId);
+      if (shouldRefetchRecent) {
+        const newRecentComments = await fetchRecentComments(postId);
+        setPosts((prev) =>
+          updatePost(prev, postId, { recentComments: newRecentComments })
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      if (error.response?.status !== 404) {
+        setSnackbar({
+          open: true,
+          message: "Failed to delete comment.",
+          severity: "error",
+        });
+        setCurrentComments(originalComments);
+        setPosts((prev) =>
+          updatePost(prev, postId, {
+            comments: originalRecentComments.length,
+            recentComments: originalRecentComments,
+          })
+        );
+      }
+    }
+  };
+
+  const handleEditComment = async (commentId, newContent) => {
+    const originalComments = [...currentComments];
+    const originalComment = originalComments.find((c) => c.id === commentId);
+    const originalContent = originalComment?.content;
+    const postId = currentPostId;
+
+    setCurrentComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? { ...c, content: newContent, createdAt: new Date().toISOString() }
+          : c
+      )
+    );
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              recentComments: p.recentComments.map((c) =>
+                c.id === commentId
+                  ? {
+                      ...c,
+                      content: newContent,
+                      createdAt: new Date().toISOString(),
+                    }
+                  : c
+              ),
+            }
+          : p
+      )
+    );
+
+    try {
+      await editComment(userToken, commentId, newContent);
+    } catch (error) {
+      console.error("Error editing comment:", error);
+      setCurrentComments(originalComments);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? {
+                ...p,
+                recentComments: p.recentComments.map((c) =>
+                  c.id === commentId
+                    ? {
+                        ...c,
+                        content: originalContent,
+                        createdAt: originalComment.createdAt,
+                      }
+                    : c
+                ),
+              }
+            : p
+        )
+      );
+      setSnackbar({
+        open: true,
+        message: "Failed to update comment.",
+        severity: "error",
+      });
+    }
+  };
+
+  // ✅ Handle Close Comments
+  const handleCloseComments = async (postId) => {
+    try {
+      const response = await closeCommentPost(userToken, postId);
+      console.log("close comment:", response);
+      
+      if (response.status === 200 || response.status === 204) {
+        setPosts((prev) =>
+          prev.map((p) => (p.id === postId ? { ...p, isClosed: true } : p))
+        );
+        
+        // ✅ إذا كان الـ Modal مفتوح، حدّث الـ modalPost كمان
+        if (modalPost?.id === postId) {
+          setModalPost((prev) => ({ ...prev, isClosed: true }));
+        }
+
+        setSnackbar({
+          open: true,
+          message: "Comments have been closed on this post.",
+          severity: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Error closing comments:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to close comments.",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleSharePost = (postId) => {
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, shares: p.shares + 1 } : p))
+    );
+  };
+
+  if (loadingPosts) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "300px",
-        }}
-      >
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 5 }}>
         <CircularProgress />
       </Box>
     );
   }
 
-  // Error State
-  if (error && posts.length === 0) {
-    return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
-        <Typography color="error">{error}</Typography>
-      </Box>
-    );
-  }
-
-  // Empty State
   if (posts.length === 0) {
     return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
-        <Typography variant="h6" color="text.secondary">
-          No posts yet
-        </Typography>
+      <Box sx={{ textAlign: "center", py: 5, color: "text.secondary" }}>
+        <p>No posts yet</p>
       </Box>
     );
   }
 
   return (
     <>
-      {/* Posts Container - بعرض مناسب ومتوسط */}
       <Box
         sx={{
+          mt: 3,
           maxWidth: "800px",
-          // mx: 'auto',
           px: { xs: 1, sm: 2, md: 3 },
           py: 2,
         }}
@@ -376,164 +609,120 @@ export default function PostsTab() {
           <PostCard
             key={post.id}
             post={post}
-            onDelete={isOwnProfile ? openDeleteDialog : () => {}}
-            onEdit={isOwnProfile ? openEditDialog : () => {}}
+            onDelete={openDeleteDialog}
+            onEdit={openEditDialog}
             onLike={handleLikePost}
             onShowComments={handleShowComments}
+            onShare={handleSharePost}
+            onCloseComments={handleCloseComments} // ✅ إضافة
+            onAddCommentInline={handleAddComment}
             fetchRecentComments={fetchRecentComments}
-            onAddCommentInline={handleAddCommentInline}
-            currentUserAvatar={currentUserAvatar}
+            currentUserAvatar={getImageUrl(
+              currentUser?.profilePicture,
+              currentUser?.userName || currentUserName
+            )}
           />
         ))}
-
-        {/* زر Load More */}
-        {hasMore && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 3, mb: 3 }}>
-            <Button
-              variant="outlined"
-              onClick={handleLoadMore}
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} /> : "Load More"}
-            </Button>
-          </Box>
-        )}
       </Box>
 
-      {/* Delete Confirmation Dialog */}
+      {/* ✅ إضافة isPostClosed للـ CommentsModal */}
+      <CommentsModal
+        isVisible={commentsModalVisible}
+        onClose={() => setCommentsModalVisible(false)}
+        comments={currentComments}
+        postId={currentPostId}
+        post={modalPost}
+        onCommentSubmit={handleAddComment}
+        onDeleteComment={handleDeleteComment}
+        onEditComment={handleEditComment}
+        currentUserName={currentUserName}
+        currentUserAvatar={getImageUrl(
+          currentUser?.profilePicture,
+          currentUser?.userName || currentUserName
+        )}
+        isPostClosed={modalPost?.isClosed} // ✅ تمرير حالة البوست
+      />
+
+      {/* Delete Dialog */}
       <Dialog
         open={deleteDialog.open}
         onClose={closeDeleteDialog}
-        PaperProps={{
-          sx: {
-            borderRadius: "12px",
-            width: "400px",
-            maxWidth: "90%",
-          },
-        }}
+        PaperProps={{ sx: { borderRadius: "12px", width: "400px", maxWidth: "90%" } }}
       >
         <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <WarningAmberIcon sx={{ color: "#F59E0B" }} />
           Delete Post
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ pt: 1 }}>Are you sure you want to delete this post?</Box>
+          <Box sx={{ pt: 1 }}>Are you sure?</Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={closeDeleteDialog}
-            sx={{
-              color: "#6B7280",
-              textTransform: "none",
-            }}
-          >
-            No, keep it
+          <Button onClick={closeDeleteDialog} sx={{ color: "#6B7280", textTransform: "none" }}>
+            Cancel
           </Button>
           <Button
             onClick={handleDeletePost}
             variant="contained"
-            sx={{
-              bgcolor: "#EF4444",
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: "#DC2626",
-              },
-            }}
+            sx={{ bgcolor: "#EF4444", textTransform: "none", "&:hover": { bgcolor: "#DC2626" } }}
           >
-            Yes, delete it!
+            Delete
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Edit Post Dialog */}
+      {/* Edit Dialog */}
       <Dialog
         open={editDialog.open}
         onClose={closeEditDialog}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: "12px",
-          },
-        }}
+        PaperProps={{ sx: { borderRadius: "12px" } }}
       >
         <DialogTitle>Edit Post</DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
+        <DialogContent sx={{ pt: 5 }}>
           <TextField
             fullWidth
             multiline
             rows={4}
             label="Content"
             value={editDialog.content}
-            onChange={(e) =>
-              setEditDialog((prev) => ({ ...prev, content: e.target.value }))
-            }
-            sx={{ mb: 2 }}
+            onChange={(e) => setEditDialog((prev) => ({ ...prev, content: e.target.value }))}
+            sx={{ mb: 3, mt: 1 }}
           />
           <TextField
             fullWidth
             label="Tags (comma separated)"
             value={editDialog.tags}
-            onChange={(e) =>
-              setEditDialog((prev) => ({ ...prev, tags: e.target.value }))
-            }
+            onChange={(e) => setEditDialog((prev) => ({ ...prev, tags: e.target.value }))}
             sx={{ mb: 2 }}
           />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleEditFileChange}
-            style={{ marginBottom: "16px" }}
-          />
+          <input type="file" accept="image/*" onChange={handleEditFileChange} style={{ marginBottom: "16px" }} />
           {editDialog.previewUrl && (
             <Box sx={{ mt: 2, textAlign: "center" }}>
               <img
                 src={editDialog.previewUrl}
                 alt="Preview"
-                style={{
-                  width: "50%",
-                  maxHeight: "200px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                }}
+                style={{ width: "50%", maxHeight: "200px", objectFit: "cover", borderRadius: "8px" }}
               />
             </Box>
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={closeEditDialog}
-            disabled={isUpdating}
-            sx={{
-              color: "#6B7280",
-              textTransform: "none",
-            }}
-          >
+          <Button onClick={closeEditDialog} disabled={isUpdating} sx={{ color: "#6B7280", textTransform: "none" }}>
             Cancel
           </Button>
           <Button
             onClick={handleEditPost}
             variant="contained"
             disabled={isUpdating}
-            sx={{
-              bgcolor: "#3B82F6",
-              textTransform: "none",
-              minWidth: "100px",
-              "&:hover": {
-                bgcolor: "#2563EB",
-              },
-            }}
+            sx={{ bgcolor: "#3B82F6", textTransform: "none", minWidth: "100px", "&:hover": { bgcolor: "#2563EB" } }}
           >
-            {isUpdating ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              "Save"
-            )}
+            {isUpdating ? <CircularProgress size={20} color="inherit" /> : "Save"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar للإشعارات */}
+      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -547,9 +736,7 @@ export default function PostsTab() {
             width: "100%",
             bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
             color: "white",
-            "& .MuiAlert-icon": {
-              color: "white",
-            },
+            "& .MuiAlert-icon": { color: "white" },
           }}
           variant="filled"
         >

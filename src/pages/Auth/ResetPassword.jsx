@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import {
@@ -21,8 +21,9 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const email = location.state?.email || ""; // الإيميل الممرر من ForgetPassword
+  const email = location.state?.email || "";
 
+  // -------------------- VALIDATION --------------------
   const validationSchema = yup.object({
     code: yup.string().required("Code is required"),
     newPassword: yup
@@ -31,7 +32,7 @@ export default function ResetPassword() {
       .min(8, "Password must be at least 8 characters")
       .matches(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        "Password must contain uppercase, lowercase, number, and special character"
       ),
     confirmPassword: yup
       .string()
@@ -73,15 +74,45 @@ export default function ResetPassword() {
     }
   };
 
+  // -------------------- TIMER 15 MINUTES --------------------
+  const [timeLeft, setTimeLeft] = useState(15 * 60);
+  const [codeExpired, setCodeExpired] = useState(false);
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      setCodeExpired(true);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timeLeft]);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+
+  // -------------------- HANDLE SUBMIT --------------------
   const ResetHandle = async (data) => {
     try {
+      if (codeExpired) {
+        Swal.fire({
+          icon: "error",
+          title: "Code expired",
+          text: "Please request a new verification code.",
+        });
+        return;
+      }
+
       setLoading(true);
       const response = await resetPasswordApi({ email, ...data });
+
       if (response.status === 200) {
         Swal.fire({
-          title: "Password has been reset successfully.",
+          title: "Password reset successfully.",
           icon: "success",
-          draggable: true,
           timer: 1500,
         });
         navigate("/login");
@@ -90,18 +121,18 @@ export default function ResetPassword() {
       const errorMessage =
         error.response?.data?.[0] ||
         "Failed to reset password. Please try again.";
+
       Swal.fire({
         icon: "error",
         title: "Reset Failed",
         text: errorMessage,
       });
-      console.log(error);
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
 
+  // -------------------- UI --------------------
   return (
     <Box
       sx={{
@@ -116,7 +147,37 @@ export default function ResetPassword() {
       <Typography variant="h6" mb={2}>
         Reset Password
       </Typography>
+
+      {/* TIMER UNDER THE TITLE */}
+      <Box sx={{ mb: 3, mt: -1 }}>
+        {!codeExpired ? (
+          <Box
+            sx={{
+              display: "inline-block",
+              bgcolor: "#3B82F6",
+              color: "white",
+              px: 3,
+              py: 1,
+              borderRadius: 3,
+              fontSize: "20px",
+              fontWeight: "bold",
+              letterSpacing: "0.5px",
+            }}
+          >
+            Code valid for: {minutes}:{seconds < 10 ? "0" + seconds : seconds}
+          </Box>
+        ) : (
+          <Typography
+            color="error"
+            sx={{ fontWeight: "bold", fontSize: "20px" }}
+          >
+            Code expired. Please request a new one.
+          </Typography>
+        )}
+      </Box>
+
       <Box component={"form"} onSubmit={handleSubmit(ResetHandle)}>
+        {/* EMAIL (DISABLED) */}
         <TextField
           fullWidth
           margin="normal"
@@ -132,6 +193,7 @@ export default function ResetPassword() {
           }}
         />
 
+        {/* CODE INPUT */}
         <TextField
           {...register("code")}
           fullWidth
@@ -149,15 +211,14 @@ export default function ResetPassword() {
           }}
         />
 
+        {/* NEW PASSWORD */}
         <TextField
           {...register("newPassword")}
           fullWidth
           margin="normal"
           label="New Password"
           type={showPassword ? "text" : "password"}
-          placeholder="Enter your password"
           variant="outlined"
-          required
           error={!!errors.newPassword}
           helperText={errors.newPassword?.message}
           onChange={(e) => {
@@ -173,6 +234,7 @@ export default function ResetPassword() {
           }}
         />
 
+        {/* PASSWORD STRENGTH */}
         {passwordStrength > 0 && (
           <>
             <LinearProgress
@@ -183,8 +245,8 @@ export default function ResetPassword() {
                 passwordStrength < 2
                   ? "error"
                   : passwordStrength === 2
-                    ? "warning"
-                    : "success"
+                  ? "warning"
+                  : "success"
               }
             />
             <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
@@ -193,15 +255,14 @@ export default function ResetPassword() {
           </>
         )}
 
+        {/* CONFIRM PASSWORD */}
         <TextField
           {...register("confirmPassword")}
           fullWidth
           margin="normal"
           label="Confirm Password"
           type={showPassword ? "text" : "password"}
-          placeholder="Confirm your password"
           variant="outlined"
-          required
           error={!!errors.confirmPassword}
           helperText={errors.confirmPassword?.message}
           InputProps={{
@@ -213,6 +274,7 @@ export default function ResetPassword() {
           }}
         />
 
+        {/* SUBMIT BUTTON */}
         <CustomButton
           fullWidth
           loading={loading}

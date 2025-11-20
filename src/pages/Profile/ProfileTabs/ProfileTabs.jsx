@@ -9,7 +9,7 @@ import PostsTab from "./PostsTab";
 // import ReviewsTab from "./tabs/ReviewsTab";
 // import AchievementsTab from "./tabs/AchievementsTab";
 
-export default function ProfileTabs() {
+export default function ProfileTabs({ userData }) {
   const [currentTab, setCurrentTab] = useState(0);
 
   return (
@@ -62,7 +62,7 @@ export default function ProfileTabs() {
       {/* المحتوى */}
       {currentTab === 0 && <OverviewTab />}
       {currentTab === 1 && <PortfolioTab />}
-      {currentTab === 2 && <PostsTab />}
+      {currentTab === 2 && <PostsTab username={userData?.userName} />}
       {/* {currentTab === 3 && <AchievementsTab />} */}
     </Box>
   );
