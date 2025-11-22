@@ -8,6 +8,7 @@ import {
   getClientdashboard,
   getServiceProviderDashboard,
 } from "../../../services/projectService";
+import { mapProjectsWithStatus } from "../../../utils/projectStatusMapper"; // ✅ Import mapper
 
 export default function Project() {
   // Initialize from localStorage to persist across page refreshes
@@ -25,33 +26,48 @@ export default function Project() {
 
   const token = localStorage.getItem("accessToken");
 
-  // 🔵 Save tab index to localStorage whenever it changes
+  // Save tab index to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("projectTabIndex", value.toString());
   }, [value]);
 
-  // 🔵 Save status filter to localStorage whenever it changes
+  // Save status filter to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("statusFilter", statusFilter);
   }, [statusFilter]);
 
+  // ✅ FIXED: Fetch data when statusFilter changes
   useEffect(() => {
     fetchAllDashboardData();
-  }, [token]);
+  }, [token, statusFilter]);
 
   const fetchAllDashboardData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch both provider and client data simultaneously
+      // ✅ FIXED: Pass statusFilter to API calls
       const [providerResponse, clientResponse] = await Promise.all([
-        getServiceProviderDashboard(token, "Provider", "All Status"),
-        getClientdashboard(token, "client", "All Status"),
+        getServiceProviderDashboard(token, "Provider", statusFilter),
+        getClientdashboard(token, "client", statusFilter),
       ]);
 
-      setProviderData(providerResponse.data);
-      setClientData(clientResponse.data);
+      console.log("Provider Response:", providerResponse);
+      console.log("Client Response:", clientResponse);
+
+      // ✅ Map status numbers to strings
+      const mappedProviderData = {
+        ...providerResponse.data,
+        items: mapProjectsWithStatus(providerResponse.data.items),
+      };
+
+      const mappedClientData = {
+        ...clientResponse.data,
+        items: mapProjectsWithStatus(clientResponse.data.items),
+      };
+
+      setProviderData(mappedProviderData);
+      setClientData(mappedClientData);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
       setError("Failed to load dashboard data");

@@ -401,19 +401,26 @@ export default function ClientDashboard({
 
   const filterProjects = (projects) => {
     if (!projects) return [];
+
     return projects.filter(project => {
       const matchesSearch =
         searchQuery === "" ||
         project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesSearch;
+
+      const matchesStatus =
+        statusFilter === "All Status" ||
+        project.projectStatus === statusFilter ||
+        project.status === statusFilter; // ✅ Check both fields
+
+      return matchesSearch && matchesStatus;
     });
   };
 
   // تحديث filteredProjects عند تغيّر البيانات أو البحث
   useEffect(() => {
     setFilteredProjects(filterProjects(data?.items || []));
-  }, [data, searchQuery]);
+  }, [data, searchQuery, statusFilter]);
 
   const stats = data?.summary || {};
 
@@ -424,6 +431,7 @@ export default function ClientDashboard({
       items: [
         { label: "All Status", value: "All Status" },
         { label: "Active", value: "Active" },
+        { label: "Submitted For Review", value: "SubmittedForFinalReview" }, // ✅ Added
         { label: "Completed", value: "Completed" },
         { label: "Overdue", value: "Overdue" },
       ],
@@ -516,6 +524,7 @@ export default function ClientDashboard({
                 <Grid item xs={12} sm={6} lg={4} key={project.id}>
                   <AllStatusProjectCard 
                     {...project}
+                    projectStatus={project.projectStatus || project.status}
                     isProvider={false}
                   />
                 </Grid>

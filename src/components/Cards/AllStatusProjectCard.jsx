@@ -45,6 +45,7 @@ export default function AllStatusProjectCard({
       Pending: { bg: "#FEF3C7", text: "#F59E0B" },
       Completed: { bg: "#DBEAFE", text: "#0284C7" },
       Overdue: { bg: "#FEE2E2", text: "#DC2626" },
+      SubmittedForFinalReview: { bg: "#E0E7FF", text: "#6366F1" },
     };
     return styles[status] || styles.Active;
   };
@@ -125,6 +126,7 @@ export default function AllStatusProjectCard({
         deadline,
         isProvider,
         progressPercentage,
+        projectStatus, // ✅ FIXED: Add projectStatus to navigation state
       },
     });
   };
@@ -137,7 +139,7 @@ export default function AllStatusProjectCard({
         boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
         transition: "all 0.3s ease",
         width: "320px",
-        height: "360px", // Reduced from 420px
+        height: "360px",
         display: "flex",
         flexDirection: "column",
         border: "1px solid #F3F4F6",
@@ -155,12 +157,12 @@ export default function AllStatusProjectCard({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          p: 2.5, // Reduced from 3
-          "&:last-child": { pb: 2.5 }, // Reduced from 3
+          p: 2.5,
+          "&:last-child": { pb: 2.5 },
         }}
       >
         {/* Status Chip at Top */}
-        <Box mb={1.5}> {/* Reduced from 2 */}
+        <Box mb={1.5}>
           <Chip
             label={projectStatus}
             size="small"
@@ -169,7 +171,7 @@ export default function AllStatusProjectCard({
               color: statusStyles.text,
               fontWeight: 600,
               fontSize: "12px",
-              height: "26px", // Reduced from 28px
+              height: "26px",
               px: 1.5,
               borderRadius: "6px",
             }}
@@ -180,8 +182,8 @@ export default function AllStatusProjectCard({
         <Typography
           variant="h6"
           fontWeight="700"
-          mb={1} // Reduced from 1.5
-          fontSize="18px" // Reduced from 20px
+          mb={1}
+          fontSize="18px"
           lineHeight={1.3}
           color="#1F2937"
           sx={{
@@ -196,9 +198,8 @@ export default function AllStatusProjectCard({
         </Typography>
 
         {/* Description with Read More and Scroll */}
-        <Box mb={1.5}> {/* Reduced from 2.5 */}
+        <Box mb={1.5}>
           {!showFullDescription ? (
-            // Collapsed view - shows 2 lines max
             <Typography
               variant="body2"
               color="#6B7280"
@@ -216,7 +217,6 @@ export default function AllStatusProjectCard({
               {displayedDescription}
             </Typography>
           ) : (
-            // Expanded view - scrollable
             <Box
               sx={{
                 maxHeight: "70px",
@@ -277,15 +277,15 @@ export default function AllStatusProjectCard({
         </Box>
 
         {/* Client/Provider Info */}
-        <Box display="flex" alignItems="center" gap={1.5} mb={2}> {/* Reduced from 3 */}
+        <Box display="flex" alignItems="center" gap={1.5} mb={2}>
           <Avatar
             src={displayAvatar}
             sx={{
-              width: 42, // Reduced from 48
-              height: 42, // Reduced from 48
+              width: 42,
+              height: 42,
               bgcolor: "#3B82F6",
               fontWeight: "bold",
-              fontSize: "15px", // Reduced from 16px
+              fontSize: "15px",
               flexShrink: 0,
             }}
           >
@@ -295,7 +295,7 @@ export default function AllStatusProjectCard({
             <Typography
               variant="body2"
               fontWeight="700"
-              fontSize="14px" // Reduced from 15px
+              fontSize="14px"
               color="#1F2937"
               sx={{
                 overflow: "hidden",
@@ -308,7 +308,7 @@ export default function AllStatusProjectCard({
             <Typography
               variant="caption"
               color="#6B7280"
-              fontSize="12px" // Reduced from 13px
+              fontSize="12px"
               fontWeight="400"
               sx={{
                 overflow: "hidden",
@@ -322,17 +322,17 @@ export default function AllStatusProjectCard({
         </Box>
 
         {/* Progress Section */}
-        <Box mb={1.5}> {/* Reduced from 2.5 */}
+        <Box mb={1.5}>
           <Box
             display="flex"
             justifyContent="space-between"
             alignItems="center"
-            mb={0.75} // Reduced from 1
+            mb={0.75}
           >
             <Typography
               variant="body2"
               fontWeight="600"
-              fontSize="13px" // Reduced from 14px
+              fontSize="13px"
               color="#1F2937"
             >
               Progress
@@ -340,7 +340,7 @@ export default function AllStatusProjectCard({
             <Typography
               variant="body2"
               fontWeight="700"
-              fontSize="15px" // Reduced from 16px
+              fontSize="15px"
               color="#1F2937"
             >
               {Math.round(progressPercentage)}%
@@ -350,7 +350,7 @@ export default function AllStatusProjectCard({
             variant="determinate"
             value={progressPercentage}
             sx={{
-              height: 8, // Reduced from 10
+              height: 8,
               borderRadius: 5,
               backgroundColor: "#E5E7EB",
               "& .MuiLinearProgress-bar": {
@@ -366,15 +366,15 @@ export default function AllStatusProjectCard({
           display="flex"
           justifyContent="space-between"
           alignItems="center"
-          pt={1.5} // Reduced from 2
+          pt={1.5}
           borderTop="1px solid #F3F4F6"
         >
           <Box display="flex" alignItems="center" gap={0.75}>
-            <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF" }} /> {/* Reduced from 18 */}
+            <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF" }} />
             <Typography
               variant="caption"
               color="#6B7280"
-              fontSize="12px" // Reduced from 13px
+              fontSize="12px"
               fontWeight="500"
             >
               Due: {formattedDeadline}

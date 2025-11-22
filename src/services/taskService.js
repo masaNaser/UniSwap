@@ -96,12 +96,24 @@ export const updateProjectProgress = async (projectId, token) => {
   );
 };
 
-export const closeProject = async (projectId, token) => {
-  return await api.post(
-    `/tasks/${projectId}/close`,
+export const closeProjectByClient = async (projectId, token,data) => {
+  return await api.post(`/Projects/${projectId}/close-by-client`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+              'Content-Type': 'application/json'
+
+    }
+  );
+};
+
+export const closeProjectByProvider = async (projectId, token) => {
+  return await api.post(`/Projects/${projectId}/close-by-provider`,
     {},
     {
       headers: { Authorization: `Bearer ${token}` },
+              'Content-Type': 'application/json'
+
     }
   );
 };

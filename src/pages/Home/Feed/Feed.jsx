@@ -39,6 +39,7 @@ import dayjs from "dayjs";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { useSearchParams } from "react-router-dom"; // ✅ إضافة
+import PostCardSkeleton from '../../../components/Skeletons/PostCardSkeleton';
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
@@ -706,6 +707,13 @@ export default function Feed() {
                     }),
                   }}
                 >
+                  {loading ? (
+  <Box mt={3}>
+    <PostCardSkeleton />
+    <PostCardSkeleton />
+    <PostCardSkeleton />
+  </Box>
+) : (
                   <PostCard
                     post={post}
                     onDelete={openDeleteDialog}
@@ -720,7 +728,7 @@ export default function Feed() {
                       currentUser?.profilePicture,
                       currentUser?.userName || userName
                     )}
-                  />
+                  />)}
                 </Box>
               ))}
             </Box>
