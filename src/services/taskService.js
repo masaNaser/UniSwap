@@ -118,13 +118,13 @@ export const closeProjectByProvider = async (projectId, token) => {
   );
 };
 
-// ===== Auto Accept =====
-export const autoAcceptDueTasks = async (token) => {
-  return await api.post(
-    `/tasks/auto-accept`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-};
+// // ===== Auto Accept =====
+// export const autoAcceptDueTasks = async (token) => {
+//   return await api.post(
+//     `/tasks/auto-accept`,
+//     {},
+//     {
+//       headers: { Authorization: `Bearer ${token}` },
+//     }
+//   );
+// };

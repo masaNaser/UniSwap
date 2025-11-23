@@ -29,10 +29,14 @@ import CommentsDisabledIcon from "@mui/icons-material/CommentsDisabled";
 import dayjs from "dayjs";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 import ShareDialog from "../../../components/Modals/ShareDialog"; // ✅ استيراد الـ Share Dialog
+import utc from "dayjs/plugin/utc";
 
 // Format comment/post time
-const formatTime = (time) =>
-  !time ? "Just now" : dayjs(time).format("DD MMM, hh:mm A");
+dayjs.extend(utc);
+
+export const formatTime = (timestamp) => {
+  return dayjs.utc(timestamp).local().format("DD MMM, hh:mm A");
+};
 
 // Single Comment Bubble
 const CommentBubble = ({ comment }) => (

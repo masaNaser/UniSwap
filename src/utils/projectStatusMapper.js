@@ -33,7 +33,6 @@ const statusMap = {
 };
 
   const result = statusMap[status] || 'Active';
-  console.log('✅ Mapped to:', result);
   
   return result;
 };

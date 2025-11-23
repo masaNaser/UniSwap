@@ -36,10 +36,14 @@ import {
   closeCommentPost,
 } from "../../../services/postService";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc"; // ✅ أضف هنا
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
-import { useSearchParams } from "react-router-dom"; // ✅ إضافة
+import { useSearchParams } from "react-router-dom";
 import PostCardSkeleton from '../../../components/Skeletons/PostCardSkeleton';
+
+// ✅ استخدم الـ plugin
+dayjs.extend(utc);
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
@@ -66,9 +70,9 @@ const updatePost = (posts, postId, newData) =>
 export default function Feed() {
   const { currentUser, loading } = useCurrentUser();
   const [posts, setPosts] = useState([]);
-  const [searchParams, setSearchParams] = useSearchParams(); // ✅ إضافة
-  const [highlightedPostId, setHighlightedPostId] = useState(null); // ✅ إضافة
-  const postRefs = useRef({}); // ✅ إضافة
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [highlightedPostId, setHighlightedPostId] = useState(null);
+  const postRefs = useRef({});
 
   const userToken = localStorage.getItem("accessToken");
   const userName = localStorage.getItem("userName");
@@ -79,13 +83,11 @@ export default function Feed() {
   const [modalPost, setModalPost] = useState(null);
   const [userIdCommenting, setUserIdCommenting] = useState(null);
 
-  // Delete Dialog State
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     postId: null,
   });
 
-  // Edit Dialog State
   const [editDialog, setEditDialog] = useState({
     open: false,
     postId: null,
@@ -98,23 +100,37 @@ export default function Feed() {
 
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Snackbar State
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
 
-  // Handle Snackbar Close
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const fetchPosts = async () => {
-    try {
-      const response = await getPosts(userToken);
-      console.log(response);
-      const postsData = response.data.map((p) => ({
+// في Feed.js، غيّر الـ fetchPosts هيك:
+
+const fetchPosts = async () => {
+  try {
+    const response = await getPosts(userToken);
+    console.log(response);
+    const postsData = response.data.map((p) => {
+      // ✅ الحل النهائي:
+      // إذا كان في timezone (+01:00) → استخدمه كما هو مباشرة
+      // إذا لم يكن timezone → اعتبره محلي (بدون تحويل من UTC)
+      
+      let formattedTime;
+      if (p.createdAt.includes('+') || p.createdAt.includes('Z')) {
+        // فيه timezone محدد → معالجه كما هو
+        formattedTime = dayjs(p.createdAt).format("DD MMM, hh:mm A");
+      } else {
+        // بدون timezone → اعتبره محلي مباشرة (بدون UTC conversion)
+        formattedTime = dayjs(p.createdAt).format("DD MMM, hh:mm A");
+      }
+      
+      return {
         id: p.id,
         content: p.content,
         selectedTags: p.tags?.[0]?.split(",") || [],
@@ -123,25 +139,26 @@ export default function Feed() {
           avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
           id: p.author.id,
         },
-        time: dayjs(p.createdAt).format("DD MMM, hh:mm A"),
+        time: formattedTime,
         likes: p.likesCount,
         comments: p.commentsCount,
         shares: "",
         fileUrl: p.fileUrl ? `https://uni.runasp.net/${p.fileUrl}` : null,
         isLiked: p.isLikedByMe || false,
         recentComments: [],
-      isClosed: p.postStatus === "Closed", // ✅ إضافة هاي
-      }));
-      setPosts(postsData);
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to fetch posts.",
-        severity: "error",
-      });
-      console.error("Error fetching posts:", error);
-    }
-  };
+        isClosed: p.postStatus === "Closed",
+      };
+    });
+    setPosts(postsData);
+  } catch (error) {
+    setSnackbar({
+      open: true,
+      message: "Failed to fetch posts.",
+      severity: "error",
+    });
+    console.error("Error fetching posts:", error);
+  }
+};
 
   const fetchRecentComments = useCallback(
     async (postId) => {
@@ -177,29 +194,23 @@ export default function Feed() {
     }
   }, [posts.length, fetchRecentComments]);
 
-  // ✅ Scroll to post when URL has postId parameter
   useEffect(() => {
     const postId = searchParams.get("postId");
 
     if (postId && posts.length > 0) {
-      // انتظر شوي للتأكد إن كل شي تحمل
       setTimeout(() => {
         const postElement = postRefs.current[postId];
 
         if (postElement) {
-          // Scroll للبوست
           postElement.scrollIntoView({
             behavior: "smooth",
             block: "center",
           });
 
-          // Highlight البوست
           setHighlightedPostId(postId);
 
-          // إزالة الـ highlight بعد 3 ثواني
           setTimeout(() => {
             setHighlightedPostId(null);
-            // إزالة الـ postId من الـ URL
             setSearchParams({});
           }, 3000);
         } else {
@@ -212,17 +223,14 @@ export default function Feed() {
   const addPost = (newPost) =>
     setPosts([{ ...newPost, isLiked: false, recentComments: [] }, ...posts]);
 
-  // Open Delete Dialog
   const openDeleteDialog = (postId) => {
     setDeleteDialog({ open: true, postId });
   };
 
-  // Close Delete Dialog
   const closeDeleteDialog = () => {
     setDeleteDialog({ open: false, postId: null });
   };
 
-  // Confirm Delete Post
   const handleDeletePost = async () => {
     const postId = deleteDialog.postId;
     closeDeleteDialog();
@@ -247,7 +255,6 @@ export default function Feed() {
     }
   };
 
-  // Open Edit Dialog
   const openEditDialog = (postId) => {
     const postToEdit = posts.find((p) => p.id === postId);
     if (!postToEdit) return;
@@ -263,7 +270,6 @@ export default function Feed() {
     });
   };
 
-  // Close Edit Dialog
   const closeEditDialog = () => {
     setEditDialog({
       open: false,
@@ -276,7 +282,6 @@ export default function Feed() {
     });
   };
 
-  // Handle File Change in Edit Dialog
   const handleEditFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -288,7 +293,6 @@ export default function Feed() {
     }
   };
 
-  // Confirm Edit Post
   const handleEditPost = async () => {
     const { postId, content, tags, file } = editDialog;
 
@@ -309,7 +313,6 @@ export default function Feed() {
           ...postToEdit,
           content,
           selectedTags: tags ? tags.split(",") : [],
-          time: new Date().toLocaleString(),
           fileUrl: file ? URL.createObjectURL(file) : postToEdit.fileUrl,
         };
         setPosts((prev) => updatePost(prev, postId, updatedPost));
@@ -432,7 +435,6 @@ export default function Feed() {
       authorId: currentUserId,
     };
 
-    // Update modal and posts instantly
     if (currentPostId === postId)
       setCurrentComments((prev) => [newComment, ...prev]);
     setPosts((prev) =>
@@ -613,7 +615,7 @@ export default function Feed() {
   const handleCloseComments = async (postId) => {
     try {
       const response = await closeCommentPost(userToken, postId);
-     console.log("close comment :",response);
+      console.log("close comment :", response);
       if (response.status === 200 || response.status === 204) {
         setPosts((prev) =>
           prev.map((p) => (p.id === postId ? { ...p, isClosed: true } : p))
@@ -635,14 +637,12 @@ export default function Feed() {
     }
   };
 
-  // Share Post Handler
   const handleSharePost = (postId) => {
     setPosts((prev) =>
       prev.map((p) => (p.id === postId ? { ...p, shares: p.shares + 1 } : p))
     );
   };
 
-  // Fetch posts on mount
   useEffect(() => {
     fetchPosts();
   }, [userToken]);
@@ -684,10 +684,9 @@ export default function Feed() {
               {posts.map((post) => (
                 <Box
                   key={post.id}
-                  ref={(el) => (postRefs.current[post.id] = el)} // ✅ ref للبوست
+                  ref={(el) => (postRefs.current[post.id] = el)}
                   sx={{
                     transition: "all 0.3s ease",
-                    // ✅ Highlight effect
                     ...(highlightedPostId === post.id && {
                       animation: "highlight 2s ease-in-out",
                       "@keyframes highlight": {
@@ -708,27 +707,28 @@ export default function Feed() {
                   }}
                 >
                   {loading ? (
-  <Box mt={3}>
-    <PostCardSkeleton />
-    <PostCardSkeleton />
-    <PostCardSkeleton />
-  </Box>
-) : (
-                  <PostCard
-                    post={post}
-                    onDelete={openDeleteDialog}
-                    onEdit={openEditDialog}
-                    onLike={handleLikePost}
-                    onShowComments={handleShowComments}
-                    onShare={handleSharePost}
-                    onCloseComments={handleCloseComments}
-                    onAddCommentInline={handleAddComment}
-                    fetchRecentComments={fetchRecentComments}
-                    currentUserAvatar={getImageUrl(
-                      currentUser?.profilePicture,
-                      currentUser?.userName || userName
-                    )}
-                  />)}
+                    <Box mt={3}>
+                      <PostCardSkeleton />
+                      <PostCardSkeleton />
+                      <PostCardSkeleton />
+                    </Box>
+                  ) : (
+                    <PostCard
+                      post={post}
+                      onDelete={openDeleteDialog}
+                      onEdit={openEditDialog}
+                      onLike={handleLikePost}
+                      onShowComments={handleShowComments}
+                      onShare={handleSharePost}
+                      onCloseComments={handleCloseComments}
+                      onAddCommentInline={handleAddComment}
+                      fetchRecentComments={fetchRecentComments}
+                      currentUserAvatar={getImageUrl(
+                        currentUser?.profilePicture,
+                        currentUser?.userName || userName
+                      )}
+                    />
+                  )}
                 </Box>
               ))}
             </Box>
@@ -752,12 +752,10 @@ export default function Feed() {
             currentUser?.profilePicture,
             currentUser?.userName || userName
           )}
-            isPostClosed={modalPost?.isClosed} // ✅ إضافة هاي
-
+          isPostClosed={modalPost?.isClosed}
         />
       </Container>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialog.open}
         onClose={closeDeleteDialog}
@@ -802,7 +800,6 @@ export default function Feed() {
         </DialogActions>
       </Dialog>
 
-      {/* Edit Post Dialog */}
       <Dialog
         open={editDialog.open}
         onClose={closeEditDialog}
@@ -890,7 +887,6 @@ export default function Feed() {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar للإشعارات */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

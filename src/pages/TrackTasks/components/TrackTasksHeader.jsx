@@ -1,15 +1,34 @@
-import { Box, Typography, Avatar, Chip, Button, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { useState } from 'react';
-import { getImageUrl } from '../../../utils/imageHelper';
-import CustomButton from '../../../components/CustomButton/CustomButton';
-import ProgressSection from './ProgressSection';
-import { editCollaborationRequest } from '../../../services/collaborationService';
-import { closeProjectByProvider, closeProjectByClient } from '../../../services/taskService';
+import {
+  Box,
+  Typography,
+  Avatar,
+  Chip,
+  Button,
+  IconButton,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import EditIcon from "@mui/icons-material/Edit";
+import CloseIcon from "@mui/icons-material/Close";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import { useState } from "react";
+import { getImageUrl } from "../../../utils/imageHelper";
+import CustomButton from "../../../components/CustomButton/CustomButton";
+import ProgressSection from "./ProgressSection";
+import ProjectCloseReviewDialog from "./ProjectCloseReviewDialog";
+import { editCollaborationRequest } from "../../../services/collaborationService";
+import {
+  closeProjectByProvider,
+  closeProjectByClient,
+} from "../../../services/taskService";
 
 export default function TrackTasksHeader({
   cardData,
@@ -20,66 +39,94 @@ export default function TrackTasksHeader({
   progressPercentage,
   onBack,
   onDeadlineUpdate,
-  onProjectClosed, // Callback to refresh parent after closing
+  onProjectClosed,
 }) {
   if (!cardData) return <div>Loading...</div>;
 
   const [isEditing, setIsEditing] = useState(false);
   const [newDeadline, setNewDeadline] = useState(
-    cardData.deadline ? new Date(cardData.deadline).toISOString().split('T')[0] : ''
+    cardData.deadline
+      ? new Date(cardData.deadline).toISOString().split("T")[0]
+      : ""
   );
   const [loading, setLoading] = useState(false);
-
-  // Close Project Dialog States
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
-  const [closeAction, setCloseAction] = useState(null); // 'accept' or 'reject'
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [closingProject, setClosingProject] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  const displayRole = cardData.isProvider ? 'Client' : 'Service Provider';
-  const token = localStorage.getItem('accessToken');
+  const displayRole = cardData.isProvider ? "Client" : "Service Provider";
+  const token = localStorage.getItem("accessToken");
+
+  // ✅ Check if project is overdue
+  const isProjectOverdue = () => {
+    if (!cardData.deadline) return false;
+
+    const now = new Date();
+    const deadline = new Date(cardData.deadline);
+
+    // Project is overdue if:
+    // 1. Deadline has passed
+    // 2. Status is Active (not completed/submitted)
+    return deadline < now && cardData.projectStatus === "Active";
+  };
+
+  const projectOverdue = isProjectOverdue();
 
   const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: 'numeric',
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "numeric",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
-  // Min date = current deadline + 1 day
+  const formatDateWithTime = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const minSelectableDate = (() => {
     const d = new Date(cardData.deadline);
     d.setDate(d.getDate() + 1);
     return d.toISOString().split("T")[0];
   })();
 
-  // ------------ Save Deadline -------------
   const handleSaveDeadline = async () => {
     const chosen = new Date(newDeadline);
     const current = new Date(cardData.deadline);
 
     if (chosen <= current) {
-      alert("New deadline must be at least 1 day AFTER current deadline.");
+      setSnackbar({
+        open: true,
+        message: "New deadline must be at least 1 day AFTER current deadline.",
+        severity: "error",
+      });
       return;
     }
 
     try {
       setLoading(true);
-
       const collaborationId = projectDetails?.collaborationRequestId;
-      
+
       if (!collaborationId) {
-        throw new Error(
-          "Collaboration Request ID is missing. Please make sure your backend returns 'collaborationRequestId' in the project details response."
-        );
+        throw new Error("Collaboration Request ID is missing.");
       }
 
       const deadlineISO = new Date(newDeadline).toISOString();
-
       await editCollaborationRequest(token, collaborationId, {
-        deadline: deadlineISO
+        deadline: deadlineISO,
       });
 
       if (onDeadlineUpdate) {
@@ -87,14 +134,22 @@ export default function TrackTasksHeader({
       }
 
       setIsEditing(false);
-      alert("Deadline updated successfully!");
-      
+      setSnackbar({
+        open: true,
+        message: "Deadline updated successfully! ⏰",
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error updating deadline:", err);
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Failed to update deadline.";
-      alert(errorMessage);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to update deadline.";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -102,132 +157,179 @@ export default function TrackTasksHeader({
 
   const handleOpenEdit = () => {
     setNewDeadline(
-      cardData.deadline ? new Date(cardData.deadline).toISOString().split('T')[0] : ''
+      cardData.deadline
+        ? new Date(cardData.deadline).toISOString().split("T")[0]
+        : ""
     );
     setIsEditing(true);
   };
 
-  // ------------ Close Project Logic -------------
-  
-  // Check if project can be closed
   const canCloseProject = () => {
-    console.log('🔍 Checking canCloseProject:', {
-      isProvider,
-      projectStatus: cardData.projectStatus,
-      progressPercentage,
-    });
-
-    // Provider can close when project is Active and all tasks are done
     if (isProvider) {
-      const canClose = cardData.projectStatus === 'Active' && progressPercentage === 100;
-      console.log('✅ Provider can close:', canClose);
-      return canClose;
+      return cardData.projectStatus === "Active" && progressPercentage === 100;
     }
-    
-    // Client can close when project is SubmittedForFinalReview
-    const canClose = cardData.projectStatus === 'SubmittedForFinalReview';
-    console.log('✅ Client can close:', canClose);
-    return canClose;
+    return cardData.projectStatus === "SubmittedForFinalReview";
   };
 
   const handleCloseProjectClick = () => {
     if (isProvider) {
-      // Provider directly submits for review
       setOpenCloseDialog(true);
     } else {
-      // Client chooses accept or reject
-      setOpenCloseDialog(true);
+      setOpenReviewDialog(true);
     }
   };
 
-  const handleCloseProject = async () => {
-    if (!canCloseProject()) {
-      alert("Project cannot be closed at this stage.");
-      return;
-    }
-
+  const handleProviderSubmit = async () => {
     try {
       setClosingProject(true);
+      await closeProjectByProvider(cardData.id, token);
 
-      if (isProvider) {
-        // Provider submits project for final review
-        const response = await closeProjectByProvider(cardData.id, token);
-        console.log("✅ Close by provider response:", response);
-        alert("Project submitted for final review successfully!");
-      } else {
-        // Client accepts or rejects
-        if (closeAction === 'accept') {
-          const response = await closeProjectByClient(cardData.id, token, {
-            isAccepted: true,
-            rejectionReason: ""
-          });
-          console.log("✅ Close by client (accept) response:", response);
-          alert("Project completed successfully! Points transferred.");
-        } else if (closeAction === 'reject') {
-          if (!rejectionReason.trim()) {
-            alert("Please provide a rejection reason.");
-            setClosingProject(false);
-            return;
-          }
-          const response = await closeProjectByClient(cardData.id, token, {
-            isAccepted: false,
-            rejectionReason: rejectionReason.trim()
-          });
-          console.log("✅ Close by client (reject) response:", response);
-          alert("Project rejected and returned to Active status for rework.");
-        }
-      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      setSnackbar({
+        open: true,
+        message: "Project submitted for final review successfully! ✅",
+        severity: "success",
+      });
       setOpenCloseDialog(false);
-      setCloseAction(null);
-      setRejectionReason('');
 
-      console.log('✅ Project closed successfully, calling onProjectClosed...');
-      
-      // Refresh parent component
       if (onProjectClosed) {
         await onProjectClosed();
-        console.log('✅ onProjectClosed completed');
       }
-
     } catch (err) {
-      console.error("❌ Error closing project:", err);
-      
-      // Extract error message from response
-      let errorMessage = "Failed to close project.";
-      
+      console.error("❌ Error submitting project:", err);
+      let errorMessage = "Failed to submit project.";
       if (err.response?.data?.detail) {
         errorMessage = err.response.data.detail;
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
-      } else if (err.message) {
-        errorMessage = err.message;
       }
-      
-      alert(errorMessage);
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
     } finally {
       setClosingProject(false);
     }
   };
 
+  const handleClientReview = async (reviewData) => {
+    try {
+      setClosingProject(true);
+
+      const closeRequestData = {
+        isAccepted: reviewData.isAccepted,
+        rejectionReason: reviewData.isAccepted
+          ? ""
+          : reviewData.rejectionReason,
+        ...(reviewData.isAccepted && {
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+        }),
+      };
+
+      await closeProjectByClient(cardData.id, token, closeRequestData);
+
+      if (reviewData.isAccepted) {
+        setSnackbar({
+          open: true,
+          message:
+            "Project completed successfully! Rating and review submitted. Points transferred. ✅",
+          severity: "success",
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "Project rejected and returned to Active status for rework.",
+          severity: "info",
+        });
+      }
+
+      setOpenReviewDialog(false);
+
+      if (onProjectClosed) {
+        await onProjectClosed();
+      }
+    } catch (err) {
+      console.error("❌ Error reviewing project:", err);
+
+      let errorMessage = "Failed to review project.";
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.errors) {
+        const errors = err.response.data.errors;
+        errorMessage = Object.values(errors).flat().join(", ");
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    } finally {
+      setClosingProject(false);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
   return (
     <Box
       sx={{
-        bgcolor: '#fff',
+        bgcolor: "#fff",
         borderRadius: 2,
         mb: 3,
         p: 3,
         pb: 0,
-        border: '1px solid #E5E7EB',
-        position: 'relative',
+        border: projectOverdue ? "2px solid #DC2626" : "1px solid #E5E7EB",
+        position: "relative",
       }}
     >
+      {/* ✅ Project Overdue Warning Banner */}
+      {projectOverdue && (
+        <Box
+          sx={{
+            bgcolor: "#FEE2E2",
+            borderLeft: "4px solid #DC2626",
+            borderRadius: 1,
+            p: 2,
+            mb: 3,
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <WarningAmberIcon sx={{ color: "#DC2626", fontSize: 28 }} />
+          <Box>
+            <Typography
+              variant="body2"
+              fontWeight="bold"
+              color="#DC2626"
+              sx={{ mb: 0.5 }}
+            >
+              ⚠️ PROJECT OVERDUE
+            </Typography>
+            <Typography variant="body2" color="#991B1B">
+              This project passed its deadline on{" "}
+              {formatDateWithTime(cardData.deadline)}.
+              {!isProvider &&
+                " You can extend the deadline by clicking the edit button."}
+            </Typography>
+          </Box>
+        </Box>
+      )}
 
       {/* EDIT BUTTON (CLIENT ONLY) */}
-      {!isProvider && (
+      {!isProvider && cardData.projectStatus === "Active" && (
         <IconButton
           onClick={handleOpenEdit}
-          sx={{ position: 'absolute', top: 16, right: 16 }}
+          sx={{ position: "absolute", top: 16, right: 16 }}
         >
           <EditIcon />
         </IconButton>
@@ -237,7 +339,7 @@ export default function TrackTasksHeader({
       {isEditing && !isProvider && (
         <Box
           sx={{
-            position: 'absolute',
+            position: "absolute",
             top: 10,
             right: 10,
             bgcolor: "#fff",
@@ -249,7 +351,12 @@ export default function TrackTasksHeader({
             boxShadow: 3,
           }}
         >
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={1}
+          >
             <Typography fontWeight="bold">Edit Deadline</Typography>
             <IconButton size="small" onClick={() => setIsEditing(false)}>
               <CloseIcon fontSize="small" />
@@ -267,16 +374,17 @@ export default function TrackTasksHeader({
             sx={{ mb: 2 }}
           />
 
-          <Button 
-            variant="contained" 
-            fullWidth 
-            onClick={handleSaveDeadline} 
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={handleSaveDeadline}
             disabled={loading}
             sx={{
-              background: 'linear-gradient(to right, #0EA4E8 0%, #0284C7 100%)',
-              '&:hover': {
-                background: 'linear-gradient(to right, #0284C7 0%, #0EA4E8 100%)',
-              }
+              background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
+              textTransform: "none",
+              "&:hover": {
+                background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
+              },
             }}
           >
             {loading ? "Saving..." : "Save"}
@@ -285,13 +393,20 @@ export default function TrackTasksHeader({
       )}
 
       {/* Back Button + Close Project Button */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 2,
+        }}
+      >
         <CustomButton
           onClick={onBack}
           startIcon={<ArrowBackIcon />}
           sx={{
-            textTransform: 'none',
-            fontSize: '14px',
+            textTransform: "none",
+            fontSize: "14px",
             py: 0.75,
             px: 1.5,
           }}
@@ -299,64 +414,72 @@ export default function TrackTasksHeader({
           Back to Projects
         </CustomButton>
 
-        {/* Close Project Button */}
         {canCloseProject() && (
-          <Button
-            variant="contained"
+          <CustomButton
             startIcon={<CheckCircleIcon />}
             onClick={handleCloseProjectClick}
             sx={{
-              textTransform: 'none',
-              fontSize: '14px',
+              textTransform: "none",
+              fontSize: "14px",
               py: 0.75,
               px: 2,
-              background: 'linear-gradient(to right, #10B981 0%, #059669 100%)',
-              '&:hover': {
-                background: 'linear-gradient(to right, #059669 0%, #10B981 100%)',
-              }
             }}
           >
-            {isProvider ? 'Submit Final Work' : 'Close Project'}
-          </Button>
+            {isProvider ? "Submit Final Work" : "Review & Close Project"}
+          </CustomButton>
         )}
       </Box>
 
       {/* Title */}
       <Box display="flex" alignItems="flex-start" gap={2} mb={2}>
         <Box flex={1}>
-          <Typography variant="h5" fontWeight="bold" sx={{ mb: 0.5, fontSize: '1.25rem' }}>
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            sx={{ mb: 0.5, fontSize: "1.25rem" }}
+          >
             {cardData.title}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {cardData.description}
           </Typography>
-          
-          {/* ✅ Show rejection reason if project was rejected */}
-          {projectDetails?.rejectionReason && cardData.projectStatus === 'Active' && (
-            <Box 
-              sx={{ 
-                mt: 2, 
-                p: 2, 
-                bgcolor: '#FEF2F2', 
-                borderLeft: '4px solid #DC2626',
-                borderRadius: 1 
-              }}
-            >
-              <Typography variant="body2" fontWeight="600" color="#DC2626" sx={{ mb: 0.5 }}>
-                ⚠️ Project Rejected - Rework Required
-              </Typography>
-              <Typography variant="body2" color="#991B1B">
-                <strong>Reason:</strong> {projectDetails.rejectionReason}
-              </Typography>
-            </Box>
-          )}
+
+          {/* Rejection Reason */}
+          {projectDetails?.rejectionReason &&
+            cardData.projectStatus === "Active" && (
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  bgcolor: "#FEF2F2",
+                  borderLeft: "4px solid #DC2626",
+                  borderRadius: 1,
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  fontWeight="600"
+                  color="#DC2626"
+                  sx={{ mb: 0.5 }}
+                >
+                  ⚠️ Project Rejected - Rework Required
+                </Typography>
+                <Typography variant="body2" color="#991B1B">
+                  <strong>Reason:</strong> {projectDetails.rejectionReason}
+                </Typography>
+              </Box>
+            )}
         </Box>
       </Box>
 
       {/* Client Info + Deadline */}
-      <Box display="flex" alignItems="center" gap={3} mb={3} sx={{ flexWrap: 'wrap' }}>
-
-        {/* Avatar + Name */}
+      <Box
+        display="flex"
+        alignItems="center"
+        gap={3}
+        mb={3}
+        sx={{ flexWrap: "wrap" }}
+      >
         <Box display="flex" alignItems="center" gap={1}>
           <Avatar
             src={getImageUrl(cardData.clientAvatar, cardData.clientName)}
@@ -366,34 +489,52 @@ export default function TrackTasksHeader({
           </Avatar>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px' }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontSize: "12px" }}
+            >
               {displayRole}
             </Typography>
-            <Typography variant="body2" sx={{ fontSize: '13px', fontWeight: '500' }}>
+            <Typography
+              variant="body2"
+              sx={{ fontSize: "13px", fontWeight: "500" }}
+            >
               {cardData.clientName}
             </Typography>
           </Box>
         </Box>
 
-        {/* DEADLINE */}
         <Box display="flex" alignItems="center" gap={0.5}>
-          <CalendarMonthIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '12px' }}>
-            Due: {formatDate(cardData.deadline)}
+          <CalendarMonthIcon
+            sx={{
+              fontSize: 16,
+              color: projectOverdue ? "#DC2626" : "text.secondary",
+            }}
+          />
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: "12px",
+              color: projectOverdue ? "#DC2626" : "text.secondary",
+              fontWeight: projectOverdue ? 600 : 400,
+            }}
+          >
+            {projectOverdue ? "Was due: " : "Due: "}
+            {formatDate(cardData.deadline)}
           </Typography>
         </Box>
 
-        {/* Status */}
         {cardData.projectStatus && (
           <Chip
             label={cardData.projectStatus}
             size="small"
             sx={{
-              fontWeight: '600',
-              fontSize: '11px',
-              height: '28px',
-              backgroundColor: '#EFF6FF',
-              color: '#0284C7',
+              fontWeight: "600",
+              fontSize: "11px",
+              height: "28px",
+              backgroundColor: projectOverdue ? "#FEE2E2" : "#EFF6FF",
+              color: projectOverdue ? "#DC2626" : "#0284C7",
             }}
           />
         )}
@@ -401,92 +542,86 @@ export default function TrackTasksHeader({
 
       <ProgressSection progressPercentage={progressPercentage} />
 
-      {/* Close Project Dialog */}
-      <Dialog 
-        open={openCloseDialog} 
+      {/* Dialogs */}
+      <Dialog
+        open={openCloseDialog}
         onClose={() => !closingProject && setOpenCloseDialog(false)}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: { borderRadius: "16px", p: 1 },
+        }}
       >
-        <DialogTitle>
-          {isProvider ? 'Submit Final Work' : 'Close Project'}
+        <DialogTitle sx={{ fontWeight: "bold", pb: 1 }}>
+          Submit Final Work
         </DialogTitle>
-        <DialogContent>
-          {isProvider ? (
-            <Typography>
-              Are you sure you want to submit this project for final review? 
-              All tasks must be completed before submission.
-            </Typography>
-          ) : (
-            <Box>
-              <Typography sx={{ mb: 2 }}>
-                Please review the final work and choose an action:
-              </Typography>
-              
-              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <Button
-                  fullWidth
-                  variant={closeAction === 'accept' ? 'contained' : 'outlined'}
-                  onClick={() => setCloseAction('accept')}
-                  sx={{
-                    ...(closeAction === 'accept' && {
-                      background: 'linear-gradient(to right, #10B981 0%, #059669 100%)',
-                    })
-                  }}
-                >
-                  Accept & Complete
-                </Button>
-                <Button
-                  fullWidth
-                  variant={closeAction === 'reject' ? 'contained' : 'outlined'}
-                  onClick={() => setCloseAction('reject')}
-                  color="error"
-                >
-                  Reject & Request Rework
-                </Button>
-              </Box>
-
-              {closeAction === 'reject' && (
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Rejection Reason *"
-                  placeholder="Please explain what needs to be fixed..."
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  sx={{ mt: 2 }}
-                />
-              )}
-            </Box>
-          )}
+        <DialogContent sx={{ pt: 2 }}>
+          <Typography>
+            Are you sure you want to submit this project for final review? All
+            tasks must be completed before submission.
+          </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={() => {
-              setOpenCloseDialog(false);
-              setCloseAction(null);
-              setRejectionReason('');
-            }} 
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button
+            onClick={() => setOpenCloseDialog(false)}
             disabled={closingProject}
+            sx={{ textTransform: "none" }}
           >
             Cancel
           </Button>
-          <Button 
-            onClick={handleCloseProject} 
+          <Button
+            onClick={handleProviderSubmit}
             variant="contained"
-            disabled={closingProject || (!isProvider && !closeAction)}
+            disabled={closingProject}
             sx={{
-              background: 'linear-gradient(to right, #0EA4E8 0%, #0284C7 100%)',
-              '&:hover': {
-                background: 'linear-gradient(to right, #0284C7 0%, #0EA4E8 100%)',
-              }
+              textTransform: "none",
+              background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
+              "&:hover": {
+                background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
+              },
             }}
           >
-            {closingProject ? 'Processing...' : 'Confirm'}
+            {closingProject ? "Submitting..." : "Confirm Submit"}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ProjectCloseReviewDialog
+        open={openReviewDialog}
+        onClose={() => !closingProject && setOpenReviewDialog(false)}
+        projectTitle={cardData.title}
+        projectDescription={cardData.description}
+        onSubmitReview={handleClientReview}
+      />
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{
+            width: "100%",
+            bgcolor:
+              snackbar.severity === "success"
+                ? "#3b82f6"
+                : snackbar.severity === "info"
+                ? "#3b82f6"
+                : "#EF4444",
+            color: "white",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

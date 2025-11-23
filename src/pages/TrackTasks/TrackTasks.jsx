@@ -53,151 +53,86 @@ export default function TrackTasks() {
     const [viewingReviewTask, setViewingReviewTask] = useState(null);
 
     // Fetch project data
-    const fetchProjectData = async () => {
-        if (!cardData?.id || !token) {
-            console.log('⚠️ Cannot fetch - missing cardData.id or token', { cardData, token: !!token });
-            setLoading(false);
-            return;
-        }
+const fetchProjectData = async () => {
+  if (!cardData?.id || !token) {
+    console.log('⚠️ Cannot fetch - missing cardData.id or token');
+    setLoading(false);
+    return;
+  }
 
-        try {
-            setLoading(true);
-            console.log('🔄 Fetching project data for ID:', cardData.id);
+  try {
+    setLoading(true);
+    console.log('🔄 Fetching project data for ID:', cardData.id);
 
-            // Fetch project details
-            const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
-            console.log('✅ Fetched project details:', detailsRes);
-            console.log('🔍 Project Details Response:', detailsRes.data);
-            console.log('🔍 Project Status Field:', detailsRes.data.status);
-            console.log('🔍 ProjectStatus Field:', detailsRes.data.projectStatus);
-            setProjectDetails(detailsRes.data);
+    // Fetch project details
+    const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
+    console.log('✅ Fetched project details:', detailsRes);
+    
+    setProjectDetails(detailsRes.data);
 
-            // ⚠️ WORKAROUND: If API doesn't return status, fetch from dashboard
-            let apiStatus = detailsRes.data.status || detailsRes.data.projectStatus;
-            
-            if (apiStatus === undefined) {
-                console.log('⚠️ Status not in details API, fetching from dashboard...');
-                try {
-                    console.log('🔄 isProvider:', isProvider);
-                    
-                    // First try: All Status
-                    let dashboardRes = isProvider 
-                        ? await getServiceProviderDashboard(token, "Provider", "All Status")
-                        : await getClientdashboard(token, "client", "All Status");
-                    
-                    console.log('📦 Dashboard Response (All Status):', dashboardRes);
-                    console.log('📋 Dashboard Items:', dashboardRes?.data?.items);
-                    
-                    let currentProject = null;
-                    
-                    if (dashboardRes?.data?.items) {
-                        console.log('🔍 Looking for project ID:', cardData.id);
-                        
-                        // Try multiple field names for project ID
-                        currentProject = dashboardRes.data.items.find(p => 
-                            p.id === cardData.id || 
-                            p.projectId === cardData.id || 
-                            p.Id === cardData.id ||
-                            p.ProjectId === cardData.id
-                        );
-                        
-                        console.log('🎯 Found project in All Status:', currentProject);
-                    }
-                    
-                    // If not found in "All Status", try "SubmittedForFinalReview"
-                    if (!currentProject) {
-                        console.log('🔄 Not found in All Status, trying SubmittedForFinalReview filter...');
-                        
-                        dashboardRes = isProvider 
-                            ? await getServiceProviderDashboard(token, "Provider", "SubmittedForFinalReview")
-                            : await getClientdashboard(token, "client", "SubmittedForFinalReview");
-                        
-                        console.log('📦 Dashboard Response (SubmittedForFinalReview):', dashboardRes);
-                        console.log('📋 Dashboard Items:', dashboardRes?.data?.items);
-                        
-                        if (dashboardRes?.data?.items) {
-                            currentProject = dashboardRes.data.items.find(p => 
-                                p.id === cardData.id || 
-                                p.projectId === cardData.id || 
-                                p.Id === cardData.id ||
-                                p.ProjectId === cardData.id
-                            );
-                            
-                            console.log('🎯 Found project in SubmittedForFinalReview:', currentProject);
-                        }
-                    }
-                    
-                    // Log all project IDs for debugging
-                    if (dashboardRes?.data?.items) {
-                        console.log('📋 All project IDs in dashboard:', 
-                            dashboardRes.data.items.map(p => ({
-                                id: p.id,
-                                projectId: p.projectId,
-                                Id: p.Id,
-                                title: p.title
-                            }))
-                        );
-                    }
-                    
-                    if (currentProject) {
-                        apiStatus = currentProject.projectStatus || currentProject.status;
-                        console.log('✅ Got status from dashboard:', apiStatus);
-                    } else {
-                        console.log('❌ Project not found in dashboard items');
-                    }
-                } catch (err) {
-                    console.error('❌ Failed to fetch status from dashboard:', err);
-                    console.error('❌ Error details:', err.response?.data || err.message);
-                }
-            }
-            
-            setCardData(prev => {
-                const finalStatus = apiStatus !== undefined 
-                    ? mapProjectStatus(apiStatus) 
-                    : (prev.projectStatus || 'Active'); // Keep existing or default to Active
-                
-                console.log('🎯 Final Status:', finalStatus, 'from', apiStatus !== undefined ? 'API' : 'Navigation State');
-                
-                return {
-                    ...prev,
-                    projectStatus: finalStatus,
-                    deadline: detailsRes.data.deadline,
-                    progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0
-                };
-            });
+    let apiStatus = detailsRes.data.status || detailsRes.data.projectStatus;
+    console.log('🔍 Status from details API:', apiStatus);
 
-            // Fetch all tasks
-            const tasksRes = await taskService.getTasksByStatus(cardData.id, null, token);
-            console.log('All Tasks:', tasksRes.data);
+    // ✅ لو ما في status في details API، استخدم initialCardData مباشرة
+    if (apiStatus === undefined) {
+      console.log('⚠️ Status not in details API');
+      console.log('⚠️ Using status from initialCardData:', initialCardData?.projectStatus);
+      apiStatus = initialCardData?.projectStatus;
+    }
+    
+    // ✅ Update cardData
+    setCardData(prev => {
+      const finalStatus = apiStatus !== undefined 
+        ? (typeof apiStatus === 'string' ? apiStatus : mapProjectStatus(apiStatus))
+        : (prev.projectStatus || 'Active');
+      
+      console.log('🎯 Updating cardData:');
+      console.log('   API Status:', apiStatus);
+      console.log('   InitialCardData Status:', initialCardData?.projectStatus);
+      console.log('   Old Status:', prev.projectStatus);
+      console.log('   New Status:', finalStatus);
+      
+      return {
+        ...prev,
+        projectStatus: finalStatus,
+        deadline: detailsRes.data.deadline,
+        progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0
+      };
+    });
 
-            const allTasks = tasksRes.data;
+    // Fetch all tasks
+    const tasksRes = await taskService.getTasksByStatus(cardData.id, null, token);
+    console.log('All Tasks:', tasksRes.data);
 
-            const tasksByStatus = {
-                ToDo: [],
-                InProgress: [],
-                InReview: [],
-                Done: [],
-            };
+    const allTasks = tasksRes.data;
 
-            allTasks.forEach(task => {
-                const status = task.status;
-                if (tasksByStatus[status]) {
-                    tasksByStatus[status].push(task);
-                }
-            });
-
-            setTasks(tasksByStatus);
-        } catch (error) {
-            console.error('Error fetching tasks:', error);
-            setSnackbar({
-                open: true,
-                message: 'Failed to load tasks',
-                severity: 'error',
-            });
-        } finally {
-            setLoading(false);
-        }
+    const tasksByStatus = {
+      ToDo: [],
+      InProgress: [],
+      InReview: [],
+      Done: [],
     };
+
+    allTasks.forEach(task => {
+      const status = task.status;
+      if (tasksByStatus[status]) {
+        tasksByStatus[status].push(task);
+      }
+    });
+
+    setTasks(tasksByStatus);
+    
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    setSnackbar({
+      open: true,
+      message: 'Failed to load tasks',
+      severity: 'error',
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
     // Fetch project details and tasks on mount
     useEffect(() => {
@@ -576,6 +511,8 @@ export default function TrackTasks() {
                 onBack={() => navigate(-1)}
                 onDeadlineUpdate={handleDeadlineUpdate}
                 onProjectClosed={handleProjectClosed}
+                  setCardData={setCardData}  // ✅ أضف هذا
+
             />
 
             <StatsSection

@@ -13,12 +13,14 @@ import {
   Alert,
 } from "@mui/material";
 import { Image, Close as CloseIcon } from "@mui/icons-material";
-import ProfilePic from "../../../assets/images/ProfilePic.jpg";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import DisabledCustomButton from "../../../components/CustomButton/DisabledCustomButton";
 import { createPost as createPostApi } from "../../../services/postService";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useProfile } from "../../../Context/ProfileContext";
+import dayjs from "dayjs"; // ✅ إضافة
+import utc from "dayjs/plugin/utc"; // ✅ إضافة
+import { useCurrentUser } from "../../../Context/CurrentUserContext"; // ✅ تغيير
 
 const FormWrapper = styled(Box)(({ theme }) => ({
   backgroundColor: "white",
@@ -40,6 +42,8 @@ const FormWrapper = styled(Box)(({ theme }) => ({
 const CreatePost = ({ addPost, token }) => {
   const { userData } = useProfile();
   console.log("CreatePost userData:", userData);
+    const { currentUser } = useCurrentUser(); // ✅ تغيير من userData
+
   const [content, setContent] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
@@ -98,59 +102,66 @@ const CreatePost = ({ addPost, token }) => {
     if (fileInput) fileInput.value = "";
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+ const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    // Since the button is disabled if content is empty, we don't need a content check here.
-    if (isPostDisabled) return;
+  if (isPostDisabled) return;
 
-    const formData = new FormData();
-    formData.append("Content", content);
-    formData.append("Tags", selectedTags);
-    if (file) formData.append("File", file);
+  const formData = new FormData();
+  formData.append("Content", content);
+  formData.append("Tags", selectedTags);
+  if (file) formData.append("File", file);
 
-    try {
-      const response = await createPostApi(formData, token);
-      const postData = response.data;
-      console.log("postData:", postData);
-      const newPost = {
-        id: postData.id,
-        content: postData.content,
-        selectedTags: postData.tags?.[0]?.split(",") || [],
-        user: { name: postData.author.userName, avatar: ProfilePic },
-        time: new Date(postData.createdAt || Date.now()).toLocaleTimeString(),
-        likes: postData.likesCount,
-        comments: postData.commentsCount,
-        shares: 0,
-        fileUrl: postData.fileUrl
-          ? `https://uni.runasp.net/${postData.fileUrl}`
-          : null,
-      };
+  try {
+    const response = await createPostApi(formData, token);
+    const postData = response.data;
+    console.log("postData:", postData);
+    const newPost = {
+      id: postData.id,
+      content: postData.content,
+      selectedTags: postData.tags?.[0]?.split(",") || [],
+      user: { 
+        name: postData.author.userName,
+        avatar: getImageUrl(postData.author.profilePictureUrl, postData.author.userName),
+        id: postData.author.id,
+      },
+      // ✅ بدون UTC conversion - معاملة مباشرة
+      time: dayjs(postData.createdAt).format("DD MMM, hh:mm A"),
+      likes: postData.likesCount,
+      comments: postData.commentsCount,
+      shares: 0,
+      fileUrl: postData.fileUrl
+        ? `https://uni.runasp.net/${postData.fileUrl}`
+        : null,
+      isLiked: false,
+      recentComments: [],
+      isClosed: postData.postStatus === "Closed",
+    };
 
-      addPost(newPost);
-      setContent("");
-      setSelectedTags([]);
-      setTagInput("");
-      setErrors({ content: "" });
-      setFile(null);
-      setImagePreview(null);
+    addPost(newPost);
+    setContent("");
+    setSelectedTags([]);
+    setTagInput("");
+    setErrors({ content: "" });
+    setFile(null);
+    setImagePreview(null);
 
-      if (response.status === 201) {
-        setSnackbar({
-          open: true,
-          message: "Post has been created successfully! 🎉",
-          severity: "success",
-        });
-      }
-    } catch (error) {
-      console.error("Error creating post:", error);
+    if (response.status === 201) {
       setSnackbar({
         open: true,
-        message: "Failed to create post. Please try again.",
-        severity: "error",
+        message: "Post has been created successfully! 🎉",
+        severity: "success",
       });
     }
-  };
+  } catch (error) {
+    console.error("Error creating post:", error);
+    setSnackbar({
+      open: true,
+      message: "Failed to create post. Please try again.",
+      severity: "error",
+    });
+  }
+};
 
   const iconHover = { "&:hover": { color: "primary.main" } };
 
@@ -159,8 +170,9 @@ const CreatePost = ({ addPost, token }) => {
       <FormWrapper component="form" onSubmit={handleSubmit}>
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
           <Avatar
-            src={getImageUrl(userData?.profilePicture, userData?.userName)}
-            alt={userData?.userName || "User"}
+            // ✅ استخدم currentUser بدل userData
+            src={getImageUrl(currentUser?.profilePicture, currentUser?.userName)}
+            alt={currentUser?.userName || "User"}
           />
           <TextField
             multiline
