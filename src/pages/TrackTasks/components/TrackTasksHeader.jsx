@@ -1,4 +1,4 @@
-import { Box, Typography, Avatar, Chip, Button, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Typography, Avatar, Chip, Button, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,7 +11,6 @@ import ProgressSection from './ProgressSection';
 import ProjectCloseReviewDialog from './ProjectCloseReviewDialog';
 import { editCollaborationRequest } from '../../../services/collaborationService';
 import { closeProjectByProvider, closeProjectByClient } from '../../../services/taskService';
-import { addClientReviewToProvider } from '../../../services/reviewService';
 
 export default function TrackTasksHeader({
   cardData,
@@ -37,6 +36,13 @@ export default function TrackTasksHeader({
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [closingProject, setClosingProject] = useState(false);
 
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
   const displayRole = cardData.isProvider ? 'Client' : 'Service Provider';
   const token = localStorage.getItem('accessToken');
 
@@ -61,7 +67,11 @@ export default function TrackTasksHeader({
     const current = new Date(cardData.deadline);
 
     if (chosen <= current) {
-      alert("New deadline must be at least 1 day AFTER current deadline.");
+      setSnackbar({
+        open: true,
+        message: "New deadline must be at least 1 day AFTER current deadline.",
+        severity: 'error',
+      });
       return;
     }
 
@@ -81,11 +91,19 @@ export default function TrackTasksHeader({
       }
 
       setIsEditing(false);
-      alert("Deadline updated successfully!");
+      setSnackbar({
+        open: true,
+        message: "Deadline updated successfully!",
+        severity: 'success',
+      });
     } catch (err) {
       console.error("Error updating deadline:", err);
       const errorMessage = err.response?.data?.message || err.message || "Failed to update deadline.";
-      alert(errorMessage);
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -129,10 +147,13 @@ export default function TrackTasksHeader({
       
       console.log('✅ Provider submission successful, waiting for backend to update...');
       
-      // Wait a moment for backend to update status
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      alert("Project submitted for final review successfully!");
+      setSnackbar({
+        open: true,
+        message: "Project submitted for final review successfully!",
+        severity: 'success',
+      });
       setOpenCloseDialog(false);
       
       if (onProjectClosed) {
@@ -147,7 +168,11 @@ export default function TrackTasksHeader({
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       }
-      alert(errorMessage);
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: 'error',
+      });
     } finally {
       setClosingProject(false);
     }
@@ -161,50 +186,32 @@ export default function TrackTasksHeader({
       console.log('📝 Client review data:', reviewData);
       console.log('🆔 Project ID:', cardData.id);
 
+      const closeRequestData = {
+        isAccepted: reviewData.isAccepted,
+        rejectionReason: reviewData.isAccepted ? '' : reviewData.rejectionReason,
+        ...(reviewData.isAccepted && {
+          rating: reviewData.rating,
+          comment: reviewData.comment
+        })
+      };
+
+      console.log('📤 Sending close request with data:', closeRequestData);
+
+      const closeResponse = await closeProjectByClient(cardData.id, token, closeRequestData);
+      console.log('✅ Project closed successfully:', closeResponse);
+
       if (reviewData.isAccepted) {
-        console.log('✅ Client accepting with rating:', reviewData.rating);
-        console.log('📝 Review comment:', reviewData.comment);
-        
-        // Submit review with rating and comment
-        try {
-          const reviewResponse = await addClientReviewToProvider(
-            cardData.id,
-            reviewData.rating,
-            reviewData.comment, // Use the actual comment from user
-            token
-          );
-          console.log('✅ Review submitted successfully:', reviewResponse);
-        } catch (reviewError) {
-          console.error('❌ Review submission failed:', reviewError);
-          console.error('❌ Review error details:', reviewError.response?.data);
-          throw new Error(reviewError.response?.data?.detail || reviewError.response?.data?.message || 'Failed to submit review');
-        }
-
-        // Then close the project
-        try {
-          const closeResponse = await closeProjectByClient(cardData.id, token, {
-            isAccepted: true,
-            rejectionReason: ''
-          });
-          console.log('✅ Project closed successfully:', closeResponse);
-        } catch (closeError) {
-          console.error('❌ Project close failed:', closeError);
-          console.error('❌ Close error details:', closeError.response?.data);
-          throw new Error(closeError.response?.data?.detail || closeError.response?.data?.message || 'Failed to close project');
-        }
-
-        alert("Project completed successfully! Rating and review submitted. Points transferred.");
-      } else {
-        console.log('❌ Client rejecting with reason:', reviewData.rejectionReason);
-        
-        // Reject without rating
-        const closeResponse = await closeProjectByClient(cardData.id, token, {
-          isAccepted: false,
-          rejectionReason: reviewData.rejectionReason
+        setSnackbar({
+          open: true,
+          message: "Project completed successfully! Rating and review submitted. Points transferred.",
+          severity: 'success',
         });
-        console.log('✅ Project rejected:', closeResponse);
-
-        alert("Project rejected and returned to Active status for rework.");
+      } else {
+        setSnackbar({
+          open: true,
+          message: "Project rejected and returned to Active status for rework.",
+          severity: 'info',
+        });
       }
 
       setOpenReviewDialog(false);
@@ -214,20 +221,31 @@ export default function TrackTasksHeader({
       }
     } catch (err) {
       console.error("❌ Error reviewing project:", err);
-      let errorMessage = err.message || "Failed to review project.";
+      console.error("❌ Full error object:", err.response?.data);
+      
+      let errorMessage = "Failed to review project.";
       if (err.response?.data?.detail) {
         errorMessage = err.response.data.detail;
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.response?.data?.errors) {
-        // Handle validation errors
         const errors = err.response.data.errors;
         errorMessage = Object.values(errors).flat().join(', ');
+      } else if (err.message) {
+        errorMessage = err.message;
       }
-      alert(errorMessage);
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: 'error',
+      });
     } finally {
       setClosingProject(false);
     }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   return (
@@ -292,9 +310,10 @@ export default function TrackTasksHeader({
             onClick={handleSaveDeadline} 
             disabled={loading}
             sx={{
-              background: 'linear-gradient(to right, #0EA4E8 0%, #0284C7 100%)',
+              background: 'linear-gradient(to right, #00C8FF, #8B5FF6)',
+              textTransform: 'none',
               '&:hover': {
-                background: 'linear-gradient(to right, #0284C7 0%, #0EA4E8 100%)',
+                background: 'linear-gradient(to right, #8B5FF6, #00C8FF)',
               }
             }}
           >
@@ -320,8 +339,7 @@ export default function TrackTasksHeader({
 
         {/* Close Project Button */}
         {canCloseProject() && (
-          <Button
-            variant="contained"
+          <CustomButton
             startIcon={<CheckCircleIcon />}
             onClick={handleCloseProjectClick}
             sx={{
@@ -329,14 +347,10 @@ export default function TrackTasksHeader({
               fontSize: '14px',
               py: 0.75,
               px: 2,
-              background: 'linear-gradient(to right, #10B981 0%, #059669 100%)',
-              '&:hover': {
-                background: 'linear-gradient(to right, #059669 0%, #10B981 100%)',
-              }
             }}
           >
             {isProvider ? 'Submit Final Work' : 'Review & Close Project'}
-          </Button>
+          </CustomButton>
         )}
       </Box>
 
@@ -422,18 +436,24 @@ export default function TrackTasksHeader({
         onClose={() => !closingProject && setOpenCloseDialog(false)}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: { borderRadius: '16px', p: 1 },
+        }}
       >
-        <DialogTitle>Submit Final Work</DialogTitle>
-        <DialogContent>
+        <DialogTitle sx={{ fontWeight: 'bold', pb: 1 }}>
+          Submit Final Work
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
           <Typography>
             Are you sure you want to submit this project for final review? 
             All tasks must be completed before submission.
           </Typography>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button 
             onClick={() => setOpenCloseDialog(false)} 
             disabled={closingProject}
+            sx={{ textTransform: 'none' }}
           >
             Cancel
           </Button>
@@ -442,9 +462,10 @@ export default function TrackTasksHeader({
             variant="contained"
             disabled={closingProject}
             sx={{
-              background: 'linear-gradient(to right, #10B981 0%, #059669 100%)',
+              textTransform: 'none',
+              background: 'linear-gradient(to right, #00C8FF, #8B5FF6)',
               '&:hover': {
-                background: 'linear-gradient(to right, #059669 0%, #10B981 100%)',
+                background: 'linear-gradient(to right, #8B5FF6, #00C8FF)',
               }
             }}
           >
@@ -461,6 +482,32 @@ export default function TrackTasksHeader({
         projectDescription={cardData.description}
         onSubmitReview={handleClientReview}
       />
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{
+            width: '100%',
+            bgcolor: snackbar.severity === 'success' ? '#3b82f6' : 
+                     snackbar.severity === 'info' ? '#3b82f6' : 
+                     '#EF4444',
+            color: 'white',
+            '& .MuiAlert-icon': {
+              color: 'white',
+            },
+          }}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

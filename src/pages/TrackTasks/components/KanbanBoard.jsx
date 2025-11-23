@@ -13,7 +13,8 @@ export default function KanbanBoard({
   onMenuOpen,
   onAddTask,
   onReviewClick,
-  onViewReview,  // ✅ MAKE SURE THIS IS IN THE PROPS
+  onViewReview,
+  projectStatus, // ✅ NEW: Receive project status from parent
 }) {
   return (
     <Box
@@ -39,6 +40,7 @@ export default function KanbanBoard({
           onAddTask={onAddTask}
           onReviewClick={onReviewClick}
           onViewReview={onViewReview}
+          projectStatus={projectStatus} // ✅ Pass it down
         />
       ))}
     </Box>

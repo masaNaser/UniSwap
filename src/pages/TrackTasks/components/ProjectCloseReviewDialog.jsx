@@ -29,17 +29,14 @@ export default function ProjectCloseReviewDialog({
   const [rating, setRating] = useState(0);
 
   const handleSubmit = () => {
-    // Validate decision
     if (!reviewDecision) {
       return;
     }
 
-    // Validate comment (required for both accept and reject)
     if (!reviewComment.trim()) {
       return;
     }
 
-    // Validate rating (only for accept)
     if (reviewDecision === 'accept' && rating === 0) {
       return;
     }
@@ -54,7 +51,7 @@ export default function ProjectCloseReviewDialog({
       isAccepted: reviewDecision === 'accept',
       rejectionReason: reviewDecision === 'reject' ? reviewComment.trim() : '',
       rating: reviewDecision === 'accept' ? Number(rating) : 0,
-      comment: reviewComment.trim(), // Always send comment
+      comment: reviewComment.trim(),
     });
 
     handleClose();
@@ -67,10 +64,6 @@ export default function ProjectCloseReviewDialog({
     onClose();
   };
 
-  // Button is disabled if:
-  // - No decision selected
-  // - No comment entered
-  // - Accept without rating
   const isSubmitDisabled = 
     !reviewDecision || 
     !reviewComment.trim() ||
@@ -81,13 +74,21 @@ export default function ProjectCloseReviewDialog({
       return '#D1D5DB';
     }
     if (reviewDecision === 'accept') {
-      return 'linear-gradient(to right, #10B981, #059669)';
+      return 'linear-gradient(to right, #00C8FF, #8B5FF6)';
     }
     return 'linear-gradient(to right, #DC2626, #EF4444)';
   })();
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog 
+      open={open} 
+      onClose={handleClose} 
+      maxWidth="sm" 
+      fullWidth
+      PaperProps={{
+        sx: { borderRadius: '16px', p: 1 },
+      }}
+    >
       <DialogTitle sx={{ fontWeight: 'bold', pb: 1 }}>
         Review Project Completion
       </DialogTitle>
@@ -123,17 +124,17 @@ export default function ProjectCloseReviewDialog({
             control={<Radio />}
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CheckCircleOutlineIcon sx={{ color: '#10B981', fontSize: 20 }} />
+                <CheckCircleOutlineIcon sx={{ color: '#3B82F6', fontSize: 20 }} />
                 <Typography>Accept & Complete Project</Typography>
               </Box>
             }
             sx={{
-              border: reviewDecision === 'accept' ? '2px solid #10B981' : '1px solid #E5E7EB',
+              border: reviewDecision === 'accept' ? '2px solid #3B82F6' : '1px solid #E5E7EB',
               borderRadius: 1,
               p: 1.5,
               mb: 1,
               ml: 0,
-              bgcolor: reviewDecision === 'accept' ? '#ECFDF5' : 'transparent',
+              bgcolor: reviewDecision === 'accept' ? '#EFF6FF' : 'transparent',
             }}
           />
           <FormControlLabel
@@ -169,7 +170,7 @@ export default function ProjectCloseReviewDialog({
                 p: 2,
                 bgcolor: '#F0F9FF',
                 borderRadius: 1,
-                border: '1px solid #0EA5E9'
+                border: '1px solid #3B82F6'
               }}
             >
               <Rating
@@ -190,7 +191,7 @@ export default function ProjectCloseReviewDialog({
                 }}
               />
               {rating > 0 && (
-                <Typography variant="h6" fontWeight="bold" color="#0EA5E9">
+                <Typography variant="h6" fontWeight="bold" color="#3B82F6">
                   {rating}.0
                 </Typography>
               )}
@@ -233,7 +234,10 @@ export default function ProjectCloseReviewDialog({
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={handleClose} sx={{ textTransform: 'none' }}>
+        <Button 
+          onClick={handleClose} 
+          sx={{ textTransform: 'none' }}
+        >
           Cancel
         </Button>
         <Button

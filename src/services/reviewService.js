@@ -4,13 +4,7 @@ import api from "./api";
 // ===== Client Review to Provider =====
 export const addClientReviewToProvider = async (projectId, rating, content, token) => {
   // Backend expects: POST /reviews/client-to-provider
-  // With ProjectId as a parameter that ASP.NET will bind from the request
-  // Body: { rating: decimal, content: string }
-  
-  // ASP.NET Core can bind parameters from multiple sources
-  // When not specified, it tries route, then query, then body
-  // Since there's no route parameter, it will look in query string
-  
+  // With ProjectId as query parameter (capital P) and body with rating and content
   return await api.post(
     `/reviews/client-to-provider`,
     { 
@@ -19,7 +13,7 @@ export const addClientReviewToProvider = async (projectId, rating, content, toke
     },
     {
       params: { 
-        ProjectId: projectId
+        ProjectId: projectId  // Capital P to match backend parameter name exactly
       },
       headers: { 
         Authorization: `Bearer ${token}`,
