@@ -1,59 +1,70 @@
 // src/utils/projectStatusMapper.js
 
 /**
- * Maps ProjectStatus enum values (numbers) to readable strings
- * Backend returns: 0, 1, 2, 3, etc.
- * Frontend needs: "Active", "Completed", "SubmittedForFinalReview", etc.
+ * Maps numeric or string project status to readable string format
+ * @param {number|string} status - The status value from API (0-4 or string)
+ * @returns {string} - Readable status string
  */
-
-export const ProjectStatusEnum = {
-  Active: 0,
-  Completed: 1,
-  SubmittedForFinalReview: 2,
-  Overdue: 3,
-  Pending: 4,
-};
-
 export const mapProjectStatus = (status) => {
-  console.log('🔄 Mapping status:', status, 'Type:', typeof status);
-  
-  // If already a string, return as is
+  // If already a string, return as is (handle both PascalCase and normal case)
   if (typeof status === 'string') {
-    console.log('✅ Already string:', status);
-    return status;
+    const statusMap = {
+      'active': 'Active',
+      'completed': 'Completed',
+      'overdue': 'Overdue',
+      'submittedforfinalreview': 'SubmittedForFinalReview',
+      'submitted for final review': 'SubmittedForFinalReview',
+      'submitted for review': 'SubmittedForFinalReview',
+      'submittedForFinalReview': 'SubmittedForFinalReview',
+      'SubmittedForFinalReview': 'SubmittedForFinalReview',
+    };
+    
+    const normalizedStatus = status.toLowerCase().replace(/\s+/g, '');
+    return statusMap[normalizedStatus] || status;
   }
 
-  // If number, map to string
-const statusMap = {
-  0: 'Active',
-  1: 'Completed',
-  2: 'SubmittedForFinalReview',  // ✅ هذا الاسم بالضبط!
-  3: 'Overdue',
-  4: 'Pending',
-};
-
-  const result = statusMap[status] || 'Active';
-  
-  return result;
-};
-
-/**
- * Maps an entire project object to include readable status
- */
-export const mapProjectWithStatus = (project) => {
-  if (!project) return project;
-
-  return {
-    ...project,
-    projectStatus: mapProjectStatus(project.projectStatus || project.status),
-    status: mapProjectStatus(project.projectStatus || project.status),
+  // If numeric, map to string
+  const statusMapping = {
+    0: 'Active',
+    1: 'Completed',
+    2: 'Overdue',
+    3: 'SubmittedForFinalReview',
   };
+
+  return statusMapping[status] || 'Active';
 };
 
 /**
- * Maps array of projects to include readable statuses
+ * Maps projects array with status field
+ * @param {Array} projects - Array of project objects
+ * @returns {Array} - Projects with mapped status
  */
 export const mapProjectsWithStatus = (projects) => {
   if (!Array.isArray(projects)) return [];
-  return projects.map(mapProjectWithStatus);
+
+  return projects.map(project => ({
+    ...project,
+    projectStatus: project.projectStatus 
+      ? mapProjectStatus(project.projectStatus)
+      : project.status 
+        ? mapProjectStatus(project.status)
+        : 'Active'
+  }));
+};
+
+/**
+ * Gets display label for status filter
+ * @param {string} status - The status value
+ * @returns {string} - Display label
+ */
+export const getStatusDisplayLabel = (status) => {
+  const labelMap = {
+    'All Status': 'All Status',
+    'Active': 'Active',
+    'Completed': 'Completed',
+    'Overdue': 'Overdue',
+    'SubmittedForFinalReview': 'Submitted For Review',
+  };
+
+  return labelMap[status] || status;
 };

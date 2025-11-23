@@ -11,7 +11,7 @@ import ReviewDialog from './components/ReviewDialog';
 import ViewReviewDialog from './components/ViewReviewDialog';
 import * as taskService from '../../services/taskService';
 import { mapProjectStatus } from '../../utils/projectStatusMapper';
-import { getServiceProviderDashboard, getClientdashboard } from '../../services/projectService'; // ✅ Added // ✅ Import mapper
+import { getServiceProviderDashboard, getClientdashboard } from '../../services/projectService';
 
 const statuses = ['ToDo', 'InProgress', 'InReview', 'Done'];
 const statusLabels = {
@@ -52,105 +52,145 @@ export default function TrackTasks() {
     const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
     const [viewingReviewTask, setViewingReviewTask] = useState(null);
 
-    // Fetch project data
-const fetchProjectData = async () => {
-  if (!cardData?.id || !token) {
-    console.log('⚠️ Cannot fetch - missing cardData.id or token');
-    setLoading(false);
-    return;
-  }
+    // Fetch project status from dashboard
+    const fetchProjectStatus = async () => {
+        if (!cardData?.id || !token) {
+            console.log('⚠️ Cannot fetch status - missing cardData.id or token');
+            return null;
+        }
 
-  try {
-    setLoading(true);
-    console.log('🔄 Fetching project data for ID:', cardData.id);
+        try {
+            console.log('🔄 Fetching project status from dashboard for ID:', cardData.id);
+            console.log('👤 User role:', isProvider ? 'Provider' : 'Client');
 
-    // Fetch project details
-    const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
-    console.log('✅ Fetched project details:', detailsRes);
-    
-    setProjectDetails(detailsRes.data);
+            const filters = ['All Status', 'Active', 'SubmittedForFinalReview', 'Completed', 'Overdue'];
+            
+            for (const filter of filters) {
+                console.log(`🔍 Checking "${filter}" filter...`);
+                
+                try {
+                    const dashboardRes = isProvider 
+                        ? await getServiceProviderDashboard(token, "Provider", filter)
+                        : await getClientdashboard(token, "client", filter);
 
-    let apiStatus = detailsRes.data.status || detailsRes.data.projectStatus;
-    console.log('🔍 Status from details API:', apiStatus);
+                    console.log(`📦 Response from "${filter}":`, dashboardRes?.data?.items?.length || 0, 'items');
 
-    // ✅ لو ما في status في details API، استخدم initialCardData مباشرة
-    if (apiStatus === undefined) {
-      console.log('⚠️ Status not in details API');
-      console.log('⚠️ Using status from initialCardData:', initialCardData?.projectStatus);
-      apiStatus = initialCardData?.projectStatus;
-    }
-    
-    // ✅ Update cardData
-    setCardData(prev => {
-      const finalStatus = apiStatus !== undefined 
-        ? (typeof apiStatus === 'string' ? apiStatus : mapProjectStatus(apiStatus))
-        : (prev.projectStatus || 'Active');
-      
-      console.log('🎯 Updating cardData:');
-      console.log('   API Status:', apiStatus);
-      console.log('   InitialCardData Status:', initialCardData?.projectStatus);
-      console.log('   Old Status:', prev.projectStatus);
-      console.log('   New Status:', finalStatus);
-      
-      return {
-        ...prev,
-        projectStatus: finalStatus,
-        deadline: detailsRes.data.deadline,
-        progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0
-      };
-    });
+                    if (dashboardRes?.data?.items) {
+                        const currentProject = dashboardRes.data.items.find(p => 
+                            p.id === cardData.id || 
+                            p.projectId === cardData.id || 
+                            p.Id === cardData.id ||
+                            p.ProjectId === cardData.id
+                        );
 
-    // Fetch all tasks
-    const tasksRes = await taskService.getTasksByStatus(cardData.id, null, token);
-    console.log('All Tasks:', tasksRes.data);
+                        if (currentProject) {
+                            const status = currentProject.projectStatus || currentProject.status;
+                            console.log('✅ FOUND PROJECT!');
+                            console.log('   - Filter:', filter);
+                            console.log('   - Status Field:', status);
+                            console.log('   - Full Project:', currentProject);
+                            return status;
+                        } else {
+                            console.log(`   ❌ Project ID ${cardData.id} not found in this filter`);
+                        }
+                    }
+                } catch (filterError) {
+                    console.error(`❌ Error checking "${filter}" filter:`, filterError);
+                }
+            }
 
-    const allTasks = tasksRes.data;
-
-    const tasksByStatus = {
-      ToDo: [],
-      InProgress: [],
-      InReview: [],
-      Done: [],
+            console.log('⚠️ Project not found in ANY filter');
+            return null;
+        } catch (err) {
+            console.error('❌ Failed to fetch status from dashboard:', err);
+            return null;
+        }
     };
 
-    allTasks.forEach(task => {
-      const status = task.status;
-      if (tasksByStatus[status]) {
-        tasksByStatus[status].push(task);
-      }
-    });
+    // Fetch project data
+    const fetchProjectData = async () => {
+        if (!cardData?.id || !token) {
+            console.log('⚠️ Cannot fetch - missing cardData.id or token', { cardData, token: !!token });
+            setLoading(false);
+            return;
+        }
 
-    setTasks(tasksByStatus);
-    
-  } catch (error) {
-    console.error('Error fetching tasks:', error);
-    setSnackbar({
-      open: true,
-      message: 'Failed to load tasks',
-      severity: 'error',
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+        try {
+            setLoading(true);
+            console.log('🔄 Fetching project data for ID:', cardData.id);
 
-    // Fetch project details and tasks on mount
+            const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
+            console.log('✅ Fetched project details:', detailsRes);
+            setProjectDetails(detailsRes.data);
+
+            console.log('🔍 Fetching current status from dashboard...');
+            const dashboardStatus = await fetchProjectStatus();
+            
+            console.log('📊 Dashboard Status Result:', dashboardStatus);
+
+            setCardData(prev => {
+                const finalStatus = dashboardStatus 
+                    ? mapProjectStatus(dashboardStatus) 
+                    : (prev.projectStatus || 'Active');
+                
+                console.log('🎯 Final Status:', finalStatus, 'from Dashboard');
+                
+                return {
+                    ...prev,
+                    projectStatus: finalStatus,
+                    status: finalStatus,
+                    deadline: detailsRes.data.deadline,
+                    progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0,
+                    rejectionReason: detailsRes.data.rejectionReason || prev.rejectionReason
+                };
+            });
+
+            const tasksRes = await taskService.getTasksByStatus(cardData.id, null, token);
+            console.log('All Tasks:', tasksRes.data);
+
+            const allTasks = tasksRes.data;
+
+            const tasksByStatus = {
+                ToDo: [],
+                InProgress: [],
+                InReview: [],
+                Done: [],
+            };
+
+            allTasks.forEach(task => {
+                const status = task.status;
+                if (tasksByStatus[status]) {
+                    tasksByStatus[status].push(task);
+                }
+            });
+
+            setTasks(tasksByStatus);
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+            setSnackbar({
+                open: true,
+                message: 'Failed to load tasks',
+                severity: 'error',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         console.log('📍 useEffect triggered - cardData.id:', cardData?.id);
         fetchProjectData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Only run once on mount
+    }, []);
 
-    // Handler to update deadline in both states
     const handleDeadlineUpdate = (newDeadline) => {
         setCardData(prev => ({ ...prev, deadline: newDeadline }));
         setProjectDetails(prev => ({ ...prev, deadline: newDeadline }));
     };
 
-    // Handler to refresh after project closure
     const handleProjectClosed = async () => {
         try {
-            // Refresh project data
+            console.log('🔄 handleProjectClosed called - refreshing project data...');
+            
             await fetchProjectData();
             
             setSnackbar({
@@ -168,7 +208,6 @@ const fetchProjectData = async () => {
         }
     };
 
-    // Handle review submission
     const handleSubmitReview = async (taskId, decision, comment) => {
         try {
             if (decision === 'accept') {
@@ -177,10 +216,8 @@ const fetchProjectData = async () => {
                 await taskService.rejectTask(taskId, comment, token);
             }
 
-            // Update project progress
             await taskService.updateProjectProgress(cardData.id, token);
 
-            // Refresh tasks and project details
             const [tasksRes, detailsRes] = await Promise.all([
                 taskService.getTasksByStatus(cardData.id, null, token),
                 taskService.getProjectTaskDetails(cardData.id, token)
@@ -229,7 +266,6 @@ const fetchProjectData = async () => {
         setOpenViewReviewDialog(true);
     };
 
-    // Task management functions
     const handleAddTask = async () => {
         if (!newTask.title.trim()) {
             setSnackbar({ open: true, message: 'Please enter a task title', severity: 'error' });
@@ -511,8 +547,6 @@ const fetchProjectData = async () => {
                 onBack={() => navigate(-1)}
                 onDeadlineUpdate={handleDeadlineUpdate}
                 onProjectClosed={handleProjectClosed}
-                  setCardData={setCardData}  // ✅ أضف هذا
-
             />
 
             <StatsSection
@@ -535,6 +569,7 @@ const fetchProjectData = async () => {
                 onAddTask={handleTaskFromColumn}
                 onReviewClick={handleReviewClick}
                 onViewReview={handleViewReview}
+                projectStatus={cardData.projectStatus} // ✅ Pass project status
             />
 
             <TaskDialog

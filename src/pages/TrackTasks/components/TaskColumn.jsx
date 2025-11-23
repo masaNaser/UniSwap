@@ -23,7 +23,8 @@ export default function TaskColumn({
   onMenuOpen,
   onAddTask,
   onReviewClick,
-  onViewReview,  // MAKE SURE THIS IS IN THE PROPS
+  onViewReview,
+  projectStatus, // ✅ NEW: Receive project status
 }) {
   const isToDoColumn = status === 'ToDo';
   const [openDialog, setOpenDialog] = useState(false);
@@ -34,6 +35,11 @@ export default function TaskColumn({
     status: 'ToDo',
     uploadFile: null,
   });
+
+  // ✅ Hide '+' button if provider AND ToDo column AND status is SubmittedForFinalReview
+  const shouldShowAddButton = isProvider && 
+                               isToDoColumn && 
+                               projectStatus !== 'SubmittedForFinalReview';
 
   const handleAddClick = () => {
     setNewTask({
@@ -105,7 +111,8 @@ export default function TaskColumn({
               height: 32,
             }}
           />
-          {isProvider && isToDoColumn && (
+          {/* ✅ Show '+' button only when conditions are met */}
+          {shouldShowAddButton && (
             <Button
               onClick={handleAddClick}
               sx={{
