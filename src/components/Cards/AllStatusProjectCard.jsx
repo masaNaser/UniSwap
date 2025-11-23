@@ -45,7 +45,7 @@ export default function AllStatusProjectCard({
       Pending: { bg: "#FEF3C7", text: "#F59E0B" },
       Completed: { bg: "#DBEAFE", text: "#0284C7" },
       Overdue: { bg: "#FEE2E2", text: "#DC2626" },
-      SubmittedForFinalReview: { bg: "#E0E7FF", text: "#6366F1" },
+      SubmittedForFinalReview: { bg: "#F3E8FF", text: "#A855F7" },
     };
     return styles[status] || styles.Active;
   };
@@ -113,6 +113,13 @@ export default function AllStatusProjectCard({
 
   const formattedCreatedAt = formatCreatedAt(createdAt);
 
+  const getStatusDisplayLabel = (status) => {
+    if (status === "SubmittedForFinalReview") {
+      return "In Review";
+    }
+    return status;
+  };
+
   const handleCardClick = () => {
     navigate(`/app/TrackTasks/${id}`, {
       state: {
@@ -126,7 +133,7 @@ export default function AllStatusProjectCard({
         deadline,
         isProvider,
         progressPercentage,
-        projectStatus, // ✅ FIXED: Add projectStatus to navigation state
+        projectStatus,
       },
     });
   };
@@ -164,7 +171,7 @@ export default function AllStatusProjectCard({
         {/* Status Chip at Top */}
         <Box mb={1.5}>
           <Chip
-            label={projectStatus}
+            label={getStatusDisplayLabel(projectStatus)}
             size="small"
             sx={{
               bgcolor: statusStyles.bg,
