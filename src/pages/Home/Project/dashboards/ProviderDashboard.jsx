@@ -128,6 +128,9 @@ export default function ProviderDashboard({
   const currentProjects = data?.items || [];
   const [filteredProjects, setFilteredProjects] = useState([]);
   const stats = data?.summary || {};
+  
+  // ✅ Use backend count directly (backend now provides correct count)
+  const inReviewCount = stats.submittedForFinalReview || 0;
 
   const filterItems = [
     {
@@ -173,7 +176,7 @@ export default function ProviderDashboard({
         <StatCard value={stats.total || 0} label="Total Projects" color="#00c853" progress={100} />
         <StatCard value={stats.pendingRequests || 0} label="Pending" color="#F59E0B" progress={calculateProgress(stats.pendingRequests, stats.total)} />
         <StatCard value={stats.active || 0} label="Active" color="#059669" progress={calculateProgress(stats.active, stats.total)} />
-        <StatCard value={stats.submittedForFinalReview || 0} label="In Review" color="#A855F7" progress={calculateProgress(stats.submittedForFinalReview, stats.total)} />
+        <StatCard value={inReviewCount} label="In Review" color="#A855F7" progress={calculateProgress(inReviewCount, stats.total)} />
         <StatCard value={stats.completed || 0} label="Completed" color="#0284C7" progress={calculateProgress(stats.completed, stats.total)} />
         <StatCard value={stats.overdue || 0} label="Overdue" color="#DC2626" progress={calculateProgress(stats.overdue, stats.total)} />
       </Box>
