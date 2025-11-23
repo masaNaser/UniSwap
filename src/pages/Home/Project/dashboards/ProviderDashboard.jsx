@@ -393,11 +393,11 @@ export default function ProviderDashboard({
   const filterItems = [
     {
       type: "menu",
-      label: statusFilter,
+      label: statusFilter === "SubmittedForFinalReview" ? "Submitted For Review" : statusFilter,
       items: [
         { label: "All Status", value: "All Status" },
         { label: "Active", value: "Active" },
-        { label: "Submitted For Review", value: "SubmittedForFinalReview" }, // ✅ Added
+        { label: "Submitted For Review", value: "SubmittedForFinalReview" },
         { label: "Completed", value: "Completed" },
         { label: "Overdue", value: "Overdue" },
       ],

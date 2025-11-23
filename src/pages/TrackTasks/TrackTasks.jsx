@@ -11,7 +11,7 @@ import ReviewDialog from './components/ReviewDialog';
 import ViewReviewDialog from './components/ViewReviewDialog';
 import * as taskService from '../../services/taskService';
 import { mapProjectStatus } from '../../utils/projectStatusMapper';
-import { getServiceProviderDashboard, getClientdashboard } from '../../services/projectService'; // ✅ Added // ✅ Import mapper
+import { getServiceProviderDashboard, getClientdashboard } from '../../services/projectService';
 
 const statuses = ['ToDo', 'InProgress', 'InReview', 'Done'];
 const statusLabels = {
@@ -52,6 +52,62 @@ export default function TrackTasks() {
     const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
     const [viewingReviewTask, setViewingReviewTask] = useState(null);
 
+    // Fetch project status from dashboard
+    const fetchProjectStatus = async () => {
+        if (!cardData?.id || !token) {
+            console.log('⚠️ Cannot fetch status - missing cardData.id or token');
+            return null;
+        }
+
+        try {
+            console.log('🔄 Fetching project status from dashboard for ID:', cardData.id);
+            console.log('👤 User role:', isProvider ? 'Provider' : 'Client');
+
+            // Try all status filters to find the project
+            const filters = ['All Status', 'Active', 'SubmittedForFinalReview', 'Completed', 'Overdue'];
+            
+            for (const filter of filters) {
+                console.log(`🔍 Checking "${filter}" filter...`);
+                
+                try {
+                    const dashboardRes = isProvider 
+                        ? await getServiceProviderDashboard(token, "Provider", filter)
+                        : await getClientdashboard(token, "client", filter);
+
+                    console.log(`📦 Response from "${filter}":`, dashboardRes?.data?.items?.length || 0, 'items');
+
+                    if (dashboardRes?.data?.items) {
+                        const currentProject = dashboardRes.data.items.find(p => 
+                            p.id === cardData.id || 
+                            p.projectId === cardData.id || 
+                            p.Id === cardData.id ||
+                            p.ProjectId === cardData.id
+                        );
+
+                        if (currentProject) {
+                            const status = currentProject.projectStatus || currentProject.status;
+                            console.log('✅ FOUND PROJECT!');
+                            console.log('   - Filter:', filter);
+                            console.log('   - Status Field:', status);
+                            console.log('   - Full Project:', currentProject);
+                            return status;
+                        } else {
+                            console.log(`   ❌ Project ID ${cardData.id} not found in this filter`);
+                        }
+                    }
+                } catch (filterError) {
+                    console.error(`❌ Error checking "${filter}" filter:`, filterError);
+                }
+            }
+
+            console.log('⚠️ Project not found in ANY filter');
+            return null;
+        } catch (err) {
+            console.error('❌ Failed to fetch status from dashboard:', err);
+            return null;
+        }
+    };
+
     // Fetch project data
     const fetchProjectData = async () => {
         if (!cardData?.id || !token) {
@@ -67,102 +123,29 @@ export default function TrackTasks() {
             // Fetch project details
             const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
             console.log('✅ Fetched project details:', detailsRes);
-            console.log('🔍 Project Details Response:', detailsRes.data);
-            console.log('🔍 Project Status Field:', detailsRes.data.status);
-            console.log('🔍 ProjectStatus Field:', detailsRes.data.projectStatus);
             setProjectDetails(detailsRes.data);
 
-            // ⚠️ WORKAROUND: If API doesn't return status, fetch from dashboard
-            let apiStatus = detailsRes.data.status || detailsRes.data.projectStatus;
+            // ALWAYS fetch current status from dashboard (it's the source of truth)
+            console.log('🔍 Fetching current status from dashboard...');
+            const dashboardStatus = await fetchProjectStatus();
             
-            if (apiStatus === undefined) {
-                console.log('⚠️ Status not in details API, fetching from dashboard...');
-                try {
-                    console.log('🔄 isProvider:', isProvider);
-                    
-                    // First try: All Status
-                    let dashboardRes = isProvider 
-                        ? await getServiceProviderDashboard(token, "Provider", "All Status")
-                        : await getClientdashboard(token, "client", "All Status");
-                    
-                    console.log('📦 Dashboard Response (All Status):', dashboardRes);
-                    console.log('📋 Dashboard Items:', dashboardRes?.data?.items);
-                    
-                    let currentProject = null;
-                    
-                    if (dashboardRes?.data?.items) {
-                        console.log('🔍 Looking for project ID:', cardData.id);
-                        
-                        // Try multiple field names for project ID
-                        currentProject = dashboardRes.data.items.find(p => 
-                            p.id === cardData.id || 
-                            p.projectId === cardData.id || 
-                            p.Id === cardData.id ||
-                            p.ProjectId === cardData.id
-                        );
-                        
-                        console.log('🎯 Found project in All Status:', currentProject);
-                    }
-                    
-                    // If not found in "All Status", try "SubmittedForFinalReview"
-                    if (!currentProject) {
-                        console.log('🔄 Not found in All Status, trying SubmittedForFinalReview filter...');
-                        
-                        dashboardRes = isProvider 
-                            ? await getServiceProviderDashboard(token, "Provider", "SubmittedForFinalReview")
-                            : await getClientdashboard(token, "client", "SubmittedForFinalReview");
-                        
-                        console.log('📦 Dashboard Response (SubmittedForFinalReview):', dashboardRes);
-                        console.log('📋 Dashboard Items:', dashboardRes?.data?.items);
-                        
-                        if (dashboardRes?.data?.items) {
-                            currentProject = dashboardRes.data.items.find(p => 
-                                p.id === cardData.id || 
-                                p.projectId === cardData.id || 
-                                p.Id === cardData.id ||
-                                p.ProjectId === cardData.id
-                            );
-                            
-                            console.log('🎯 Found project in SubmittedForFinalReview:', currentProject);
-                        }
-                    }
-                    
-                    // Log all project IDs for debugging
-                    if (dashboardRes?.data?.items) {
-                        console.log('📋 All project IDs in dashboard:', 
-                            dashboardRes.data.items.map(p => ({
-                                id: p.id,
-                                projectId: p.projectId,
-                                Id: p.Id,
-                                title: p.title
-                            }))
-                        );
-                    }
-                    
-                    if (currentProject) {
-                        apiStatus = currentProject.projectStatus || currentProject.status;
-                        console.log('✅ Got status from dashboard:', apiStatus);
-                    } else {
-                        console.log('❌ Project not found in dashboard items');
-                    }
-                } catch (err) {
-                    console.error('❌ Failed to fetch status from dashboard:', err);
-                    console.error('❌ Error details:', err.response?.data || err.message);
-                }
-            }
-            
+            console.log('📊 Dashboard Status Result:', dashboardStatus);
+
+            // Update cardData with latest status and details
             setCardData(prev => {
-                const finalStatus = apiStatus !== undefined 
-                    ? mapProjectStatus(apiStatus) 
-                    : (prev.projectStatus || 'Active'); // Keep existing or default to Active
+                const finalStatus = dashboardStatus 
+                    ? mapProjectStatus(dashboardStatus) 
+                    : (prev.projectStatus || 'Active');
                 
-                console.log('🎯 Final Status:', finalStatus, 'from', apiStatus !== undefined ? 'API' : 'Navigation State');
+                console.log('🎯 Final Status:', finalStatus, 'from Dashboard');
                 
                 return {
                     ...prev,
                     projectStatus: finalStatus,
+                    status: finalStatus, // Set both for compatibility
                     deadline: detailsRes.data.deadline,
-                    progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0
+                    progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0,
+                    rejectionReason: detailsRes.data.rejectionReason || prev.rejectionReason
                 };
             });
 
@@ -215,7 +198,9 @@ export default function TrackTasks() {
     // Handler to refresh after project closure
     const handleProjectClosed = async () => {
         try {
-            // Refresh project data
+            console.log('🔄 handleProjectClosed called - refreshing project data...');
+            
+            // Refresh project data to get latest status
             await fetchProjectData();
             
             setSnackbar({

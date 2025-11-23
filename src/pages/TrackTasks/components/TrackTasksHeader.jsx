@@ -8,8 +8,10 @@ import { useState } from 'react';
 import { getImageUrl } from '../../../utils/imageHelper';
 import CustomButton from '../../../components/CustomButton/CustomButton';
 import ProgressSection from './ProgressSection';
+import ProjectCloseReviewDialog from './ProjectCloseReviewDialog';
 import { editCollaborationRequest } from '../../../services/collaborationService';
 import { closeProjectByProvider, closeProjectByClient } from '../../../services/taskService';
+import { addClientReviewToProvider } from '../../../services/reviewService';
 
 export default function TrackTasksHeader({
   cardData,
@@ -20,7 +22,7 @@ export default function TrackTasksHeader({
   progressPercentage,
   onBack,
   onDeadlineUpdate,
-  onProjectClosed, // Callback to refresh parent after closing
+  onProjectClosed,
 }) {
   if (!cardData) return <div>Loading...</div>;
 
@@ -32,8 +34,7 @@ export default function TrackTasksHeader({
 
   // Close Project Dialog States
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
-  const [closeAction, setCloseAction] = useState(null); // 'accept' or 'reject'
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [closingProject, setClosingProject] = useState(false);
 
   const displayRole = cardData.isProvider ? 'Client' : 'Service Provider';
@@ -48,7 +49,6 @@ export default function TrackTasksHeader({
     });
   };
 
-  // Min date = current deadline + 1 day
   const minSelectableDate = (() => {
     const d = new Date(cardData.deadline);
     d.setDate(d.getDate() + 1);
@@ -67,20 +67,14 @@ export default function TrackTasksHeader({
 
     try {
       setLoading(true);
-
       const collaborationId = projectDetails?.collaborationRequestId;
       
       if (!collaborationId) {
-        throw new Error(
-          "Collaboration Request ID is missing. Please make sure your backend returns 'collaborationRequestId' in the project details response."
-        );
+        throw new Error("Collaboration Request ID is missing.");
       }
 
       const deadlineISO = new Date(newDeadline).toISOString();
-
-      await editCollaborationRequest(token, collaborationId, {
-        deadline: deadlineISO
-      });
+      await editCollaborationRequest(token, collaborationId, { deadline: deadlineISO });
 
       if (onDeadlineUpdate) {
         onDeadlineUpdate(deadlineISO);
@@ -88,12 +82,9 @@ export default function TrackTasksHeader({
 
       setIsEditing(false);
       alert("Deadline updated successfully!");
-      
     } catch (err) {
       console.error("Error updating deadline:", err);
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Failed to update deadline.";
+      const errorMessage = err.response?.data?.message || err.message || "Failed to update deadline.";
       alert(errorMessage);
     } finally {
       setLoading(false);
@@ -101,109 +92,138 @@ export default function TrackTasksHeader({
   };
 
   const handleOpenEdit = () => {
-    setNewDeadline(
-      cardData.deadline ? new Date(cardData.deadline).toISOString().split('T')[0] : ''
-    );
+    setNewDeadline(cardData.deadline ? new Date(cardData.deadline).toISOString().split('T')[0] : '');
     setIsEditing(true);
   };
 
   // ------------ Close Project Logic -------------
-  
-  // Check if project can be closed
   const canCloseProject = () => {
-    console.log('🔍 Checking canCloseProject:', {
+    console.log('🔍 canCloseProject check:', {
       isProvider,
       projectStatus: cardData.projectStatus,
       progressPercentage,
+      result: isProvider 
+        ? (cardData.projectStatus === 'Active' && progressPercentage === 100)
+        : (cardData.projectStatus === 'SubmittedForFinalReview')
     });
 
-    // Provider can close when project is Active and all tasks are done
     if (isProvider) {
-      const canClose = cardData.projectStatus === 'Active' && progressPercentage === 100;
-      console.log('✅ Provider can close:', canClose);
-      return canClose;
+      return cardData.projectStatus === 'Active' && progressPercentage === 100;
     }
-    
-    // Client can close when project is SubmittedForFinalReview
-    const canClose = cardData.projectStatus === 'SubmittedForFinalReview';
-    console.log('✅ Client can close:', canClose);
-    return canClose;
+    return cardData.projectStatus === 'SubmittedForFinalReview';
   };
 
   const handleCloseProjectClick = () => {
     if (isProvider) {
-      // Provider directly submits for review
       setOpenCloseDialog(true);
     } else {
-      // Client chooses accept or reject
-      setOpenCloseDialog(true);
+      setOpenReviewDialog(true);
     }
   };
 
-  const handleCloseProject = async () => {
-    if (!canCloseProject()) {
-      alert("Project cannot be closed at this stage.");
-      return;
-    }
-
+  // Provider submits for review
+  const handleProviderSubmit = async () => {
     try {
       setClosingProject(true);
-
-      if (isProvider) {
-        // Provider submits project for final review
-        const response = await closeProjectByProvider(cardData.id, token);
-        console.log("✅ Close by provider response:", response);
-        alert("Project submitted for final review successfully!");
-      } else {
-        // Client accepts or rejects
-        if (closeAction === 'accept') {
-          const response = await closeProjectByClient(cardData.id, token, {
-            isAccepted: true,
-            rejectionReason: ""
-          });
-          console.log("✅ Close by client (accept) response:", response);
-          alert("Project completed successfully! Points transferred.");
-        } else if (closeAction === 'reject') {
-          if (!rejectionReason.trim()) {
-            alert("Please provide a rejection reason.");
-            setClosingProject(false);
-            return;
-          }
-          const response = await closeProjectByClient(cardData.id, token, {
-            isAccepted: false,
-            rejectionReason: rejectionReason.trim()
-          });
-          console.log("✅ Close by client (reject) response:", response);
-          alert("Project rejected and returned to Active status for rework.");
-        }
-      }
-
+      await closeProjectByProvider(cardData.id, token);
+      
+      console.log('✅ Provider submission successful, waiting for backend to update...');
+      
+      // Wait a moment for backend to update status
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      alert("Project submitted for final review successfully!");
       setOpenCloseDialog(false);
-      setCloseAction(null);
-      setRejectionReason('');
-
-      console.log('✅ Project closed successfully, calling onProjectClosed...');
       
-      // Refresh parent component
       if (onProjectClosed) {
+        console.log('🔄 Calling onProjectClosed to refresh...');
         await onProjectClosed();
-        console.log('✅ onProjectClosed completed');
       }
-
     } catch (err) {
-      console.error("❌ Error closing project:", err);
-      
-      // Extract error message from response
-      let errorMessage = "Failed to close project.";
-      
+      console.error("❌ Error submitting project:", err);
+      let errorMessage = "Failed to submit project.";
       if (err.response?.data?.detail) {
         errorMessage = err.response.data.detail;
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
-      } else if (err.message) {
-        errorMessage = err.message;
       }
-      
+      alert(errorMessage);
+    } finally {
+      setClosingProject(false);
+    }
+  };
+
+  // Client reviews and closes
+  const handleClientReview = async (reviewData) => {
+    try {
+      setClosingProject(true);
+
+      console.log('📝 Client review data:', reviewData);
+      console.log('🆔 Project ID:', cardData.id);
+
+      if (reviewData.isAccepted) {
+        console.log('✅ Client accepting with rating:', reviewData.rating);
+        console.log('📝 Review comment:', reviewData.comment);
+        
+        // Submit review with rating and comment
+        try {
+          const reviewResponse = await addClientReviewToProvider(
+            cardData.id,
+            reviewData.rating,
+            reviewData.comment, // Use the actual comment from user
+            token
+          );
+          console.log('✅ Review submitted successfully:', reviewResponse);
+        } catch (reviewError) {
+          console.error('❌ Review submission failed:', reviewError);
+          console.error('❌ Review error details:', reviewError.response?.data);
+          throw new Error(reviewError.response?.data?.detail || reviewError.response?.data?.message || 'Failed to submit review');
+        }
+
+        // Then close the project
+        try {
+          const closeResponse = await closeProjectByClient(cardData.id, token, {
+            isAccepted: true,
+            rejectionReason: ''
+          });
+          console.log('✅ Project closed successfully:', closeResponse);
+        } catch (closeError) {
+          console.error('❌ Project close failed:', closeError);
+          console.error('❌ Close error details:', closeError.response?.data);
+          throw new Error(closeError.response?.data?.detail || closeError.response?.data?.message || 'Failed to close project');
+        }
+
+        alert("Project completed successfully! Rating and review submitted. Points transferred.");
+      } else {
+        console.log('❌ Client rejecting with reason:', reviewData.rejectionReason);
+        
+        // Reject without rating
+        const closeResponse = await closeProjectByClient(cardData.id, token, {
+          isAccepted: false,
+          rejectionReason: reviewData.rejectionReason
+        });
+        console.log('✅ Project rejected:', closeResponse);
+
+        alert("Project rejected and returned to Active status for rework.");
+      }
+
+      setOpenReviewDialog(false);
+
+      if (onProjectClosed) {
+        await onProjectClosed();
+      }
+    } catch (err) {
+      console.error("❌ Error reviewing project:", err);
+      let errorMessage = err.message || "Failed to review project.";
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.errors) {
+        // Handle validation errors
+        const errors = err.response.data.errors;
+        errorMessage = Object.values(errors).flat().join(', ');
+      }
       alert(errorMessage);
     } finally {
       setClosingProject(false);
@@ -222,9 +242,8 @@ export default function TrackTasksHeader({
         position: 'relative',
       }}
     >
-
       {/* EDIT BUTTON (CLIENT ONLY) */}
-      {!isProvider && (
+      {!isProvider && cardData.projectStatus === 'Active' && (
         <IconButton
           onClick={handleOpenEdit}
           sx={{ position: 'absolute', top: 16, right: 16 }}
@@ -316,7 +335,7 @@ export default function TrackTasksHeader({
               }
             }}
           >
-            {isProvider ? 'Submit Final Work' : 'Close Project'}
+            {isProvider ? 'Submit Final Work' : 'Review & Close Project'}
           </Button>
         )}
       </Box>
@@ -331,7 +350,7 @@ export default function TrackTasksHeader({
             {cardData.description}
           </Typography>
           
-          {/* ✅ Show rejection reason if project was rejected */}
+          {/* Show rejection reason if project was rejected */}
           {projectDetails?.rejectionReason && cardData.projectStatus === 'Active' && (
             <Box 
               sx={{ 
@@ -355,8 +374,6 @@ export default function TrackTasksHeader({
 
       {/* Client Info + Deadline */}
       <Box display="flex" alignItems="center" gap={3} mb={3} sx={{ flexWrap: 'wrap' }}>
-
-        {/* Avatar + Name */}
         <Box display="flex" alignItems="center" gap={1}>
           <Avatar
             src={getImageUrl(cardData.clientAvatar, cardData.clientName)}
@@ -375,7 +392,6 @@ export default function TrackTasksHeader({
           </Box>
         </Box>
 
-        {/* DEADLINE */}
         <Box display="flex" alignItems="center" gap={0.5}>
           <CalendarMonthIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '12px' }}>
@@ -383,7 +399,6 @@ export default function TrackTasksHeader({
           </Typography>
         </Box>
 
-        {/* Status */}
         {cardData.projectStatus && (
           <Chip
             label={cardData.projectStatus}
@@ -401,92 +416,51 @@ export default function TrackTasksHeader({
 
       <ProgressSection progressPercentage={progressPercentage} />
 
-      {/* Close Project Dialog */}
+      {/* Provider Submit Confirmation Dialog */}
       <Dialog 
         open={openCloseDialog} 
         onClose={() => !closingProject && setOpenCloseDialog(false)}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>
-          {isProvider ? 'Submit Final Work' : 'Close Project'}
-        </DialogTitle>
+        <DialogTitle>Submit Final Work</DialogTitle>
         <DialogContent>
-          {isProvider ? (
-            <Typography>
-              Are you sure you want to submit this project for final review? 
-              All tasks must be completed before submission.
-            </Typography>
-          ) : (
-            <Box>
-              <Typography sx={{ mb: 2 }}>
-                Please review the final work and choose an action:
-              </Typography>
-              
-              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <Button
-                  fullWidth
-                  variant={closeAction === 'accept' ? 'contained' : 'outlined'}
-                  onClick={() => setCloseAction('accept')}
-                  sx={{
-                    ...(closeAction === 'accept' && {
-                      background: 'linear-gradient(to right, #10B981 0%, #059669 100%)',
-                    })
-                  }}
-                >
-                  Accept & Complete
-                </Button>
-                <Button
-                  fullWidth
-                  variant={closeAction === 'reject' ? 'contained' : 'outlined'}
-                  onClick={() => setCloseAction('reject')}
-                  color="error"
-                >
-                  Reject & Request Rework
-                </Button>
-              </Box>
-
-              {closeAction === 'reject' && (
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Rejection Reason *"
-                  placeholder="Please explain what needs to be fixed..."
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  sx={{ mt: 2 }}
-                />
-              )}
-            </Box>
-          )}
+          <Typography>
+            Are you sure you want to submit this project for final review? 
+            All tasks must be completed before submission.
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button 
-            onClick={() => {
-              setOpenCloseDialog(false);
-              setCloseAction(null);
-              setRejectionReason('');
-            }} 
+            onClick={() => setOpenCloseDialog(false)} 
             disabled={closingProject}
           >
             Cancel
           </Button>
           <Button 
-            onClick={handleCloseProject} 
+            onClick={handleProviderSubmit} 
             variant="contained"
-            disabled={closingProject || (!isProvider && !closeAction)}
+            disabled={closingProject}
             sx={{
-              background: 'linear-gradient(to right, #0EA4E8 0%, #0284C7 100%)',
+              background: 'linear-gradient(to right, #10B981 0%, #059669 100%)',
               '&:hover': {
-                background: 'linear-gradient(to right, #0284C7 0%, #0EA4E8 100%)',
+                background: 'linear-gradient(to right, #059669 0%, #10B981 100%)',
               }
             }}
           >
-            {closingProject ? 'Processing...' : 'Confirm'}
+            {closingProject ? 'Submitting...' : 'Confirm Submit'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Client Review Dialog */}
+      <ProjectCloseReviewDialog
+        open={openReviewDialog}
+        onClose={() => !closingProject && setOpenReviewDialog(false)}
+        projectTitle={cardData.title}
+        projectDescription={cardData.description}
+        onSubmitReview={handleClientReview}
+      />
     </Box>
   );
 }
