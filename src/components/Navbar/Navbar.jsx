@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { styled, alpha } from "@mui/material/styles";
 import {
   AppBar,
@@ -32,7 +32,8 @@ import Logo from "../../assets/images/logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../services/authService";
 import { getImageUrl } from "../../utils/imageHelper";
-import { getUnreadCount } from "../../services/chatService"; // ✅ إضافة
+import { getUnreadCount, markMessageAsSeen } from "../../services/chatService";
+import { useUnreadCount } from "../../Context/unreadCountContext";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -74,35 +75,33 @@ export default function PrimarySearchAppBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const userName = localStorage.getItem("userName");
-  const token = localStorage.getItem("accessToken"); // ✅ إضافة
+  const token = localStorage.getItem("accessToken");
 
   const { currentUser } = useCurrentUser();
-  
+    const { unreadCount } = useUnreadCount();
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [unreadCount, setUnreadCount] = useState(0); // ✅ إضافة
+  // const [unreadCount, setUnreadCount] = useState(0);
 
-  // ✅ جلب عدد الرسائل غير المقروءة
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      if (!token) return;
-      
-      try {
-        const response = await getUnreadCount(token);
-        setUnreadCount(response.data || 0);
-      } catch (error) {
-        console.error("❌ Error fetching unread count:", error);
-      }
-    };
+  // // ✅ جلب عدد الرسائل غير المقروءة
+  // const refreshUnreadCount = useCallback(async () => {
+  //   if (!token) return;
+  //   try {
+  //     const response = await getUnreadCount(token);
+  //     setUnreadCount(response.data || 0);
+  //   } catch (error) {
+  //     console.error("❌ Error fetching unread count:", error);
+  //   }
+  // }, [token]);
 
-    fetchUnreadCount();
-    
-    // تحديث كل 30 ثانية
-    const interval = setInterval(fetchUnreadCount, 30000);
-    
-    return () => clearInterval(interval);
-  }, [token]);
+  // // ✅ استدعاء عند التحميل وكل 30 ثانية
+  // useEffect(() => {
+  //   refreshUnreadCount();
+  //   const interval = setInterval(refreshUnreadCount, 30000);
+  //   return () => clearInterval(interval);
+  // }, [refreshUnreadCount]);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -120,6 +119,20 @@ export default function PrimarySearchAppBar() {
 
   const toggleMobileMenu = () => setMobileOpen((prev) => !prev);
   const isActive = (path) => location.pathname === path;
+
+  // ✅ دالة للتعامل مع الضغط على أيقونة Messages
+  const handleMessagesClick = async () => {
+    try {
+      if (token) {
+        await markMessagesAsRead(token);
+      }
+      setUnreadCount(0);
+      navigate("/chat");
+    } catch (error) {
+      console.error("❌ Error marking messages as read:", error);
+      navigate("/chat"); // انتقل حتى لو فشل
+    }
+  };
 
   return (
     <>
@@ -329,13 +342,10 @@ export default function PrimarySearchAppBar() {
               <IconButton
                 size="large"
                 color="inherit"
-                onClick={() => {
-                  navigate("/chat");
-                  setUnreadCount(0); // إعادة تعيين عند الضغط
-                }}
+                onClick={handleMessagesClick}
               >
                 <Badge 
-                  badgeContent={unreadCount} 
+                badgeContent={unreadCount} 
                   color="error"
                   max={99}
                   sx={{

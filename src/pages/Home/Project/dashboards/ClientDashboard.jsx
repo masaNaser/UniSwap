@@ -63,11 +63,13 @@ export default function ClientDashboard({
       setLoading(true);
       const response = await getPendingRequests(token, "Client");
       const requests = response.data || [];
-
+        console.log("pending",response);
       const updatedRequests = requests.map(req => ({
         ...req,
         clientImage: req.clientImage || null,
         providerImage: req.providerImage || null,
+        projectType: req.type   // 👈 ضفنا النوع
+
       }));
 
       setPendingRequests(updatedRequests);
@@ -122,23 +124,39 @@ export default function ClientDashboard({
   const calculateProgress = (value, total) =>
     total === 0 ? 0 : (value / total) * 100;
 
-  const filterProjects = (projects) => {
-    if (!projects) return [];
+const filterProjects = (projects) => {
+  if (!projects) return [];
+  
+  return projects.filter(project => {
+    // ✅ فحص البحث
+    const matchesSearch =
+      searchQuery === "" ||
+      project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return projects.filter(project => {
-      const matchesSearch =
-        searchQuery === "" ||
-        project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    // ✅ فحص إذا المشروع overdue
+    const isOverdue = new Date(project.deadline) < new Date() && 
+                      (project.projectStatus === "Active" || project.status === "Active");
 
-      const matchesStatus =
-        statusFilter === "All Status" ||
-        project.projectStatus === statusFilter ||
-        project.status === statusFilter;
+    // ✅ فحص الـ status
+    let matchesStatus = false;
+    
+    if (statusFilter === "All Status") {
+      matchesStatus = true;
+    } else if (statusFilter === "Overdue") {
+      // بس المشاريع الـ overdue
+      matchesStatus = isOverdue;
+    } else if (statusFilter === "Active") {
+      // ✅ المشاريع Active بس اللي مش overdue
+      matchesStatus = (project.projectStatus === "Active" || project.status === "Active") && !isOverdue;
+    } else {
+      // باقي الحالات (Completed, SubmittedForFinalReview, etc.)
+      matchesStatus = project.projectStatus === statusFilter || project.status === statusFilter;
+    }
 
-      return matchesSearch && matchesStatus;
-    });
-  };
+    return matchesSearch && matchesStatus;
+  });
+};
 
   useEffect(() => {
     setFilteredProjects(filterProjects(data?.items || []));
@@ -198,7 +216,7 @@ export default function ClientDashboard({
         <StatCard value={stats.active || 0} label="Active" color="#059669" progress={calculateProgress(stats.active, stats.total)} />
         <StatCard value={inReviewCount} label="In Review" color="#A855F7" progress={calculateProgress(inReviewCount, stats.total)} />
         <StatCard value={stats.completed || 0} label="Completed" color="#0284C7" progress={calculateProgress(stats.completed, stats.total)} />
-        <StatCard value={stats.overdue || 0} label="Overdue" color="#DC2626" progress={calculateProgress(stats.overdue, stats.total)} />
+<StatCard value={stats.overdue || 0} label="Overdue" color="#DC2626" progress={stats.overdue > 0 ? Math.min((stats.overdue / stats.total) * 100, 100) : 0} />
       </Box>
 
       <Box sx={{ mt: 5 }}>
@@ -248,10 +266,12 @@ export default function ClientDashboard({
             <Grid container spacing={3}>
               {filteredProjects.map(project => (
                 <Grid item xs={12} sm={6} lg={4} key={project.id}>
+                {console.log("type in client dash",project.type)}
                   <AllStatusProjectCard 
                     {...project}
                     projectStatus={project.projectStatus || project.status}
                     isProvider={false}
+                    projectType={project.type}     // <-- ضيف هاي
                   />
                 </Grid>
               ))}

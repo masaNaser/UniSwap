@@ -52,6 +52,10 @@ export default function TrackTasks() {
     const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
     const [viewingReviewTask, setViewingReviewTask] = useState(null);
 
+const { projectType } = useLocation().state ?? {};
+
+console.log("نوع الريكوست:", projectType || "مش واصل");
+
     // Fetch project status from dashboard
     const fetchProjectStatus = async () => {
         if (!cardData?.id || !token) {
@@ -141,7 +145,9 @@ export default function TrackTasks() {
                     status: finalStatus,
                     deadline: detailsRes.data.deadline,
                     progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0,
-                    rejectionReason: detailsRes.data.rejectionReason || prev.rejectionReason
+                    rejectionReason: detailsRes.data.rejectionReason || prev.rejectionReason,
+                   projectType: detailsRes.data.type || prev.projectType || 'RequestProject' // ✅ إضافة جديدة
+
                 };
             });
 

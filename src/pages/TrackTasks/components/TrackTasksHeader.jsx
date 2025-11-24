@@ -42,7 +42,7 @@ export default function TrackTasksHeader({
   onProjectClosed,
 }) {
   if (!cardData) return <div>Loading...</div>;
-
+  console.log("cardData", cardData);
   const [isEditing, setIsEditing] = useState(false);
   const [newDeadline, setNewDeadline] = useState(
     cardData.deadline
@@ -525,19 +525,19 @@ export default function TrackTasksHeader({
           </Typography>
         </Box>
 
-        {cardData.projectStatus && (
-          <Chip
-            label={cardData.projectStatus}
-            size="small"
-            sx={{
-              fontWeight: "600",
-              fontSize: "11px",
-              height: "28px",
-              backgroundColor: projectOverdue ? "#FEE2E2" : "#EFF6FF",
-              color: projectOverdue ? "#DC2626" : "#0284C7",
-            }}
-          />
-        )}
+ {cardData.projectStatus && (
+  <Chip
+    label={projectOverdue ? "Overdue" : cardData.projectStatus}  // 👈 هون التعديل
+    size="small"
+    sx={{
+      fontWeight: "600",
+      fontSize: "11px",
+      height: "28px",
+      backgroundColor: projectOverdue ? "#FEE2E2" : "#EFF6FF",
+      color: projectOverdue ? "#DC2626" : "#0284C7",
+    }}
+  />
+)}
       </Box>
 
       <ProgressSection progressPercentage={progressPercentage} />

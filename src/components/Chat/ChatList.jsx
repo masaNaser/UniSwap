@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-import { getConversations } from "../../services/chatService";
+import { getConversations, markMessageAsSeen } from "../../services/chatService";
 import { getImageUrl } from "../../utils/imageHelper";
+import { useUnreadCount } from "../../Context/unreadCountContext";
 
 export default function ChatList({
   conversations,
@@ -10,19 +11,27 @@ export default function ChatList({
 }) {
   const token = localStorage.getItem("accessToken");
   const userId = localStorage.getItem("userId");
+  
+  // ✅ استخدم الـ Context
+  const { decreaseUnreadCount } = useUnreadCount();
 
   const fetchConversations = async () => {
     try {
       const response = await getConversations(token);
       console.log("المحادثات المستلمة:", response.data);
+      
       const convsWithNames = response.data.map((conv) => {
-        const partnerId =
-          conv.senderId === userId ? conv.receiverId : conv.senderId;
-        const partnerName =
-          conv.senderId === userId ? conv.receiverName : conv.senderName;
-        const partnerImage =
-          conv.senderId === userId ? conv.receiverImage : conv.senderImage;
-        return { ...conv, partnerId, partnerName, partnerImage };
+        const partnerId = conv.receiverId;
+        const partnerName = conv.receiverName;
+        const partnerImage = conv.receiverImage;
+        
+        return { 
+          ...conv, 
+          partnerId, 
+          partnerName, 
+          partnerImage,
+          unreadCount: conv.unreadCount || 0 // ✅ تأكد من وجود unreadCount
+        };
       });
 
       const sorted = convsWithNames.sort(
@@ -40,6 +49,45 @@ export default function ChatList({
   useEffect(() => {
     fetchConversations();
   }, []);
+
+  const handleConversationClick = async (
+    convId,
+    partnerId,
+    partnerName,
+    partnerImage
+  ) => {
+    // ✅ جيب عدد الرسائل غير المقروءة لهاي المحادثة
+    const conv = conversations.find(c => c.id === convId);
+    const conversationUnreadCount = conv?.unreadCount || 0;
+
+    console.log(`📬 Opening conversation ${convId} with ${conversationUnreadCount} unread messages`);
+
+    // ✅ فتح المحادثة
+    onSelectConversation(convId, partnerId, partnerName, partnerImage);
+
+    // ✅ وضع علامة "تم القراءة"
+    if (convId && conversationUnreadCount > 0) {
+      try {
+        await markMessageAsSeen(token, convId);
+        console.log("✅ Marked conversation as seen:", convId);
+
+        // ✅ حدّث قائمة المحادثات محلياً
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === convId
+              ? { ...c, unreadCount: 0 }
+              : c
+          )
+        );
+
+        // ✅ قلل العداد في الـ Navbar
+        decreaseUnreadCount(conversationUnreadCount);
+
+      } catch (error) {
+        console.error("❌ Failed to mark as seen:", error);
+      }
+    }
+  };
 
   return (
     <div className={`chat-list ${className}`}>
@@ -59,36 +107,31 @@ export default function ChatList({
                 })
               : "";
 
-            // ✅ اعرض "Today" إذا نفس اليوم، وإلا اعرض التاريخ
-            const lastDate = conv.lastMessage?.createdAt // إذا في رسالة أخيرة
+            const lastDate = conv.lastMessage?.createdAt
               ? (() => {
-                  //   تاريخ الرسالة
                   const msgDate = new Date(conv.lastMessage.createdAt);
-
-                  //   تاريخ اليوم
                   const today = new Date();
-
-                  // هل الرسالة نفس اليوم؟
                   const isToday =
-                    msgDate.getDate() === today.getDate() && // نفس اليوم من الشهر؟ (1-31)
-                    msgDate.getMonth() === today.getMonth() && // نفس الشهر؟ (0-11)
-                    msgDate.getFullYear() === today.getFullYear(); // نفس السنة؟
-
-                  //  إذا اليوم → "Today"، إذا لا → التاريخ
+                    msgDate.getDate() === today.getDate() &&
+                    msgDate.getMonth() === today.getMonth() &&
+                    msgDate.getFullYear() === today.getFullYear();
                   return isToday
                     ? "Today"
-                    : msgDate.toLocaleDateString("en-GB"); // ✅ هون استخدم en-GB
+                    : msgDate.toLocaleDateString("en-GB");
                 })()
               : "";
-            // أول حرفين من اسم الطرف الآخر
+
             const initials = conv.partnerName?.substring(0, 2).toUpperCase();
+            
+            // ✅ هل في رسائل جديدة؟
+            const hasUnread = conv.unreadCount > 0;
 
             return (
               <div
                 key={conv.id}
                 className="chat-item"
                 onClick={() =>
-                  onSelectConversation(
+                  handleConversationClick(
                     conv.id,
                     conv.partnerId,
                     conv.partnerName,
@@ -109,15 +152,33 @@ export default function ChatList({
                 </div>
                 <div className="chat-info">
                   <div className="chat-name">{conv.partnerName}</div>
-                  <div className="chat-last">{lastMsg}</div>
+                  {/* ✅ لو في رسائل جديدة، خلي النص bold */}
+                  <div 
+                    className="chat-last" 
+                    style={{ 
+                      fontWeight: hasUnread ? '700' : 'normal',
+                      color: hasUnread ? '#000' : '#666'
+                    }}
+                  >
+                    {lastMsg}
+                  </div>
                 </div>
                 <div className="chat-time">
-                  <div>{lastTime}</div>
-                  <div className="chat-date">
-                    {lastDate} {/* ✅ التاريخ */}
+                  <div 
+                    style={{ 
+                      fontWeight: hasUnread ? '600' : 'normal',
+                      color: hasUnread ? '#000' : '#666'
+                    }}
+                  >
+                    {lastTime}
                   </div>
+                  <div className="chat-date">{lastDate}</div>
                   
-                </div>{" "}
+                  {/* ✅ Badge للرسائل غير المقروءة */}
+                  {hasUnread && (
+                    <span className="unread-badge">{conv.unreadCount}</span>
+                  )}
+                </div>
               </div>
             );
           })
