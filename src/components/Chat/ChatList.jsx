@@ -50,44 +50,42 @@ export default function ChatList({
     fetchConversations();
   }, []);
 
-  const handleConversationClick = async (
-    convId,
-    partnerId,
-    partnerName,
-    partnerImage
-  ) => {
-    // ✅ جيب عدد الرسائل غير المقروءة لهاي المحادثة
-    const conv = conversations.find(c => c.id === convId);
-    const conversationUnreadCount = conv?.unreadCount || 0;
+ const handleConversationClick = async (
+  convId,
+  partnerId,
+  partnerName,
+  partnerImage
+) => {
+  const conv = conversations.find(c => c.id === convId);
+  const conversationUnreadCount = conv?.unreadCount || 0;
 
-    console.log(`📬 Opening conversation ${convId} with ${conversationUnreadCount} unread messages`);
+  console.log(`📬 Opening conversation ${convId} with ${conversationUnreadCount} unread messages`);
 
-    // ✅ فتح المحادثة
-    onSelectConversation(convId, partnerId, partnerName, partnerImage);
+  onSelectConversation(convId, partnerId, partnerName, partnerImage);
 
-    // ✅ وضع علامة "تم القراءة"
-    if (convId && conversationUnreadCount > 0) {
-      try {
-        await markMessageAsSeen(token, convId);
-        console.log("✅ Marked conversation as seen:", convId);
+  // ✅ استدعي بس إذا في conversationId حقيقي AND في رسائل مش مقروءة
+  if (convId && convId !== "null" && conversationUnreadCount > 0) {
+    try {
+      await markMessageAsSeen(convId,token);
+      console.log("✅ Marked conversation as seen:", convId);
 
-        // ✅ حدّث قائمة المحادثات محلياً
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === convId
-              ? { ...c, unreadCount: 0 }
-              : c
-          )
-        );
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === convId
+            ? { ...c, unreadCount: 0 }
+            : c
+        )
+      );
 
-        // ✅ قلل العداد في الـ Navbar
-        decreaseUnreadCount(conversationUnreadCount);
+      decreaseUnreadCount(conversationUnreadCount);
 
-      } catch (error) {
-        console.error("❌ Failed to mark as seen:", error);
-      }
+    } catch (error) {
+      console.error("❌ Failed to mark as seen:", error);
     }
-  };
+  } else {
+    console.log("⚠️ Skipping mark as seen - invalid conversationId or no unread messages");
+  }
+};
 
   return (
     <div className={`chat-list ${className}`}>

@@ -157,12 +157,12 @@ export const getUnreadCount = async (token) => {
 
 // ✅ تصحيح: استخدام POST بدلاً من GET
 // في chatService.js
-export const markMessageAsSeen = async (token, conversationId) => {
+export const markMessageAsSeen = async (conversationId,token) => {
   return await api.post(
     `/Chats/mark-conversation-seen`,
-    null, // ✅ Body فاضي
+    null,
     {
-      params: { conversationId }, // ✅ conversationId كـ query parameter
+      params: { conversationId },
       headers: { Authorization: `Bearer ${token}` }
     }
   );

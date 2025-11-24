@@ -35,15 +35,14 @@ import {
   editComment,
   closeCommentPost,
 } from "../../../services/postService";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc"; // ✅ أضف هنا
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { useSearchParams } from "react-router-dom";
 import PostCardSkeleton from '../../../components/Skeletons/PostCardSkeleton';
-
-// ✅ استخدم الـ plugin
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
+
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
@@ -117,18 +116,8 @@ const fetchPosts = async () => {
     const response = await getPosts(userToken);
     console.log(response);
     const postsData = response.data.map((p) => {
-      // ✅ الحل النهائي:
-      // إذا كان في timezone (+01:00) → استخدمه كما هو مباشرة
-      // إذا لم يكن timezone → اعتبره محلي (بدون تحويل من UTC)
-      
-      let formattedTime;
-      if (p.createdAt.includes('+') || p.createdAt.includes('Z')) {
-        // فيه timezone محدد → معالجه كما هو
-        formattedTime = dayjs(p.createdAt).format("DD MMM, hh:mm A");
-      } else {
-        // بدون timezone → اعتبره محلي مباشرة (بدون UTC conversion)
-        formattedTime = dayjs(p.createdAt).format("DD MMM, hh:mm A");
-      }
+      // ✅ بدون أي تعقيدات UTC
+const formattedTime = dayjs.utc(p.createdAt).local().format("DD MMM, hh:mm A");
       
       return {
         id: p.id,

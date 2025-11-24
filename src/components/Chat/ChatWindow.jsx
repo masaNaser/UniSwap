@@ -44,74 +44,73 @@ export default function ChatWindow({
   }, [messages, initialScrollDone]);
 
   // 🔥 جلب المحادثة عند الفتح
-  useEffect(() => {
-    const initChat = async () => {
-      try {
-        const convId =
-          conversationId === "null" || !conversationId ? null : conversationId;
+useEffect(() => {
+  const initChat = async () => {
+    try {
+      const convId =
+        conversationId === "null" || !conversationId ? null : conversationId;
+      
+      const response = await getOneConversation(
+        convId,
+        receiverId,
+        20,
+        token
+      );
+
+      if (response.data) {
+        let loadedMessages = [];
         
-        const response = await getOneConversation(
-          convId,
-          receiverId,
-          20,
-          token
-        );
-
-        if (response.data) {
-          let loadedMessages = [];
-          
-          if (Array.isArray(response.data)) {
-            loadedMessages = response.data;
-            setMessages(response.data);
-          } else if (response.data.messages) {
-            loadedMessages = response.data.messages;
-            setMessages(response.data.messages);
-          } else {
-            setMessages([]);
-          }
-
-          // ✅ احسب عدد الرسائل غير المقروءة
-          const unreadMessagesCount = loadedMessages.filter(
-            m => m.receiverId === currentUserId && m.status === "Delivered"
-          ).length;
-
-          console.log(`📬 Found ${unreadMessagesCount} unread messages in conversation ${convId}`);
-
-          // ✅ وضع علامة "تم القراءة"
-          if (convId && unreadMessagesCount > 0) {
-            setTimeout(async () => {
-              try {
-                await markMessageAsSeen(token, convId);
-                console.log("✅ Marked conversation as seen:", convId);
-                
-                // ✅ حدث قائمة المحادثات
-                setConversations((prev) =>
-                  prev.map((c) =>
-                    c.id === convId ? { ...c, unreadCount: 0 } : c
-                  )
-                );
-
-                // ✅ قلل العداد في الـ Navbar
-                decreaseUnreadCount(unreadMessagesCount);
-
-              } catch (error) {
-                console.error("❌ Failed to mark as seen:", error);
-              }
-            }, 300);
-          }
+        if (Array.isArray(response.data)) {
+          loadedMessages = response.data;
+          setMessages(response.data);
+        } else if (response.data.messages) {
+          loadedMessages = response.data.messages;
+          setMessages(response.data.messages);
+        } else {
+          setMessages([]);
         }
-      } catch (err) {
-        console.error("فشل جلب المحادثة:", err);
-        setMessages([]);
-      }
-    };
 
-    if (receiverId) {
-      initChat();
-      setInitialScrollDone(false);
-      hasMoreRef.current = true;
+        const unreadMessagesCount = loadedMessages.filter(
+          m => m.receiverId === currentUserId && m.status === "Delivered"
+        ).length;
+
+        console.log(`📬 Found ${unreadMessagesCount} unread messages in conversation`);
+
+        // ✅ الشرط المهم: استدعي mark as seen بس إذا في conversationId حقيقي
+        if (convId && convId !== "null" && unreadMessagesCount > 0) {
+          setTimeout(async () => {
+            try {
+              await markMessageAsSeen(convId,token);
+              console.log("✅ Marked conversation as seen:", convId);
+              
+              setConversations((prev) =>
+                prev.map((c) =>
+                  c.id === convId ? { ...c, unreadCount: 0 } : c
+                )
+              );
+
+              decreaseUnreadCount(unreadMessagesCount);
+
+            } catch (error) {
+              console.error("❌ Failed to mark as seen:", error);
+            }
+          }, 300);
+        } else {
+          console.log("⚠️ Skipping mark as seen - no valid conversationId or no unread messages");
+        }
+      }
+    } catch (err) {
+      console.error("فشل جلب المحادثة:", err);
+      setMessages([]);
     }
-  }, [conversationId, receiverId, token, setConversations, decreaseUnreadCount, currentUserId]);
+  };
+
+  if (receiverId) {
+    initChat();
+    setInitialScrollDone(false);
+    hasMoreRef.current = true;
+  }
+}, [conversationId, receiverId, token, setConversations, decreaseUnreadCount, currentUserId]);
 
   // جلب الرسائل الجديدة دوريًا
   useEffect(() => {

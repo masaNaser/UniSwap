@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { styled, alpha } from "@mui/material/styles";
 import {
   AppBar,
@@ -32,8 +32,7 @@ import Logo from "../../assets/images/logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../services/authService";
 import { getImageUrl } from "../../utils/imageHelper";
-import { getUnreadCount, markMessageAsSeen } from "../../services/chatService";
-import { useUnreadCount } from "../../Context/unreadCountContext";
+import { useUnreadCount } from "../../Context/unreadCountContext"; // ✅ بس هاد
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -75,33 +74,13 @@ export default function PrimarySearchAppBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const userName = localStorage.getItem("userName");
-  const token = localStorage.getItem("accessToken");
 
   const { currentUser } = useCurrentUser();
-    const { unreadCount } = useUnreadCount();
-
+  const { unreadCount } = useUnreadCount(); // ✅ جلب العداد من Context
+  
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  // const [unreadCount, setUnreadCount] = useState(0);
-
-  // // ✅ جلب عدد الرسائل غير المقروءة
-  // const refreshUnreadCount = useCallback(async () => {
-  //   if (!token) return;
-  //   try {
-  //     const response = await getUnreadCount(token);
-  //     setUnreadCount(response.data || 0);
-  //   } catch (error) {
-  //     console.error("❌ Error fetching unread count:", error);
-  //   }
-  // }, [token]);
-
-  // // ✅ استدعاء عند التحميل وكل 30 ثانية
-  // useEffect(() => {
-  //   refreshUnreadCount();
-  //   const interval = setInterval(refreshUnreadCount, 30000);
-  //   return () => clearInterval(interval);
-  // }, [refreshUnreadCount]);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -120,19 +99,7 @@ export default function PrimarySearchAppBar() {
   const toggleMobileMenu = () => setMobileOpen((prev) => !prev);
   const isActive = (path) => location.pathname === path;
 
-  // ✅ دالة للتعامل مع الضغط على أيقونة Messages
-  const handleMessagesClick = async () => {
-    try {
-      if (token) {
-        await markMessagesAsRead(token);
-      }
-      setUnreadCount(0);
-      navigate("/chat");
-    } catch (error) {
-      console.error("❌ Error marking messages as read:", error);
-      navigate("/chat"); // انتقل حتى لو فشل
-    }
-  };
+  // ❌ احذف handleMessagesClick كلها - مش محتاجها!
 
   return (
     <>
@@ -173,7 +140,7 @@ export default function PrimarySearchAppBar() {
               </Typography>
             </Box>
 
-            {/* Desktop Links (≥1029px) */}
+            {/* Desktop Links */}
             {windowWidth >= 1029 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Button
@@ -183,12 +150,8 @@ export default function PrimarySearchAppBar() {
                   sx={{
                     textTransform: "none",
                     fontSize: "18px",
-                    color: isActive("/app/feed")
-                      ? "#3B82F6"
-                      : "rgba(71, 85, 105, 1)",
-                    backgroundColor: isActive("/app/feed")
-                      ? "#E0EEFF"
-                      : "transparent",
+                    color: isActive("/app/feed") ? "#3B82F6" : "rgba(71, 85, 105, 1)",
+                    backgroundColor: isActive("/app/feed") ? "#E0EEFF" : "transparent",
                     borderRadius: "8px",
                     px: 2,
                     py: 1,
@@ -207,12 +170,8 @@ export default function PrimarySearchAppBar() {
                   sx={{
                     textTransform: "none",
                     fontSize: "18px",
-                    color: isActive("/app/browse")
-                      ? "#3B82F6"
-                      : "rgba(71, 85, 105, 1)",
-                    backgroundColor: isActive("/app/browse")
-                      ? "#E0EEFF"
-                      : "transparent",
+                    color: isActive("/app/browse") ? "#3B82F6" : "rgba(71, 85, 105, 1)",
+                    backgroundColor: isActive("/app/browse") ? "#E0EEFF" : "transparent",
                     borderRadius: "8px",
                     px: 2,
                     py: 1,
@@ -231,12 +190,8 @@ export default function PrimarySearchAppBar() {
                   sx={{
                     textTransform: "none",
                     fontSize: "18px",
-                    color: isActive("/app/project")
-                      ? "#3B82F6"
-                      : "rgba(71, 85, 105, 1)",
-                    backgroundColor: isActive("/app/project")
-                      ? "#E0EEFF"
-                      : "transparent",
+                    color: isActive("/app/project") ? "#3B82F6" : "rgba(71, 85, 105, 1)",
+                    backgroundColor: isActive("/app/project") ? "#E0EEFF" : "transparent",
                     borderRadius: "8px",
                     px: 2,
                     py: 1,
@@ -252,7 +207,7 @@ export default function PrimarySearchAppBar() {
               </Box>
             )}
 
-            {/* Search (≥768px) */}
+            {/* Search */}
             <Box
               sx={{
                 display: { xs: "none", sm: "flex" },
@@ -280,7 +235,7 @@ export default function PrimarySearchAppBar() {
 
             {/* Right Side Icons */}
             <Box sx={{ display: "flex", alignItems: "center" }}>
-              {/* Points (≥1029px) */}
+              {/* Points */}
               {windowWidth >= 1029 && (
                 <Box
                   sx={{
@@ -337,28 +292,27 @@ export default function PrimarySearchAppBar() {
                 </Box>
               )}
 
-              {/* Icons */}
-              {/* ✅ أيقونة Messages مع العداد */}
-              <IconButton
-                size="large"
-                color="inherit"
-                onClick={handleMessagesClick}
-              >
-                <Badge 
-                badgeContent={unreadCount} 
-                  color="error"
-                  max={99}
-                  sx={{
-                    '& .MuiBadge-badge': {
-                      fontSize: '0.65rem',
-                      height: '18px',
-                      minWidth: '18px',
-                    }
-                  }}
-                >
-                  <MailIcon />
-                </Badge>
-              </IconButton>
+              {/* ✅ أيقونة Messages - بس navigate */}
+            <IconButton
+  size="large"
+  color="inherit"
+  onClick={() => navigate("/chat")}
+>
+  <Badge 
+    badgeContent={unreadCount} 
+    color="error"
+    max={99}
+    sx={{
+      '& .MuiBadge-badge': {
+        fontSize: '0.65rem',
+        height: '18px',
+        minWidth: '18px',
+      }
+    }}
+  >
+    <MailIcon />
+  </Badge>
+</IconButton>
 
               <IconButton size="large" color="inherit">
                 <NotificationsIcon />
@@ -383,6 +337,7 @@ export default function PrimarySearchAppBar() {
                 />
               </IconButton>
 
+              {/* ... باقي الـ Menu ... */}
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -519,7 +474,7 @@ export default function PrimarySearchAppBar() {
                 </MenuItem>
               </Menu>
 
-              {/* Mobile Menu Button (<1029px) */}
+              {/* Mobile Menu Button */}
               {windowWidth < 1029 && (
                 <Box>
                   <IconButton

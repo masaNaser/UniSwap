@@ -18,10 +18,12 @@ import DisabledCustomButton from "../../../components/CustomButton/DisabledCusto
 import { createPost as createPostApi } from "../../../services/postService";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useProfile } from "../../../Context/ProfileContext";
-import dayjs from "dayjs"; // ✅ إضافة
-import utc from "dayjs/plugin/utc"; // ✅ إضافة
 import { useCurrentUser } from "../../../Context/CurrentUserContext"; // ✅ تغيير
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
+// في handleSubmit:
 const FormWrapper = styled(Box)(({ theme }) => ({
   backgroundColor: "white",
   padding: theme.spacing(3),
@@ -102,7 +104,7 @@ const CreatePost = ({ addPost, token }) => {
     if (fileInput) fileInput.value = "";
   };
 
- const handleSubmit = async (event) => {
+const handleSubmit = async (event) => {
   event.preventDefault();
 
   if (isPostDisabled) return;
@@ -125,8 +127,8 @@ const CreatePost = ({ addPost, token }) => {
         avatar: getImageUrl(postData.author.profilePictureUrl, postData.author.userName),
         id: postData.author.id,
       },
-      // ✅ بدون UTC conversion - معاملة مباشرة
-      time: dayjs(postData.createdAt).format("DD MMM, hh:mm A"),
+      // ✅ الحل النهائي
+time: dayjs.utc(postData.createdAt).local().format("DD MMM, hh:mm A"),
       likes: postData.likesCount,
       comments: postData.commentsCount,
       shares: 0,
