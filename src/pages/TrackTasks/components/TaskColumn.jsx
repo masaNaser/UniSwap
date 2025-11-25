@@ -36,10 +36,11 @@ export default function TaskColumn({
     uploadFile: null,
   });
 
-  // ✅ Hide '+' button if provider AND ToDo column AND status is SubmittedForFinalReview
-  const shouldShowAddButton = isProvider && 
-                               isToDoColumn && 
-                               projectStatus !== 'SubmittedForFinalReview';
+  // ✅ Hide '+' button if provider AND ToDo column AND status is SubmittedForFinalReview or Completed
+  const shouldShowAddButton = isProvider &&
+    isToDoColumn &&
+    projectStatus !== 'SubmittedForFinalReview' &&
+    projectStatus !== 'Completed';
 
   const handleAddClick = () => {
     setNewTask({
