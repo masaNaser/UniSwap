@@ -13,7 +13,7 @@ import {
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
-export default function ViewReviewDialog({ open, onClose, task }) {
+export default function ViewTaskReviewDialog({ open, onClose, task }) {
   if (!task) {
     return null;
   }

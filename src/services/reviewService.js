@@ -2,9 +2,10 @@
 import api from "./api";
 
 // ===== Client Review to Provider =====
+// NOTE: This function is currently NOT USED in the project close flow.
+// The review is now submitted as part of closeProjectByClient() in taskService.js
+// Keeping this for potential future standalone review functionality.
 export const addClientReviewToProvider = async (projectId, rating, content, token) => {
-  // Backend expects: POST /reviews/client-to-provider
-  // With ProjectId as query parameter (capital P) and body with rating and content
   return await api.post(
     `/reviews/client-to-provider`,
     { 
@@ -13,7 +14,7 @@ export const addClientReviewToProvider = async (projectId, rating, content, toke
     },
     {
       params: { 
-        ProjectId: projectId  // Capital P to match backend parameter name exactly
+        ProjectId: projectId  // Capital P to match backend parameter name
       },
       headers: { 
         Authorization: `Bearer ${token}`,

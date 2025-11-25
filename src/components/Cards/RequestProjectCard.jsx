@@ -175,7 +175,7 @@ export default function RequestProjectCard({
           borderRadius: "16px",
           boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
           transition: "all 0.3s ease",
-          width: "320px",
+          width: "368px",
           height: "380px",
           display: "flex",
           flexDirection: "column",

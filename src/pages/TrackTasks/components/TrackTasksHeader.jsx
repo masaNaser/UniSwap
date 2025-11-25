@@ -525,19 +525,39 @@ export default function TrackTasksHeader({
           </Typography>
         </Box>
 
- {cardData.projectStatus && (
-  <Chip
-    label={projectOverdue ? "Overdue" : cardData.projectStatus}  // 👈 هون التعديل
-    size="small"
-    sx={{
-      fontWeight: "600",
-      fontSize: "11px",
-      height: "28px",
-      backgroundColor: projectOverdue ? "#FEE2E2" : "#EFF6FF",
-      color: projectOverdue ? "#DC2626" : "#0284C7",
-    }}
-  />
-)}
+        {cardData.projectStatus && (
+          <Chip
+            label={
+              projectOverdue
+                ? "Overdue"
+                : cardData.projectStatus === "SubmittedForFinalReview"
+                  ? "In Review"
+                  : cardData.projectStatus
+            }
+            size="small"
+            sx={{
+              fontWeight: "600",
+              fontSize: "12px",  
+              height: "26px",   
+              px: 1.5,      
+              borderRadius: "6px",
+              backgroundColor: (() => {
+                if (projectOverdue) return "#FEE2E2";
+                if (cardData.projectStatus === "Active") return "#D1FAE5";
+                if (cardData.projectStatus === "Completed") return "#DBEAFE";
+                if (cardData.projectStatus === "SubmittedForFinalReview") return "#F3E8FF";
+                return "#EFF6FF"; // default
+              })(),
+              color: (() => {
+                if (projectOverdue) return "#DC2626";
+                if (cardData.projectStatus === "Active") return "#059669";
+                if (cardData.projectStatus === "Completed") return "#0284C7";
+                if (cardData.projectStatus === "SubmittedForFinalReview") return "#A855F7";
+                return "#0284C7"; // default
+              })(),
+            }}
+          />
+        )}
       </Box>
 
       <ProgressSection progressPercentage={progressPercentage} />
@@ -610,8 +630,8 @@ export default function TrackTasksHeader({
               snackbar.severity === "success"
                 ? "#3b82f6"
                 : snackbar.severity === "info"
-                ? "#3b82f6"
-                : "#EF4444",
+                  ? "#3b82f6"
+                  : "#EF4444",
             color: "white",
             "& .MuiAlert-icon": {
               color: "white",

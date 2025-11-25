@@ -7,8 +7,8 @@ import KanbanBoard from './components/KanbanBoard';
 import TaskDialog from './components/TaskDialog';
 import TaskMenu from './components/TaskMenu';
 import TaskSnackbar from './components/TaskSnackbar';
-import ReviewDialog from './components/ReviewDialog';
-import ViewReviewDialog from './components/ViewReviewDialog';
+import TaskReviewDialog from './components/TaskReviewDialog';
+import ViewTaskReviewDialog from './components/ViewTaskReviewDialog';
 import * as taskService from '../../services/taskService';
 import { mapProjectStatus } from '../../utils/projectStatusMapper';
 import { getServiceProviderDashboard, getClientdashboard } from '../../services/projectService';
@@ -588,14 +588,14 @@ console.log("نوع الريكوست:", projectType || "مش واصل");
                 isProvider={isProvider}
             />
 
-            <ReviewDialog
+            <TaskReviewDialog
                 open={openReviewDialog}
                 onClose={() => setOpenReviewDialog(false)}
                 task={reviewingTask}
                 onSubmitReview={handleSubmitReview}
             />
 
-            <ViewReviewDialog
+            <ViewTaskReviewDialog
                 open={openViewReviewDialog}
                 onClose={() => setOpenViewReviewDialog(false)}
                 task={viewingReviewTask}

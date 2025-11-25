@@ -155,11 +155,11 @@ const filterProjects = (projects) => {
   const filterItems = [
     {
       type: "menu",
-      label: statusFilter === "SubmittedForFinalReview" ? "Submitted For Review" : statusFilter,
+      label: statusFilter === "SubmittedForFinalReview" ? "In Review" : statusFilter,
       items: [
         { label: "All Status", value: "All Status" },
         { label: "Active", value: "Active" },
-        { label: "Submitted For Review", value: "SubmittedForFinalReview" },
+        { label: "In Review", value: "SubmittedForFinalReview" },
         { label: "Completed", value: "Completed" },
         { label: "Overdue", value: "Overdue" },
       ],

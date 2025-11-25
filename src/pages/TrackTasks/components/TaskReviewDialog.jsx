@@ -15,7 +15,7 @@ import {
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
-export default function ReviewDialog({
+export default function TaskReviewDialog({
     open,
     onClose,
     task,
