@@ -31,6 +31,7 @@ import { login as loginApi } from "../../../services/authService";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { jwtDecode } from "jwt-decode";
+import { isAdmin } from '../../../utils/authHelpers';
 
 export default function Login() {
   const validationSchema = yup.object({
@@ -65,46 +66,56 @@ export default function Login() {
   // تحديد التاب الحالي
   const currentTab = location.pathname === "/login" ? 0 : 1;
 
-  const loginHandle = async (data) => {
-    try {
-      setLoading(true);
-      const response = await loginApi(data);
-      console.log(response);
-      if (response.status == 200) {
-        localStorage.setItem("accessToken", response.data.accessToken);
-        localStorage.setItem("refreshToken", response.data.refreshToken);
-        localStorage.setItem("refreshTokenExpiration", response.data.refreshTokenExpiration);
-        // فك التوكن واستخراج اسم اليوزر
-        const decoded = jwtDecode(response.data.accessToken);
-        const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-        const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-        console.log(userId);
-        // خزني اسم اليوزر
-        localStorage.setItem("userName", userName);
-        localStorage.setItem("userId", userId);
-        Swal.fire({
-          title: "Login successful!",
-          icon: "success",
-          timer: 1500,
-        }).then(() => { //تأخير الانتقال ثانية واحدة لضمان حفظ التوكن قبل التنقل
-          navigate("/app/feed");
-        });
 
-      }
-    } catch (error) {
-      const msg =
-        error.response?.data?.message || "Login failed. Please try again.";
-      console.error("Login error:", error);
+const loginHandle = async (data) => {
+  try {
+    setLoading(true);
+    const response = await loginApi(data);
+    
+    if (response.status === 200) {
+      const { accessToken, refreshToken, refreshTokenExpiration } = response.data;
+      
+      // حفظ في localStorage
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("refreshTokenExpiration", refreshTokenExpiration);
+      
+      // فك Token
+      const decoded = jwtDecode(accessToken);
+      const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+      const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+      const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      
+      // حفظ معلومات المستخدم
+      localStorage.setItem("userName", userName);
+      localStorage.setItem("userId", userId);
+
       Swal.fire({
-        icon: "error",
-        title: "Login failed",
-        text: msg,
-        // timer: 1500,
+        title: "Login successful!",
+        icon: "success",
+        timer: 1500,
+      }).then(() => {
+        // التوجيه حسب Role
+        if (userRole === "Admin") {
+          navigate("/admin");
+        } else {
+          navigate("/app/feed");
+        }
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    const msg = error.response?.data?.message || "Login failed. Please try again.";
+    console.error("Login error:", error);
+    
+    Swal.fire({
+      icon: "error",
+      title: "Login failed",
+      text: msg,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <>
       {/* Navbar */}

@@ -14,6 +14,7 @@ import Project from "../pages/Home/Project/Project";
 import Profile from "../pages/Profile/Profile";
 import ChatPage from '../components/Chat/ChatPage'
 import TrackTasks from "../pages/TrackTasks/TrackTasks";
+import AdminDashboard from "../pages/Admin/AdminDashboard";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
     {
     path: "/Chat",
     element:<ChatPage/>,
+  },
+  {
+      path:"/admin",
+      element: <AdminDashboard/>
   },
   {
     path: "/app",

@@ -31,3 +31,11 @@ export const GetPendingReports = async (token,data) => {
     },
   });
 };
+
+export const Analytics = async (token) => {
+  return await api.get(`/AdminDashboard/analytics`,  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
