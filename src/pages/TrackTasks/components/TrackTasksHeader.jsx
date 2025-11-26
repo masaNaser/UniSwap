@@ -19,16 +19,19 @@ import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { useState } from "react";
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import { useState, useEffect } from "react";
 import { getImageUrl } from "../../../utils/imageHelper";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import ProgressSection from "./ProgressSection";
 import ProjectCloseReviewDialog from "./ProjectCloseReviewDialog";
+import ViewProjectReviewDialog from "./ViewProjectReviewDialog";
 import { editCollaborationRequest } from "../../../services/collaborationService";
 import {
   closeProjectByProvider,
   closeProjectByClient,
 } from "../../../services/taskService";
+import { getReviewByProject } from "../../../services/reviewService";
 
 export default function TrackTasksHeader({
   cardData,
@@ -42,7 +45,7 @@ export default function TrackTasksHeader({
   onProjectClosed,
 }) {
   if (!cardData) return <div>Loading...</div>;
-  console.log("cardData", cardData);
+
   const [isEditing, setIsEditing] = useState(false);
   const [newDeadline, setNewDeadline] = useState(
     cardData.deadline
@@ -52,7 +55,9 @@ export default function TrackTasksHeader({
   const [loading, setLoading] = useState(false);
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
+  const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
   const [closingProject, setClosingProject] = useState(false);
+  const [reviewData, setReviewData] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -62,16 +67,29 @@ export default function TrackTasksHeader({
   const displayRole = cardData.isProvider ? "Client" : "Service Provider";
   const token = localStorage.getItem("accessToken");
 
-  // ✅ Check if project is overdue
+  // Fetch review if project is completed
+  useEffect(() => {
+    const fetchReview = async () => {
+      if (!isProvider || !cardData.id) return;
+
+      if (cardData.projectStatus === 'Completed') {
+        try {
+          const response = await getReviewByProject(cardData.id, token);
+          setReviewData(response.data);
+        } catch (error) {
+          console.error('Error fetching review:', error);
+          setReviewData(null);
+        }
+      }
+    };
+
+    fetchReview();
+  }, [cardData.id, cardData.projectStatus, isProvider, token]);
+
   const isProjectOverdue = () => {
     if (!cardData.deadline) return false;
-
     const now = new Date();
     const deadline = new Date(cardData.deadline);
-
-    // Project is overdue if:
-    // 1. Deadline has passed
-    // 2. Status is Active (not completed/submitted)
     return deadline < now && cardData.projectStatus === "Active";
   };
 
@@ -171,6 +189,17 @@ export default function TrackTasksHeader({
     return cardData.projectStatus === "SubmittedForFinalReview";
   };
 
+  // Show review button for provider if completed OR rejected
+  const canViewReview = () => {
+    if (!isProvider) return false;
+    
+    const isCompleted = cardData.projectStatus === 'Completed';
+    const isActive = cardData.projectStatus === 'Active';
+    const hasRejection = projectDetails?.rejectionReason;
+    
+    return isCompleted || (isActive && hasRejection);
+  };
+
   const handleCloseProjectClick = () => {
     if (isProvider) {
       setOpenCloseDialog(true);
@@ -214,28 +243,26 @@ export default function TrackTasksHeader({
     }
   };
 
+  // Handle client review submission (ONE-STEP: accept/reject WITH review)
   const handleClientReview = async (reviewData) => {
     try {
       setClosingProject(true);
 
       const closeRequestData = {
         isAccepted: reviewData.isAccepted,
-        rejectionReason: reviewData.isAccepted
-          ? ""
-          : reviewData.rejectionReason,
-        ...(reviewData.isAccepted && {
-          rating: reviewData.rating,
-          comment: reviewData.comment,
-        }),
+        rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
+        rating: reviewData.isAccepted ? reviewData.rating : undefined,
+        comment: reviewData.isAccepted ? reviewData.comment : undefined,
       };
+
+      console.log('📤 Sending close request:', closeRequestData);
 
       await closeProjectByClient(cardData.id, token, closeRequestData);
 
       if (reviewData.isAccepted) {
         setSnackbar({
           open: true,
-          message:
-            "Project completed successfully! Rating and review submitted. Points transferred. ✅",
+          message: "Project completed successfully! Rating and review submitted. Points transferred. ✅",
           severity: "success",
         });
       } else {
@@ -279,6 +306,10 @@ export default function TrackTasksHeader({
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
+  const handleViewReview = () => {
+    setOpenViewReviewDialog(true);
+  };
+
   return (
     <Box
       sx={{
@@ -291,7 +322,7 @@ export default function TrackTasksHeader({
         position: "relative",
       }}
     >
-      {/* ✅ Project Overdue Warning Banner */}
+      {/* Project Overdue Warning Banner */}
       {projectOverdue && (
         <Box
           sx={{
@@ -392,13 +423,15 @@ export default function TrackTasksHeader({
         </Box>
       )}
 
-      {/* Back Button + Close Project Button */}
+      {/* Back Button + Action Buttons */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           mb: 2,
+          flexWrap: "wrap",
+          gap: 1,
         }}
       >
         <CustomButton
@@ -414,20 +447,42 @@ export default function TrackTasksHeader({
           Back to Projects
         </CustomButton>
 
-        {canCloseProject() && (
-          <CustomButton
-            startIcon={<CheckCircleIcon />}
-            onClick={handleCloseProjectClick}
-            sx={{
-              textTransform: "none",
-              fontSize: "14px",
-              py: 0.75,
-              px: 2,
-            }}
-          >
-            {isProvider ? "Submit Final Work" : "Review & Close Project"}
-          </CustomButton>
-        )}
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          {/* Provider: View Review Button */}
+          {canViewReview() && (
+            <CustomButton
+              startIcon={<RateReviewIcon />}
+              onClick={handleViewReview}
+              sx={{
+                textTransform: "none",
+                fontSize: "14px",
+                py: 0.75,
+                px: 2,
+                background: cardData.projectStatus === 'Completed' 
+                  ? 'linear-gradient(to right, #00C8FF, #8B5FF6)' 
+                  : 'linear-gradient(to right, #DC2626, #EF4444)',
+              }}
+            >
+              View Client Review
+            </CustomButton>
+          )}
+
+          {/* Submit Final Work / Review & Close Button */}
+          {canCloseProject() && (
+            <CustomButton
+              startIcon={<CheckCircleIcon />}
+              onClick={handleCloseProjectClick}
+              sx={{
+                textTransform: "none",
+                fontSize: "14px",
+                py: 0.75,
+                px: 2,
+              }}
+            >
+              {isProvider ? "Submit Final Work" : "Review & Close Project"}
+            </CustomButton>
+          )}
+        </Box>
       </Box>
 
       {/* Title */}
@@ -444,7 +499,7 @@ export default function TrackTasksHeader({
             {cardData.description}
           </Typography>
 
-          {/* Rejection Reason */}
+          {/* Rejection Reason Banner */}
           {projectDetails?.rejectionReason &&
             cardData.projectStatus === "Active" && (
               <Box
@@ -537,23 +592,25 @@ export default function TrackTasksHeader({
             size="small"
             sx={{
               fontWeight: "600",
-              fontSize: "12px",  
-              height: "26px",   
-              px: 1.5,      
+              fontSize: "12px",
+              height: "26px",
+              px: 1.5,
               borderRadius: "6px",
               backgroundColor: (() => {
                 if (projectOverdue) return "#FEE2E2";
                 if (cardData.projectStatus === "Active") return "#D1FAE5";
                 if (cardData.projectStatus === "Completed") return "#DBEAFE";
-                if (cardData.projectStatus === "SubmittedForFinalReview") return "#F3E8FF";
-                return "#EFF6FF"; // default
+                if (cardData.projectStatus === "SubmittedForFinalReview")
+                  return "#F3E8FF";
+                return "#EFF6FF";
               })(),
               color: (() => {
                 if (projectOverdue) return "#DC2626";
                 if (cardData.projectStatus === "Active") return "#059669";
                 if (cardData.projectStatus === "Completed") return "#0284C7";
-                if (cardData.projectStatus === "SubmittedForFinalReview") return "#A855F7";
-                return "#0284C7"; // default
+                if (cardData.projectStatus === "SubmittedForFinalReview")
+                  return "#A855F7";
+                return "#0284C7";
               })(),
             }}
           />
@@ -562,7 +619,7 @@ export default function TrackTasksHeader({
 
       <ProgressSection progressPercentage={progressPercentage} />
 
-      {/* Dialogs */}
+      {/* Provider Submit Dialog */}
       <Dialog
         open={openCloseDialog}
         onClose={() => !closingProject && setOpenCloseDialog(false)}
@@ -606,12 +663,22 @@ export default function TrackTasksHeader({
         </DialogActions>
       </Dialog>
 
+      {/* Client Review Dialog (ONE-STEP: Accept/Reject WITH Review) */}
       <ProjectCloseReviewDialog
         open={openReviewDialog}
         onClose={() => !closingProject && setOpenReviewDialog(false)}
         projectTitle={cardData.title}
         projectDescription={cardData.description}
         onSubmitReview={handleClientReview}
+      />
+
+      {/* View Project Review Dialog */}
+      <ViewProjectReviewDialog
+        open={openViewReviewDialog}
+        onClose={() => setOpenViewReviewDialog(false)}
+        projectData={cardData}
+        projectDetails={projectDetails}
+        reviewData={reviewData}
       />
 
       {/* Snackbar */}
