@@ -20,10 +20,27 @@ export const addClientReviewToProvider = async (projectId, rating, content, toke
 };
 
 // ===== Get Review by Project =====
+// ✅ FIXED: Changed URL to match backend endpoint
 export const getReviewByProject = async (projectId, token) => {
-  return await api.get(`/reviews/projects/${projectId}`, {
-    headers: { Authorization: `Bearer ${token}` },
+  console.log("📡 getReviewByProject - Request:", {
+    projectId,
+    endpoint: `/Projects/review/${projectId}`,  // ✅ Correct endpoint
   });
+
+  try {
+    const response = await api.get(`/Projects/review/${projectId}`, {  // ✅ FIXED URL
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log("✅ getReviewByProject - Success:", response.data);
+    return response;
+  } catch (error) {
+    console.error("❌ getReviewByProject - Error:", {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    throw error;
+  }
 };
 
 // ===== Get Public Reviews =====

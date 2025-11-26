@@ -67,24 +67,47 @@ export default function TrackTasksHeader({
   const displayRole = cardData.isProvider ? "Client" : "Service Provider";
   const token = localStorage.getItem("accessToken");
 
+  console.log("🏠 TrackTasksHeader - Component State:", {
+    projectId: cardData.id,
+    projectStatus: cardData.projectStatus,
+    isProvider,
+    reviewData,
+  });
+
   // Fetch review if project is completed
   useEffect(() => {
     const fetchReview = async () => {
-      if (!isProvider || !cardData.id) return;
+      if (!isProvider || !cardData.id) {
+        console.log("⏭️ Skipping review fetch - not provider or no project ID");
+        return;
+      }
+
+      console.log("🔍 Checking if should fetch review:", {
+        projectStatus: cardData.projectStatus,
+        isCompleted: cardData.projectStatus === 'Completed',
+        hasRejection: !!projectDetails?.rejectionReason,
+      });
 
       if (cardData.projectStatus === 'Completed') {
         try {
+          console.log("📡 Fetching review for project:", cardData.id);
           const response = await getReviewByProject(cardData.id, token);
+          console.log("✅ Review fetch response:", response.data);
           setReviewData(response.data);
         } catch (error) {
-          console.error('Error fetching review:', error);
+          console.error('❌ Error fetching review:', error);
+          console.log("📋 Error details:", {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message,
+          });
           setReviewData(null);
         }
       }
     };
 
     fetchReview();
-  }, [cardData.id, cardData.projectStatus, isProvider, token]);
+  }, [cardData.id, cardData.projectStatus, isProvider, token, projectDetails?.rejectionReason]);
 
   const isProjectOverdue = () => {
     if (!cardData.deadline) return false;
@@ -125,7 +148,13 @@ export default function TrackTasksHeader({
     const chosen = new Date(newDeadline);
     const current = new Date(cardData.deadline);
 
+    console.log("📅 Saving deadline:", {
+      current: current.toISOString(),
+      chosen: chosen.toISOString(),
+    });
+
     if (chosen <= current) {
+      console.warn("⚠️ Invalid deadline - must be after current");
       setSnackbar({
         open: true,
         message: "New deadline must be at least 1 day AFTER current deadline.",
@@ -142,11 +171,13 @@ export default function TrackTasksHeader({
         throw new Error("Collaboration Request ID is missing.");
       }
 
+      console.log("🔄 Updating deadline via API:", { collaborationId, newDeadline });
       const deadlineISO = new Date(newDeadline).toISOString();
       await editCollaborationRequest(token, collaborationId, {
         deadline: deadlineISO,
       });
 
+      console.log("✅ Deadline updated successfully");
       if (onDeadlineUpdate) {
         onDeadlineUpdate(deadlineISO);
       }
@@ -158,7 +189,7 @@ export default function TrackTasksHeader({
         severity: "success",
       });
     } catch (err) {
-      console.error("Error updating deadline:", err);
+      console.error("❌ Error updating deadline:", err);
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
@@ -183,10 +214,18 @@ export default function TrackTasksHeader({
   };
 
   const canCloseProject = () => {
-    if (isProvider) {
-      return cardData.projectStatus === "Active" && progressPercentage === 100;
-    }
-    return cardData.projectStatus === "SubmittedForFinalReview";
+    const result = isProvider
+      ? cardData.projectStatus === "Active" && progressPercentage === 100
+      : cardData.projectStatus === "SubmittedForFinalReview";
+    
+    console.log("🔒 Can close project check:", {
+      isProvider,
+      projectStatus: cardData.projectStatus,
+      progressPercentage,
+      result,
+    });
+    
+    return result;
   };
 
   // Show review button for provider if completed OR rejected
@@ -197,10 +236,21 @@ export default function TrackTasksHeader({
     const isActive = cardData.projectStatus === 'Active';
     const hasRejection = projectDetails?.rejectionReason;
     
-    return isCompleted || (isActive && hasRejection);
+    const result = isCompleted || (isActive && hasRejection);
+    
+    console.log("👁️ Can view review check:", {
+      isProvider,
+      isCompleted,
+      isActive,
+      hasRejection,
+      result,
+    });
+    
+    return result;
   };
 
   const handleCloseProjectClick = () => {
+    console.log("🎯 Close project clicked:", { isProvider });
     if (isProvider) {
       setOpenCloseDialog(true);
     } else {
@@ -209,9 +259,11 @@ export default function TrackTasksHeader({
   };
 
   const handleProviderSubmit = async () => {
+    console.log("📤 Provider submitting project for review:", cardData.id);
     try {
       setClosingProject(true);
       await closeProjectByProvider(cardData.id, token);
+      console.log("✅ Project submitted successfully");
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -223,10 +275,16 @@ export default function TrackTasksHeader({
       setOpenCloseDialog(false);
 
       if (onProjectClosed) {
+        console.log("🔄 Calling onProjectClosed callback");
         await onProjectClosed();
       }
     } catch (err) {
       console.error("❌ Error submitting project:", err);
+      console.log("📋 Error details:", {
+        status: err.response?.status,
+        data: err.response?.data,
+      });
+      
       let errorMessage = "Failed to submit project.";
       if (err.response?.data?.detail) {
         errorMessage = err.response.data.detail;
@@ -245,6 +303,8 @@ export default function TrackTasksHeader({
 
   // Handle client review submission (ONE-STEP: accept/reject WITH review)
   const handleClientReview = async (reviewData) => {
+    console.log("📝 Client submitting review:", reviewData);
+    
     try {
       setClosingProject(true);
 
@@ -255,17 +315,22 @@ export default function TrackTasksHeader({
         comment: reviewData.isAccepted ? reviewData.comment : undefined,
       };
 
-      console.log('📤 Sending close request:', closeRequestData);
+      console.log('📤 Sending close request to backend:', closeRequestData);
+      console.log('🔗 API endpoint:', `/api/Projects/${cardData.id}/close-by-client`);
 
       await closeProjectByClient(cardData.id, token, closeRequestData);
 
+      console.log("✅ Project review submitted successfully");
+
       if (reviewData.isAccepted) {
+        console.log("✅ Project accepted - rating and review saved");
         setSnackbar({
           open: true,
           message: "Project completed successfully! Rating and review submitted. Points transferred. ✅",
           severity: "success",
         });
       } else {
+        console.log("❌ Project rejected - returned to Active");
         setSnackbar({
           open: true,
           message: "Project rejected and returned to Active status for rework.",
@@ -276,10 +341,17 @@ export default function TrackTasksHeader({
       setOpenReviewDialog(false);
 
       if (onProjectClosed) {
+        console.log("🔄 Calling onProjectClosed callback");
         await onProjectClosed();
       }
     } catch (err) {
       console.error("❌ Error reviewing project:", err);
+      console.log("📋 Full error object:", {
+        message: err.message,
+        response: err.response,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
 
       let errorMessage = "Failed to review project.";
       if (err.response?.data?.detail) {
@@ -307,6 +379,11 @@ export default function TrackTasksHeader({
   };
 
   const handleViewReview = () => {
+    console.log("👁️ Opening review dialog:", {
+      projectData: cardData,
+      projectDetails,
+      reviewData,
+    });
     setOpenViewReviewDialog(true);
   };
 
