@@ -23,22 +23,27 @@ export const GetOneReports = async (token,reportId) => {
     },
   });
 };
-
-export const GetPendingReports = async (token,data) => {
-  return await api.get(`reports/pending`,data,  {
+export const GetPendingReports = async (token) => {
+  return await api.get(`/AdminDashboard/pendingReport`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 };
 
-export const ReviewReprot = async (token,reportId) => {
-  return await api.post(`/api/reports/${reportId}/review`,{
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+
+export const ReviewReport = async (token, reportId, accept) => {
+  return await api.post(
+    `/AdminDashboard/${reportId}/reviewReport`,
+    { accept }, // Body
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 };
+
 
 export const Analytics = async (token) => {
   return await api.get(`/AdminDashboard/analytics`,  {
