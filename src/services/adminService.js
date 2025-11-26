@@ -25,7 +25,15 @@ export const GetOneReports = async (token,reportId) => {
 };
 
 export const GetPendingReports = async (token,data) => {
-  return await api.post(`reports/pending`,data,  {
+  return await api.get(`reports/pending`,data,  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const ReviewReprot = async (token,reportId) => {
+  return await api.post(`/api/reports/${reportId}/review`,{
     headers: {
       Authorization: `Bearer ${token}`,
     },

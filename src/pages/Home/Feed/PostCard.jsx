@@ -29,12 +29,9 @@ import CommentsDisabledIcon from "@mui/icons-material/CommentsDisabled";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 import ShareDialog from "../../../components/Modals/ShareDialog"; // ✅ استيراد الـ Share Dialog
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-dayjs.extend(utc);
 
-export const formatTime = (timestamp) => {
-  return dayjs.utc(timestamp).local().format("DD MMM, hh:mm A");
-};
+
+
 
 // Single Comment Bubble
 const CommentBubble = ({ comment }) => (
@@ -83,6 +80,20 @@ const ActionButton = ({ icon, label, onClick }) => (
     </Typography>
   </Box>
 );
+const normalizeTime = (timestamp) => {
+  // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
+  if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
+    return timestamp;
+  }
+
+  // إذا بدون timezone → اعتبريه +01:00 (زي ما كان قبل الريفريش)
+  return timestamp + "+01:00";
+};
+
+const formatTime = (timestamp) => {
+  return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
+};
+
 
 function PostCard({
   post,

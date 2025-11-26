@@ -104,6 +104,21 @@ const CreatePost = ({ addPost, token }) => {
     if (fileInput) fileInput.value = "";
   };
 
+const normalizeTime = (timestamp) => {
+  // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
+  if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
+    return timestamp;
+  }
+
+  // إذا بدون timezone → اعتبريه +01:00 (زي ما كان قبل الريفريش)
+  return timestamp + "+01:00";
+};
+
+const formatTime = (timestamp) => {
+  return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
+};
+
+
 const handleSubmit = async (event) => {
   event.preventDefault();
 
@@ -128,7 +143,7 @@ const handleSubmit = async (event) => {
         id: postData.author.id,
       },
       // ✅ الحل النهائي
-time: dayjs.utc(postData.createdAt).local().format("DD MMM, hh:mm A"),
+  time: formatTime(postData.createdAt),
       likes: postData.likesCount,
       comments: postData.commentsCount,
       shares: 0,

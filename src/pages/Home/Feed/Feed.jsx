@@ -110,6 +110,20 @@ export default function Feed() {
   };
 
 // في Feed.js، غيّر الـ fetchPosts هيك:
+const normalizeTime = (timestamp) => {
+  // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
+  if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
+    return timestamp;
+  }
+
+  // إذا بدون timezone → اعتبريه +01:00 (زي ما كان قبل الريفريش)
+  return timestamp + "+01:00";
+};
+
+const formatTime = (timestamp) => {
+  return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
+};
+
 
 const fetchPosts = async () => {
   try {
@@ -117,8 +131,7 @@ const fetchPosts = async () => {
     console.log(response);
     const postsData = response.data.map((p) => {
       // ✅ بدون أي تعقيدات UTC
-const formattedTime = dayjs.utc(p.createdAt).local().format("DD MMM, hh:mm A");
-      
+
       return {
         id: p.id,
         content: p.content,
@@ -128,7 +141,7 @@ const formattedTime = dayjs.utc(p.createdAt).local().format("DD MMM, hh:mm A");
           avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
           id: p.author.id,
         },
-        time: formattedTime,
+            time: formatTime(p.createdAt),
         likes: p.likesCount,
         comments: p.commentsCount,
         shares: "",
