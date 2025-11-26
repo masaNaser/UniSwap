@@ -22,10 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FolderIcon from "@mui/icons-material/Folder";
 import UserProjectModal from "../../../components/Modals/UserProjectModal";
-import {
-  GetUserProject,
-  DeleteProject,
-} from "../../../services/profileService";
+import {GetUserProject,DeleteProject} from "../../../services/profileService";
 import { useProfile } from "../../../Context/ProfileContext";
 import { getImageUrl } from "../../../utils/imageHelper";
 

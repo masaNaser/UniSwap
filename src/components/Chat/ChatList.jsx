@@ -105,19 +105,19 @@ export default function ChatList({
                 })
               : "";
 
-            const lastDate = conv.lastMessage?.createdAt
-              ? (() => {
-                  const msgDate = new Date(conv.lastMessage.createdAt);
-                  const today = new Date();
-                  const isToday =
-                    msgDate.getDate() === today.getDate() &&
-                    msgDate.getMonth() === today.getMonth() &&
-                    msgDate.getFullYear() === today.getFullYear();
-                  return isToday
-                    ? "Today"
-                    : msgDate.toLocaleDateString("en-GB");
-                })()
-              : "";
+            // const lastDate = conv.lastMessage?.createdAt
+            //   ? (() => {
+            //       const msgDate = new Date(conv.lastMessage.createdAt);
+            //       const today = new Date();
+            //       const isToday =
+            //         msgDate.getDate() === today.getDate() &&
+            //         msgDate.getMonth() === today.getMonth() &&
+            //         msgDate.getFullYear() === today.getFullYear();
+            //       return isToday
+            //         ? "Today"
+            //         : msgDate.toLocaleDateString("en-GB");
+            //     })()
+            //   : "";
 
             const initials = conv.partnerName?.substring(0, 2).toUpperCase();
             
@@ -170,7 +170,7 @@ export default function ChatList({
                   >
                     {lastTime}
                   </div>
-                  <div className="chat-date">{lastDate}</div>
+                  {/* <div className="chat-date">{lastDate}</div> */}
                   
                   {/* ✅ Badge للرسائل غير المقروءة */}
                   {hasUnread && (
