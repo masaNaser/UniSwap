@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Container, Grid, Typography, Box } from "@mui/material";
 import ServiceCard from "../../../components/Cards/ServiceCard";
 import { getServices as getServicesApi } from "../../../services/servicesService";
-
+import {isAdmin} from "../../../utils/authHelpers";
 // أيقونات MUI
 import DesignServicesIcon from "@mui/icons-material/DesignServices";
 import CodeIcon from "@mui/icons-material/Code";
@@ -11,6 +11,10 @@ import SchoolIcon from "@mui/icons-material/School";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import SelfImprovementIcon from "@mui/icons-material/SelfImprovement";
 
+  const adminMode = isAdmin();
+
+
+console.log("admin",adminMode);
 // خريطة تربط اسم السيرفس بالأيقونة المناسبة
 const iconMap = {
   "Study Support": <SchoolIcon fontSize="large" sx={{ color: "#2196F3" }} />,

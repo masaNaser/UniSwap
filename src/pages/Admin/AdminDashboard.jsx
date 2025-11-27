@@ -11,6 +11,7 @@ import {
   Tabs,
   Tab,
   Paper,
+  Button 
 } from "@mui/material";
 import {
   People as PeopleIcon,
@@ -18,19 +19,30 @@ import {
   Warning as WarningIcon,
 } from "@mui/icons-material";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
-
+import LogoutIcon from '@mui/icons-material/Logout';
 import { GetDashboard } from "../../services/adminService";
 import SelectActionCard from "../../components/Cards/Cards";
 import UsersTap from "./components/DashboardTabs/UsersTap";
 import ReportsTap from "./components/DashboardTabs/ReportsTap";
 import AnalyticsTap from "./components/DashboardTabs/AnalyticsTap";
-
+import { logout } from "../../services/authService"; // ✅ استيراد دالة logout
+import { useNavigate } from "react-router-dom";
+import CustomButton from "../../components/CustomButton/CustomButton";
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userName = localStorage.getItem("userName");
   const [currentTab, setCurrentTab] = useState(0);
+
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();            // ✅ مسح بيانات الجلسة
+    navigate("/login")
+  };
+
 
   // ✅ دالة لجلب الـ stats (خارج useEffect عشان نقدر نستدعيها من أي مكان)
   const fetchStats = async () => {
@@ -80,18 +92,20 @@ const AdminDashboard = () => {
     <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh", py: 4 }}>
       <Container maxWidth="xl">
         {/* Header */}
-        <Box mb={4}>
-          <Typography
-            variant="h4"
-            component="h1"
-            fontWeight="bold"
-            gutterBottom
-          >
-            Admin Dashboard
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Welcome back, {userName}
-          </Typography>
+        <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
+          <Box>
+            <Typography variant="h4" fontWeight="bold">Admin Dashboard</Typography>
+            <Typography variant="body1" color="text.secondary">
+              Welcome back, {userName}
+            </Typography>
+          </Box>
+          <CustomButton variant="outlined"  onClick={handleLogout}>
+            <LogoutIcon sx={{marginRight:2}} />
+            Logout
+          </CustomButton>
+           {/* <Button variant="contained" color="primary" onClick={() => navigate("/app/feed")}>
+    Go to Feed
+  </Button> */}
         </Box>
 
         {/* Stats Cards Grid */}

@@ -141,16 +141,17 @@ export default function UsersTap() {
 
       {/* Users Table */}
       <Card>
+        <Box sx={{ width: "100%", overflowX: "auto" }}>
         <TableContainer>
           <Table>
-            <TableHead sx={{ bgcolor: "#f5f5f5" }}>
-              <TableRow>
-                <TableCell>User</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Major</TableCell>
-                <TableCell align="center">Points</TableCell>
-                <TableCell align="center">Status</TableCell>
-                <TableCell>Joined Date</TableCell>
+            <TableHead sx={{ bgcolor: "#f5f5f5"}}>
+              <TableRow >
+                <TableCell sx={{fontSize:"17px"}}>User</TableCell>
+                <TableCell sx={{fontSize:"17px"}}>Email</TableCell>
+                <TableCell sx={{fontSize:"17px"}}>Major</TableCell>
+                <TableCell sx={{fontSize:"17px"}} align="center">Points</TableCell>
+                <TableCell sx={{fontSize:"17px"}} align="center">Status</TableCell>
+                <TableCell sx={{fontSize:"17px"}}>Joined Date</TableCell>
               </TableRow>
             </TableHead>
 
@@ -273,6 +274,7 @@ export default function UsersTap() {
             </TableBody>
           </Table>
         </TableContainer>
+        </Box>
       </Card>
     </Box>
   );

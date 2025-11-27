@@ -158,7 +158,6 @@ export default function ReportsTab({ onReportReviewed }) {
                     {report.reason}
                   </Typography>
 
-                  <Divider sx={{ my: 1 }} />
                 </Stack>
               </CardContent>
             </Card>
