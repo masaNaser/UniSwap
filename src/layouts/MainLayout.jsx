@@ -34,10 +34,12 @@ import { ProfileContext } from "../Context/ProfileContext";
 import { CurrentUserProvider } from "../Context/CurrentUserContext";
 import { GetFullProfile, GetProfileById } from "../services/profileService";
 import { useEffect } from "react";
+// import { useCurrentUser } from "../Context/CurrentUserContext";
 
 export default function MainLayout() {
   const [userData, setUserData] = useState(null);
   const [isMyProfile, setIsMyProfile] = useState(false);
+  // const { currentUser, updateCurrentUser } = useCurrentUser();
 
   // ⬅️ دالة لجلب البيانات (هاي الأهم!)
   const fetchUserData = async (userId) => {
@@ -67,6 +69,22 @@ export default function MainLayout() {
 
     }
   };
+// const refreshProfile = async () => {
+//   const currentUserId = localStorage.getItem("userId");
+
+//   // 1) تحديث بيانات البروفايل
+//   const updatedData = await fetchUserData(currentUserId);
+
+//   // 2) تحديث بيانات navbar (currentUser)
+//   if (updatedData) {
+//     updateCurrentUser(prev => ({
+//       ...prev,
+//       totalPoints: updatedData.totalPoints,   // ← هون النقاط الجديدة
+//       averageRating: updatedData.averageRating,
+//       completedProjectsCount: updatedData.completedProjectsCount
+//     }));
+//   }
+// };
 
   useEffect(() => {
   const token = localStorage.getItem("accessToken");
@@ -74,6 +92,7 @@ export default function MainLayout() {
     fetchUserData(); // 🔥 هيك من أول ما يفتح المستخدم الموقع بنجيب بياناته
   }
 }, []);
+
 
   return (
     <>
@@ -83,7 +102,8 @@ export default function MainLayout() {
           setUserData, 
           isMyProfile, 
           setIsMyProfile,
-          fetchUserData // ⬅️ أضف الدالة هنا
+          fetchUserData,
+          // refreshProfile
         }}>
           <Navbar/>
           <Outlet/>

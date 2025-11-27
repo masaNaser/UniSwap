@@ -126,110 +126,149 @@ const RequestServiceModal = ({
   };
 
   // ⬅️ وظيفة الإرسال الفعلي (تمت إعادة تسميتها)
-  const handleSubmit = async () => {
-    // إذا تم استدعاء هذه الدالة من الـ Dialog، يجب إغلاق الـ Dialog أولاً
-    if (isConfirmDialogOpen) {
-      setIsConfirmDialogOpen(false);
-    }
-    
-    if (!isEditMode && !providerId) {
-      setSnackbar({
-        open: true,
-        message: "Provider ID is missing!",
-        severity: "error",
-      });
-      return;
-    }
+const handleSubmit = async () => {
+  if (isConfirmDialogOpen) {
+    setIsConfirmDialogOpen(false);
+  }
+  
+  if (!isEditMode && !providerId) {
+    setSnackbar({
+      open: true,
+      message: "Provider ID is missing!",
+      severity: "error",
+    });
+    return;
+  }
 
-    try {
-      setIsSubmitting(true);
+  try {
+    setIsSubmitting(true);
 
-      const requestData = {
-        title: serviceTitle,
-        description: serviceDescription,
-        pointsOffered: parseInt(pointsBudget),
-        deadline: serviceCategory === "Project" ? deadline : null,
-      };
+    const requestData = {
+      title: serviceTitle,
+      description: serviceDescription,
+      pointsOffered: parseInt(pointsBudget),
+    };
 
-      // ✅ أضف Type فقط في حالة Create (مش Edit)
-      if (!isEditMode) {
-        requestData.type = serviceCategory === "Project" ? "RequestProject" : "Course";
-        requestData.providerId = providerId;
+    // ✅ في وضع الإنشاء (Create)
+    if (!isEditMode) {
+      requestData.type = serviceCategory === "Project" ? "RequestProject" : "Course";
+      requestData.providerId = providerId;
+      
+      // أضف deadline بس للـ Project
+      if (serviceCategory === "Project") {
+        requestData.deadline = deadline;
+        requestData.clientAcceptPublished = clientAcceptPublished;
       }
-
-      // ✅ أضف clientAcceptPublished فقط للـ Project
+    } 
+    // ✅ في وضع التعديل (Edit)
+    else {
+      // بس نضيف deadline إذا تغير فعلياً
+      if (serviceCategory === "Project" && deadline) {
+        // تحقق إذا الـ deadline تغير عن القيمة الأصلية
+        const originalDeadline = editData.deadline 
+          ? (editData.deadline.includes("/") 
+              ? formatDateFromEditData(editData.deadline) 
+              : new Date(editData.deadline).toISOString().split("T")[0])
+          : null;
+        
+        // بس نضيف deadline إذا تغير
+        if (deadline !== originalDeadline) {
+          requestData.deadline = deadline;
+        }
+      }
+      
+      // أضف clientAcceptPublished بس للـ Project
       if (serviceCategory === "Project") {
         requestData.clientAcceptPublished = clientAcceptPublished;
       }
+    }
 
-      console.log(
-        isEditMode ? "✏️ Editing request data:" : "➕ Creating request data:",
-        requestData
-      );
+    console.log(
+      isEditMode ? "✏️ Editing request data:" : "➕ Creating request data:",
+      requestData
+    );
 
-      if (!token) {
-        setSnackbar({
-          open: true,
-          message: "You need to login first!",
-          severity: "error",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      let response;
-      if (isEditMode) {
-        response = await editCollaborationRequest(
-          token,
-          editData.id,
-          requestData
-        );
-        console.log("✅ Request edited successfully:", response);
-      } else {
-        response = await createCollaborationRequest(token, requestData);
-        console.log("✅ Request created successfully:", response);
-      }
-
+    // ✅ التحقق من الـ token
+    if (!token) {
       setSnackbar({
         open: true,
-        message: isEditMode
-          ? "Request updated successfully!"
-          : "Request sent successfully!",
-        severity: "success",
-      });
-
-      setTimeout(() => {
-        handleClose();
-      }, 1500);
-    } catch (error) {
-      console.error(
-        isEditMode ? "❌ Error editing request:" : "❌ Error creating request:",
-        error
-      );
-
-      if (error.response) {
-        console.error("📛 Server Error Response:", error.response.data);
-        console.error("📛 Status Code:", error.response.status);
-      }
-
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.title ||
-        error.response?.data ||
-        error.message ||
-        `Failed to ${
-          isEditMode ? "update" : "send"
-        } request. Please try again.`;
-
-      setSnackbar({
-        open: true,
-        message: errorMessage,
+        message: "You need to login first!",
         severity: "error",
       });
-
       setIsSubmitting(false);
+      return;
     }
-  };
+
+    // ✅ استدعاء الـ API
+    let response;
+    if (isEditMode) {
+      response = await editCollaborationRequest(
+        token,
+        editData.id,
+        requestData
+      );
+      console.log("✅ Request edited successfully:", response);
+    } else {
+      response = await createCollaborationRequest(token, requestData);
+      console.log("✅ Request created successfully:", response);
+    }
+
+    // ✅ عرض رسالة النجاح
+    setSnackbar({
+      open: true,
+      message: isEditMode
+        ? "Request updated successfully!"
+        : "Request sent successfully!",
+      severity: "success",
+    });
+
+    // ✅ إغلاق الـ Modal بعد 1.5 ثانية
+    setTimeout(() => {
+      handleClose();
+    }, 1500);
+
+  } catch (error) {
+    console.error(
+      isEditMode ? "❌ Error editing request:" : "❌ Error creating request:",
+      error
+    );
+
+    if (error.response) {
+      console.error("📛 Server Error Response:", error.response.data);
+      console.error("📛 Status Code:", error.response.status);
+    }
+
+    const errorMessage =
+      error.response?.data?.message ||
+      error.response?.data?.title ||
+      error.response?.data ||
+      error.message ||
+      `Failed to ${
+        isEditMode ? "update" : "send"
+      } request. Please try again.`;
+
+    setSnackbar({
+      open: true,
+      message: errorMessage,
+      severity: "error",
+    });
+
+    setIsSubmitting(false);
+  }
+};
+
+// ✅ دالة مساعدة لتحويل التاريخ من editData
+const formatDateFromEditData = (dateString) => {
+  if (dateString.includes("/")) {
+    const parts = dateString.split("/");
+    const month = parts[0].padStart(2, "0");
+    const day = parts[1].padStart(2, "0");
+    const year = parts[2];
+    return `${year}-${month}-${day}`;
+  }
+  return new Date(dateString).toISOString().split("T")[0];
+};
+
 
   const handleClose = () => {
     // ⬅️ أغلق الـ Dialog عند إغلاق الـ Modal

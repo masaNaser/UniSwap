@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { GetPendingReports, GetOneReports, ReviewReport } from "../../../../services/adminService";
+import {
+  GetPendingReports,
+  GetOneReports,
+  ReviewReport,
+} from "../../../../services/adminService";
+
 import {
   Box,
   Grid,
@@ -17,23 +22,25 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Divider,
 } from "@mui/material";
+
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import PersonIcon from "@mui/icons-material/Person";
 import { getImageUrl } from "../../../../utils/imageHelper";
 
-export default function ReportsTab() {
+// ✅ استقبلنا onReportReviewed كـ prop
+export default function ReportsTab({ onReportReviewed }) {
   const token = localStorage.getItem("accessToken");
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // **حالة للتقرير المفرد**
   const [selectedReport, setSelectedReport] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch all pending reports
   const fetchPendingReports = async () => {
     try {
       const { data } = await GetPendingReports(token);
+      console.log("report:", data);
       setReports(data);
     } catch (err) {
       console.error(err);
@@ -42,7 +49,6 @@ export default function ReportsTab() {
     }
   };
 
-  // Fetch one report by ID
   const fetchReportById = async (id) => {
     try {
       const { data } = await GetOneReports(token, id);
@@ -53,13 +59,19 @@ export default function ReportsTab() {
     }
   };
 
-  // Review report (Accept / Reject)
   const handleReview = async (accept) => {
     try {
-      const { data } = await ReviewReport(token, selectedReport.id, accept);
-      console.log(data);
+      const response = await ReviewReport(token, selectedReport.id, accept);
+      console.log("handleReview", response);
       setModalOpen(false);
-      fetchPendingReports(); // تحديث القائمة بعد الموافقة أو الرفض
+      
+      // ✅ حدّث قائمة التقارير المحلية
+      fetchPendingReports();
+      
+      // ✅ حدّث الـ stats في الـ Dashboard (العداد رح يقل تلقائي)
+      if (onReportReviewed) {
+        onReportReviewed();
+      }
     } catch (err) {
       console.error(err);
     }
@@ -69,72 +81,84 @@ export default function ReportsTab() {
     fetchPendingReports();
   }, []);
 
-  if (loading) {
+  if (loading)
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" mt={5}>
-        <CircularProgress />
+      <Box display="flex" justifyContent="center" alignItems="center" mt={8}>
+        <CircularProgress size={45} />
       </Box>
     );
-  }
 
-  if (reports.length === 0) {
+  if (reports.length === 0)
     return (
       <Box textAlign="center" mt={5}>
-        <Typography variant="h6">لا توجد تقارير معلقة</Typography>
+        <Typography variant="h6" color="text.secondary">
+          no pending Reports
+        </Typography>
       </Box>
     );
-  }
 
   return (
-    <Box p={3}>
+    <Box p={2}>
       <Grid container spacing={3}>
         {reports.map((report) => (
           <Grid item xs={12} sm={6} md={4} key={report.id}>
             <Card
-              sx={{ borderRadius: 3, boxShadow: 3, cursor: "pointer" }}
+              sx={{
+                borderRadius: 4,
+                boxShadow: "0px 4px 14px rgba(0,0,0,0.1)",
+                transition: "0.25s",
+                position: "relative",
+                paddingTop: "35px",
+                ":hover": { transform: "scale(1.02)", boxShadow: 4 },
+                cursor: "pointer",
+              }}
               onClick={() => fetchReportById(report.id)}
             >
+              {/* Pending label on top-left */}
+              <Chip
+                label={report.status}
+                color="warning"
+                size="small"
+                sx={{
+                  position: "absolute",
+                  top: 10,
+                  left: 10,
+                  fontWeight: 600,
+                  zIndex: 2,
+                }}
+              />
+
               <CardHeader
                 avatar={
-                  <Avatar sx={{ bgcolor: "#f44336" }}>
+                  <Avatar sx={{ bgcolor: "#ff9800" }}>
                     <WarningAmberIcon />
                   </Avatar>
                 }
-                title={`Reporter: ${report.reporterId.substring(0, 8)}...`}
-                subheader={`Reported User: ${report.reportedUserId.substring(0, 8)}...`}
+                titleTypographyProps={{ fontWeight: 600 }}
+                title={`Reporter: ${report.reporterName}`}
+                subheader={`Reported user: ${report.reportedUserName}`}
               />
+
               {report.img && (
                 <CardMedia
                   component="img"
                   height="180"
                   image={getImageUrl(report.img)}
-                  alt="Report image"
+                  style={{ objectFit: "cover" }}
                 />
               )}
+
               <CardContent>
-                <Stack spacing={1}>
-                  <Typography variant="body1" fontWeight={500}>
+                <Stack spacing={1.3}>
+                  <Typography variant="subtitle2" fontWeight={600}>
                     Reason:
                   </Typography>
+
                   <Typography variant="body2" color="text.secondary">
                     {report.reason}
                   </Typography>
-                  <Stack direction="row" spacing={1} mt={1}>
-                    <Chip
-                      label={report.status}
-                      color={
-                        report.status === "Pending"
-                          ? "warning"
-                          : report.status === "Resolved"
-                          ? "success"
-                          : "default"
-                      }
-                      size="small"
-                    />
-                    <Typography variant="caption" color="text.secondary" ml={1}>
-                      {new Date(report.createdAt).toLocaleString("ar-EG")}
-                    </Typography>
-                  </Stack>
+
+                  <Divider sx={{ my: 1 }} />
                 </Stack>
               </CardContent>
             </Card>
@@ -142,36 +166,86 @@ export default function ReportsTab() {
         ))}
       </Grid>
 
-      {/* Modal للتقرير الواحد */}
       {selectedReport && (
-        <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>Report Details</DialogTitle>
-          <DialogContent>
+        <Dialog
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ fontWeight: 700, textAlign: "center" }}>
+            Report Details
+          </DialogTitle>
+
+          <DialogContent dividers>
             {selectedReport.img && (
               <img
                 src={getImageUrl(selectedReport.img)}
                 alt="report"
-                style={{ width: "100%", borderRadius: 8, marginBottom: 16 }}
+                style={{
+                  width: "100%",
+                  borderRadius: 10,
+                  marginBottom: 16,
+                }}
               />
             )}
-            <Typography variant="subtitle1" fontWeight={500}>
-              Reason:
-            </Typography>
-            <Typography variant="body2" mb={2}>
-              {selectedReport.reason}
-            </Typography>
-            <Typography variant="subtitle2" color="text.secondary">
-              Status: {selectedReport.status}
-            </Typography>
-            <Typography variant="subtitle2" color="text.secondary">
-              Created At: {new Date(selectedReport.createdAt).toLocaleString("ar-EG")}
-            </Typography>
+
+            <Stack spacing={1.5}>
+              <Typography fontWeight={600}>Reason:</Typography>
+              <Typography color="text.secondary">
+                {selectedReport.reason}
+              </Typography>
+
+              <Divider />
+
+              <Typography variant="body2">
+                Status:{" "}
+                <strong style={{ color: "#ff9800" }}>
+                  {selectedReport.status}
+                </strong>
+              </Typography>
+            </Stack>
           </DialogContent>
-          <DialogActions>
-            <Button color="error" onClick={() => handleReview(false)}>
+
+          <DialogActions sx={{ p: 2 }}>
+            <Button
+              onClick={() => handleReview(false)}
+              sx={{
+                borderRadius: 8,
+                textTransform: "none",
+                fontSize: 16,
+                padding: "10px 20px",
+                border: "2px solid #ff4d4d",
+                color: "#ff4d4d",
+                background: "transparent",
+                transition: "0.2s",
+                "&:hover": {
+                  background: "#ff4d4d",
+                  color: "white",
+                },
+              }}
+            >
               Reject
             </Button>
-            <Button color="success" onClick={() => handleReview(true)}>
+
+            <Button
+              onClick={() => handleReview(true)}
+              sx={{
+                borderRadius: 8,
+                textTransform: "none",
+                fontSize: 16,
+                padding: "10px 20px",
+                border: "2px solid #00C8FF",
+                color: "#00C8FF",
+                background: "transparent",
+                transition: "0.25s",
+                "&:hover": {
+                  background: "linear-gradient(to right,#00C8FF,#8B5FF6)",
+                  color: "white",
+                  borderColor: "transparent",
+                },
+              }}
+            >
               Accept
             </Button>
           </DialogActions>

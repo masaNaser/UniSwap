@@ -393,8 +393,18 @@ const handleSubmit = async () => {
     if (formData.userName?.trim()) form.append("UserName", formData.userName.trim());
     if (formData.Bio?.trim()) form.append("Bio", formData.Bio.trim());
     if (formData.UniversityMajor?.trim()) form.append("UniversityMajor", formData.UniversityMajor.trim());
-    if (formData.AcademicYear) form.append("AcademicYear", formData.AcademicYear);
-
+// في handleSubmit، قبل ما ترسل:
+if (formData.AcademicYear) {
+  const yearMap = {
+    "1": "Firstyear",
+    "2": "Secondyear",
+    "3": "Thirdyear",
+    "4": "Fourthyear",
+    "5": "another"
+  };
+  
+  form.append("AcademicYear", yearMap[formData.AcademicYear] || formData.AcademicYear);
+}
     // Skills → تحويل لمصفوفة
   if (formData.Skills) {
   let skillsArray = [];

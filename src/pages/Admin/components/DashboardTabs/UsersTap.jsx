@@ -1,28 +1,7 @@
-//useMemo = حفظ نتيجة عملية حسابية وعدم إعادة حسابها إلا لما البيانات تتغير.
+// src/pages/Admin/components/DashboardTabs/UsersTap.jsx
+// ✅ VERSION WITHOUT useMemo - Clean & Simple
 
-// المشكلة بدون useMemo:
-// jsx// كل مرة Component يعمل re-render:
-// const filteredUsers = users.filter(...); // 👈 تنفذ من جديد!
-// يعني:
-
-// لما تكتب حرف → re-render → filter تنفذ
-// لما تضغط على أي زر → re-render → filter تنفذ
-// لما أي state يتغير → re-render → filter تنفذ
-
-// حتى لو users و searchQuery ما تغيروا! 😵
-
-
-// الحل مع useMemo:
-// jsxconst filteredUsers = useMemo(() => {
-//   return users.filter(...);
-// }, [users, searchQuery]); // 👈 بس تعيد الحساب لما هدول يتغيروا
-// يعني:
-
-// لما users يتغير → أعد الحساب ✅
-// لما searchQuery يتغير → أعد الحساب ✅
-// لما أي شي ثاني يتغير → استخدم النتيجة المحفوظة (ما تعيد الحساب) ⚡
-
-import React, { useState, useEffect,useMemo  } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -39,13 +18,11 @@ import {
   Alert,
   TextField,
   InputAdornment,
-  IconButton,
 } from "@mui/material";
 import {
   Search as SearchIcon,
   Email as EmailIcon,
   School as SchoolIcon,
-  EmojiEvents as PointsIcon,
 } from "@mui/icons-material";
 import { GetUsers } from "../../../../services/adminService";
 
@@ -53,7 +30,6 @@ export default function UsersTap() {
   const token = localStorage.getItem("accessToken");
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
-  //هاد متغير بحفظ فيه النص اللي المستخدم بكتبه في البحث.
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState(null);
 
@@ -76,17 +52,15 @@ export default function UsersTap() {
     fetchUsers();
   }, []);
 
-  // فلترة المستخدمين حسب البحث
-const filteredUsers = useMemo(() => {
-  if (!searchQuery) return users;
-  
-  return users.filter(
-    (user) =>
-      user.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.major?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-}, [users, searchQuery]); // 👈 بس يعيد الحساب لما users أو searchQuery يتغيروا
+  // ✅ فلترة المستخدمين - بسيطة وواضحة بدون useMemo
+  const filteredUsers = searchQuery
+    ? users.filter(
+        (user) =>
+          user.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.major?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : users;
 
   // دالة لاختيار لون Status
   const getStatusColor = (status) => {
@@ -152,8 +126,8 @@ const filteredUsers = useMemo(() => {
           placeholder="Search by name, email, or major..."
           variant="outlined"
           size="small"
-          value={searchQuery} //  القيمة الحالية
-          onChange={(e) => setSearchQuery(e.target.value)} //  تحديث القيمة لما المستخدم يكتب
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           sx={{ width: 400 }}
           InputProps={{
             startAdornment: (
@@ -181,8 +155,6 @@ const filteredUsers = useMemo(() => {
             </TableHead>
 
             <TableBody>
-
-              {/* عرض النتائج المفلترة */}
               {filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">
@@ -217,7 +189,6 @@ const filteredUsers = useMemo(() => {
                           <Typography variant="body2" fontWeight={600}>
                             {user.userName}
                           </Typography>
-                        
                         </Box>
                       </Box>
                     </TableCell>
@@ -247,33 +218,32 @@ const filteredUsers = useMemo(() => {
                     {/* Points */}
                     <TableCell align="center">
                       <Chip
-                      
                         icon={   
-                     <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="rgba(0, 75, 173, 0.84"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <circle cx="8" cy="8" r="6"></circle>
-                      <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-                      <path d="M7 6h1v4"></path>
-                      <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-                    </svg>}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="rgba(0, 75, 173, 0.84"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <circle cx="8" cy="8" r="6"></circle>
+                            <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                            <path d="M7 6h1v4"></path>
+                            <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                          </svg>
+                        }
                         label={user.totalPoints}
                         size="medium"
                         sx={{
                           bgcolor: "#0564ff9e",
                           color: "#fff",
                           fontWeight: 600,
-                          fontSize: '0.875rem', // 👈 حجم خط أكبر
-
+                          fontSize: '0.875rem',
                         }}
                       />
                     </TableCell>
@@ -284,10 +254,9 @@ const filteredUsers = useMemo(() => {
                         label={user.status}
                         color={getStatusColor(user.status)}
                         size="medium"
-                          sx={{
+                        sx={{
                           fontWeight: 600,
-                          fontSize: '0.875rem', // 👈 حجم خط أكبر
-
+                          fontSize: '0.875rem',
                         }}
                       />
                     </TableCell>

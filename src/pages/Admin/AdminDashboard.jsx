@@ -10,6 +10,7 @@ import {
   Alert,
   Tabs,
   Tab,
+  Paper,
 } from "@mui/material";
 import {
   People as PeopleIcon,
@@ -23,28 +24,30 @@ import SelectActionCard from "../../components/Cards/Cards";
 import UsersTap from "./components/DashboardTabs/UsersTap";
 import ReportsTap from "./components/DashboardTabs/ReportsTap";
 import AnalyticsTap from "./components/DashboardTabs/AnalyticsTap";
+
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userName = localStorage.getItem("userName");
-  const [currentTab, setCurrentTab] = useState(0); // 👈 إدارة الـ Tabs
+  const [currentTab, setCurrentTab] = useState(0);
+
+  // ✅ دالة لجلب الـ stats (خارج useEffect عشان نقدر نستدعيها من أي مكان)
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await GetDashboard(token);
+      console.log("dash :", response);
+      setStats(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch stats:", err);
+      setError("فشل تحميل البيانات");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        const response = await GetDashboard(token);
-        console.log("dash :", response);
-        setStats(response.data);
-      } catch (err) {
-        console.error("Failed to fetch stats:", err);
-        setError("فشل تحميل البيانات");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStats();
   }, []);
 
@@ -100,14 +103,6 @@ const AdminDashboard = () => {
             iconBgColor="#e3f2fd"
           />
 
-          {/* Active Services */}
-          {/* <StatsCard
-              title="Active Services"
-              value={stats.services}
-              icon={<BusinessCenterIcon />}
-              iconColor="#2e7d32"
-              iconBgColor="#e8f5e9"
-            /> */}
           <SelectActionCard
             title="Active Services"
             value={stats.services}
@@ -117,7 +112,6 @@ const AdminDashboard = () => {
             iconBgColor="#e8f5e9"
           />
 
-          {/* Total Points Awarded */}
           <SelectActionCard
             title="Total Points Awarded"
             value={stats.totalPointsAwarded}
@@ -129,7 +123,7 @@ const AdminDashboard = () => {
             iconBgColor="#fff3e0"
           />
 
-          {/* Reports Pending */}
+          {/* ✅ العداد هاد رح يتحدث تلقائي لما نستدعي fetchStats */}
           <SelectActionCard
             title="Reports Pending"
             value={stats.pendingReports}
@@ -138,41 +132,92 @@ const AdminDashboard = () => {
           />
         </div>
 
+        <Box sx={{ mt: 3 }}>
+          {/* الأزرار */}
+          <Paper
+            sx={{
+              borderRadius: 3,
+              m: 4,
+              width: "fit-content",
+              // , // ياخد قد التابس فقط
+              maxWidth: "100%", // ما يتجاوز عرض الشاشة
+              overflowX: "auto", // يعمل scroll لو صار أعرض من الشاشة
+              whiteSpace: "nowrap", // يمنع التابس من النزول تحت بعض
+               mx: "auto"        
+              //         // يخليها بالنص
+            }}
+          >
+            <Tabs
+              value={currentTab}
+              onChange={(e, v) => setCurrentTab(v)}
+              TabIndicatorProps={{ style: { display: "none"} }}
+              variant="scrollable" // يخلي التابس قابلة للتمرير
+              scrollButtons="auto" // يظهر أزرار التمرير تلقائيًا
+              sx={{
+                minHeight: 48, // ارتفاع ثابت ومرتب
+                px:10
+              }}
+            >
+              {["Users", "Reports", "Analytics"].map((label, index) => (
+                <Tab
+                  key={label}
+                  label={label}
+                  sx={{
+                    textTransform: "none",
+                    minWidth: "auto", // هذا أهم سطر لحل المشكلة
+                    marginRight:40,
+                    fontWeight: currentTab === index ? "bold" : "normal",
+                    fontSize: "16px",
+                    background:
+                      currentTab === index
+                        ? "linear-gradient(to right, rgba(2, 132, 199, 0.8), rgba(152, 16, 250, 0.8))"
+                        : "none",
+                    WebkitBackgroundClip:
+                      currentTab === index ? "text" : "none",
+                    WebkitTextFillColor:
+                      currentTab === index ? "transparent" : "black",
+                  }}
+                />
+              ))}
+            </Tabs>
+          </Paper>
+
+          {/* المحتوى */}
+          {currentTab === 0 && <UsersTap />}
+
+          {/* {currentTab === 1 && <Box>Services Content - قريباً</Box>} */}
+
+          {/* ✅ مررنا دالة fetchStats للـ ReportsTab */}
+          {currentTab === 1 && <ReportsTap onReportReviewed={fetchStats} />}
+
+          {currentTab === 2 && <AnalyticsTap />}
+          {/* {currentTab === 3 && <AchievementsTab />} */}
+        </Box>
+
         {/* 📑 Tabs - ثابتة */}
-        <Box sx={{ bgcolor: "white", borderRadius: 2, mb: 3, mt:5 }}>
+        {/* <Box sx={{ bgcolor: "white", borderRadius: 2, mb: 3, mt: 5 }}>
           <Tabs
             value={currentTab}
             onChange={handleTabChange}
             sx={{ borderBottom: 1, borderColor: "divider" }}
           >
             <Tab label="Users" />
-            <Tab label="Services" />
+            <Tab label="Services" /> 
             <Tab label="Reports" />
             <Tab label="Analytics" />
           </Tabs>
-        </Box>
-
+        </Box> */}
         {/* 🔄 محتوى الـ Tab - متغير */}
-        <Box>
-          {/* {currentTab === 0 && (
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                 <RecentActivity /> 
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <QuickStats stats={stats} /> 
-              </Grid>
-            </Grid>
-          )} */}
-
+        {/* <Box>
           {currentTab === 0 && <UsersTap />}
 
-          {currentTab === 1 && <Box>Services Content - قريباً</Box>}
+          * {currentTab === 1 && <Box>Services Content - قريباً</Box>} 
 
-          {currentTab === 2 && <ReportsTap />}
+          {/* ✅ مررنا دالة fetchStats للـ ReportsTab */}
+        {/* {currentTab === 1 && <ReportsTap onReportReviewed={fetchStats} />}
 
-          {currentTab === 3 && <AnalyticsTap />}
-        </Box>
+          {currentTab === 2 && <AnalyticsTap />}
+        </Box> */}
       </Container>
     </Box>
   );

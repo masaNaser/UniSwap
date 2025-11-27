@@ -17,13 +17,15 @@ export default function ProfileTabs({ userData }) {
       {/* الأزرار */}
  <Paper 
   sx={{ 
-    borderRadius: 3, 
-    mb: 3,
-    width: "fit-content",     // ياخد قد التابس فقط
-    maxWidth: "100%",         // ما يتجاوز عرض الشاشة
-    overflowX: "auto",        // يعمل scroll لو صار أعرض من الشاشة
-    whiteSpace: "nowrap",     // يمنع التابس من النزول تحت بعض
-    // mx: "auto"                // يخليها بالنص
+         borderRadius: 3,
+              m: 4,
+              width: "fit-content",
+              // , // ياخد قد التابس فقط
+              maxWidth: "100%", // ما يتجاوز عرض الشاشة
+              overflowX: "auto", // يعمل scroll لو صار أعرض من الشاشة
+              whiteSpace: "nowrap", // يمنع التابس من النزول تحت بعض
+               mx: "auto"        
+              //       
   }}
 >
   <Tabs
@@ -34,25 +36,28 @@ export default function ProfileTabs({ userData }) {
     scrollButtons="auto"    // يظهر أزرار التمرير تلقائيًا
     sx={{
       minHeight: 48,        // ارتفاع ثابت ومرتب
+      px:10
     }}
   >
     {["Overview", "Portfolio", "Posts"].map((label, index) => (
       <Tab
         key={label}
         label={label}
-        sx={{
-          textTransform: "none",
-              minWidth: "auto",     // هذا أهم سطر لحل المشكلة
-
-          fontWeight: currentTab === index ? "bold" : "normal",
-          fontSize: "16px",
-          background:
-            currentTab === index
-              ? "linear-gradient(to right, rgba(2, 132, 199, 0.8), rgba(152, 16, 250, 0.8))"
-              : "none",
-          WebkitBackgroundClip: currentTab === index ? "text" : "none",
-          WebkitTextFillColor: currentTab === index ? "transparent" : "black",
-        }}
+         sx={{
+                    textTransform: "none",
+                    minWidth: "auto", // هذا أهم سطر لحل المشكلة
+                    marginRight:40,
+                    fontWeight: currentTab === index ? "bold" : "normal",
+                    fontSize: "16px",
+                    background:
+                      currentTab === index
+                        ? "linear-gradient(to right, rgba(2, 132, 199, 0.8), rgba(152, 16, 250, 0.8))"
+                        : "none",
+                    WebkitBackgroundClip:
+                      currentTab === index ? "text" : "none",
+                    WebkitTextFillColor:
+                      currentTab === index ? "transparent" : "black",
+                  }}
       />
     ))}
   </Tabs>
