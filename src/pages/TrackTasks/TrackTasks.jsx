@@ -9,6 +9,7 @@ import TaskMenu from './components/TaskMenu';
 import TaskSnackbar from './components/TaskSnackbar';
 import TaskReviewDialog from './components/TaskReviewDialog';
 import ViewTaskReviewDialog from './components/ViewTaskReviewDialog';
+import ReviewDueDateDialog from './components/ReviewDueDateDialog';
 import * as taskService from '../../services/taskService';
 import { mapProjectStatus } from '../../utils/projectStatusMapper';
 import { getServiceProviderDashboard, getClientdashboard } from '../../services/projectService';
@@ -52,9 +53,13 @@ export default function TrackTasks() {
     const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
     const [viewingReviewTask, setViewingReviewTask] = useState(null);
 
-const { projectType } = useLocation().state ?? {};
+    // ✅ Review Due Date Dialog State
+    const [openReviewDueDateDialog, setOpenReviewDueDateDialog] = useState(false);
+    const [taskForReview, setTaskForReview] = useState(null);
 
-console.log("نوع الريكوست:", projectType || "مش واصل");
+    const { projectType } = useLocation().state ?? {};
+
+    console.log("نوع الريكوست:", projectType || "مش واصل");
 
     // Fetch project status from dashboard
     const fetchProjectStatus = async () => {
@@ -68,21 +73,21 @@ console.log("نوع الريكوست:", projectType || "مش واصل");
             console.log('👤 User role:', isProvider ? 'Provider' : 'Client');
 
             const filters = ['All Status', 'Active', 'SubmittedForFinalReview', 'Completed', 'Overdue'];
-            
+
             for (const filter of filters) {
                 console.log(`🔍 Checking "${filter}" filter...`);
-                
+
                 try {
-                    const dashboardRes = isProvider 
+                    const dashboardRes = isProvider
                         ? await getServiceProviderDashboard(token, "Provider", filter)
                         : await getClientdashboard(token, "client", filter);
 
                     console.log(`📦 Response from "${filter}":`, dashboardRes?.data?.items?.length || 0, 'items');
 
                     if (dashboardRes?.data?.items) {
-                        const currentProject = dashboardRes.data.items.find(p => 
-                            p.id === cardData.id || 
-                            p.projectId === cardData.id || 
+                        const currentProject = dashboardRes.data.items.find(p =>
+                            p.id === cardData.id ||
+                            p.projectId === cardData.id ||
                             p.Id === cardData.id ||
                             p.ProjectId === cardData.id
                         );
@@ -129,16 +134,16 @@ console.log("نوع الريكوست:", projectType || "مش واصل");
 
             console.log('🔍 Fetching current status from dashboard...');
             const dashboardStatus = await fetchProjectStatus();
-            
+
             console.log('📊 Dashboard Status Result:', dashboardStatus);
 
             setCardData(prev => {
-                const finalStatus = dashboardStatus 
-                    ? mapProjectStatus(dashboardStatus) 
+                const finalStatus = dashboardStatus
+                    ? mapProjectStatus(dashboardStatus)
                     : (prev.projectStatus || 'Active');
-                
+
                 console.log('🎯 Final Status:', finalStatus, 'from Dashboard');
-                
+
                 return {
                     ...prev,
                     projectStatus: finalStatus,
@@ -146,8 +151,7 @@ console.log("نوع الريكوست:", projectType || "مش واصل");
                     deadline: detailsRes.data.deadline,
                     progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0,
                     rejectionReason: detailsRes.data.rejectionReason || prev.rejectionReason,
-                   projectType: detailsRes.data.type || prev.projectType || 'RequestProject' // ✅ إضافة جديدة
-
+                    projectType: detailsRes.data.type || prev.projectType || 'RequestProject'
                 };
             });
 
@@ -196,9 +200,9 @@ console.log("نوع الريكوست:", projectType || "مش واصل");
     const handleProjectClosed = async () => {
         try {
             console.log('🔄 handleProjectClosed called - refreshing project data...');
-            
+
             await fetchProjectData();
-            
+
             setSnackbar({
                 open: true,
                 message: 'Project status updated successfully!',
@@ -465,9 +469,11 @@ console.log("نوع الريكوست:", projectType || "مش واصل");
             if (targetStatus === 'InProgress' && currentStatus === 'ToDo') {
                 await taskService.moveToInProgress(draggedTask.id, token);
             } else if (targetStatus === 'InReview' && currentStatus === 'InProgress') {
-                const reviewDueAt = new Date();
-                reviewDueAt.setDate(reviewDueAt.getDate() + 7);
-                await taskService.submitForReview(draggedTask.id, reviewDueAt.toISOString(), token);
+                // ✅ Open dialog instead of direct submission
+                setTaskForReview(draggedTask);
+                setOpenReviewDueDateDialog(true);
+                setDraggedTask(null);
+                return; // Don't proceed with move yet
             } else if (targetStatus === 'InProgress' && currentStatus === 'InReview') {
                 await taskService.moveToInProgress(draggedTask.id, token);
             } else if (targetStatus === 'Done' && currentStatus === 'InReview') {
@@ -514,6 +520,59 @@ console.log("نوع الريكوست:", projectType || "مش واصل");
         }
 
         setDraggedTask(null);
+    };
+
+    // ✅ Handle review due date submission
+    const handleReviewDueDateSubmit = async (reviewDueDate) => {
+        if (!taskForReview) return;
+
+        try {
+            console.log('📤 User entered datetime:', reviewDueDate);
+            console.log('📤 Sending to backend:', reviewDueDate);
+
+            await taskService.submitForReview(taskForReview.id, reviewDueDate, token);
+
+            await taskService.updateProjectProgress(cardData.id, token);
+
+            const [tasksRes, detailsRes] = await Promise.all([
+                taskService.getTasksByStatus(cardData.id, null, token),
+                taskService.getProjectTaskDetails(cardData.id, token)
+            ]);
+
+            const allTasks = tasksRes.data;
+            const tasksByStatus = {
+                ToDo: [],
+                InProgress: [],
+                InReview: [],
+                Done: [],
+            };
+
+            allTasks.forEach(task => {
+                if (tasksByStatus[task.status]) {
+                    tasksByStatus[task.status].push(task);
+                }
+            });
+
+            setTasks(tasksByStatus);
+            setProjectDetails(detailsRes.data);
+
+            console.log('✅ Task submitted successfully');
+
+            setSnackbar({
+                open: true,
+                message: reviewDueDate
+                    ? 'Task submitted for review with deadline!'
+                    : 'Task submitted for review!',
+                severity: 'success',
+            });
+        } catch (error) {
+            console.error('Error submitting for review:', error);
+            setSnackbar({
+                open: true,
+                message: error.response?.data?.message || 'Failed to submit for review',
+                severity: 'error',
+            });
+        }
     };
 
     const handleOpenMenu = (e, task, status) => {
@@ -575,7 +634,7 @@ console.log("نوع الريكوست:", projectType || "مش واصل");
                 onAddTask={handleTaskFromColumn}
                 onReviewClick={handleReviewClick}
                 onViewReview={handleViewReview}
-                projectStatus={cardData.projectStatus} // ✅ Pass project status
+                projectStatus={cardData.projectStatus}
             />
 
             <TaskDialog
@@ -599,6 +658,18 @@ console.log("نوع الريكوست:", projectType || "مش واصل");
                 open={openViewReviewDialog}
                 onClose={() => setOpenViewReviewDialog(false)}
                 task={viewingReviewTask}
+            />
+
+            {/* ✅ Review Due Date Dialog */}
+            <ReviewDueDateDialog
+                open={openReviewDueDateDialog}
+                onClose={() => {
+                    setOpenReviewDueDateDialog(false);
+                    setTaskForReview(null);
+                }}
+                onSubmit={handleReviewDueDateSubmit}
+                taskTitle={taskForReview?.title || ''}
+                projectType={cardData?.projectType || 'RequestProject'}
             />
 
             <TaskMenu

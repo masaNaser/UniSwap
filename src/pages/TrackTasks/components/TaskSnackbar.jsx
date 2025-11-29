@@ -10,7 +10,7 @@ export default function TaskSnackbar({ snackbar, onClose }) {
       case 'warning':
         return '#F59E0B';   
       case 'info':
-        return '#10B981';   
+        return '#3b82f6';   
       default:
         return '#3b82f6';   
     }

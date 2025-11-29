@@ -14,6 +14,7 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 
 export default function TaskCard({
@@ -32,8 +33,17 @@ export default function TaskCard({
     const now = new Date();
     const deadline = new Date(task.deadline);
 
-    // Task is overdue if deadline passed AND not in Done status
     return deadline < now && status !== "Done";
+  };
+
+  // ✅ Check if review due date has passed (for RequestProject)
+  const isReviewOverdue = () => {
+    if (!task.reviewDueAt || status !== "InReview") return false;
+
+    const now = new Date();
+    const reviewDue = new Date(task.reviewDueAt);
+
+    return reviewDue < now;
   };
 
   // ✅ Format date for display (WITHOUT TIME)
@@ -48,6 +58,43 @@ export default function TaskCard({
         year: "numeric",
       });
     } catch {
+      return "Invalid date";
+    }
+  };
+
+  // ✅ Format date WITH time for review due date
+  // Backend returns local time without timezone: "2025-11-29T12:17:00"
+  // We need to parse it as local time (not UTC)
+  const formatDateWithTime = (dateString) => {
+    if (!dateString) return "No deadline";
+
+    try {
+      // Remove any 'Z' or timezone info if present
+      const cleanDate = dateString.replace('Z', '').replace(/[+-]\d{2}:\d{2}$/, '');
+
+      // Parse as local datetime by creating date parts manually
+      const [datePart, timePart] = cleanDate.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes] = timePart.split(':').map(Number);
+
+      // Create date in local timezone
+      const date = new Date(year, month - 1, day, hours, minutes);
+
+      // Format manually
+      const dayStr = String(date.getDate()).padStart(2, '0');
+      const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+      const yearStr = date.getFullYear();
+      const hoursStr = String(date.getHours()).padStart(2, '0');
+      const minutesStr = String(date.getMinutes()).padStart(2, '0');
+
+      // Convert hours to 12-hour format
+      const hour12 = hoursStr % 12 || 12;
+      const ampm = date.getHours() >= 12 ? "PM" : "AM";
+
+      return `${dayStr}/${monthStr}/${yearStr} at ${hour12}:${minutesStr} ${ampm}`;
+
+    } catch (error) {
+      console.error('Error formatting date:', error, dateString);
       return "Invalid date";
     }
   };
@@ -84,6 +131,7 @@ export default function TaskCard({
   };
 
   const taskIsOverdue = isTaskOverdue();
+  const reviewIsOverdue = isReviewOverdue();
 
   return (
     <Card
@@ -142,27 +190,6 @@ export default function TaskCard({
                 {task.description}
               </Typography>
             )}
-
-            {/* Chips Section (Documentation, API, etc.) */}
-            {/* {task.tags && task.tags.length > 0 && (
-              <Box sx={{ display: "flex", gap: 0.5, mb: 1, flexWrap: "wrap" }}>
-                {task.tags.map((tag, index) => (
-                  <Chip
-                    key={index}
-                    label={tag}
-                    size="small"
-                    sx={{
-                      fontSize: "11px",
-                      height: "24px",
-                      bgcolor: "#F3F4F6",
-                      color: "#374151",
-                    }}
-                  />
-                ))}
-              </Box>
-            )} */}
-
-         
 
             {/* File Attachment */}
             {task.uploadFile && (
@@ -223,7 +250,7 @@ export default function TaskCard({
                   sx={{
                     height: "100%",
                     width: `${task.progressPercentage}%`,
-                    backgroundColor: "#3B82F6",
+                    background: 'linear-gradient(to right, #00C8FF, #8B5FF6)',
                     transition: "width 0.3s ease",
                   }}
                 />
@@ -248,7 +275,37 @@ export default function TaskCard({
               </CustomButton>
             )}
 
-   {/* ✅ Task Deadline Display with Calendar Icon */}
+            {/* ✅ Review Due Date Display (for InReview tasks) */}
+            {status === "InReview" && task.reviewDueAt && (
+              <Box sx={{ mb: 1, mt: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                  }}
+                >
+                  <AccessTimeIcon
+                    sx={{
+                      fontSize: 14,
+                      color: reviewIsOverdue ? "#DC2626" : "#6B7280",
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: "11px",
+                      color: reviewIsOverdue ? "#DC2626" : "#6B7280",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Review Due: {formatDateWithTime(task.reviewDueAt)}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
+            {/* ✅ Task Deadline Display with Calendar Icon */}
             {task.deadline && (
               <Box sx={{ mb: 1, mt: 2 }}>
                 <Box
@@ -287,13 +344,11 @@ export default function TaskCard({
                       bgcolor: "#FEE2E2",
                       color: "#DC2626",
                       fontSize: "11px",
-                    //   height: "24px",
-                    mt:2,
-                    border: "1px solid #DC2626",   // ← هون أضفت البوردر
+                      mt: 2,
+                      border: "1px solid #DC2626",
                       fontWeight: 500,
                       p: 2,
                       width: "100%",
-                      //"غيّري لون الـ icon الموجود داخل الـ Chip وخليه لونه أحمر (#DC2626)"
                       "& .MuiChip-icon": {
                         color: "#DC2626",
                       },
@@ -302,6 +357,7 @@ export default function TaskCard({
                 )}
               </Box>
             )}
+
             {/* View Review Button */}
             {showViewReviewButton && (
               <Box sx={{ mt: 1 }}>

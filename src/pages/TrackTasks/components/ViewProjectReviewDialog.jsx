@@ -14,6 +14,9 @@ import StarIcon from '@mui/icons-material/Star';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 export default function ViewProjectReviewDialog({
   open,
@@ -25,19 +28,22 @@ export default function ViewProjectReviewDialog({
   const isRejected = projectData?.projectStatus === 'Active' && projectDetails?.rejectionReason;
   const isCompleted = projectData?.projectStatus === 'Completed';
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+  const normalizeTime = (timestamp) => {
+    if (!timestamp) return null;
+    // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
+    if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
+      return timestamp;
+    }
+    // إذا بدون timezone → اعتبريه +01:00
+    return timestamp + "+01:00";
+  };
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return 'N/A';
     try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
     } catch {
-      return dateString;
+      return 'N/A';
     }
   };
 
@@ -54,7 +60,7 @@ export default function ViewProjectReviewDialog({
             </>
           ) : (
             <>
-              <CheckCircleIcon sx={{ color: '#059669', fontSize: 28 }} />
+              <CheckCircleIcon sx={{ color: '#3B82F6', fontSize: 28 }} />
               <Typography variant="h6" fontWeight="bold">
                 Client Review
               </Typography>
@@ -202,7 +208,7 @@ export default function ViewProjectReviewDialog({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <AccessTimeIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                 <Typography variant="caption" color="text.secondary">
-                  Reviewed on {formatDate(reviewData.createdAt)}
+                  Reviewed on {formatTime(reviewData.createdAt)}
                 </Typography>
               </Box>
             )}

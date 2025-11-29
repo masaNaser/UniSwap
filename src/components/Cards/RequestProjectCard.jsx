@@ -43,7 +43,6 @@ export default function RequestProjectCard({
   isProvider,
   onRequestHandled,
   onEditRequest,
-  sentDate,
 }) {
   const [loading, setLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -352,19 +351,6 @@ export default function RequestProjectCard({
                 {isProvider
                   ? `Requesting ${category?.replace("Request", "")}`
                   : `Providing ${category?.replace("Request", "")}`}
-
-                {sentDate && (
-                  <Typography
-                    variant="caption"
-                    color="#6B7280"
-                    fontSize="12px"
-                    fontWeight="400"
-                    sx={{ display: "block", mt: 0.3 }}
-                  >
-                    Sent: {sentDate}
-                  </Typography>
-                )}
-
               </Typography>
             </Box>
           </Box>
@@ -416,21 +402,19 @@ export default function RequestProjectCard({
                 {pointsOffered} Points
               </Typography>
             </Box>
-            {deadline &&
-              !category?.toLowerCase().includes("request") &&
-              new Date(deadline).getFullYear() > 1970 && (
-                <Box display="flex" alignItems="center" gap={0.5}>
-                  <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF" }} />
-                  <Typography
-                    variant="caption"
-                    color="#6B7280"
-                    fontSize="12px"
-                    fontWeight="500"
-                  >
-                    Due: {deadline}
-                  </Typography>
-                </Box>
-              )}
+            {deadline && new Date(deadline).getFullYear() > 1970 && (
+              <Box display="flex" alignItems="center" gap={0.5}>
+                <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF" }} />
+                <Typography
+                  variant="caption"
+                  color="#6B7280"
+                  fontSize="12px"
+                  fontWeight="500"
+                >
+                  Due: {deadline}
+                </Typography>
+              </Box>
+            )}
           </Box>
 
           {/* Action Buttons - For Provider (Accept/Reject) */}

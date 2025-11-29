@@ -56,7 +56,7 @@ export const moveToInProgress = async (taskId, token) => {
 export const submitForReview = async (taskId, reviewDueAt, token) => {
   return await api.post(
     `/tasks/${taskId}/submit-review`,
-    { reviewDueAt: reviewDueAt ? new Date(reviewDueAt).toISOString() : null },
+    { reviewDueAt: reviewDueAt },
     {
       headers: { Authorization: `Bearer ${token}` },
     }
@@ -117,13 +117,3 @@ export const closeProjectByProvider = async (projectId, token) => {
   );
 };
 
-// // ===== Auto Accept =====
-// export const autoAcceptDueTasks = async (token) => {
-//   return await api.post(
-//     `/tasks/auto-accept`,
-//     {},
-//     {
-//       headers: { Authorization: `Bearer ${token}` },
-//     }
-//   );
-// };

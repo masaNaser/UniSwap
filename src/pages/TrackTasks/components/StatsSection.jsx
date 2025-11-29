@@ -25,8 +25,23 @@ export default function StatsSection({
 
 function StatCard({ label, value, color }) {
   return (
-    <Card sx={{ borderRadius: 2 }}>
-      <CardContent>
+    <Card sx={{
+      borderRadius: 3,
+      transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+      '&:hover': {
+        transform: 'scale(1)',
+        boxShadow: "0px 2px 10px rgba(0,0,0,0.20)"
+      },
+    }}>
+      <CardContent
+        sx={{
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      >
         <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
           {label}
         </Typography>

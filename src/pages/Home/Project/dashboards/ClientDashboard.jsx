@@ -68,7 +68,7 @@ export default function ClientDashboard({
         ...req,
         clientImage: req.clientImage || null,
         providerImage: req.providerImage || null,
-        projectType: req.type   // 👈 ضفنا النوع
+        projectType: req.type  
 
       }));
 
@@ -144,13 +144,10 @@ const filterProjects = (projects) => {
     if (statusFilter === "All Status") {
       matchesStatus = true;
     } else if (statusFilter === "Overdue") {
-      // بس المشاريع الـ overdue
       matchesStatus = isOverdue;
     } else if (statusFilter === "Active") {
-      // ✅ المشاريع Active بس اللي مش overdue
       matchesStatus = (project.projectStatus === "Active" || project.status === "Active") && !isOverdue;
     } else {
-      // باقي الحالات (Completed, SubmittedForFinalReview, etc.)
       matchesStatus = project.projectStatus === statusFilter || project.status === statusFilter;
     }
 
@@ -164,7 +161,6 @@ const filterProjects = (projects) => {
 
   const stats = data?.summary || {};
   
-  // ✅ Use backend count directly (backend now provides correct count)
   const inReviewCount = stats.submittedForFinalReview || 0;
 
   const filterItems = [
@@ -256,9 +252,6 @@ const filterProjects = (projects) => {
               <Typography variant="h6" color="text.secondary">
                 No pending requests found
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                You don't have any pending collaboration requests
-              </Typography>
             </Box>
           )
         ) : (
@@ -271,7 +264,7 @@ const filterProjects = (projects) => {
                     {...project}
                     projectStatus={project.projectStatus || project.status}
                     isProvider={false}
-                    projectType={project.type}     // <-- ضيف هاي
+                    projectType={project.type}  
                   />
                 </Grid>
               ))}
@@ -280,9 +273,6 @@ const filterProjects = (projects) => {
             <Box textAlign="center" py={8} bgcolor="#f9fafb" borderRadius={2}>
               <Typography variant="h6" color="text.secondary">
                 No projects found
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Try adjusting your filters or search query
               </Typography>
             </Box>
           )

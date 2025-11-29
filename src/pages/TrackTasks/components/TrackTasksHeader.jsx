@@ -47,11 +47,13 @@ export default function TrackTasksHeader({
   if (!cardData) return <div>Loading...</div>;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [newDeadline, setNewDeadline] = useState(
-    cardData.deadline
-      ? new Date(cardData.deadline).toISOString().split("T")[0]
-      : ""
-  );
+  const [newDeadline, setNewDeadline] = useState(() => {
+    if (!cardData.deadline) return "";
+    const d = new Date(cardData.deadline);
+    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return local.toISOString().split("T")[0];
+  });
+
   const [loading, setLoading] = useState(false);
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
@@ -64,14 +66,48 @@ export default function TrackTasksHeader({
     severity: "success",
   });
 
-  const displayRole = cardData.isProvider ? "Client" : "Service Provider";
+  // ✅ FIXED: Display correct role and person info
+  const displayRole = isProvider ? "Client" : "Service Provider";
+
+  // ✅ FIXED: Get the correct name and avatar based on role
+  // For PROVIDER: Show client info (from projectDetails for complete data) ✅
+  // For CLIENT: Show provider info (from projectDetails) ✅
+  const displayName = isProvider
+    ? (projectDetails?.clientName || cardData.clientName)
+    : (projectDetails?.providerName || "Service Provider");
+
+  const displayRoleWithName = `${displayRole} : ${displayName}`;
+
+  const displayAvatar = isProvider
+    ? (projectDetails?.clientAvatar || cardData.clientAvatar)
+    : projectDetails?.providerAvatar;
+
+  const displayInitials = isProvider
+    ? (projectDetails?.clientInitials || cardData.clientInitials || displayName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase())
+    : displayName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
   const token = localStorage.getItem("accessToken");
 
   console.log("🏠 TrackTasksHeader - Component State:", {
     projectId: cardData.id,
     projectStatus: cardData.projectStatus,
     isProvider,
+    displayName,
+    displayAvatar,
+    displayInitials,
+    displayRole,
     reviewData,
+  });
+
+  console.log("🔍 Avatar Debug:", {
+    isProvider,
+    "cardData.clientAvatar": cardData.clientAvatar,
+    "cardData.providerAvatar": cardData.providerAvatar,
+    "projectDetails?.clientAvatar": projectDetails?.clientAvatar,
+    "projectDetails?.providerAvatar": projectDetails?.providerAvatar,
+    "Final displayAvatar": displayAvatar,
+    "Final displayName": displayName,
+    "Will generate avatar URL": getImageUrl(displayAvatar, displayName),
   });
 
   // Fetch review if project is completed
@@ -205,11 +241,14 @@ export default function TrackTasksHeader({
   };
 
   const handleOpenEdit = () => {
-    setNewDeadline(
-      cardData.deadline
-        ? new Date(cardData.deadline).toISOString().split("T")[0]
-        : ""
-    );
+    if (cardData.deadline) {
+      const d = new Date(cardData.deadline);
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+      setNewDeadline(local.toISOString().split("T")[0]);
+    } else {
+      setNewDeadline("");
+    }
+
     setIsEditing(true);
   };
 
@@ -217,27 +256,27 @@ export default function TrackTasksHeader({
     const result = isProvider
       ? cardData.projectStatus === "Active" && progressPercentage === 100
       : cardData.projectStatus === "SubmittedForFinalReview";
-    
+
     console.log("🔒 Can close project check:", {
       isProvider,
       projectStatus: cardData.projectStatus,
       progressPercentage,
       result,
     });
-    
+
     return result;
   };
 
   // Show review button for provider if completed OR rejected
   const canViewReview = () => {
     if (!isProvider) return false;
-    
+
     const isCompleted = cardData.projectStatus === 'Completed';
     const isActive = cardData.projectStatus === 'Active';
     const hasRejection = projectDetails?.rejectionReason;
-    
+
     const result = isCompleted || (isActive && hasRejection);
-    
+
     console.log("👁️ Can view review check:", {
       isProvider,
       isCompleted,
@@ -245,7 +284,7 @@ export default function TrackTasksHeader({
       hasRejection,
       result,
     });
-    
+
     return result;
   };
 
@@ -284,7 +323,7 @@ export default function TrackTasksHeader({
         status: err.response?.status,
         data: err.response?.data,
       });
-      
+
       let errorMessage = "Failed to submit project.";
       if (err.response?.data?.detail) {
         errorMessage = err.response.data.detail;
@@ -304,7 +343,7 @@ export default function TrackTasksHeader({
   // Handle client review submission (ONE-STEP: accept/reject WITH review)
   const handleClientReview = async (reviewData) => {
     console.log("📝 Client submitting review:", reviewData);
-    
+
     try {
       setClosingProject(true);
 
@@ -391,7 +430,7 @@ export default function TrackTasksHeader({
     <Box
       sx={{
         bgcolor: "#fff",
-        borderRadius: 2,
+        borderRadius: 3,
         mb: 3,
         p: 3,
         pb: 0,
@@ -535,8 +574,8 @@ export default function TrackTasksHeader({
                 fontSize: "14px",
                 py: 0.75,
                 px: 2,
-                background: cardData.projectStatus === 'Completed' 
-                  ? 'linear-gradient(to right, #00C8FF, #8B5FF6)' 
+                background: cardData.projectStatus === 'Completed'
+                  ? 'linear-gradient(to right, #00C8FF, #8B5FF6)'
                   : 'linear-gradient(to right, #DC2626, #EF4444)',
               }}
             >
@@ -568,7 +607,7 @@ export default function TrackTasksHeader({
           <Typography
             variant="h5"
             fontWeight="bold"
-            sx={{ mb: 0.5, fontSize: "1.25rem" }}
+            sx={{ mb: 0.5, fontSize: "2rem" }}
           >
             {cardData.title}
           </Typography>
@@ -601,10 +640,23 @@ export default function TrackTasksHeader({
                 </Typography>
               </Box>
             )}
+          <Box
+            sx={{
+              position: "absolute",
+              top: 70,
+              right: !isProvider && cardData.projectStatus === "Active" ? 56 : 16,
+              width: "280px",
+            }}
+          >
+            <ProgressSection
+              progressPercentage={progressPercentage}
+              projectPoints={projectDetails?.points || 0}
+            />
+          </Box>
         </Box>
       </Box>
 
-      {/* Client Info + Deadline */}
+      {/* ✅ FIXED: Client/Provider Info + Deadline */}
       <Box
         display="flex"
         alignItems="center"
@@ -614,26 +666,17 @@ export default function TrackTasksHeader({
       >
         <Box display="flex" alignItems="center" gap={1}>
           <Avatar
-            src={getImageUrl(cardData.clientAvatar, cardData.clientName)}
+            src={getImageUrl(displayAvatar, displayName)}
             sx={{ width: 36, height: 36 }}
           >
-            {cardData.clientInitials}
+            {displayInitials}
           </Avatar>
 
           <Box>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontSize: "12px" }}
-            >
-              {displayRole}
+            <Typography variant="body2" color="#334155" fontWeight="600">
+              {displayRoleWithName}
             </Typography>
-            <Typography
-              variant="body2"
-              sx={{ fontSize: "13px", fontWeight: "500" }}
-            >
-              {cardData.clientName}
-            </Typography>
+
           </Box>
         </Box>
 
@@ -693,8 +736,6 @@ export default function TrackTasksHeader({
           />
         )}
       </Box>
-
-      <ProgressSection progressPercentage={progressPercentage} />
 
       {/* Provider Submit Dialog */}
       <Dialog

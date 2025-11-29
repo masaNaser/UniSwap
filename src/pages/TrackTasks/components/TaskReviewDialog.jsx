@@ -11,9 +11,13 @@ import {
     FormControlLabel,
     Radio,
     RadioGroup,
+    Alert,
+    Divider,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export default function TaskReviewDialog({
     open,
@@ -24,21 +28,51 @@ export default function TaskReviewDialog({
     const [reviewDecision, setReviewDecision] = React.useState('');
     const [reviewComment, setReviewComment] = React.useState('');
 
+    const formatDateWithTime = (dateString) => {
+        if (!dateString) return "No deadline";
+        try {
+            // Remove any 'Z' or timezone info if present
+            const cleanDate = dateString.replace('Z', '').replace(/[+-]\d{2}:\d{2}$/, '');
+
+            // Parse as local datetime by creating date parts manually
+            const [datePart, timePart] = cleanDate.split('T');
+            const [year, month, day] = datePart.split('-').map(Number);
+            const [hours, minutes] = timePart.split(':').map(Number);
+
+            // Create date in local timezone
+            const date = new Date(year, month - 1, day, hours, minutes);
+
+            // Format manually
+            const dayStr = String(date.getDate()).padStart(2, '0');
+            const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+            const yearStr = date.getFullYear();
+            const hoursStr = String(date.getHours()).padStart(2, '0');
+            const minutesStr = String(date.getMinutes()).padStart(2, '0');
+
+            return `${dayStr}/${monthStr}/${yearStr} at ${hoursStr}:${minutesStr}`;
+        } catch (error) {
+            console.error('Error formatting date:', error, dateString);
+            return "Invalid date";
+        }
+    };
+
+    const isReviewOverdue = () => {
+        if (!task?.reviewDueAt) return false;
+        const now = new Date();
+        const reviewDue = new Date(task.reviewDueAt);
+        return reviewDue < now;
+    };
+
     const handleSubmit = () => {
-        // 1. يجب دائماً اختيار قرار
         if (!reviewDecision) {
             return;
         }
 
-        // 2. إذا كان القرار رفض (reject) والتعليق فارغ، نمنع الإرسال
         if (reviewDecision === 'reject' && !reviewComment.trim()) {
             return;
         }
 
-        // عند القبول، نرسل سلسلة فارغة لـ reviewComment لأن الـ Backend يتجاهلها
-        // عند الرفض، نرسل التعليق
         const commentToSend = reviewDecision === 'reject' ? reviewComment : '';
-
         onSubmitReview(task.id, reviewDecision, commentToSend);
         handleClose();
     };
@@ -49,20 +83,19 @@ export default function TaskReviewDialog({
         onClose();
     };
 
-    // ⬅️ متغير لتحديد ما إذا كان زر الإرسال معطلاً
     const isSubmitDisabled = !reviewDecision || (reviewDecision === 'reject' && !reviewComment.trim());
 
-    // ⬅️ منطق لون الخلفية للزر
     const buttonBackground = (() => {
         if (isSubmitDisabled) {
             return '#D1D5DB';
         }
         if (reviewDecision === 'accept') {
-            return 'linear-gradient(to right, #3B82F6, #60A5FA)'; // أزرق عند القبول
+            return 'linear-gradient(to right, #3B82F6, #60A5FA)';
         }
-        return 'linear-gradient(to right, #DC2626, #EF4444)'; // أحمر عند الرفض
+        return 'linear-gradient(to right, #DC2626, #EF4444)';
     })();
 
+    const reviewOverdue = isReviewOverdue();
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -83,27 +116,79 @@ export default function TaskReviewDialog({
                     )}
                 </Box>
 
+                {/* ✅ Review Due Date Display */}
+                {task?.reviewDueAt && (
+                    <>
+                        <Box
+                            sx={{
+                                mb: 3,
+                                p: 2,
+                                bgcolor: reviewOverdue ? '#FEE2E2' : '#F3F4F6',
+                                borderRadius: 1,
+                                border: reviewOverdue ? '1px solid #DC2626' : '1px solid #9CA3AF',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                            }}
+                        >
+                            <AccessTimeIcon
+                                sx={{
+                                    color: reviewOverdue ? '#DC2626' : '#6B7280',
+                                    fontSize: 24,
+                                }}
+                            />
+
+                            <Box sx={{ flex: 1 }}>
+                                <Typography
+                                    variant="body2"
+                                    fontWeight="bold"
+                                    sx={{ color: reviewOverdue ? '#DC2626' : '#374151', mb: 0.5 }}
+                                >
+                                    {reviewOverdue ? '⚠️ Review Deadline Passed' : 'Review Deadline'}
+                                </Typography>
+
+                                <Typography variant="body2" sx={{ color: reviewOverdue ? '#991B1B' : '#374151' }}>
+                                    {formatDateWithTime(task.reviewDueAt)}
+                                </Typography>
+
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        color: reviewOverdue ? '#991B1B' : '#374151',
+                                        display: 'block',
+                                        mt: 0.5,
+                                    }}
+                                >
+                                    {reviewOverdue
+                                        ? 'This task will be automatically approved soon if no review is submitted.'
+                                        : 'The task will be automatically approved if no review is submitted by this deadline.'}
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        <Divider sx={{ mb: 3 }} />
+                    </>
+                )}
+
                 {/* Review Decision */}
                 <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
                     Review Decision
                 </Typography>
                 <RadioGroup
                     value={reviewDecision}
-                    // عند تغيير القرار، يجب مسح التعليق لتجنب إرسال تعليق أثناء القبول إذا كان مكتوباً سابقاً
                     onChange={(e) => {
                         setReviewDecision(e.target.value);
                         setReviewComment('');
                     }}
                     sx={{ mb: 3 }}
                 >
-                    {/* باقي عناصر RadioGroup لم تتغير */}
                     <FormControlLabel
                         value="accept"
                         control={<Radio />}
                         label={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <CheckCircleOutlineIcon sx={{ color: '#3B82F6', fontSize: 20 }} />
-                                <Typography>Accept</Typography>
+                                <Typography fontWeight="500">Accept Task</Typography>
                             </Box>
                         }
                         sx={{
@@ -121,7 +206,7 @@ export default function TaskReviewDialog({
                         label={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <CancelOutlinedIcon sx={{ color: '#DC2626', fontSize: 20 }} />
-                                <Typography>Reject</Typography>
+                                <Typography fontWeight="500">Reject & Request Revision</Typography>
                             </Box>
                         }
                         sx={{
@@ -134,11 +219,11 @@ export default function TaskReviewDialog({
                     />
                 </RadioGroup>
 
-                {/* ⬅️ التعديل الثاني: إظهار حقل التعليق فقط عند اختيار الرفض */}
+                {/* Rejection Comment Field */}
                 {reviewDecision === 'reject' && (
                     <>
                         <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
-                            Review Comment (Required)
+                            Revision Comments (Required)
                         </Typography>
                         <TextField
                             fullWidth
@@ -146,10 +231,45 @@ export default function TaskReviewDialog({
                             rows={4}
                             value={reviewComment}
                             onChange={(e) => setReviewComment(e.target.value)}
-                            placeholder={'Please explain what needs to be improved...'}
+                            placeholder={'Please explain what needs to be improved or changed...'}
                             sx={{ mb: 2 }}
+                            error={reviewDecision === 'reject' && !reviewComment.trim()}
+                            helperText={
+                                reviewDecision === 'reject' && !reviewComment.trim()
+                                    ? 'Comment is required for rejection'
+                                    : 'Be specific about what needs to be fixed'
+                            }
                         />
                     </>
+                )}
+
+                {/* Info Alert */}
+                {reviewDecision && (
+                    <Alert
+                        icon={<InfoOutlinedIcon />}
+                        severity={reviewDecision === 'accept' ? 'info' : 'error'}
+                        sx={{
+                            bgcolor: reviewDecision === 'accept' ? '#EFF6FF' : '#FEE2E2',
+                            border: reviewDecision === 'accept' ? '1px solid #3B82F6' : '1px solid #DC2626',
+                            '& .MuiAlert-icon': {
+                                color: reviewDecision === 'accept' ? '#3B82F6' : '#DC2626',
+                            },
+                        }}
+                    >
+                        <Typography variant="body2" sx={{ color: reviewDecision === 'accept' ? '#1E40AF' : '#991B1B' }}>
+                            {reviewDecision === 'accept' ? (
+                                <>
+                                    <strong>What happens next:</strong> The task will be marked as Done and
+                                    progress will be updated automatically.
+                                </>
+                            ) : (
+                                <>
+                                    <strong>What happens next:</strong> The task will return to In Progress
+                                    status and the provider will see your feedback.
+                                </>
+                            )}
+                        </Typography>
+                    </Alert>
                 )}
             </DialogContent>
 
@@ -160,15 +280,17 @@ export default function TaskReviewDialog({
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
-                    // استخدام المتغير isSubmitDisabled
                     disabled={isSubmitDisabled}
                     sx={{
                         textTransform: 'none',
-                        // ⬅️ استخدام المتغير buttonBackground
                         background: buttonBackground,
+                        '&:disabled': {
+                            background: '#D1D5DB',
+                            color: '#9CA3AF',
+                        },
                     }}
                 >
-                    Send Review
+                    {reviewDecision === 'accept' ? 'Accept Task' : reviewDecision === 'reject' ? 'Reject Task' : 'Send Review'}
                 </Button>
             </DialogActions>
         </Dialog>

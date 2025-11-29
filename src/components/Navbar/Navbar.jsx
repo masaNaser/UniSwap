@@ -95,14 +95,31 @@ export default function PrimarySearchAppBar() {
   }, []);
 
   const toggleMobileMenu = () => setMobileOpen((p) => !p);
-  const isActive = (p) => location.pathname === p;
+
+  // Updated isActive function to check if path starts with the route
+  const isActive = (path) => {
+    const currentPath = location.pathname;
+
+    // Special handling for browse - includes /browse, /browse/:id, /services/:id/projects
+    if (path === "/app/browse") {
+      return currentPath.startsWith("/app/browse") || currentPath.startsWith("/app/services");
+    }
+
+    // Special handling for project - includes /app/project, /app/project/:id, and /app/TrackTasks/:taskId
+    if (path === "/app/project") {
+      return currentPath.startsWith("/app/project") || currentPath.startsWith("/app/TrackTasks");
+    }
+
+    // For other routes, exact match
+    return currentPath === path;
+  };
 
   return (
     <>
       <AppBar position="sticky" sx={{ backgroundColor: "white !important", color: "black" }} elevation={1}>
         <Container maxWidth="xl">
           <Toolbar sx={{ justifyContent: "space-between", width: "100%", bgcolor: "white", gap: "21px" }}>
-            
+
             {/* LOGO */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Box
@@ -222,7 +239,7 @@ export default function PrimarySearchAppBar() {
                     minWidth: 230,
                   },
                 }}>
-                
+
                 {/* HEADER */}
                 <Box sx={{ display: "flex", alignItems: "center", px: 2, py: 1, gap: 1 }}>
                   <Avatar
@@ -237,11 +254,6 @@ export default function PrimarySearchAppBar() {
                 {/* IF ADMIN → ONLY TWO ITEMS */}
                 {userIsAdmin && (
                   <>
-                    {/* <MenuItem onClick={() => navigate("/admin")}>
-                      <ListItemIcon><AdminPanelSettingsIcon fontSize="small" /></ListItemIcon>
-                      Switch to Admin Mode
-                    </MenuItem> */}
-
                     <MenuItem
                       onClick={() => {
                         logout();
@@ -258,26 +270,26 @@ export default function PrimarySearchAppBar() {
                 {/* IF NORMAL USER → ORIGINAL MENU */}
                 {!userIsAdmin && (
                   <>
-                   <Box sx={{ display: "flex", alignItems: "center", px: 2, pb: 1 }}>
-      <StarIcon sx={{ color: "orange", fontSize: 18, mr: 0.5 }} />
-      <Typography sx={{ fontSize: "0.9rem", fontWeight: "500", color: "#555" }}>
-        {currentUser?.averageRating || "0"}
-      </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", px: 2, pb: 1 }}>
+                      <StarIcon sx={{ color: "orange", fontSize: 18, mr: 0.5 }} />
+                      <Typography sx={{ fontSize: "0.9rem", fontWeight: "500", color: "#555" }}>
+                        {currentUser?.averageRating || "0"}
+                      </Typography>
 
-      <Box sx={{ flex: 1 }} />
+                      <Box sx={{ flex: 1 }} />
 
-      <Typography sx={{ color: "#3b82f6", fontWeight: "bold", display: "flex", alignItems: "center", gap: 0.5 }}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-          viewBox="0 0 24 24" fill="none" stroke="rgba(0,75,173,0.84)"
-          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="8" cy="8" r="6"></circle>
-          <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-          <path d="M7 6h1v4"></path>
-          <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-        </svg>
-        {currentUser?.totalPoints || 0}
-      </Typography>
-    </Box>
+                      <Typography sx={{ color: "#3b82f6", fontWeight: "bold", display: "flex", alignItems: "center", gap: 0.5 }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                          viewBox="0 0 24 24" fill="none" stroke="rgba(0,75,173,0.84)"
+                          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="8" cy="8" r="6"></circle>
+                          <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                          <path d="M7 6h1v4"></path>
+                          <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                        </svg>
+                        {currentUser?.totalPoints || 0}
+                      </Typography>
+                    </Box>
                     <MenuItem onClick={() => navigate("/app/profile")}>
                       <ListItemIcon><PersonOutlineOutlinedIcon fontSize="small" /></ListItemIcon>
                       Profile
