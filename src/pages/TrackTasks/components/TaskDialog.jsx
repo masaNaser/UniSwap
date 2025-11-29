@@ -163,7 +163,7 @@ export default function TaskDialog({
           )}
         </Box>
 
-        {!editingTask && (
+        {/* {!editingTask && (
           <TextField
             fullWidth
             select
@@ -181,7 +181,7 @@ export default function TaskDialog({
               </option>
             ))}
           </TextField>
-        )}
+        )} */}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>

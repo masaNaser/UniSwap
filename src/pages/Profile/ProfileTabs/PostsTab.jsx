@@ -600,9 +600,10 @@ export default function PostsTab({ username }) {
       <Box
         sx={{
           mt: 3,
-          maxWidth: "800px",
-          px: { xs: 1, sm: 2, md: 3 },
+          // maxWidth: "800px",
+          // px: { xs: 1, sm: 2, md: 3 },
           py: 2,
+          width:"100%"
         }}
       >
         {posts.map((post) => (

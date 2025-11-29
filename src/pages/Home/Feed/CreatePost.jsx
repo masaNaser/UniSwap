@@ -146,7 +146,7 @@ const handleSubmit = async (event) => {
   time: formatTime(postData.createdAt),
       likes: postData.likesCount,
       comments: postData.commentsCount,
-      shares: 0,
+      // shares: 0,
       fileUrl: postData.fileUrl
         ? `https://uni.runasp.net/${postData.fileUrl}`
         : null,

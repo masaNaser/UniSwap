@@ -1,20 +1,19 @@
+// AddServiceModal.jsx
 import React, { useEffect, useState } from "react";
 import {
   TextField,
   MenuItem,
   Stack,
-  CircularProgress,
-  Typography,
-  Box,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import GenericModal from "../../components/Modals/GenericModal";
-import { CreateService } from "../../services/profileService";
+import { CreateService, EditUserService } from "../../services/profileService";
 import { getServices } from "../../services/servicesService";
 import { getSubServices } from "../../services/subServiceServices";
 
-export default function AddServiceModal({ open, handleClose, onAdded }) {
+export default function AddServiceModal({ open, handleClose, onAdded, editingService }) {
   const token = localStorage.getItem("accessToken");
+
   const [allServices, setAllServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
   const [formData, setFormData] = useState({
@@ -28,7 +27,7 @@ export default function AddServiceModal({ open, handleClose, onAdded }) {
   const [loadingSub, setLoadingSub] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
 
-  // 🔹 تحميل الخدمات الرئيسية
+  // تحميل الخدمات الرئيسية
   useEffect(() => {
     const fetchAllServices = async () => {
       try {
@@ -41,7 +40,7 @@ export default function AddServiceModal({ open, handleClose, onAdded }) {
     if (open) fetchAllServices();
   }, [open]);
 
-  // 🔹 تحميل الخدمات الفرعية عند اختيار الرئيسية
+  // تحميل الخدمات الفرعية عند اختيار الخدمة الرئيسية
   useEffect(() => {
     const fetchSubServices = async () => {
       if (!formData.serviceId) {
@@ -53,14 +52,36 @@ export default function AddServiceModal({ open, handleClose, onAdded }) {
       try {
         const res = await getSubServices(token, formData.serviceId);
         setSubServices(res.data || []);
-        setFormData((prev) => ({ ...prev, subServiceId: "" }));
+        // لو الخدمة الفرعية موجودة من تعديل سابق نحتفظ بها
+        if (!editingService) setFormData((prev) => ({ ...prev, subServiceId: "" }));
       } catch (err) {
         console.error(err);
       }
       setLoadingSub(false);
     };
     fetchSubServices();
-  }, [formData.serviceId]);
+  }, [formData.serviceId, editingService, token]);
+
+  // ملء الفورم عند تعديل الخدمة
+  useEffect(() => {
+    if (editingService) {
+      setFormData({
+        serviceId: editingService.serviceId,
+        subServiceId: editingService.subServiceId,
+        description: editingService.description,
+        avgPoints: editingService.avgPoints,
+        avgDurationDays: editingService.avgDurationDays,
+      });
+    } else {
+      setFormData({
+        serviceId: "",
+        subServiceId: "",
+        description: "",
+        avgPoints: "",
+        avgDurationDays: "",
+      });
+    }
+  }, [editingService, open]);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -68,19 +89,30 @@ export default function AddServiceModal({ open, handleClose, onAdded }) {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      await CreateService(token, formData);
-      setSnackbar({
-        open: true,
-        message: "Service added successfully!",
-        severity: "success",
-      });
+      if (editingService) {
+        // تعديل الخدمة
+        await EditUserService(token, formData, editingService.id);
+        setSnackbar({
+          open: true,
+          message: "Service updated successfully!",
+          severity: "success",
+        });
+      } else {
+        // إضافة خدمة جديدة
+        await CreateService(token, formData);
+        setSnackbar({
+          open: true,
+          message: "Service added successfully!",
+          severity: "success",
+        });
+      }
       onAdded();
       handleClose();
     } catch (err) {
       console.error(err);
       setSnackbar({
         open: true,
-        message: "Failed to add service.",
+        message: "Operation failed.",
         severity: "error",
       });
     }
@@ -91,23 +123,22 @@ export default function AddServiceModal({ open, handleClose, onAdded }) {
     <GenericModal
       open={open}
       onClose={handleClose}
-      title="Add New Service"
+      title={editingService ? "Edit Service" : "Add New Service"}
       icon={<AddIcon color="primary" />}
       onPrimaryAction={handleSubmit}
-      primaryButtonText="Add"
+      primaryButtonText={editingService ? "Update" : "Add"}
       primaryButtonIcon={<AddIcon />}
       isSubmitting={loading}
       snackbar={snackbar}
       onSnackbarClose={() => setSnackbar(null)}
     >
-      {/* محتوى المودال */}
       <Stack spacing={2} mt={1}>
         {/* الخدمة الرئيسية */}
         <TextField
           select
           label="Choose Main Service"
           name="serviceId"
-          value={formData.serviceId}
+          value={formData.serviceId || ""}
           onChange={handleChange}
           fullWidth
         >
@@ -123,7 +154,7 @@ export default function AddServiceModal({ open, handleClose, onAdded }) {
           select
           label="Choose Sub Service"
           name="subServiceId"
-          value={formData.subServiceId}
+          value={formData.subServiceId || ""}
           onChange={handleChange}
           fullWidth
           disabled={!formData.serviceId || loadingSub}

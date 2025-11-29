@@ -1,54 +1,54 @@
+// ServicesSection.jsx
 import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
   Stack,
   Typography,
-  Button,
   Box,
 } from "@mui/material";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+
 import {
   GetUserService,
   RemoveService,
-  GetUserServiceById
+  GetUserServiceById,
+  EditUserService,
 } from "../../../../services/profileService";
 import AddServiceModal from "../../../../components/Modals/AddServiceModal";
 import { useProfile } from "../../../../Context/ProfileContext";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
+
 export default function ServicesSection() {
   const token = localStorage.getItem("accessToken");
-  const { isMyProfile,userData  } = useProfile();
+  const { isMyProfile, userData } = useProfile();
 
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openModal, setOpenModal] = useState(false);
+  const [editingService, setEditingService] = useState(null); // لتحديد الخدمة اللي رح نعدلها
 
-const fetchServices = async () => {
-  setLoading(true);
-  try {
-    let res;
-    if (isMyProfile) {
-      // خدماتي أنا
-      res = await GetUserService(token); // أو GetMyService(token) لو عندك دالة منفصلة
-    } else {
-      // خدمات مستخدم آخر
-      res = await GetUserServiceById(token, userData.id);
+  const fetchServices = async () => {
+    setLoading(true);
+    try {
+      let res;
+      if (isMyProfile) {
+        res = await GetUserService(token);
+      } else {
+        res = await GetUserServiceById(token, userData.id);
+      }
+      setServices(res.data || []);
+    } catch (err) {
+      console.error(err);
     }
-    setServices(res.data || []);
-  } catch (err) {
-    console.error(err);
-  }
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
-// جلب الخدمات عند تحميل المكون أو تغيير isMyProfile أو userData  
-//بدون ما نخلي اليوز ايفيكت تعتمد ع اليوزر داتا او قيمة الايز ماي بروفايل رح يعرض خدماتي مثلا عند كل اليوزر
-useEffect(() => {
-  fetchServices();
-}, [isMyProfile, userData]);
-
+  useEffect(() => {
+    fetchServices();
+  }, [isMyProfile, userData]);
 
   const handleRemove = async (id) => {
     try {
@@ -57,6 +57,16 @@ useEffect(() => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleEdit = (service) => {
+    setEditingService(service);
+    setOpenModal(true); // نفتح نفس مودال الإضافة ولكن مع تمرير البيانات للتعديل
+  };
+
+  const handleModalClose = () => {
+    setOpenModal(false);
+    setEditingService(null);
   };
 
   return (
@@ -109,24 +119,31 @@ useEffect(() => {
                 p: 2,
                 border: "1px solid #e2e8f0",
                 borderRadius: 1,
-                position: "relative", // مهم عشان نقدر نحط الأيقونة بالزاوية
+                position: "relative",
                 mb: 1,
                 backgroundColor: "rgba(248, 250, 252, 1)",
-                // width: "300px",
               }}
             >
-              {/* أيقونة الحذف */}
               {isMyProfile && (
-                <DeleteIcon
+                <Box
                   sx={{
+                    display: "flex",
+                    flexDirection: "column",
                     position: "absolute",
                     top: 8,
                     right: 8,
-                    cursor: "pointer",
-                    color: "error.main",
+                    gap: 1,
                   }}
-                  onClick={() => handleRemove(s.id)}
-                />
+                >
+                  <EditIcon
+                    sx={{ cursor: "pointer", color: "info.main" }}
+                    onClick={() => handleEdit(s)}
+                  />
+                  <DeleteIcon
+                    sx={{ cursor: "pointer", color: "error.main" }}
+                    onClick={() => handleRemove(s.id)}
+                  />
+                </Box>
               )}
 
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -155,11 +172,11 @@ useEffect(() => {
             </Box>
           ))}
 
-        {/* مودال الإضافة */}
         <AddServiceModal
           open={openModal}
-          handleClose={() => setOpenModal(false)}
+          handleClose={handleModalClose}
           onAdded={fetchServices}
+          editingService={editingService} // نمرر الخدمة للتعديل
         />
       </CardContent>
     </Card>

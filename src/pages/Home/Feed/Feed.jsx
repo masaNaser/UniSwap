@@ -70,6 +70,7 @@ const updatePost = (posts, postId, newData) =>
 
 export default function Feed() {
   const { currentUser, loading } = useCurrentUser();
+  console.log("useCurrentUser",currentUser);
   const [posts, setPosts] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [highlightedPostId, setHighlightedPostId] = useState(null);
@@ -639,7 +640,7 @@ export default function Feed() {
 
   const handleSharePost = (postId) => {
     setPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, shares: p.shares + 1 } : p))
+      prev.map((p) => (p.id === postId ? { ...p, shares: p.shares  } : p))
     );
   };
 
@@ -670,7 +671,7 @@ export default function Feed() {
             />
             <SelectActionCard
               title="Completed Tasks"
-              value="47"
+              value={currentUser?.completedProjectsCount}
               icon={<WorkspacePremiumOutlinedIcon />}
             />
             <SelectActionCard

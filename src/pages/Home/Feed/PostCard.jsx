@@ -310,7 +310,7 @@ function PostCard({
           />
           <ActionButton
             icon={<ShareIcon />}
-            label={`${post.shares} Shares`}
+            label="Shares"
             onClick={handleShareClick}
           />{" "}
           {/* ✅ إضافة onClick */}
