@@ -43,7 +43,7 @@ export default function TrackTasks() {
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
-    const [newTask, setNewTask] = useState({ title: '', description: '', deadline: '', status: 'ToDo', UploadFile: null });
+    const [newTask, setNewTask] = useState({ title: '', description: '', status: 'ToDo', UploadFile: null });
     const [draggedTask, setDraggedTask] = useState(null);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const [anchorEl, setAnchorEl] = useState(null);
@@ -287,10 +287,6 @@ export default function TrackTasks() {
             formData.append('Title', newTask.title);
             formData.append('Description', newTask.description || '');
 
-            if (newTask.deadline) {
-                formData.append('Deadline', new Date(newTask.deadline).toISOString());
-            }
-
             if (newTask.uploadFile) {
                 formData.append('UploadFile', newTask.uploadFile);
             }
@@ -339,7 +335,7 @@ export default function TrackTasks() {
             }
 
             setOpenDialog(false);
-            setNewTask({ title: '', description: '', deadline: '', status: 'ToDo', uploadFile: null, progressPercentage: 0 });
+            setNewTask({ title: '', description: '', status: 'ToDo', uploadFile: null, progressPercentage: 0 });
             setEditingTask(null);
         } catch (error) {
             console.error('Error saving task:', error);
@@ -361,10 +357,6 @@ export default function TrackTasks() {
             const data = new FormData();
             data.append('Title', formData.title);
             data.append('Description', formData.description || '');
-
-            if (formData.deadline) {
-                data.append('Deadline', new Date(formData.deadline).toISOString());
-            }
 
             if (formData.uploadFile) {
                 data.append('UploadFile', formData.uploadFile);
@@ -412,7 +404,6 @@ export default function TrackTasks() {
         setNewTask({
             title: task.title,
             description: task.description || '',
-            deadline: task.deadline || '',
             status,
             uploadFile: null,
             progressPercentage: task.progressPercentage || 0,

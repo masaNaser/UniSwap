@@ -26,15 +26,6 @@ export default function TaskCard({
   onReviewClick,
   onViewReview,
 }) {
-  // ✅ Check if task is overdue
-  const isTaskOverdue = () => {
-    if (!task.deadline) return false;
-
-    const now = new Date();
-    const deadline = new Date(task.deadline);
-
-    return deadline < now && status !== "Done";
-  };
 
   // ✅ Check if review due date has passed (for RequestProject)
   const isReviewOverdue = () => {
@@ -46,25 +37,7 @@ export default function TaskCard({
     return reviewDue < now;
   };
 
-  // ✅ Format date for display (WITHOUT TIME)
-  const formatDate = (dateString) => {
-    if (!dateString) return "No deadline";
-
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        month: "numeric",
-        day: "numeric",
-        year: "numeric",
-      });
-    } catch {
-      return "Invalid date";
-    }
-  };
-
   // ✅ Format date WITH time for review due date
-  // Backend returns local time without timezone: "2025-11-29T12:17:00"
-  // We need to parse it as local time (not UTC)
   const formatDateWithTime = (dateString) => {
     if (!dateString) return "No deadline";
 
@@ -130,7 +103,6 @@ export default function TaskCard({
     }
   };
 
-  const taskIsOverdue = isTaskOverdue();
   const reviewIsOverdue = isReviewOverdue();
 
   return (
@@ -302,59 +274,6 @@ export default function TaskCard({
                     Review Due: {formatDateWithTime(task.reviewDueAt)}
                   </Typography>
                 </Box>
-              </Box>
-            )}
-
-            {/* ✅ Task Deadline Display with Calendar Icon */}
-            {task.deadline && (
-              <Box sx={{ mb: 1, mt: 2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    mb: 0.5,
-                  }}
-                >
-                  <CalendarTodayIcon
-                    sx={{
-                      fontSize: 14,
-                      color: "#6B7280",
-                    }}
-                  />
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: "12px",
-                      color: taskIsOverdue ? "#DC2626" : "#6B7280",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {formatDate(task.deadline)}
-                  </Typography>
-                </Box>
-
-                {/* ✅ Overdue Chip - Below Date */}
-                {taskIsOverdue && (
-                  <Chip
-                    icon={<ErrorOutlineIcon sx={{ fontSize: 14 }} />}
-                    label="Overdue"
-                    size="small"
-                    sx={{
-                      bgcolor: "#FEE2E2",
-                      color: "#DC2626",
-                      fontSize: "11px",
-                      mt: 2,
-                      border: "1px solid #DC2626",
-                      fontWeight: 500,
-                      p: 2,
-                      width: "100%",
-                      "& .MuiChip-icon": {
-                        color: "#DC2626",
-                      },
-                    }}
-                  />
-                )}
               </Box>
             )}
 

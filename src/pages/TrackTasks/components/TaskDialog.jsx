@@ -71,17 +71,6 @@ export default function TaskDialog({
           margin="normal"
           placeholder="Enter task description"
         />
-        <TextField
-          fullWidth
-          label="Deadline"
-          type="datetime-local"
-          value={newTask?.deadline || ''}
-          onChange={(e) => onTaskChange(prev => ({ ...prev, deadline: e.target.value }))}
-          margin="normal"
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
 
         {/* 🔥 Progress Slider - بس للـ InProgress Tasks */}
         {showProgressField && (

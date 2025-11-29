@@ -31,7 +31,6 @@ export default function TaskColumn({
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
-    deadline: '',
     status: 'ToDo',
     uploadFile: null,
   });
@@ -46,7 +45,6 @@ export default function TaskColumn({
     setNewTask({
       title: '',
       description: '',
-      deadline: '',
       status: 'ToDo',
       uploadFile: null,
     });
@@ -72,7 +70,6 @@ export default function TaskColumn({
       setNewTask({
         title: '',
         description: '',
-        deadline: '',
         status: 'ToDo',
         uploadFile: null,
       });
