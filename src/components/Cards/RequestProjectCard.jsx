@@ -44,6 +44,8 @@ export default function RequestProjectCard({
   onRequestHandled,
   onEditRequest,
 }) {
+
+  console.log("image",clientImage);
   const [loading, setLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({

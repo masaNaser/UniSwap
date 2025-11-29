@@ -27,11 +27,122 @@ import {
 } from "@mui/icons-material";
 import CommentsDisabledIcon from "@mui/icons-material/CommentsDisabled";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
-import ShareDialog from "../../../components/Modals/ShareDialog"; // ✅ استيراد الـ Share Dialog
+import ShareDialog from "../../../components/Modals/ShareDialog";
 import dayjs from "dayjs";
 
+// ✅ FileDisplay Component - لعرض جميع أنواع الملفات
+const FileDisplay = ({ fileUrl }) => {
+  if (!fileUrl) return null;
 
+  const getFileExtension = (url) => {
+    return url.split('.').pop().toLowerCase();
+  };
 
+  const extension = getFileExtension(fileUrl);
+  const fileName = fileUrl.split('/').pop();
+
+  // للصور - نفس العرض القديم
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
+    return (
+      <Box
+        sx={{
+          mt: 2,
+          maxHeight: 500,
+          overflow: "hidden",
+          borderRadius: 2,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          bgcolor: "#f5f5f5",
+        }}
+      >
+        <img
+          src={fileUrl}
+          alt="Post content"
+          style={{
+            width: "50%",
+            height: "auto",
+            display: "block",
+            objectFit: "contain",
+            maxHeight: "500px",
+          }}
+        />
+      </Box>
+    );
+  }
+
+  // للملفات الأخرى - بطاقة تحميل
+  const getFileIcon = () => {
+    switch (extension) {
+      case 'pdf': return '📄';
+      case 'doc':
+      case 'docx': return '📝';
+      case 'xls':
+      case 'xlsx': return '📊';
+      case 'txt': return '📃';
+      case 'zip':
+      case 'rar': return '🗜️';
+      default: return '📎';
+    }
+  };
+
+  const getFileType = () => {
+    switch (extension) {
+      case 'pdf': return 'PDF Document';
+      case 'doc':
+      case 'docx': return 'Word Document';
+      case 'xls':
+      case 'xlsx': return 'Excel Spreadsheet';
+      case 'txt': return 'Text File';
+      case 'zip':
+      case 'rar': return 'Compressed Archive';
+      default: return 'File';
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        mt: 2,
+        p: 2,
+        border: '2px dashed #e0e0e0',
+        borderRadius: 2,
+        bgcolor: '#fafafa',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+      }}
+    >
+      <Typography sx={{ fontSize: 40 }}>{getFileIcon()}</Typography>
+      <Box sx={{ flexGrow: 1 }}>
+        <Typography variant="subtitle2" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
+          {fileName}
+        </Typography>
+        <Chip 
+          label={getFileType()} 
+          size="small" 
+          sx={{ mt: 0.5 }}
+          variant="outlined"
+          color="primary"
+        />
+      </Box>
+      <Button
+        variant="contained"
+        href={fileUrl}
+        download
+        target="_blank"
+        sx={{
+          textTransform: 'none',
+          bgcolor: '#3b82f6',
+          '&:hover': { bgcolor: '#2563eb' },
+          minWidth: '100px',
+        }}
+      >
+        Download
+      </Button>
+    </Box>
+  );
+};
 
 // Single Comment Bubble
 const CommentBubble = ({ comment }) => (
@@ -80,19 +191,7 @@ const ActionButton = ({ icon, label, onClick }) => (
     </Typography>
   </Box>
 );
-// const normalizeTime = (timestamp) => {
-//   // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
-//   if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
-//     return timestamp;
-//   }
 
-//   // إذا بدون timezone → اعتبريه +01:00 (زي ما كان قبل الريفريش)
-//   return timestamp + "+01:00";
-// };
-
-// const formatTime = (timestamp) => {
-//   return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
-// };
 const formatTime = (timestamp) => {
   let fixed = timestamp;
 
@@ -103,8 +202,6 @@ const formatTime = (timestamp) => {
   return dayjs(fixed).local().format("DD MMM, hh:mm A");
 };
 
-
-
 function PostCard({
   post,
   onDelete,
@@ -112,7 +209,7 @@ function PostCard({
   onLike,
   onCloseComments,
   onShowComments,
-  onShare, // ✅ إضافة
+  onShare,
   fetchRecentComments,
   onAddCommentInline,
   currentUserAvatar,
@@ -123,14 +220,13 @@ function PostCard({
   );
   const [inlineCommentText, setInlineCommentText] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false); // ✅ State للـ Share Dialog
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const open = Boolean(anchorEl);
   const currentUserName = localStorage.getItem("userName");
   const isPostAuthor = post.user.name === currentUserName;
-  const isPostClosed = post.isClosed === true; // ✅ إضافة هاي
+  const isPostClosed = post.isClosed === true;
 
-  // Load recent comments
   useEffect(() => {
     const loadRecentComments = async () => {
       if (post.comments > 0) {
@@ -165,12 +261,10 @@ function PostCard({
   const handleLikeClick = () => onLike(post.id);
   const handleCommentClick = () => onShowComments(post.id);
 
-  // ✅ Handle Share Click
   const handleShareClick = () => {
     setShareDialogOpen(true);
   };
 
-  // ✅ Handle Share Success
   const handleShareSuccess = (postId) => {
     if (onShare) {
       onShare(postId);
@@ -181,7 +275,7 @@ function PostCard({
 
   const handleInlineCommentSubmit = async (e) => {
     e.preventDefault();
-    if (!inlineCommentText.trim() || isPostClosed) return; // ✅ إضافة check
+    if (!inlineCommentText.trim() || isPostClosed) return;
 
     setIsCommenting(true);
     try {
@@ -199,7 +293,6 @@ function PostCard({
       <Card
         sx={{ mb: 3, borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
       >
-        {/* Header */}
         <CardHeader
           avatar={<Avatar src={post.user.avatar} />}
           action={
@@ -228,7 +321,6 @@ function PostCard({
           subheader={post.time}
         />
 
-        {/* Menu */}
         <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
           <MenuItem onClick={handleEditClick}>
             <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit Post
@@ -236,13 +328,12 @@ function PostCard({
           <MenuItem onClick={handleDeleteClick}>
             <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete Post
           </MenuItem>
-          <MenuItem onClick={handleCloseClick} disabled={isPostClosed} >
+          <MenuItem onClick={handleCloseClick} disabled={isPostClosed}>
             <CommentsDisabledIcon fontSize="small" sx={{ mr: 1 }} /> 
-            {isPostClosed ? "Comments Closed" : "Close Comments"} {/* ✅ تغيير النص */}
+            {isPostClosed ? "Comments Closed" : "Close Comments"}
           </MenuItem>
         </Menu>
 
-        {/* Content */}
         <CardContent>
           <Typography variant="body1" color="text.primary" paragraph>
             {post.content}
@@ -258,32 +349,8 @@ function PostCard({
               />
             ))}
           </Box>
-          {post.fileUrl && (
-            <Box
-              sx={{
-                mt: 2,
-                maxHeight: 500,
-                overflow: "hidden",
-                borderRadius: 2,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                bgcolor: "#f5f5f5",
-              }}
-            >
-              <img
-                src={post.fileUrl}
-                alt="Post content"
-                style={{
-                  width: "50%",
-                  height: "auto",
-                  display: "block",
-                  objectFit: "contain",
-                  maxHeight: "500px",
-                }}
-              />
-            </Box>
-          )}
+          {/* ✅ استخدام FileDisplay بدل الكود القديم */}
+          {post.fileUrl && <FileDisplay fileUrl={post.fileUrl} />}
         </CardContent>
 
         <Divider />
@@ -297,26 +364,22 @@ function PostCard({
                 <FavoriteBorderIcon />
               )
             }
-            
             label={`${post.likes} Likes`}
             onClick={handleLikeClick}
-          />           
-           {console.log("post.isLiked",post.isLiked)}
+          />
 
           <ActionButton
             icon={<ChatBubbleOutlineIcon />}
             label={`${post.comments} Comments`}
-            onClick={isPostClosed ? undefined : handleCommentClick} // ✅ disable لو مسكر
+            onClick={isPostClosed ? undefined : handleCommentClick}
           />
           <ActionButton
             icon={<ShareIcon />}
             label="Shares"
             onClick={handleShareClick}
-          />{" "}
-          {/* ✅ إضافة onClick */}
+          />
         </CardActions>
 
-  {/* ✅ رسالة لما البوست يكون مسكر */}
         {isPostClosed && (
           <Box sx={{ 
             px: 2, 
@@ -335,7 +398,6 @@ function PostCard({
         )}
         <Divider />
 
-        {/* Comments */}
         <Box sx={{ px: 2, pb: 1, pt: 1, bgcolor: "#fbfbfb" }}>
           {recentComments.length > 0 &&
             recentComments.map((comment, index) => (
@@ -358,48 +420,45 @@ function PostCard({
             </Button>
           )}
 
-          {/* Inline Comment */}
-          {/* Inline Comment - ✅ إخفاء لو مسكر */}
           {!isPostClosed && (
-          <Box
-            component="form"
-            onSubmit={handleInlineCommentSubmit}
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          >
-            <Avatar src={currentUserAvatar} sx={{ width: 32, height: 32 }} />
-            <TextField
-              placeholder="Add a comment..."
-              variant="outlined"
-              fullWidth
-              size="small"
-              value={inlineCommentText}
-              onChange={(e) => setInlineCommentText(e.target.value)}
-              disabled={isCommenting}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleInlineCommentSubmit(e);
-                }
-              }}
-            />
-            <IconButton
-              type="submit"
-              color="primary"
-              disabled={!inlineCommentText.trim() || isCommenting}
-              size="small"
+            <Box
+              component="form"
+              onSubmit={handleInlineCommentSubmit}
+              sx={{ display: "flex", alignItems: "center", gap: 1 }}
             >
-              {isCommenting ? (
-                <CircularProgress size={20} />
-              ) : (
-                <ChatBubbleOutlineIcon fontSize="small" />
-              )}
-            </IconButton>
-          </Box>
-        )}
+              <Avatar src={currentUserAvatar} sx={{ width: 32, height: 32 }} />
+              <TextField
+                placeholder="Add a comment..."
+                variant="outlined"
+                fullWidth
+                size="small"
+                value={inlineCommentText}
+                onChange={(e) => setInlineCommentText(e.target.value)}
+                disabled={isCommenting}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleInlineCommentSubmit(e);
+                  }
+                }}
+              />
+              <IconButton
+                type="submit"
+                color="primary"
+                disabled={!inlineCommentText.trim() || isCommenting}
+                size="small"
+              >
+                {isCommenting ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  <ChatBubbleOutlineIcon fontSize="small" />
+                )}
+              </IconButton>
+            </Box>
+          )}
         </Box>
       </Card>
 
-      {/* ✅ Share Dialog */}
       <ShareDialog
         open={shareDialogOpen}
         onClose={() => setShareDialogOpen(false)}

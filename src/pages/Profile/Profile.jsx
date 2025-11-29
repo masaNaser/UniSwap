@@ -1,5 +1,3 @@
-
-
 import { Container, Box } from "@mui/material";
 import ProfileHeader from "./ProfileHeader";
 import React, { useEffect } from "react";
@@ -11,17 +9,18 @@ import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOu
 import WorkOutlineOutlinedIcon from "@mui/icons-material/WorkOutlineOutlined";
 import ProfileInfo from "../Profile/ProfileInfo";
 import ProfileTabs from "./ProfileTabs/ProfileTabs";
+import ProfilePageSkeleton from "../../components/Skeletons/ProfilePageSkeleton"; // ⬅️ استورد الـ Skeleton
 
 export default function Profile() {
-  const { userData, fetchUserData } = useProfile(); // ⬅️ جيب fetchUserData من الـ Context
+  const { userData, fetchUserData } = useProfile();
   const { userId } = useParams();
 
   useEffect(() => {
-    // ⬅️ استدعي fetchUserData لما تفتح الصفحة
     fetchUserData(userId);
   }, [userId]);
 
-  if (!userData) return <p>Loading...</p>;
+  // ⬅️ استخدم الـ Skeleton بدل النص البسيط
+  if (!userData) return <ProfilePageSkeleton />;
 
   return (
     <Container maxWidth="lg">
@@ -65,8 +64,7 @@ export default function Profile() {
         <ProfileInfo />
       </Box>
 
-
-      <ProfileTabs  userData={userData}/>
+      <ProfileTabs userData={userData} />
     </Container>
   );
 }
