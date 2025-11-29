@@ -1,11 +1,48 @@
 
 
-import React from "react";
+import {useState} from "react";
 import { Card, CardContent, Typography, Box, IconButton } from "@mui/material";
 import { Link } from "react-router-dom";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { Menu, MenuItem } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const ServiceCard = ({ icon, title, description, count, url, verticalHeader }) => {
+import {CreateServices,EditServices,DeleteServices} from "../../services/servicesService";
+import {CreateSubServices,EditSubServices,DeleteSubServices} from "../../services/subServiceServices";
+
+const ServiceCard = ({
+   icon,
+   title, 
+   description, 
+   count,
+    url,
+     verticalHeader,
+     adminMode,
+      onEdit,
+       onDelete
+        }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+const open = Boolean(anchorEl);
+
+// events
+  const handleMenuOpen = (event) => {
+    event.stopPropagation(); // منع الانتقال للصفحة عند فتح المنيو
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleMenuClose = () => setAnchorEl(null);
+
+  // const handleEditClick = () => {
+  //   handleMenuClose();
+  //   if (onEdit) onEdit();
+  // };
+
+  // const handleDeleteClick = () => {
+  //   handleMenuClose();
+  //   if (onDelete) onDelete();
+  // };
   return (
     <Card
       sx={{
@@ -17,9 +54,34 @@ const ServiceCard = ({ icon, title, description, count, url, verticalHeader }) =
         p: 2,
         borderRadius: "12px",
         transition: "0.3s",
+        position: "relative", // ⬅️ مهم عشان المنيو
         "&:hover": { transform: "translateY(-3px)", boxShadow: 3 },
       }}
     >
+      {adminMode && (
+  <IconButton
+    onClick={handleMenuOpen}
+    sx={{ position: "absolute", top: 8, right: 8, zIndex: 10 }}
+  >
+    <MoreVertIcon />
+  </IconButton>
+)}
+  <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+    <MenuItem   
+    onClick={() => {
+            handleMenuClose();
+            onEdit();
+          }}>
+      <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit 
+    </MenuItem>
+    <MenuItem   onClick={() => {
+            handleMenuClose();
+            onDelete();
+          }}>
+      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete 
+    </MenuItem>
+  </Menu>
+
       {/* المحتوى الرئيسي */}
       <CardContent
         sx={{

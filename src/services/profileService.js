@@ -89,6 +89,14 @@ export const RemoveService = async (token,serviceId) => {
   });
 };
 
+export const EditUserService = async (token, data,ServiceId) => {
+  return await api.put(`/Profile/my-services/${ServiceId}`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+// Posts
 export const GetAllPost = async (token, username,page=1,pageSize=4) => {
   return await api.get(`/Posts?username=${username}&page=${page}&pageSize=${pageSize}`, {
     headers: { Authorization: `Bearer ${token}` },

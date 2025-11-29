@@ -80,19 +80,29 @@ const ActionButton = ({ icon, label, onClick }) => (
     </Typography>
   </Box>
 );
-const normalizeTime = (timestamp) => {
-  // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
-  if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
-    return timestamp;
+// const normalizeTime = (timestamp) => {
+//   // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
+//   if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
+//     return timestamp;
+//   }
+
+//   // إذا بدون timezone → اعتبريه +01:00 (زي ما كان قبل الريفريش)
+//   return timestamp + "+01:00";
+// };
+
+// const formatTime = (timestamp) => {
+//   return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
+// };
+const formatTime = (timestamp) => {
+  let fixed = timestamp;
+
+  if (!/[+-]\d\d:\d\d$/.test(timestamp) && !timestamp.endsWith("Z")) {
+    fixed = timestamp + "+01:00";
   }
 
-  // إذا بدون timezone → اعتبريه +01:00 (زي ما كان قبل الريفريش)
-  return timestamp + "+01:00";
+  return dayjs(fixed).local().format("DD MMM, hh:mm A");
 };
 
-const formatTime = (timestamp) => {
-  return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
-};
 
 
 function PostCard({
@@ -287,9 +297,12 @@ function PostCard({
                 <FavoriteBorderIcon />
               )
             }
+            
             label={`${post.likes} Likes`}
             onClick={handleLikeClick}
-          />
+          />           
+           {console.log("post.isLiked",post.isLiked)}
+
           <ActionButton
             icon={<ChatBubbleOutlineIcon />}
             label={`${post.comments} Comments`}

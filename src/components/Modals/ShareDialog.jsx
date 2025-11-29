@@ -66,88 +66,88 @@ const ShareDialog = ({ open, onClose, post, onShareSuccess }) => {
   };
 
   // ✅ المشاركة عبر WhatsApp - بزيد الـ counter
-  const handleWhatsAppShare = () => {
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(postUrl)}`;
-    window.open(whatsappUrl, "_blank");
+  // const handleWhatsAppShare = () => {
+  //   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(postUrl)}`;
+  //   window.open(whatsappUrl, "_blank");
     
-    // ✅ زيادة الـ share count
-    if (onShareSuccess) {
-      onShareSuccess(post.id);
-    }
+  //   // ✅ زيادة الـ share count
+  //   if (onShareSuccess) {
+  //     onShareSuccess(post.id);
+  //   }
     
-    setSnackbar({
-      open: true,
-      message: "Opening WhatsApp...",
-      severity: "success",
-    });
+  //   setSnackbar({
+  //     open: true,
+  //     message: "Opening WhatsApp...",
+  //     severity: "success",
+  //   });
     
-    setTimeout(() => {
-      onClose();
-    }, 1500);
-  };
+  //   setTimeout(() => {
+  //     onClose();
+  //   }, 1500);
+  // };
 
-  // ✅ المشاركة عبر Telegram - بزيد الـ counter
-  const handleTelegramShare = () => {
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(shareText)}`;
-    window.open(telegramUrl, "_blank");
+  // // ✅ المشاركة عبر Telegram - بزيد الـ counter
+  // const handleTelegramShare = () => {
+  //   const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(shareText)}`;
+  //   window.open(telegramUrl, "_blank");
     
-    // ✅ زيادة الـ share count
-    if (onShareSuccess) {
-      onShareSuccess(post.id);
-    }
+  //   // ✅ زيادة الـ share count
+  //   if (onShareSuccess) {
+  //     onShareSuccess(post.id);
+  //   }
     
-    setSnackbar({
-      open: true,
-      message: "Opening Telegram...",
-      severity: "success",
-    });
+  //   setSnackbar({
+  //     open: true,
+  //     message: "Opening Telegram...",
+  //     severity: "success",
+  //   });
     
-    setTimeout(() => {
-      onClose();
-    }, 1500);
-  };
+  //   setTimeout(() => {
+  //     onClose();
+  //   }, 1500);
+  // };
 
-  // ✅ المشاركة عبر Facebook - بزيد الـ counter
-  const handleFacebookShare = () => {
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
-    window.open(facebookUrl, "_blank", "width=600,height=400");
+  // // ✅ المشاركة عبر Facebook - بزيد الـ counter
+  // const handleFacebookShare = () => {
+  //   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
+  //   window.open(facebookUrl, "_blank", "width=600,height=400");
     
-    // ✅ زيادة الـ share count
-    if (onShareSuccess) {
-      onShareSuccess(post.id);
-    }
+  //   // ✅ زيادة الـ share count
+  //   if (onShareSuccess) {
+  //     onShareSuccess(post.id);
+  //   }
     
-    setSnackbar({
-      open: true,
-      message: "Opening Facebook...",
-      severity: "success",
-    });
+  //   setSnackbar({
+  //     open: true,
+  //     message: "Opening Facebook...",
+  //     severity: "success",
+  //   });
     
-    setTimeout(() => {
-      onClose();
-    }, 1500);
-  };
+  //   setTimeout(() => {
+  //     onClose();
+  //   }, 1500);
+  // };
 
-  // ✅ المشاركة عبر Twitter - بزيد الـ counter
-  const handleTwitterShare = () => {
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(postUrl)}`;
-    window.open(twitterUrl, "_blank", "width=600,height=400");
+  // // ✅ المشاركة عبر Twitter - بزيد الـ counter
+  // const handleTwitterShare = () => {
+  //   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(postUrl)}`;
+  //   window.open(twitterUrl, "_blank", "width=600,height=400");
     
-    // ✅ زيادة الـ share count
-    if (onShareSuccess) {
-      onShareSuccess(post.id);
-    }
+  //   // ✅ زيادة الـ share count
+  //   if (onShareSuccess) {
+  //     onShareSuccess(post.id);
+  //   }
     
-    setSnackbar({
-      open: true,
-      message: "Opening Twitter...",
-      severity: "success",
-    });
+  //   setSnackbar({
+  //     open: true,
+  //     message: "Opening Twitter...",
+  //     severity: "success",
+  //   });
     
-    setTimeout(() => {
-      onClose();
-    }, 1500);
-  };
+  //   setTimeout(() => {
+  //     onClose();
+  //   }, 1500);
+  // };
 
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -278,13 +278,12 @@ const ShareDialog = ({ open, onClose, post, onShareSuccess }) => {
             </Box>
           </Box>
 
-          <Divider sx={{ mb: 2 }}>
+          {/* <Divider sx={{ mb: 2 }}>
             <Typography variant="caption" color="text.secondary">
               Or share via
             </Typography>
           </Divider>
 
-          {/* Social Media Options */}
           <Box
             sx={{
               display: "grid",
@@ -292,7 +291,6 @@ const ShareDialog = ({ open, onClose, post, onShareSuccess }) => {
               gap: 2,
             }}
           >
-            {/* WhatsApp */}
             <Button
               variant="outlined"
               startIcon={<WhatsAppIcon />}
@@ -311,7 +309,6 @@ const ShareDialog = ({ open, onClose, post, onShareSuccess }) => {
               WhatsApp
             </Button>
 
-            {/* Telegram */}
             <Button
               variant="outlined"
               startIcon={<TelegramIcon />}
@@ -330,7 +327,6 @@ const ShareDialog = ({ open, onClose, post, onShareSuccess }) => {
               Telegram
             </Button>
 
-            {/* Facebook */}
             <Button
               variant="outlined"
               startIcon={<FacebookIcon />}
@@ -349,7 +345,6 @@ const ShareDialog = ({ open, onClose, post, onShareSuccess }) => {
               Facebook
             </Button>
 
-            {/* Twitter */}
             <Button
               variant="outlined"
               startIcon={<TwitterIcon />}
@@ -367,7 +362,7 @@ const ShareDialog = ({ open, onClose, post, onShareSuccess }) => {
             >
               Twitter
             </Button>
-          </Box>
+          </Box> */}
         </DialogContent>
       </Dialog>
 

@@ -17,26 +17,20 @@ export const getOneSubServices = async (token,serviceId,subServiceId) => {
 };
 
 
-export const CreateSubServices = async (token,data,serviceId) => {
-  return await api.post(`/Services/${serviceId}`, {data},{
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+export const CreateSubServices = async (token, serviceId, data) => {
+  return await api.post(`/services/${serviceId}/subservices`, data, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 };
 
-export const EditSubServices = async (token,data,serviceId,subServiceId) => {
-  return await api.put(`services/${serviceId}/subservices/${subServiceId}`, {data},{
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+export const EditSubServices = async (token, serviceId, subId, data) => {
+  return await api.put(`/services/${serviceId}/subservices/${subId}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 };
 
-export const DeleteSubServices = async (token,serviceId,subServiceId) => {
-  return await api.delete(`/services/${serviceId}/subservices/${subServiceId}`,{
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+export const DeleteSubServices = async (token, serviceId, subId) => {
+  return await api.delete(`/services/${serviceId}/subservices/${subId}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 };

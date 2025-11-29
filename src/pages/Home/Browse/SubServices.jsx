@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
-import {
-  Container,
-  Grid,
-  Typography,
-  Box,
-  Breadcrumbs,
-} from "@mui/material";
+import { Container, Grid, Typography, Box, Breadcrumbs,TextField  } from "@mui/material";
 import { Link, useParams, useLocation } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import ServiceCard from "../../../components/Cards/ServiceCard";
-import { getSubServices as getSubServicesApi } from "../../../services/subServiceServices";
-
+import {  
+  getSubServices,
+  CreateSubServices,
+  EditSubServices,
+  DeleteSubServices,
+ } from "../../../services/subServiceServices";
+import GenericModal from "../../../components/Modals/GenericModal";
+import { isAdmin } from "../../../utils/authHelpers";
+import AddIcon from "@mui/icons-material/Add";
 const SubServices = () => {
   const token = localStorage.getItem("accessToken");
   const { id } = useParams(); // id الخدمة من الرابط
@@ -20,10 +22,21 @@ const SubServices = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const serviceName = params.get("name"); // الاسم اللي جاي من الرابط
+  const adminMode = isAdmin(); // <-- مهم جدًا يكون هون
+
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+
+  const [selectedSub, setSelectedSub] = useState(null);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formData, setFormData] = useState({ name: "" });
   // جلب الداتا
   const fetchSubServices = async () => {
     try {
-      const response = await getSubServicesApi(token, id);
+      const response = await getSubServices(token, id);
       console.log(response.data);
       setSubServices(response.data);
     } catch (err) {
@@ -35,6 +48,43 @@ const SubServices = () => {
     if (!id) return;
     fetchSubServices();
   }, [id]);
+
+  const handleCreate = async () => {
+    setIsSubmitting(true);
+    try {
+     const response= await CreateSubServices(token, id, formData);
+     console.log("creatSub",response);
+      setOpenCreateModal(false);
+      fetchSubServices();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+    const handleUpdate = async () => {
+    setIsSubmitting(true);
+    try {
+      await EditSubServices(token, id, selectedSub.id, formData);
+      setOpenEditModal(false);
+      fetchSubServices();
+      fetch();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+    const handleDelete = async () => {
+    setIsSubmitting(true);
+    try {
+      await DeleteSubServices(token, id, selectedSub.id);
+      setOpenDeleteModal(false);
+      fetchSubServices();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
 
   // لو ما في id أو بيانات
   if (!id) {
@@ -80,14 +130,28 @@ const SubServices = () => {
             {serviceName}
           </Typography>
         </Box>
-        <CustomButton
-          component={Link}
-          to="/app/browse"
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-        >
-          Back
-        </CustomButton>
+        <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+          <CustomButton
+            component={Link}
+            to="/app/browse"
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+          >
+            Back
+          </CustomButton>
+          {adminMode && (
+            <CustomButton
+              variant="contained"
+              startIcon={<AddIcon />}
+                onClick={() => {
+                setFormData({ name: "" });
+                setOpenCreateModal(true);
+              }}
+            >
+             Create
+            </CustomButton>
+          )}{" "}
+        </Box>
       </Box>
 
       {/* عرض الـ subservices */}
@@ -97,11 +161,72 @@ const SubServices = () => {
             <ServiceCard
               title={sub.name}
               count="3 projects"
-              url={`/app/services/${sub.id}/projects?name=${encodeURIComponent(sub.name)}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`}  // هون راح يوديك ع صفحة SubServiceProjects
+              url={`/app/services/${sub.id}/projects?name=${encodeURIComponent(
+                sub.name
+              )}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`} // هون راح يوديك ع صفحة SubServiceProjects
+              adminMode={adminMode} // <--- أضفها هون
+              onEdit={() => {
+                setSelectedSub(sub);
+                setFormData({ name: sub.name });
+                setOpenEditModal(true);
+              }}
+              onDelete={() => {
+                setSelectedSub(sub);
+                setOpenDeleteModal(true);
+              }}
             />
           </Grid>
         ))}
       </Grid>
+
+       {/* CREATE */}
+      <GenericModal
+        open={openCreateModal}
+        onClose={() => setOpenCreateModal(false)}
+        title="Create Sub-Service"
+        primaryButtonText="Create"
+        onPrimaryAction={handleCreate}
+        isSubmitting={isSubmitting}
+      >
+        <TextField
+          fullWidth
+          label="Name"
+          value={formData.name}
+          onChange={(e) => setFormData({ name: e.target.value })}
+        />
+      </GenericModal>
+
+     
+      {/* EDIT */}
+      <GenericModal
+        open={openEditModal}
+        onClose={() => setOpenEditModal(false)}
+        title="Edit Sub-Service"
+        primaryButtonText="Update"
+        onPrimaryAction={handleUpdate}
+        isSubmitting={isSubmitting}
+      >
+        <TextField
+          fullWidth
+          label="Name"
+          value={formData.name}
+          onChange={(e) => setFormData({ name: e.target.value })}
+        />
+      </GenericModal>
+
+        {/* DELETE */}
+      <GenericModal
+        open={openDeleteModal}
+        onClose={() => setOpenDeleteModal(false)}
+        title="Delete"
+        primaryButtonText="Delete"
+        onPrimaryAction={handleDelete}
+        isSubmitting={isSubmitting}
+      >
+        <Typography>
+          Are you sure you want to delete "{selectedSub?.name}"?
+        </Typography>
+      </GenericModal>
     </Container>
   );
 };

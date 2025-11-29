@@ -44,8 +44,21 @@ const style = {
 };
 
 // Helper function to format time
-const formatTime = (time) =>
-  time ? dayjs(time).format("DD MMM, hh:mm A") : "Just now";
+const formatTime = (timestamp) => {
+  // حماية: لو timestamp مش موجود
+  if (!timestamp) return "—";
+
+  let fixed = timestamp;
+
+  // إذا ما فيه timezone → ضيف +03:00
+  if (!/[+-]\d\d:\d\d$/.test(timestamp) && !timestamp.endsWith("Z")) {
+    fixed = timestamp + "+03:00";
+  }
+
+  return dayjs(fixed).local().format("DD MMM, hh:mm A");
+};
+
+
 
 const Comment = ({
   comment,
@@ -177,7 +190,7 @@ const Comment = ({
               >
                 {formatTime(comment.createdAt)}
               </Typography>
-
+   {console.log("time in modal:",formatTime(comment.createdAt))}
               {isCurrentUser && (
                 <IconButton
                   aria-label="more"
@@ -322,7 +335,8 @@ function CommentsModal({
                     {post?.user?.name}
                   </Typography>
                 }
-                subheader={post?.time}
+               subheader={formatTime(post?.time)}
+
                 sx={{ p: 0, mb: 1 }}
               />
               <CardContent sx={{ p: 0 }}>

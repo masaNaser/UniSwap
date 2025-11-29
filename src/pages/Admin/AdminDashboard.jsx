@@ -103,9 +103,9 @@ const AdminDashboard = () => {
             <LogoutIcon sx={{marginRight:2}} />
             Logout
           </CustomButton>
-           {/* <Button variant="contained" color="primary" onClick={() => navigate("/app/feed")}>
-    Go to Feed
-  </Button> */}
+           <Button variant="contained" color="primary" onClick={() => navigate("/app/browse")}>
+    Go to Browse
+  </Button>
         </Box>
 
         {/* Stats Cards Grid */}

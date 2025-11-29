@@ -41,6 +41,8 @@ import { useSearchParams } from "react-router-dom";
 import PostCardSkeleton from '../../../components/Skeletons/PostCardSkeleton';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { isAdmin } from "../../../utils/authHelpers";
+
 dayjs.extend(utc);
 
 
@@ -82,6 +84,9 @@ export default function Feed() {
   const [modalPost, setModalPost] = useState(null);
   const [userIdCommenting, setUserIdCommenting] = useState(null);
 
+  // ✅ تحديد إذا المستخدم أدمن
+  const admin = isAdmin(currentUser);
+  
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     postId: null,
@@ -109,58 +114,51 @@ export default function Feed() {
     setSnackbar({ ...snackbar, open: false });
   };
 
-// في Feed.js، غيّر الـ fetchPosts هيك:
-const normalizeTime = (timestamp) => {
-  // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
-  if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
-    return timestamp;
-  }
+  const normalizeTime = (timestamp) => {
+    if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
+      return timestamp;
+    }
+    return timestamp + "+01:00";
+  };
 
-  // إذا بدون timezone → اعتبريه +01:00 (زي ما كان قبل الريفريش)
-  return timestamp + "+01:00";
-};
+  const formatTime = (timestamp) => {
+    return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
+  };
 
-const formatTime = (timestamp) => {
-  return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
-};
-
-
-const fetchPosts = async () => {
-  try {
-    const response = await getPosts(userToken);
-    console.log(response);
-    const postsData = response.data.map((p) => {
-      // ✅ بدون أي تعقيدات UTC
-
-      return {
-        id: p.id,
-        content: p.content,
-        selectedTags: p.tags?.[0]?.split(",") || [],
-        user: {
-          name: p.author.userName,
-          avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
-          id: p.author.id,
-        },
-            time: formatTime(p.createdAt),
-        likes: p.likesCount,
-        comments: p.commentsCount,
-        shares: "",
-        fileUrl: p.fileUrl ? `https://uni.runasp.net/${p.fileUrl}` : null,
-        isLiked: p.isLikedByMe || false,
-        recentComments: [],
-        isClosed: p.postStatus === "Closed",
-      };
-    });
-    setPosts(postsData);
-  } catch (error) {
-    setSnackbar({
-      open: true,
-      message: "Failed to fetch posts.",
-      severity: "error",
-    });
-    console.error("Error fetching posts:", error);
-  }
-};
+  const fetchPosts = async () => {
+    try {
+      const response = await getPosts(userToken);
+      console.log(response);
+      const postsData = response.data.map((p) => {
+        return {
+          id: p.id,
+          content: p.content,
+          selectedTags: p.tags?.[0]?.split(",") || [],
+          user: {
+            name: p.author.userName,
+            avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
+            id: p.author.id,
+          },
+          time: formatTime(p.createdAt),
+          likes: p.likesCount,
+          comments: p.commentsCount,
+          shares: "",
+          fileUrl: p.fileUrl ? `https://uni.runasp.net/${p.fileUrl}` : null,
+          isLiked: p.isLikedByMe || false,
+          recentComments: [],
+          isClosed: p.postStatus === "Closed",
+        };
+      });
+      setPosts(postsData);
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Failed to fetch posts.",
+        severity: "error",
+      });
+      console.error("Error fetching posts:", error);
+    }
+  };
 
   const fetchRecentComments = useCallback(
     async (postId) => {
@@ -652,6 +650,7 @@ const fetchPosts = async () => {
   return (
     <>
       <Container maxWidth="lg" className="container">
+        {/* ✅ الرسالة الترحيبية - تظهر للجميع */}
         <div className="welcome-section">
           <h1 className="welcome-heading">
             Welcome back, {userName}! <WavingHand className="wave" />
@@ -661,60 +660,66 @@ const fetchPosts = async () => {
           </p>
         </div>
 
-        <div className="cards-section">
-          <SelectActionCard
-            title="Active Services"
-            value="12"
-            icon={<AccessTimeIcon />}
-          />
-          <SelectActionCard
-            title="Completed Tasks"
-            value="47"
-            icon={<WorkspacePremiumOutlinedIcon />}
-          />
-          <SelectActionCard
-            title="Peer Rating"
-            value="4.8"
-            icon={<GroupIcon />}
-          />
-        </div>
+        {/* ✅ الكاردات - تختفي للأدمن */}
+        {!admin && (
+          <div className="cards-section">
+            <SelectActionCard
+              title="Active Services"
+              value="12"
+              icon={<AccessTimeIcon />}
+            />
+            <SelectActionCard
+              title="Completed Tasks"
+              value="47"
+              icon={<WorkspacePremiumOutlinedIcon />}
+            />
+            <SelectActionCard
+              title="Peer Rating"
+              value="4.8"
+              icon={<GroupIcon />}
+            />
+          </div>
+        )}
 
         <div className="post-section">
           <div className="create-post-main">
-            <CreatePost addPost={addPost} token={userToken} />
+            {/* ✅ صندوق إنشاء البوست - يختفي للأدمن */}
+            {!admin && <CreatePost addPost={addPost} token={userToken} />}
+            
+            {/* ✅ البوستات - تظهر للجميع */}
             <Box mt={3}>
-              {posts.map((post) => (
-                <Box
-                  key={post.id}
-                  ref={(el) => (postRefs.current[post.id] = el)}
-                  sx={{
-                    transition: "all 0.3s ease",
-                    ...(highlightedPostId === post.id && {
-                      animation: "highlight 2s ease-in-out",
-                      "@keyframes highlight": {
-                        "0%": {
-                          boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.7)",
-                          transform: "scale(1)",
+              {loading ? (
+                <Box mt={3}>
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+                </Box>
+              ) : (
+                posts.map((post) => (
+                  <Box
+                    key={post.id}
+                    ref={(el) => (postRefs.current[post.id] = el)}
+                    sx={{
+                      transition: "all 0.3s ease",
+                      ...(highlightedPostId === post.id && {
+                        animation: "highlight 2s ease-in-out",
+                        "@keyframes highlight": {
+                          "0%": {
+                            boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.7)",
+                            transform: "scale(1)",
+                          },
+                          "50%": {
+                            boxShadow: "0 0 20px 10px rgba(59, 130, 246, 0.4)",
+                            transform: "scale(1.02)",
+                          },
+                          "100%": {
+                            boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
+                            transform: "scale(1)",
+                          },
                         },
-                        "50%": {
-                          boxShadow: "0 0 20px 10px rgba(59, 130, 246, 0.4)",
-                          transform: "scale(1.02)",
-                        },
-                        "100%": {
-                          boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
-                          transform: "scale(1)",
-                        },
-                      },
-                    }),
-                  }}
-                >
-                  {loading ? (
-                    <Box mt={3}>
-                      <PostCardSkeleton />
-                      <PostCardSkeleton />
-                      <PostCardSkeleton />
-                    </Box>
-                  ) : (
+                      }),
+                    }}
+                  >
                     <PostCard
                       post={post}
                       onDelete={openDeleteDialog}
@@ -730,14 +735,18 @@ const fetchPosts = async () => {
                         currentUser?.userName || userName
                       )}
                     />
-                  )}
-                </Box>
-              ))}
+                  </Box>
+                ))
+              )}
             </Box>
           </div>
-          <div className="feed-sidebar" style={{ flex: 1 }}>
-            <Sidebar />
-          </div>
+          
+          {/* ✅ الـ Sidebar - يختفي للأدمن */}
+          {!admin && (
+            <div className="feed-sidebar" style={{ flex: 1 }}>
+              <Sidebar />
+            </div>
+          )}
         </div>
 
         <CommentsModal
