@@ -6,11 +6,16 @@ import {
   Typography,
   Chip,
   IconButton,
+  Button,
+  Card,
+  CardMedia,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import FolderIcon from "@mui/icons-material/Folder";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import CloseIcon from "@mui/icons-material/Close";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import GenericModal from "../../components/Modals/GenericModal";
 import {
   CreateProject,
@@ -22,17 +27,18 @@ export default function UserProjectModal({
   onClose,
   token,
   onSuccess,
-  editData = null, // إذا فيه بيانات المشروع للتعديل
+  editData = null,
 }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     duration: "",
-     tags: [],
+    tags: [],
     coverImage: null,
     projectFile: null,
   });
-   const [tagInput, setTagInput] = useState("");
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
+  const [tagInput, setTagInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
 
@@ -42,21 +48,26 @@ export default function UserProjectModal({
         title: editData.title || "",
         description: editData.description || "",
         duration: editData.duration || "",
-         tags: editData.tags || [],
+        tags: editData.tags || [],
         coverImage: null,
         projectFile: null,
       });
+      // لو في صورة موجودة مسبقاً
+      if (editData.coverImage) {
+        setCoverImagePreview(`https://uni.runasp.net/${editData.coverImage}`);
+      }
     } else {
       setFormData({
         title: "",
         description: "",
         duration: "",
-         tags: [],
+        tags: [],
         coverImage: null,
         projectFile: null,
       });
+      setCoverImagePreview(null);
     }
-     setTagInput("");
+    setTagInput("");
   }, [editData, open]);
 
   const handleChange = (e) => {
@@ -65,7 +76,31 @@ export default function UserProjectModal({
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: files[0] }));
+    if (files && files[0]) {
+      setFormData((prev) => ({ ...prev, [name]: files[0] }));
+      
+      // Preview للصورة
+      if (name === "coverImage") {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setCoverImagePreview(reader.result);
+        };
+        reader.readAsDataURL(files[0]);
+      }
+    }
+  };
+
+  const handleRemoveCoverImage = () => {
+    setFormData((prev) => ({ ...prev, coverImage: null }));
+    setCoverImagePreview(editData?.coverImage ? `https://uni.runasp.net/${editData.coverImage}` : null);
+    const input = document.getElementById("coverImage-upload");
+    if (input) input.value = "";
+  };
+
+  const handleRemoveProjectFile = () => {
+    setFormData((prev) => ({ ...prev, projectFile: null }));
+    const input = document.getElementById("projectFile-upload");
+    if (input) input.value = "";
   };
 
   const handleAddTag = () => {
@@ -85,11 +120,20 @@ export default function UserProjectModal({
     }));
   };
 
+  // ✅ التحقق من امتلاء الحقول المطلوبة
+  const isFormValid = () => {
+    return (
+      formData.title.trim() !== "" &&
+      formData.description.trim() !== "" &&
+      formData.duration.trim() !== ""
+    );
+  };
+
   const handleSubmit = async () => {
-    if (!formData.title || !formData.description || !formData.duration) {
+    if (!isFormValid()) {
       setSnackbar({
         open: true,
-        message: "All fields are required!",
+        message: "Title, Description, and Duration are required!",
         severity: "error",
       });
       return;
@@ -102,22 +146,23 @@ export default function UserProjectModal({
       data.append("Title", formData.title);
       data.append("Description", formData.description);
       data.append("Duration", formData.duration);
-       formData.tags.forEach((tag) => data.append("Tags", tag));
+      formData.tags.forEach((tag) => data.append("Tags", tag));
       if (formData.coverImage) data.append("CoverImage", formData.coverImage);
-      if (formData.projectFile)
-        data.append("ProjectFile", formData.projectFile);
+      if (formData.projectFile) data.append("ProjectFile", formData.projectFile);
+
       console.log("Submitting project with data:", formData);
+      
       if (editData) {
-       const response =  await EditProject(token, data, editData.id);
-       console.log("Edit project response:", response);
+        const response = await EditProject(token, data, editData.id);
+        console.log("Edit project response:", response);
         setSnackbar({
           open: true,
           message: "Project updated successfully!",
           severity: "success",
         });
       } else {
-       const respone =  await CreateProject(token, data);
-       console.log("Create project response:", respone);
+        const response = await CreateProject(token, data);
+        console.log("Create project response:", response);
         setSnackbar({
           open: true,
           message: "Project created successfully!",
@@ -147,17 +192,20 @@ export default function UserProjectModal({
       icon={<WorkOutlineIcon color="primary" />}
       primaryButtonText={editData ? "Update" : "Create"}
       onPrimaryAction={handleSubmit}
+      isPrimaryDisabled={!isFormValid()} // ✅ هون الحل
       isSubmitting={isSubmitting}
       snackbar={snackbar}
       onSnackbarClose={() => setSnackbar(null)}
     >
-      <Stack spacing={2}>
+      <Stack spacing={2.5}>
         <TextField
           label="Title"
           name="title"
           fullWidth
+          required
           value={formData.title}
           onChange={handleChange}
+          helperText="Required field"
         />
         <TextField
           label="Description"
@@ -165,110 +213,196 @@ export default function UserProjectModal({
           multiline
           rows={3}
           fullWidth
+          required
           value={formData.description}
           onChange={handleChange}
+          helperText="Required field"
         />
         <TextField
           label="Duration"
           name="duration"
           fullWidth
+          required
           value={formData.duration}
           onChange={handleChange}
+          placeholder="e.g., 3 months, 2 weeks"
+          helperText="Required field"
         />
 
-        {/* Upload Section */}
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <label htmlFor="coverImage-upload">
-            <input
-              accept="image/*"
-              id="coverImage-upload"
-              name="coverImage"
-              type="file"
-              hidden
-              onChange={handleFileChange}
-            />
-            <IconButton component="span" color="primary">
-              <PhotoCameraIcon />
-            </IconButton>
-            <Typography variant="caption">
-              {formData.coverImage ? formData.coverImage.name : "Upload Cover"}
+        {/* Cover Image Section */}
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+            Cover Image{" "}
+            <Typography component="span" variant="caption" color="text.secondary">
+              (Optional)
             </Typography>
-          </label>
+          </Typography>
 
-          <label htmlFor="projectFile-upload">
-            <input
-              id="projectFile-upload"
-              name="projectFile"
-              type="file"
-              hidden
-              onChange={handleFileChange}
-            />
-            <IconButton component="span" color="primary">
-              <FolderIcon />
-            </IconButton>
-            <Typography variant="caption">
-              {formData.projectFile ? formData.projectFile.name : "Upload File"}
-            </Typography>
-          </label>
+          {coverImagePreview ? (
+            <Card sx={{ position: "relative", maxWidth: 400 }}>
+              <CardMedia
+                component="img"
+                height="200"
+                image={coverImagePreview}
+                alt="Cover preview"
+                sx={{ objectFit: "cover" }}
+              />
+              <IconButton
+                size="small"
+                onClick={handleRemoveCoverImage}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  bgcolor: "white",
+                  "&:hover": { bgcolor: "grey.100" },
+                  boxShadow: 2,
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Card>
+          ) : (
+            <label htmlFor="coverImage-upload">
+              <input
+                accept="image/*"
+                id="coverImage-upload"
+                name="coverImage"
+                type="file"
+                hidden
+                onChange={handleFileChange}
+              />
+              <Button
+                component="span"
+                variant="outlined"
+                startIcon={<PhotoCameraIcon />}
+                sx={{ textTransform: "none" }}
+              >
+                Upload Cover Image
+              </Button>
+            </label>
+          )}
         </Box>
 
-        {/* Tags Input */}
-       {/* Tags Input - بس اعرضها اذا مش Edit Mode */}
-{!editData && (
-  <Box>
-    <Typography variant="subtitle2" sx={{ mb: 1 }}>
-      Tags
-    </Typography>
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <TextField
-        size="small"
-        placeholder="Add tag"
-        value={tagInput}
-        onChange={(e) => setTagInput(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            handleAddTag();
-          }
-        }}
-      />
-      <IconButton color="primary" onClick={handleAddTag}>
-        <AddIcon />
-      </IconButton>
-    </Box>
-    <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
-      {formData.tags.map((tag, idx) => (
-        <Chip
-          key={idx}
-          label={tag}
-          onDelete={() => handleDeleteTag(tag)}
-          color="primary"
-          variant="outlined"
-        />
-      ))}
-    </Box>
-  </Box>
-)}
+        {/* Project File Section */}
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+            Project File{" "}
+            <Typography component="span" variant="caption" color="text.secondary">
+              (Optional)
+            </Typography>
+          </Typography>
 
-{/* اعرض التاجز بس للقراءة في وضع Edit */}
-{editData && formData.tags.length > 0 && (
-  <Box>
-    <Typography variant="subtitle2" sx={{ mb: 1 }}>
-      Tags
-    </Typography>
-    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-      {formData.tags.map((tag, idx) => (
-        <Chip
-          key={idx}
-          label={tag}
-          color="primary"
-          variant="outlined"
-          // بدون onDelete عشان ما يقدر يحذف
-        />
-      ))}
-    </Box>
-  </Box>
-)}
+          {formData.projectFile ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                p: 2,
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 1,
+                bgcolor: "grey.50",
+              }}
+            >
+              <InsertDriveFileIcon color="primary" />
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                {formData.projectFile.name}
+              </Typography>
+              <IconButton size="small" onClick={handleRemoveProjectFile}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ) : (
+            <label htmlFor="projectFile-upload">
+              <input
+                id="projectFile-upload"
+                name="projectFile"
+                type="file"
+                hidden
+                onChange={handleFileChange}
+              />
+              <Button
+                component="span"
+                variant="outlined"
+                startIcon={<FolderIcon />}
+                sx={{ textTransform: "none" }}
+              >
+                Upload Project File
+              </Button>
+            </label>
+          )}
+        </Box>
+
+        {/* Tags Input - للCreate Mode فقط */}
+        {!editData && (
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+              Tags{" "}
+              <Typography component="span" variant="caption" color="text.secondary">
+                (Optional)
+              </Typography>
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <TextField
+                size="small"
+                placeholder="Add tag (e.g., React, Design)"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+                fullWidth
+              />
+              <IconButton color="primary" onClick={handleAddTag}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {formData.tags.map((tag, idx) => (
+                <Chip
+                  key={idx}
+                  label={tag}
+                  onDelete={() => handleDeleteTag(tag)}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* Tags Display - للEdit Mode فقط */}
+        {editData && formData.tags.length > 0 && (
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+              Tags
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {formData.tags.map((tag, idx) => (
+                <Chip
+                  key={idx}
+                  label={tag}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* Validation Message */}
+        {/* {!isFormValid() && (
+          <Typography variant="caption" color="error" sx={{ mt: 1 }}>
+            * Please fill in all required fields (Title, Description, Duration)
+          </Typography>
+        )} */}
       </Stack>
     </GenericModal>
   );

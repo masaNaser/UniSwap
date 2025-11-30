@@ -230,6 +230,7 @@ const filterProjects = (projects) => {
             <Grid container spacing={3}>
               {pendingRequests.map(request => (
                 <Grid item xs={12} sm={6} lg={4} key={request.id}>
+                {console.log("image",request)}
                   <RequestProjectCard
                     id={request.id}
                     title={request.title}
@@ -245,8 +246,10 @@ const filterProjects = (projects) => {
                     sentDate={request.createdAt ? new Date(request.createdAt).toLocaleDateString() : null}
                   />
                 </Grid>
+                
               ))}
             </Grid>
+            
           ) : (
             <Box textAlign="center" py={8} bgcolor="#f9fafb" borderRadius={2}>
               <Typography variant="h6" color="text.secondary">

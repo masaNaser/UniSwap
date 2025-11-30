@@ -11,13 +11,23 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  IconButton,
+  Chip,
 } from "@mui/material";
-import { WavingHand } from "@mui/icons-material";
+
+// icons
+import {
+  WavingHand,
+  AttachFile,
+  Image as ImageIcon,
+} from "@mui/icons-material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import SelectActionCard from "../../../components/Cards/Cards";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import GroupIcon from "@mui/icons-material/Group";
+import CloseIcon from "@mui/icons-material/Close";
+
 import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 import Sidebar from "./Sidebar";
@@ -38,7 +48,7 @@ import {
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { useSearchParams } from "react-router-dom";
-import PostCardSkeleton from '../../../components/Skeletons/PostCardSkeleton';
+import PostCardSkeleton from "../../../components/Skeletons/PostCardSkeleton";
 import dayjs from "dayjs";
 import { isAdmin } from "../../../utils/authHelpers";
 
@@ -66,7 +76,7 @@ const updatePost = (posts, postId, newData) =>
 
 export default function Feed() {
   const { currentUser, loading } = useCurrentUser();
-  console.log("useCurrentUser",currentUser);
+  console.log("useCurrentUser", currentUser);
   const [posts, setPosts] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [highlightedPostId, setHighlightedPostId] = useState(null);
@@ -83,7 +93,7 @@ export default function Feed() {
 
   // ✅ تحديد إذا المستخدم أدمن
   const admin = isAdmin(currentUser);
-  
+
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     postId: null,
@@ -251,7 +261,6 @@ export default function Feed() {
       });
     }
   };
-
   const openEditDialog = (postId) => {
     const postToEdit = posts.find((p) => p.id === postId);
     if (!postToEdit) return;
@@ -263,7 +272,7 @@ export default function Feed() {
       tags: postToEdit.selectedTags.join(","),
       file: null,
       existingFileUrl: postToEdit.fileUrl || "",
-      previewUrl: postToEdit.fileUrl || "",
+      previewUrl: "", // ✅ غيّر من postToEdit.fileUrl إلى string فاضي
     });
   };
 
@@ -285,7 +294,9 @@ export default function Feed() {
       setEditDialog((prev) => ({
         ...prev,
         file,
-        previewUrl: URL.createObjectURL(file),
+        previewUrl: file.type.startsWith("image/")
+          ? URL.createObjectURL(file)
+          : null,
       }));
     }
   };
@@ -305,14 +316,8 @@ export default function Feed() {
       console.log(response);
 
       if (response.status === 204) {
-        const postToEdit = posts.find((p) => p.id === postId);
-        const updatedPost = {
-          ...postToEdit,
-          content,
-          selectedTags: tags ? tags.split(",") : [],
-          fileUrl: file ? URL.createObjectURL(file) : postToEdit.fileUrl,
-        };
-        setPosts((prev) => updatePost(prev, postId, updatedPost));
+        // ✅ اعمل refresh للبوستات كلهم
+        await fetchPosts();
 
         closeEditDialog();
         setSnackbar({
@@ -438,10 +443,10 @@ export default function Feed() {
       prev.map((p) =>
         p.id === postId
           ? {
-              ...p,
-              comments: p.comments + 1,
-              recentComments: [newComment, ...p.recentComments].slice(0, 2),
-            }
+            ...p,
+            comments: p.comments + 1,
+            recentComments: [newComment, ...p.recentComments].slice(0, 2),
+          }
           : p
       )
     );
@@ -461,12 +466,12 @@ export default function Feed() {
           prev.map((p) =>
             p.id === postId
               ? {
-                  ...p,
-                  recentComments: [
-                    finalComment,
-                    ...p.recentComments.filter((c) => c.id !== tempCommentId),
-                  ].slice(0, 2),
-                }
+                ...p,
+                recentComments: [
+                  finalComment,
+                  ...p.recentComments.filter((c) => c.id !== tempCommentId),
+                ].slice(0, 2),
+              }
               : p
           )
         );
@@ -483,12 +488,12 @@ export default function Feed() {
         prev.map((p) =>
           p.id === postId
             ? {
-                ...p,
-                comments: p.comments - 1,
-                recentComments: p.recentComments.filter(
-                  (c) => c.id !== tempCommentId
-                ),
-              }
+              ...p,
+              comments: p.comments - 1,
+              recentComments: p.recentComments.filter(
+                (c) => c.id !== tempCommentId
+              ),
+            }
             : p
         )
       );
@@ -563,17 +568,17 @@ export default function Feed() {
       prev.map((p) =>
         p.id === postId
           ? {
-              ...p,
-              recentComments: p.recentComments.map((c) =>
-                c.id === commentId
-                  ? {
-                      ...c,
-                      content: newContent,
-                      createdAt: new Date().toISOString(),
-                    }
-                  : c
-              ),
-            }
+            ...p,
+            recentComments: p.recentComments.map((c) =>
+              c.id === commentId
+                ? {
+                  ...c,
+                  content: newContent,
+                  createdAt: new Date().toISOString(),
+                }
+                : c
+            ),
+          }
           : p
       )
     );
@@ -587,17 +592,17 @@ export default function Feed() {
         prev.map((p) =>
           p.id === postId
             ? {
-                ...p,
-                recentComments: p.recentComments.map((c) =>
-                  c.id === commentId
-                    ? {
-                        ...c,
-                        content: originalContent,
-                        createdAt: originalComment.createdAt,
-                      }
-                    : c
-                ),
-              }
+              ...p,
+              recentComments: p.recentComments.map((c) =>
+                c.id === commentId
+                  ? {
+                    ...c,
+                    content: originalContent,
+                    createdAt: originalComment.createdAt,
+                  }
+                  : c
+              ),
+            }
             : p
         )
       );
@@ -636,7 +641,7 @@ export default function Feed() {
 
   const handleSharePost = (postId) => {
     setPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, shares: p.shares  } : p))
+      prev.map((p) => (p.id === postId ? { ...p, shares: p.shares } : p))
     );
   };
 
@@ -682,7 +687,7 @@ export default function Feed() {
           <div className="create-post-main">
             {/* ✅ صندوق إنشاء البوست - يختفي للأدمن */}
             {!admin && <CreatePost addPost={addPost} token={userToken} />}
-            
+
             {/* ✅ البوستات - تظهر للجميع */}
             <Box mt={3}>
               {loading ? (
@@ -737,7 +742,7 @@ export default function Feed() {
               )}
             </Box>
           </div>
-          
+
           {/* ✅ الـ Sidebar - يختفي للأدمن */}
           {!admin && (
             <div className="feed-sidebar" style={{ flex: 1 }}>
@@ -841,27 +846,148 @@ export default function Feed() {
             }
             sx={{ mb: 2 }}
           />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleEditFileChange}
-            style={{ marginBottom: "16px" }}
-          />
-          {editDialog.previewUrl && (
-            <Box sx={{ mt: 2, textAlign: "center" }}>
-              <img
-                src={editDialog.previewUrl}
-                alt="Preview"
-                style={{
-                  width: "50%",
-                  maxHeight: "200px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
+
+          {/* Upload Buttons */}
+          <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+            {/* Image Upload */}
+            <Box>
+              <input
+                type="file"
+                accept="image/*"
+                id="edit-upload-image"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setEditDialog((prev) => ({
+                      ...prev,
+                      file,
+                      previewUrl: URL.createObjectURL(file),
+                    }));
+                  }
                 }}
               />
+              <label htmlFor="edit-upload-image">
+                <Button
+                  component="span"
+                  variant="outlined"
+                  startIcon={<ImageIcon />}
+                  sx={{ textTransform: "none" }}
+                >
+                  Choose Image
+                </Button>
+              </label>
+            </Box>
+
+            {/* Document Upload */}
+            <Box>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
+                id="edit-upload-document"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setEditDialog((prev) => ({
+                      ...prev,
+                      file,
+                      previewUrl: null,
+                    }));
+                  }
+                }}
+              />
+              <label htmlFor="edit-upload-document">
+                <Button
+                  component="span"
+                  variant="outlined"
+                  startIcon={<AttachFile />}
+                  sx={{ textTransform: "none" }}
+                >
+                  Choose Document
+                </Button>
+              </label>
+            </Box>
+          </Box>
+
+          {/* Preview Section - للملف الجديد أو الموجود */}
+          {(editDialog.file || editDialog.existingFileUrl) && (
+            <Box sx={{ mt: 2, mb: 2 }}>
+              {editDialog.previewUrl &&
+                editDialog.previewUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) ? (
+                // Image Preview (جديد أو موجود)
+                <Box sx={{ textAlign: "center", position: "relative" }}>
+                  <img
+                    src={editDialog.previewUrl}
+                    alt="Preview"
+                    style={{
+                      width: "50%",
+                      maxHeight: "200px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <IconButton
+                    onClick={() => {
+                      setEditDialog((prev) => ({
+                        ...prev,
+                        file: null,
+                        previewUrl: "",
+                        existingFileUrl: "",
+                      }));
+                      const imageInput =
+                        document.getElementById("edit-upload-image");
+                      const docInput = document.getElementById(
+                        "edit-upload-document"
+                      );
+                      if (imageInput) imageInput.value = "";
+                      if (docInput) docInput.value = "";
+                    }}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: -10,
+                      right: "23%",
+                      bgcolor: "rgba(0,0,0,0.5)",
+                      color: "white",
+                      "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
+                    }}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ) : (
+                // Document Preview (جديد أو موجود)
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Chip
+                    label={`${editDialog.file
+                        ? editDialog.file.name
+                        : "Attached document"
+                      }`}
+                    color="primary"
+                    variant="outlined"
+                    onDelete={() => {
+                      setEditDialog((prev) => ({
+                        ...prev,
+                        file: null,
+                        previewUrl: "",
+                        existingFileUrl: "",
+                      }));
+                      const imageInput =
+                        document.getElementById("edit-upload-image");
+                      const docInput = document.getElementById(
+                        "edit-upload-document"
+                      );
+                      if (imageInput) imageInput.value = "";
+                      if (docInput) docInput.value = "";
+                    }}
+                  />
+                </Box>
+              )}
             </Box>
           )}
         </DialogContent>
+
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
             onClick={closeEditDialog}

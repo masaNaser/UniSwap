@@ -12,18 +12,17 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { Image, Close as CloseIcon } from "@mui/icons-material";
+import { Image, Close as CloseIcon, AttachFile } from "@mui/icons-material";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import DisabledCustomButton from "../../../components/CustomButton/DisabledCustomButton";
 import { createPost as createPostApi } from "../../../services/postService";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useProfile } from "../../../Context/ProfileContext";
-import { useCurrentUser } from "../../../Context/CurrentUserContext"; // ✅ تغيير
+import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 
-// في handleSubmit:
 const FormWrapper = styled(Box)(({ theme }) => ({
   backgroundColor: "white",
   padding: theme.spacing(3),
@@ -44,7 +43,7 @@ const FormWrapper = styled(Box)(({ theme }) => ({
 const CreatePost = ({ addPost, token }) => {
   const { userData } = useProfile();
   console.log("CreatePost userData:", userData);
-    const { currentUser } = useCurrentUser(); // ✅ تغيير من userData
+  const { currentUser } = useCurrentUser();
 
   const [content, setContent] = useState("");
   const [tagInput, setTagInput] = useState("");
@@ -59,10 +58,8 @@ const CreatePost = ({ addPost, token }) => {
   });
   const characterLimit = 500;
 
-  // 💡 Condition to disable the post button
   const isPostDisabled = content.trim().length === 0;
 
-  // Handle Snackbar Close
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
@@ -75,6 +72,7 @@ const CreatePost = ({ addPost, token }) => {
   };
 
   const handleTagInputChange = (event) => setTagInput(event.target.value);
+
   const handleTagKeyDown = (event) => {
     if ((event.key === "Enter" || event.key === ",") && tagInput.trim()) {
       event.preventDefault();
@@ -85,6 +83,7 @@ const CreatePost = ({ addPost, token }) => {
       setTagInput("");
     }
   };
+
   const handleTagDelete = (tagToDelete) => {
     setSelectedTags(selectedTags.filter((tag) => tag !== tagToDelete));
   };
@@ -92,93 +91,125 @@ const CreatePost = ({ addPost, token }) => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
+      // Validate file size (10MB max)
+      const maxSize = 10 * 1024 * 1024;
+      if (selectedFile.size > maxSize) {
+        setSnackbar({
+          open: true,
+          message: "File size must be less than 10MB",
+          severity: "error",
+        });
+        return;
+      }
+
       setFile(selectedFile);
-      setImagePreview(URL.createObjectURL(selectedFile));
+
+      // Create preview only for images
+      if (selectedFile.type.startsWith('image/')) {
+        setImagePreview(URL.createObjectURL(selectedFile));
+      } else {
+        setImagePreview(null);
+      }
+    }
+  };
+
+  const handleDocumentChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      // Validate file size (10MB max)
+      const maxSize = 10 * 1024 * 1024;
+      if (selectedFile.size > maxSize) {
+        setSnackbar({
+          open: true,
+          message: "File size must be less than 10MB",
+          severity: "error",
+        });
+        return;
+      }
+
+      setFile(selectedFile);
+      setImagePreview(null); // No preview for documents
     }
   };
 
   const handleRemoveFile = () => {
     setFile(null);
     setImagePreview(null);
-    const fileInput = document.getElementById("upload-image");
-    if (fileInput) fileInput.value = "";
+    const imageInput = document.getElementById("upload-image");
+    const docInput = document.getElementById("upload-document");
+    if (imageInput) imageInput.value = "";
+    if (docInput) docInput.value = "";
   };
 
-const normalizeTime = (timestamp) => {
-  // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
-  if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
-    return timestamp;
-  }
+  const normalizeTime = (timestamp) => {
+    if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
+      return timestamp;
+    }
+    return timestamp + "+01:00";
+  };
 
-  // إذا بدون timezone → اعتبريه +01:00 (زي ما كان قبل الريفريش)
-  return timestamp + "+01:00";
-};
+  const formatTime = (timestamp) => {
+    return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
+  };
 
-const formatTime = (timestamp) => {
-  return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
-};
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
+    if (isPostDisabled) return;
 
-const handleSubmit = async (event) => {
-  event.preventDefault();
+    const formData = new FormData();
+    formData.append("Content", content);
+    formData.append("Tags", selectedTags);
+    if (file) formData.append("File", file);
 
-  if (isPostDisabled) return;
+    try {
+      const response = await createPostApi(formData, token);
+      const postData = response.data;
+      console.log("postData:", postData);
+      const newPost = {
+        id: postData.id,
+        content: postData.content,
+        selectedTags: postData.tags?.[0]?.split(",") || [],
+        user: {
+          name: postData.author.userName,
+          avatar: getImageUrl(postData.author.profilePictureUrl, postData.author.userName),
+          id: postData.author.id,
+        },
+        time: formatTime(postData.createdAt),
+        likes: postData.likesCount,
+        comments: postData.commentsCount,
+        fileUrl: postData.fileUrl
+          ? `https://uni.runasp.net/${postData.fileUrl}`
+          : null,
+        isLiked: false,
+        recentComments: [],
+        isClosed: postData.postStatus === "Closed",
+      };
 
-  const formData = new FormData();
-  formData.append("Content", content);
-  formData.append("Tags", selectedTags);
-  if (file) formData.append("File", file);
+      addPost(newPost);
+      setContent("");
+      setSelectedTags([]);
+      setTagInput("");
+      setErrors({ content: "" });
+      setFile(null);
+      setImagePreview(null);
 
-  try {
-    const response = await createPostApi(formData, token);
-    const postData = response.data;
-    console.log("postData:", postData);
-    const newPost = {
-      id: postData.id,
-      content: postData.content,
-      selectedTags: postData.tags?.[0]?.split(",") || [],
-      user: { 
-        name: postData.author.userName,
-        avatar: getImageUrl(postData.author.profilePictureUrl, postData.author.userName),
-        id: postData.author.id,
-      },
-      // ✅ الحل النهائي
-  time: formatTime(postData.createdAt),
-      likes: postData.likesCount,
-      comments: postData.commentsCount,
-      // shares: 0,
-      fileUrl: postData.fileUrl
-        ? `https://uni.runasp.net/${postData.fileUrl}`
-        : null,
-      isLiked: false,
-      recentComments: [],
-      isClosed: postData.postStatus === "Closed",
-    };
-
-    addPost(newPost);
-    setContent("");
-    setSelectedTags([]);
-    setTagInput("");
-    setErrors({ content: "" });
-    setFile(null);
-    setImagePreview(null);
-
-    if (response.status === 201) {
+      if (response.status === 201) {
+        setSnackbar({
+          open: true,
+          message: "Post has been created successfully! 🎉",
+          severity: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Error creating post:", error);
       setSnackbar({
         open: true,
-        message: "Post has been created successfully! 🎉",
-        severity: "success",
+        message: "Failed to create post. Please try again.",
+        severity: "error",
       });
     }
-  } catch (error) {
-    console.error("Error creating post:", error);
-    setSnackbar({
-      open: true,
-      message: "Failed to create post. Please try again.",
-      severity: "error",
-    });
-  }
-};
+  };
 
   const iconHover = { "&:hover": { color: "primary.main" } };
 
@@ -187,7 +218,6 @@ const handleSubmit = async (event) => {
       <FormWrapper component="form" onSubmit={handleSubmit}>
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
           <Avatar
-            // ✅ استخدم currentUser بدل userData
             src={getImageUrl(currentUser?.profilePicture, currentUser?.userName)}
             alt={currentUser?.userName || "User"}
           />
@@ -250,32 +280,59 @@ const handleSubmit = async (event) => {
           </Box>
         </Stack>
 
-        {imagePreview && (
-          <Box sx={{ position: "relative", display: "inline-block", mt: 2 }}>
-            <img
-              src={imagePreview}
-              alt="Preview"
-              style={{
-                width: "150px",
-                height: "150px",
-                objectFit: "cover",
-                borderRadius: "8px",
-                display: "block",
-              }}
-            />
-            <IconButton
-              onClick={handleRemoveFile}
-              size="small"
-              sx={{
-                position: "absolute",
-                top: -6,
-                right: -6,
-                bgcolor: "rgba(0,0,0,0.1)",
-                "&:hover": { bgcolor: "rgba(0,0,0,0.2)" },
-              }}
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
+        {/* File Preview Section */}
+        {file && (
+          <Box sx={{ position: "relative", mt: 2 }}>
+            {imagePreview ? (
+              // Image Preview
+              <Box sx={{ display: "inline-block", position: "relative" }}>
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{
+                    width: "150px",
+                    height: "150px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    display: "block",
+                  }}
+                />
+                <IconButton
+                  onClick={handleRemoveFile}
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    top: -6,
+                    right: -6,
+                    bgcolor: "rgba(0,0,0,0.1)",
+                    "&:hover": { bgcolor: "rgba(0,0,0,0.2)" },
+                  }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            ) : (
+              // Document Preview
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  p: 1.5,
+                  bgcolor: alpha("#0b62f0ff", 0.1),
+                  borderRadius: "8px",
+                  border: `1px solid ${alpha("#0b62f0ff", 0.3)}`,
+                  maxWidth: "400px",
+                }}
+              >
+                <Typography variant="body2" sx={{ flexGrow: 1, fontWeight: 500 }}>
+                  📎 {file.name} ({(file.size / 1024).toFixed(0)} KB)
+                </Typography>
+                <IconButton onClick={handleRemoveFile} size="small">
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
           </Box>
         )}
 
@@ -286,6 +343,7 @@ const handleSubmit = async (event) => {
           flexWrap="wrap"
         >
           <Stack direction="row" spacing={1} sx={{ color: "text.secondary" }}>
+            {/* Image Upload */}
             <input
               accept="image/*"
               type="file"
@@ -294,14 +352,27 @@ const handleSubmit = async (event) => {
               onChange={handleFileChange}
             />
             <label htmlFor="upload-image">
-              <IconButton component="span" sx={iconHover}>
+              <IconButton component="span" sx={iconHover} title="Upload Image">
                 <Image />
+              </IconButton>
+            </label>
+
+            {/* Document Upload */}
+            <input
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
+              type="file"
+              id="upload-document"
+              style={{ display: "none" }}
+              onChange={handleDocumentChange}
+            />
+            <label htmlFor="upload-document">
+              <IconButton component="span" sx={iconHover} title="Upload Document">
+                <AttachFile />
               </IconButton>
             </label>
           </Stack>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            {/* Conditional Component Rendering based on post content */}
             {isPostDisabled ? (
               <DisabledCustomButton
                 sx={{
@@ -326,7 +397,6 @@ const handleSubmit = async (event) => {
         </Stack>
       </FormWrapper>
 
-      {/* Snackbar للإشعارات */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
