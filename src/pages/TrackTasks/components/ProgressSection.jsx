@@ -31,7 +31,7 @@ export default function ProgressSection({ progressPercentage, projectPoints }) {
           mt: 1.5,
           bgcolor: '#EFF6FF',
           borderRadius: 2,
-          p: 1.5,
+          p: 1,
           textAlign: 'left'
         }}
       >

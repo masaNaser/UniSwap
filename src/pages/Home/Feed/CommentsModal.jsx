@@ -27,7 +27,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import dayjs from "dayjs";
+import { formatTime } from "../../../utils/timeHelper";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 const style = {
   position: "absolute",
@@ -42,23 +42,6 @@ const style = {
   display: "flex",
   flexDirection: "column",
 };
-
-// Helper function to format time
-const formatTime = (timestamp) => {
-  // حماية: لو timestamp مش موجود
-  if (!timestamp) return "—";
-
-  let fixed = timestamp;
-
-  // إذا ما فيه timezone → ضيف +03:00
-  if (!/[+-]\d\d:\d\d$/.test(timestamp) && !timestamp.endsWith("Z")) {
-    fixed = timestamp + "+03:00";
-  }
-
-  return dayjs(fixed).local().format("DD MMM, hh:mm A");
-};
-
-
 
 const Comment = ({
   comment,
@@ -190,7 +173,7 @@ const Comment = ({
               >
                 {formatTime(comment.createdAt)}
               </Typography>
-   {console.log("time in modal:",formatTime(comment.createdAt))}
+              {console.log("time in modal:", formatTime(comment.createdAt))}
               {isCurrentUser && (
                 <IconButton
                   aria-label="more"
@@ -335,7 +318,7 @@ function CommentsModal({
                     {post?.user?.name}
                   </Typography>
                 }
-               subheader={formatTime(post?.time)}
+                subheader={formatTime(post?.time)}
 
                 sx={{ p: 0, mb: 1 }}
               />
@@ -388,7 +371,7 @@ function CommentsModal({
             </Box>
 
             <Divider sx={{ my: 2 }} />
-               {/* ✅ رسالة لما البوست يكون مسكر */}
+            {/* ✅ رسالة لما البوست يكون مسكر */}
             {isPostClosed && (
               <Box
                 sx={{
@@ -432,7 +415,7 @@ function CommentsModal({
             )}
           </Box>
 
-              {/* ✅ إخفاء أو تعطيل input الكومنت لما البوست يكون مسكر */}
+          {/* ✅ إخفاء أو تعطيل input الكومنت لما البوست يكون مسكر */}
           <Box sx={{ p: 2, borderTop: "1px solid #eee", flexShrink: 0 }}>
             {!isPostClosed ? (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>

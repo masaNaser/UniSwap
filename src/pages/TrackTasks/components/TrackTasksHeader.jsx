@@ -643,7 +643,7 @@ export default function TrackTasksHeader({
           <Box
             sx={{
               position: "absolute",
-              top: 70,
+              top:80,
               right: !isProvider && cardData.projectStatus === "Active" ? 56 : 16,
               width: "280px",
             }}

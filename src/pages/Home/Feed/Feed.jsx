@@ -40,11 +40,7 @@ import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { useSearchParams } from "react-router-dom";
 import PostCardSkeleton from '../../../components/Skeletons/PostCardSkeleton';
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import { isAdmin } from "../../../utils/authHelpers";
-
-dayjs.extend(utc);
-
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
