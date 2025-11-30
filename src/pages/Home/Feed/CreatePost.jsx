@@ -19,9 +19,7 @@ import { createPost as createPostApi } from "../../../services/postService";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useProfile } from "../../../Context/ProfileContext";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-dayjs.extend(utc);
+import { formatTime } from "../../../utils/timeHelper";
 
 const FormWrapper = styled(Box)(({ theme }) => ({
   backgroundColor: "white",
@@ -72,7 +70,7 @@ const CreatePost = ({ addPost, token }) => {
   };
 
   const handleTagInputChange = (event) => setTagInput(event.target.value);
-
+  
   const handleTagKeyDown = (event) => {
     if ((event.key === "Enter" || event.key === ",") && tagInput.trim()) {
       event.preventDefault();
@@ -83,7 +81,7 @@ const CreatePost = ({ addPost, token }) => {
       setTagInput("");
     }
   };
-
+  
   const handleTagDelete = (tagToDelete) => {
     setSelectedTags(selectedTags.filter((tag) => tag !== tagToDelete));
   };
@@ -103,7 +101,7 @@ const CreatePost = ({ addPost, token }) => {
       }
 
       setFile(selectedFile);
-
+      
       // Create preview only for images
       if (selectedFile.type.startsWith('image/')) {
         setImagePreview(URL.createObjectURL(selectedFile));
@@ -141,17 +139,6 @@ const CreatePost = ({ addPost, token }) => {
     if (docInput) docInput.value = "";
   };
 
-  const normalizeTime = (timestamp) => {
-    if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
-      return timestamp;
-    }
-    return timestamp + "+01:00";
-  };
-
-  const formatTime = (timestamp) => {
-    return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -170,7 +157,7 @@ const CreatePost = ({ addPost, token }) => {
         id: postData.id,
         content: postData.content,
         selectedTags: postData.tags?.[0]?.split(",") || [],
-        user: {
+        user: { 
           name: postData.author.userName,
           avatar: getImageUrl(postData.author.profilePictureUrl, postData.author.userName),
           id: postData.author.id,
