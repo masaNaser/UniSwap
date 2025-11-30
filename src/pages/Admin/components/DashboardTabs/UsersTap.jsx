@@ -111,8 +111,8 @@ export default function UsersTap() {
   return (
     <Box>
       {/* Header مع البحث */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap={"wrap"}>
+        <Box >
           <Typography variant="h5" fontWeight="bold">
             Users Management
           </Typography>

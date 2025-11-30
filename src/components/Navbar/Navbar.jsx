@@ -18,6 +18,8 @@ import {
   ListItemIcon,
 } from "@mui/material";
 import { useCurrentUser } from "../../Context/CurrentUserContext";
+
+//icons
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import MailIcon from "@mui/icons-material/Mail";
@@ -27,6 +29,8 @@ import Logout from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import StarIcon from "@mui/icons-material/Star";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import EqualizerIcon from '@mui/icons-material/Equalizer';
+
 import { useLocation } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
 import { Link, useNavigate } from "react-router-dom";
@@ -254,6 +258,10 @@ export default function PrimarySearchAppBar() {
                 {/* IF ADMIN → ONLY TWO ITEMS */}
                 {userIsAdmin && (
                   <>
+                    <MenuItem onClick={() => navigate("/admin")}>
+                      <ListItemIcon><EqualizerIcon fontSize="small" /></ListItemIcon>
+                      Dashboard
+                    </MenuItem>
                     <MenuItem
                       onClick={() => {
                         logout();

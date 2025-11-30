@@ -2,12 +2,12 @@ import { Box, Typography, LinearProgress } from '@mui/material';
 
 export default function ProgressSection({ progressPercentage, projectPoints }) {
   return (
-    <Box sx={{ mb: 0, pr: 2 }}>
+    <Box sx={{ mb: 0, pr: 2,mt:2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="body2" color="text.secondary" fontWeight="500">
           Progress
         </Typography>
-        <Typography variant="h6" fontWeight="bold" color="primary">
+        <Typography variant="h8" fontWeight="bold" color="primary">
           {Math.round(progressPercentage)}%
         </Typography>
       </Box>

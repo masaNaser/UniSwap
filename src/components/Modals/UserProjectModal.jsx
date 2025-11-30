@@ -174,9 +174,14 @@ export default function UserProjectModal({
       onClose();
     } catch (err) {
       console.error(err);
+      const errorMessage =
+    err.response?.data?.errors ||
+    err.response?.data ||
+    err.message ||
+   "Failed to submit project. Try again!";
       setSnackbar({
         open: true,
-        message: "Failed to submit project. Try again!",
+        message: errorMessage,
         severity: "error",
       });
     } finally {
@@ -285,55 +290,88 @@ export default function UserProjectModal({
         </Box>
 
         {/* Project File Section */}
-        <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Project File{" "}
-            <Typography component="span" variant="caption" color="text.secondary">
-              (Optional)
-            </Typography>
-          </Typography>
+        {/* Project File Section */}
+<Box>
+  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+    Project File{" "}
+    <Typography component="span" variant="caption" color="text.secondary">
+      (Optional)
+    </Typography>
+  </Typography>
 
-          {formData.projectFile ? (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                p: 2,
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 1,
-                bgcolor: "grey.50",
-              }}
-            >
-              <InsertDriveFileIcon color="primary" />
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                {formData.projectFile.name}
-              </Typography>
-              <IconButton size="small" onClick={handleRemoveProjectFile}>
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          ) : (
-            <label htmlFor="projectFile-upload">
-              <input
-                id="projectFile-upload"
-                name="projectFile"
-                type="file"
-                hidden
-                onChange={handleFileChange}
-              />
-              <Button
-                component="span"
-                variant="outlined"
-                startIcon={<FolderIcon />}
-                sx={{ textTransform: "none" }}
-              >
-                Upload Project File
-              </Button>
-            </label>
-          )}
-        </Box>
+  {formData.projectFile ? (
+    // لو المشروع موجود بالـ state (ملف جديد أو جاري التعديل)
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        p: 2,
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 1,
+        bgcolor: "grey.50",
+      }}
+    >
+      <InsertDriveFileIcon color="primary" />
+      <Typography variant="body2" sx={{ flex: 1 }}>
+        {typeof formData.projectFile === "string"
+          ? formData.projectFile.split("/").pop() // اسم الملف فقط لو رابط
+          : formData.projectFile.name}   {/* اسم الملف لو جديد */}
+      </Typography>
+      <IconButton size="small" onClick={handleRemoveProjectFile}>
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </Box>
+  ) : editData?.projectFile ? (
+    // لو في مشروع موجود مسبقاً (Edit Mode) ورابط للملف
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        p: 2,
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 1,
+        bgcolor: "grey.50",
+      }}
+    >
+      <InsertDriveFileIcon color="primary" />
+      <Button
+        component="a"
+        href={`https://uni.runasp.net/${editData.projectFile}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        sx={{ flex: 1, textTransform: "none" }}
+      >
+        {editData.projectFile.split("/").pop()}
+      </Button>
+      <IconButton size="small" onClick={handleRemoveProjectFile}>
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </Box>
+  ) : (
+    <label htmlFor="projectFile-upload">
+      <input
+        id="projectFile-upload"
+        name="projectFile"
+        type="file"
+        hidden
+        onChange={handleFileChange}
+      />
+      <Button
+        component="span"
+        variant="outlined"
+        startIcon={<FolderIcon />}
+        sx={{ textTransform: "none" }}
+      >
+        Upload Project File
+      </Button>
+    </label>
+  )}
+</Box>
+
 
         {/* Tags Input - للCreate Mode فقط */}
         {!editData && (

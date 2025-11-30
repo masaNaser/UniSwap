@@ -90,7 +90,7 @@ export const RemoveService = async (token,serviceId) => {
 };
 
 export const EditUserService = async (token, data,ServiceId) => {
-  return await api.put(`/Profile/my-services/${ServiceId}`, data, {
+  return await api.put(`/Profile/${ServiceId}`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

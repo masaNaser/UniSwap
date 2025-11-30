@@ -14,6 +14,9 @@ export default function CustomButton({ children, type = "button", sx, ...props }
         color: "white",
         border: "none",
         padding: "10px 20px",
+            // هذا يمنع تمدد الزر على الشاشات الصغيرة
+        height: "max-content",  
+        maxHeight: "max-content", 
         "&:hover": {
           background: "white",
           color: "#3b82f6",
