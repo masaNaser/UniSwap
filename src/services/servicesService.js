@@ -31,12 +31,11 @@ export const CreateServices = async (token,data) => {
 };
 
 export const EditServices = async (token, id, data) => {
-  return await api.put(`/Services`, data, {
+  return await api.put(`/Services?${id}`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "multipart/form-data",
     },
-    params: { id }, // <-- مهم
   });
 };
 

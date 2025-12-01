@@ -1,6 +1,15 @@
 // src/components/Skeletons/ProfilePageSkeleton.jsx
-import React from 'react';
-import { Container, Box, Skeleton, Card, CardContent, Paper, Tabs, Tab } from '@mui/material';
+import React from "react";
+import {
+  Container,
+  Box,
+  Skeleton,
+  Card,
+  CardContent,
+  Paper,
+  Tabs,
+  Tab,
+} from "@mui/material";
 
 // 1️⃣ Skeleton للـ Profile Header
 function ProfileHeaderSkeleton() {
@@ -16,9 +25,11 @@ function ProfileHeaderSkeleton() {
       {/* Cover Image */}
       <Skeleton
         variant="rectangular"
-        width="100%"
-        height={{ xs: 200, sm: 220, md: 260 }}
-        sx={{ borderRadius: { xs: "12px", md: "20px" } }}
+        sx={{
+          width: "100%",
+          height: { xs: 200, sm: 220, md: 260 },
+          borderRadius: { xs: "12px", md: "20px" },
+        }}
       />
 
       {/* Avatar positioned at bottom */}
@@ -68,14 +79,22 @@ function ProfileHeaderSkeleton() {
 function StatsCardsSkeleton() {
   return (
     <Box sx={{ mt: 4 }}>
-      <div className="cards-section" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <div
+        className="cards-section"
+        style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}
+      >
         {[1, 2, 3].map((item) => (
           <Card key={item} sx={{ flex: 1, minWidth: 200, p: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Skeleton variant="circular" width={56} height={56} />
               <Box sx={{ flex: 1 }}>
                 <Skeleton variant="text" width="70%" height={20} />
-                <Skeleton variant="text" width="50%" height={32} sx={{ mt: 0.5 }} />
+                <Skeleton
+                  variant="text"
+                  width="50%"
+                  height={32}
+                  sx={{ mt: 0.5 }}
+                />
               </Box>
             </Box>
           </Card>
@@ -171,7 +190,9 @@ function ProfileTabsSkeleton() {
             }}
           >
             <CardContent sx={{ p: 2.5 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
                 <Skeleton variant="circular" width={24} height={24} />
                 <Skeleton variant="text" width={150} height={24} />
               </Box>
@@ -230,10 +251,27 @@ function ProfileTabsSkeleton() {
                     backgroundColor: "rgba(248, 250, 252, 1)",
                   }}
                 >
-                  <Skeleton variant="text" width="70%" height={24} sx={{ mb: 1 }} />
-                  <Skeleton variant="text" width="100%" height={20} sx={{ mb: 0.5 }} />
-                  <Skeleton variant="text" width="90%" height={20} sx={{ mb: 1 }} />
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Skeleton
+                    variant="text"
+                    width="70%"
+                    height={24}
+                    sx={{ mb: 1 }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    width="100%"
+                    height={20}
+                    sx={{ mb: 0.5 }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    width="90%"
+                    height={20}
+                    sx={{ mb: 1 }}
+                  />
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
                     <Skeleton variant="text" width={80} height={20} />
                     <Skeleton variant="text" width={80} height={20} />
                   </Box>

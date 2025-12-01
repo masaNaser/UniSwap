@@ -3,14 +3,19 @@ import router from "./routes/Routes"
 // import Chat from './components/Chat/Chat'
 import { CurrentUserProvider } from "./Context/CurrentUserContext";
 import { UnreadCountProvider } from './Context/unreadCountContext';
+import { NotificationProvider } from './Context/NotificationContext';
 
 function App() {
 
   return (
     <>
-    <UnreadCountProvider>
-    <RouterProvider router={router}/>
+  
+    <UnreadCountProvider> 
+       <NotificationProvider>
+    <RouterProvider router={router}/> 
+     </NotificationProvider>
     </UnreadCountProvider>
+  
     </>
   )
 }

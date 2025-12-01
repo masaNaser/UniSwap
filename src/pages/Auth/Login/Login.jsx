@@ -11,6 +11,7 @@ import {
   Container,
   InputAdornment,
   Typography,
+  IconButton 
 } from "@mui/material";
 import {
   Email,
@@ -40,13 +41,16 @@ export default function Login() {
       .required("Email is required")
       .email("Invalid email address"),
     password: yup
-      .string()
-      .required("Password is required")
-      .min(8, "Password must be at least 8 characters")
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-      ),
+    .string()
+    .required("Password is required")
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+    .matches(/[0-9]/, "Password must contain at least one digit")
+    .matches(
+      /[^a-zA-Z0-9]/,
+      "Password must contain at least one special character"
+    ),
   });
 
   const {

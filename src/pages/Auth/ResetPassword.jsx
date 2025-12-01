@@ -26,14 +26,17 @@ export default function ResetPassword() {
   // -------------------- VALIDATION --------------------
   const validationSchema = yup.object({
     code: yup.string().required("Code is required"),
-    newPassword: yup
-      .string()
-      .required("Password is required")
-      .min(8, "Password must be at least 8 characters")
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-        "Password must contain uppercase, lowercase, number, and special character"
-      ),
+     newPassword: yup
+    .string()
+    .required("Password is required")
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+    .matches(/[0-9]/, "Password must contain at least one digit")
+    .matches(
+      /[^a-zA-Z0-9]/,
+      "Password must contain at least one special character"
+    ),
     confirmPassword: yup
       .string()
       .required("Please confirm your password")
@@ -51,29 +54,33 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
 
-  const checkStrength = (value) => {
-    let score = 0;
-    if (value.length >= 8) score++;
-    if (/[A-Z]/.test(value)) score++;
-    if (/[0-9]/.test(value)) score++;
-    if (/[^A-Za-z0-9]/.test(value)) score++;
-    setPasswordStrength(score);
-  };
-
-  const getStrengthLabel = () => {
-    switch (passwordStrength) {
-      case 1:
-        return { text: "very weak", color: "red" };
-      case 2:
-        return { text: "weak", color: "orange" };
-      case 3:
-      case 4:
-        return { text: "strong", color: "green" };
-      default:
-        return { text: "", color: "inherit" };
-    }
-  };
-
+const checkStrength = (value) => {
+  let score = 0;
+  if (value.length >= 8) score++;          // طول ≥ 8
+  if (/[A-Z]/.test(value)) score++;        // حرف كبير
+  if (/[a-z]/.test(value)) score++;        // حرف صغير
+  if (/[0-9]/.test(value)) score++;        // رقم
+  if (/[^A-Za-z0-9]/.test(value)) score++; // حرف خاص
+  setPasswordStrength(score);
+};
+ const getStrengthLabel = () => {
+  switch (passwordStrength) {
+    case 0:
+      return { text: "", color: "inherit" };
+    case 1:
+      return { text: "very weak", color: "red" };
+    case 2:
+      return { text: "weak", color: "orange" };
+    case 3:
+      return { text: "medium", color: "yellow" };
+    case 4:
+      return { text: "strong", color: "green" };
+    case 5:
+      return { text: "very strong", color: "darkgreen" };
+    default:
+      return { text: "", color: "inherit" };
+  }
+};
   // -------------------- TIMER 15 MINUTES --------------------
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [codeExpired, setCodeExpired] = useState(false);
@@ -219,7 +226,7 @@ export default function ResetPassword() {
           label="New Password"
           type={showPassword ? "text" : "password"}
           variant="outlined"
-          error={!!errors.newPassword}
+          error={errors.newPassword}
           helperText={errors.newPassword?.message}
           onChange={(e) => {
             register("newPassword").onChange(e);
@@ -235,25 +242,26 @@ export default function ResetPassword() {
         />
 
         {/* PASSWORD STRENGTH */}
-        {passwordStrength > 0 && (
-          <>
-            <LinearProgress
-              variant="determinate"
-              value={(passwordStrength / 4) * 100}
-              sx={{ height: 8, borderRadius: 5, mt: 1 }}
-              color={
-                passwordStrength < 2
-                  ? "error"
-                  : passwordStrength === 2
-                  ? "warning"
-                  : "success"
-              }
-            />
-            <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
-              {getStrengthLabel().text}
-            </Typography>
-          </>
-        )}
+       {passwordStrength > 0 && (
+  <>
+    <LinearProgress
+      variant="determinate"
+      value={(passwordStrength / 5) * 100} // نسبة من 0 إلى 100%
+      sx={{
+        height: 8,
+        borderRadius: 5,
+        mt: 1,
+        bgcolor: "#e0e0e0", // خلفية رمادية خفيفة
+        "& .MuiLinearProgress-bar": {
+          bgcolor: getStrengthLabel().color, // اللون حسب القوة
+        },
+      }}
+    />
+    <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
+      {getStrengthLabel().text}
+    </Typography>
+  </>
+)}
 
         {/* CONFIRM PASSWORD */}
         <TextField
