@@ -9,3 +9,27 @@ export const Search = async (query,token) => {
     },
   });
 };
+
+export const trendingServices = async (token) => {
+  return await api.get(`/Feeds/trending-topics`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const topContributors = async (token) => {
+  return await api.get(`/Feeds/top-contributors`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const trendingTopics = async (token) => {
+  return await api.get(`/Feeds/trending-topics`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

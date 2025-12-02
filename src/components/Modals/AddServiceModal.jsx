@@ -1,15 +1,15 @@
+// AddServiceModal.jsx
 import React, { useEffect, useState } from "react";
 import {
   TextField,
   MenuItem,
   Stack,
-  Button,
+  Box,
   Typography,
-  Avatar,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import GenericModal from "../../components/Modals/GenericModal";
-import { CreateServices, EditServices } from "../../services/servicesService";
+import { CreateService, EditUserService } from "../../services/profileService";
 import { getServices } from "../../services/servicesService";
 import { getSubServices } from "../../services/subServiceServices";
 
@@ -21,20 +21,17 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
   const [formData, setFormData] = useState({
     serviceId: "",
     subServiceId: "",
-    name: "",
     description: "",
     avgPoints: "",
     avgDurationDays: "",
-    image: null,
+    image: null, // ✅ أضفت الصورة
   });
-  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingSub, setLoadingSub] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
 
   // تحميل الخدمات الرئيسية
   useEffect(() => {
-    if (!open) return;
     const fetchAllServices = async () => {
       try {
         const res = await getServices();
@@ -43,21 +40,22 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
         console.error(err);
       }
     };
-    fetchAllServices();
-  }, [open, token]);
+    if (open) fetchAllServices();
+  }, [open]);
 
-  // تحميل الخدمات الفرعية
+  // تحميل الخدمات الفرعية عند اختيار الخدمة الرئيسية
   useEffect(() => {
-    if (!formData.serviceId) {
-      setSubServices([]);
-      setFormData((prev) => ({ ...prev, subServiceId: "" }));
-      return;
-    }
     const fetchSubServices = async () => {
+      if (!formData.serviceId) {
+        setSubServices([]);
+        setFormData((prev) => ({ ...prev, subServiceId: "" }));
+        return;
+      }
       setLoadingSub(true);
       try {
         const res = await getSubServices(token, formData.serviceId);
         setSubServices(res.data || []);
+        // لو الخدمة الفرعية موجودة من تعديل سابق نحتفظ بها
         if (!editingService) setFormData((prev) => ({ ...prev, subServiceId: "" }));
       } catch (err) {
         console.error(err);
@@ -73,75 +71,77 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
       setFormData({
         serviceId: editingService.serviceId,
         subServiceId: editingService.subServiceId,
-        name: editingService.name,
         description: editingService.description,
         avgPoints: editingService.avgPoints,
         avgDurationDays: editingService.avgDurationDays,
-        Image: null,
+        image: null, // في التعديل، الصورة تبدأ null (إلا إذا اليوزر بده يغيرها)
       });
-      setImagePreview(editingService.Image || null);
     } else {
       setFormData({
         serviceId: "",
         subServiceId: "",
-        name: "",
         description: "",
         avgPoints: "",
         avgDurationDays: "",
-        Image: null,
+        image: null,
       });
-      setImagePreview(null);
     }
   }, [editingService, open]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  // ✅ دالة للتعامل مع الصورة
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+    }
   };
 
-const handleFileChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    setFormData({ ...formData, image: file });
-
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(reader.result);
-    reader.readAsDataURL(file);
-  } else {
-    setFormData({ ...formData, image: null });
-    setImagePreview(null);
-  }
-};
-
-
+  // ✅ تعديل handleSubmit لإرسال FormData
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // إنشاء FormData
       const fd = new FormData();
-      fd.append("Name", formData.name);
+      fd.append("ServiceId", formData.serviceId);
+      fd.append("SubServiceId", formData.subServiceId);
       fd.append("Description", formData.description);
       fd.append("AvgPoints", formData.avgPoints);
       fd.append("AvgDurationDays", formData.avgDurationDays);
-      fd.append("ServiceId", formData.serviceId);
-      fd.append("SubServiceId", formData.subServiceId);
-      fd.append("Image", formData.Image); // لازم تكون موجودة!
-       
-      if (!formData.Image) {
-  console.log("No image selected!");
-}
+      
+      // إضافة الصورة إذا موجودة
+      if (formData.image) {
+        fd.append("Image", formData.image);
+      }
 
       if (editingService) {
-        await EditServices(token, editingService.id, fd);
-        setSnackbar({ open: true, message: "Service updated successfully!", severity: "success" });
+        // تعديل الخدمة
+        await EditUserService(token, fd, editingService.id);
+        setSnackbar({
+          open: true,
+          message: "Service updated successfully!",
+          severity: "success",
+        });
       } else {
-        await CreateServices(token, fd);
-        setSnackbar({ open: true, message: "Service added successfully!", severity: "success" });
+        // إضافة خدمة جديدة
+        await CreateService(token, fd);
+        setSnackbar({
+          open: true,
+          message: "Service added successfully!",
+          severity: "success",
+        });
       }
       onAdded();
       handleClose();
     } catch (err) {
       console.error(err);
-      setSnackbar({ open: true, message: "Operation failed.", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Operation failed.",
+        severity: "error",
+      });
     }
     setLoading(false);
   };
@@ -168,6 +168,7 @@ const handleFileChange = (e) => {
           value={formData.serviceId || ""}
           onChange={handleChange}
           fullWidth
+          required
         >
           {allServices.map((service) => (
             <MenuItem key={service.id} value={service.id}>
@@ -184,9 +185,13 @@ const handleFileChange = (e) => {
           value={formData.subServiceId || ""}
           onChange={handleChange}
           fullWidth
+          required
           disabled={!formData.serviceId || loadingSub}
         >
-          {loadingSub && <MenuItem>Loading...</MenuItem>}
+          {loadingSub && <MenuItem disabled>Loading...</MenuItem>}
+          {!loadingSub && subServices.length === 0 && formData.serviceId && (
+            <MenuItem disabled>No sub-services available</MenuItem>
+          )}
           {subServices.map((sub) => (
             <MenuItem key={sub.id} value={sub.id}>
               {sub.name}
@@ -194,48 +199,63 @@ const handleFileChange = (e) => {
           ))}
         </TextField>
 
-        {/* باقي الحقول */}
-        <TextField
-          label="Service Name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          fullWidth
-        />
+        {/* الوصف */}
         <TextField
           label="Description"
           name="description"
           value={formData.description}
           onChange={handleChange}
           fullWidth
+          multiline
+          rows={3}
+          required
         />
+
+        {/* متوسط النقاط */}
         <TextField
           label="Average Points"
           name="avgPoints"
+          type="number"
           value={formData.avgPoints}
           onChange={handleChange}
           fullWidth
+          required
         />
+
+        {/* متوسط المدة بالأيام */}
         <TextField
           label="Average Duration (days)"
           name="avgDurationDays"
+          type="number"
           value={formData.avgDurationDays}
           onChange={handleChange}
           fullWidth
+          required
         />
 
-        {/* رفع الصورة مع preview */}
-        <Stack spacing={1}>
-          <Typography variant="body2">Upload Image</Typography>
-          <input type="file" accept="image/*" onChange={handleFileChange} />
-          {imagePreview && (
-            <Avatar
-              src={imagePreview}
-              variant="rounded"
-              sx={{ width: 120, height: 120, mt: 1 }}
-            />
+        {/* ✅ إضافة input للصورة */}
+        <Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Service Image (optional)
+          </Typography>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={{
+              width: "100%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          />
+          {formData.image && (
+            <Typography variant="caption" color="primary" sx={{ mt: 0.5, display: "block" }}>
+              Selected: {formData.image.name}
+            </Typography>
           )}
-        </Stack>
+        </Box>
       </Stack>
     </GenericModal>
   );

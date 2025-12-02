@@ -40,7 +40,6 @@ const FormWrapper = styled(Box)(({ theme }) => ({
 
 const CreatePost = ({ addPost, token }) => {
   const { userData } = useProfile();
-  console.log("CreatePost userData:", userData);
   const { currentUser } = useCurrentUser();
 
   const [content, setContent] = useState("");

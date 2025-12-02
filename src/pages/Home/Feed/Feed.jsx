@@ -78,7 +78,6 @@ const updatePost = (posts, postId, newData) =>
 
 export default function Feed() {
   const { currentUser, loading } = useCurrentUser();
-  console.log("useCurrentUser", currentUser);
   const [posts, setPosts] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [highlightedPostId, setHighlightedPostId] = useState(null);
@@ -668,7 +667,7 @@ export default function Feed() {
             />
             <SelectActionCard
               title="Peer Rating"
-              value="4.8"
+              value={currentUser?.averageRating}
               icon={<GroupIcon />}
             />
           </div>

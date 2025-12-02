@@ -12,7 +12,9 @@ import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import SelfImprovementIcon from "@mui/icons-material/SelfImprovement";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import AddIcon from "@mui/icons-material/Add";
-import GenericModal from "../../../components/Modals/GenericModal"
+import GenericModal from "../../../components/Modals/GenericModal";
+import { getImageUrl } from "../../../utils/imageHelper";  // ✅ استوردي الـ helper
+
 // const adminMode = isAdmin();
 
 // خريطة تربط اسم السيرفس بالأيقونة المناسبة
@@ -37,8 +39,8 @@ const iconMap = {
 
 const Services = () => {
   const token = localStorage.getItem("accessToken");
-  const adminMode = isAdmin(); // <-- حطها هون
-   const [services, setServices] = useState([]);
+  const adminMode = isAdmin();
+  const [services, setServices] = useState([]);
 
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
@@ -49,8 +51,19 @@ const Services = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   
-  // Form data
-  const [formData, setFormData] = useState({ name: "", description: "", image: null, });
+  // ✅ Form data للـ Create
+  const [createFormData, setCreateFormData] = useState({ 
+    name: "", 
+    description: "", 
+    image: null 
+  });
+
+  // ✅ Form data منفصل للـ Edit
+  const [editFormData, setEditFormData] = useState({ 
+    name: "", 
+    description: "", 
+    image: null 
+  });
 
   const fetchService = async () => {
     try {
@@ -66,7 +79,7 @@ const Services = () => {
     fetchService();
   }, []);
 
-    const showSnackbar = (message, severity = "success") => {
+  const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
 
@@ -74,80 +87,87 @@ const Services = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-    
-  // Create Service
-   const handleCreateService = async () => {
+  // ✅ Create Service
+  const handleCreateService = async () => {
     const fd = new FormData();
-    fd.append("Name", formData.name);
-    fd.append("Description", formData.description);
-    if (formData.image) fd.append("Image", formData.image);
+    fd.append("Name", createFormData.name);
+    fd.append("Description", createFormData.description);
+    if (createFormData.image) fd.append("Image", createFormData.image);
 
     setIsSubmitting(true);
     try {
-     const response= await CreateServices(token, fd);
-     console.log("creatSer",response);
+      const response = await CreateServices(token, fd);
+      console.log("creatSer", response);
       setOpenCreateModal(false);
+      setCreateFormData({ name: "", description: "", image: null }); // ✅ امسح البيانات
       fetchService();
+      showSnackbar("Service created successfully!", "success");
+    } catch (error) {
+      console.error(error);
+      showSnackbar("Failed to create service", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Edit Service
+  // ✅ Edit Service
   const handleUpdateService = async () => {
+    console.log("📝 Edit Form Data:", editFormData); // ✅ للتأكد
+
     const fd = new FormData();
-    fd.append("Name", formData.name);
-    fd.append("Description", formData.description);
-    if (formData.image) fd.append("Image", formData.image);
+    fd.append("Name", editFormData.name);
+    fd.append("Description", editFormData.description);
+    
+    if (editFormData.image && editFormData.image instanceof File) {
+      fd.append("Image", editFormData.image);
+    }
+
+    console.log("📤 FormData Contents:");
+    for (let [key, value] of fd.entries()) {
+      console.log(key, value);
+    }
 
     setIsSubmitting(true);
     try {
-     const response= await EditServices(token, selectedService.id, fd);
-     console.log("edit,",response);
+      const response = await EditServices(token, selectedService.id, fd);
+      console.log("✅ edit response:", response);
+      
       setOpenEditModal(false);
-    // تحديث الخدمات في الواجهة مباشرة
-    setServices(prev =>
-      prev.map(s =>
-        s.id === selectedService.id ? response.data : s
-      )
-    );  
+      setEditFormData({ name: "", description: "", image: null }); // ✅ امسح البيانات
+      
+      // ✅ حدث الخدمات في الواجهة
+      setServices(prev =>
+        prev.map(s =>
+          s.id === selectedService.id ? response.data : s
+        )
+      );
+      
+      showSnackbar("Service updated successfully!", "success");
+      
+    } catch (error) {
+      console.error("Edit error:", error);
+      showSnackbar("Failed to update service", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // const handleUpdateService = async () => {
-  //   if (!formData.name.trim() || !formData.description.trim()) {
-  //     showSnackbar("Please fill all fields", "error");
-  //     return;
-  //   }
-
-  //   setIsSubmitting(true);
-  //   try {
-  //     await EditServices(token, selectedService.id, formData);
-  //     showSnackbar("Service updated successfully!", "success");
-  //     setOpenEditModal(false);
-  //     setFormData({ name: "", description: "" });
-  //     fetchServices();
-  //   } catch (error) {
-  //     console.error(error);
-  //     showSnackbar("Failed to update service", "error");
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
-    // Delete Service
+  // ✅ Delete Service
   const confirmDeleteService = async () => {
     setIsSubmitting(true);
     try {
       await DeleteServices(token, selectedService.id);
       setOpenDeleteModal(false);
       fetchService();
+      showSnackbar("Service deleted successfully!", "success");
+    } catch (error) {
+      console.error(error);
+      showSnackbar("Failed to delete service", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography
@@ -158,7 +178,7 @@ const Services = () => {
         Services
       </Typography>
 
-      <Box sx={{ mb: 4, display:"flex", justifyContent:"space-between" }}>
+      <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between" }}>
         <Box>
           <Typography variant="h4" gutterBottom>
             Service Marketplace
@@ -170,13 +190,16 @@ const Services = () => {
         {adminMode && (
           <CustomButton
             variant="contained"
-            onClick={() => setOpenCreateModal(true)}
+            onClick={() => {
+              setCreateFormData({ name: "", description: "", image: null });
+              setOpenCreateModal(true);
+            }}
             startIcon={<AddIcon />}
             sx={{ mb: 2 }}
           >
             Create
           </CustomButton>
-        )}{" "}
+        )}
       </Box>
 
       <Grid container spacing={3} sx={{ mb: "55px" }}>
@@ -185,6 +208,7 @@ const Services = () => {
             <ServiceCard
               title={service.name}
               description={service.description}
+              image={service.image}
               icon={
                 iconMap[service.name] || (
                   <DesignServicesIcon fontSize="large" sx={{ color: "#888" }} />
@@ -193,14 +217,15 @@ const Services = () => {
               count={`${service.subServices.length} services`}
               url={`/app/browse/${service.id}?name=${encodeURIComponent(
                 service.name
-              )}`} // هون راح يوديك ع صفحة SubServices
-              adminMode={adminMode} // ⬅️ أهم خطوة
-                 onEdit={() => {
+              )}`}
+              adminMode={adminMode}
+              onEdit={() => {
                 setSelectedService(service);
-                setFormData({
+                // ✅ حدث editFormData بالبيانات الحالية
+                setEditFormData({
                   name: service.name,
                   description: service.description,
-                  image: service.image,
+                  image: null,
                 });
                 setOpenEditModal(true);
               }}
@@ -213,10 +238,13 @@ const Services = () => {
         ))}
       </Grid>
 
-        {/* Create Modal */}
+      {/* ✅ Create Modal */}
       <GenericModal
         open={openCreateModal}
-        onClose={() => setOpenCreateModal(false)}
+        onClose={() => {
+          setOpenCreateModal(false);
+          setCreateFormData({ name: "", description: "", image: null });
+        }}
         title="Create New Service"
         icon={<AddIcon sx={{ color: "#3b82f6" }} />}
         primaryButtonText="Create Service"
@@ -229,8 +257,8 @@ const Services = () => {
         <TextField
           fullWidth
           label="Service Name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          value={createFormData.name}
+          onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
           sx={{ mb: 2 }}
           disabled={isSubmitting}
         />
@@ -239,56 +267,103 @@ const Services = () => {
           label="Description"
           multiline
           rows={4}
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          value={createFormData.description}
+          onChange={(e) => setCreateFormData({ ...createFormData, description: e.target.value })}
           disabled={isSubmitting}
+          sx={{ mb: 2 }}
         />
-           <input
+        <input
           type="file"
+          accept="image/*"
           onChange={(e) =>
-            setFormData({ ...formData, image: e.target.files[0] })
+            setCreateFormData({ ...createFormData, image: e.target.files[0] })
           }
           style={{ marginTop: 15 }}
         />
       </GenericModal>
 
-       {/* Edit Modal */}
-      <GenericModal
-        open={openEditModal}
-        onClose={() => setOpenEditModal(false)}
-        title="Edit Service"
-        icon={<DesignServicesIcon sx={{ color: "#3b82f6" }} />}
-        primaryButtonText="Update Service"
-        onPrimaryAction={handleUpdateService}
-        isSubmitting={isSubmitting}
-        snackbar={snackbar}
-        onSnackbarClose={handleSnackbarClose}
-      >
-        <TextField
-          fullWidth
-          label="Service Name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          sx={{ mb: 2 }}
-          disabled={isSubmitting}
-        />
-        <TextField
-          fullWidth
-          label="Description"
-          multiline
-          rows={4}
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          disabled={isSubmitting}
-        />
-          <input
-          type="file"
-          onChange={(e) =>
-            setFormData({ ...formData, image: e.target.files[0] })
-          }
-          style={{ marginTop: 15 }}
-        />
-      </GenericModal>
+    {/* Edit Modal */}
+<GenericModal
+  key={selectedService?.id}
+  open={openEditModal}
+  onClose={() => {
+    setOpenEditModal(false);
+    setEditFormData({ name: "", description: "", image: null });
+  }}
+  title="Edit Service"
+  icon={<DesignServicesIcon sx={{ color: "#3b82f6" }} />}
+  primaryButtonText="Update Service"
+  onPrimaryAction={handleUpdateService}
+  isSubmitting={isSubmitting}
+  snackbar={snackbar}
+  onSnackbarClose={handleSnackbarClose}
+>
+  <TextField
+    fullWidth
+    label="Service Name"
+    value={editFormData.name}
+    onChange={(e) => {
+      console.log("Name changing to:", e.target.value);
+      setEditFormData({ ...editFormData, name: e.target.value });
+    }}
+    sx={{ mb: 2 }}
+    disabled={isSubmitting}
+  />
+  <TextField
+    fullWidth
+    label="Description"
+    multiline
+    rows={4}
+    value={editFormData.description}
+    onChange={(e) => {
+      console.log("Description changing to:", e.target.value);
+      setEditFormData({ ...editFormData, description: e.target.value });
+    }}
+    disabled={isSubmitting}
+    sx={{ mb: 2 }}
+  />
+  
+  {/* ✅ اعرضي الصورة القديمة */}
+  {selectedService?.image && (
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        Current Image:
+      </Typography>
+      <Box
+        component="img"
+        src={getImageUrl(selectedService.image)}
+        alt={selectedService.name}
+        sx={{
+          width: 100,
+          height: 100,
+          objectFit: "cover",
+          borderRadius: 2,
+          border: "1px solid #ddd",
+        }}
+      />
+    </Box>
+  )}
+  
+  {/* ✅ input لاختيار صورة جديدة */}
+  <Box>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+      {selectedService?.image ? "Change Image (optional):" : "Add Image:"}
+    </Typography>
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) =>
+        setEditFormData({ ...editFormData, image: e.target.files[0] })
+      }
+      style={{ marginTop: 0 }}
+    />
+    {editFormData.image && (
+      <Typography variant="caption" color="primary" sx={{ mt: 0.5, display: "block" }}>
+        New image selected: {editFormData.image.name}
+      </Typography>
+    )}
+  </Box>
+</GenericModal>
 
       {/* Delete Confirmation Modal */}
       <GenericModal

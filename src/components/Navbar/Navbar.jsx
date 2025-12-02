@@ -22,9 +22,8 @@ import { useCurrentUser } from "../../Context/CurrentUserContext";
 //icons
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import MessageIcon from '@mui/icons-material/Message';
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import Settings from "@mui/icons-material/Settings";
+// import MessageIcon from "@mui/icons-material/Message";
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import Logout from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import StarIcon from "@mui/icons-material/Star";
@@ -44,6 +43,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useLocation } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
+import MessegeIcon from "../../assets/images/MessegeIcon.svg";
+import NotificationIcon from "../../assets/images/NotificationIcon.svg";
+
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../services/authService";
 import { getImageUrl } from "../../utils/imageHelper";
@@ -194,7 +196,7 @@ export default function PrimarySearchAppBar() {
 
     return (
       icons[verb] || (
-        <NotificationsIcon sx={{ ...iconStyle, color: "#6B7280" }} />
+        <NotificationsNoneIcon sx={{ ...iconStyle, color: "#6B7280" }} />
       )
     );
   };
@@ -365,7 +367,7 @@ export default function PrimarySearchAppBar() {
             </Box>
 
             {/* RIGHT SIDE ICONS */}
-            <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1}}>
               {/* POINTS — HIDE IF ADMIN */}
               {!userIsAdmin && windowWidth >= 1029 && (
                 <Box
@@ -376,7 +378,7 @@ export default function PrimarySearchAppBar() {
                     bgcolor: "#3b82f638",
                     borderRadius: 5,
                     p: 1,
-                    mr: 2,
+                    mr: 1,
                   }}
                 >
                   <Box
@@ -426,9 +428,20 @@ export default function PrimarySearchAppBar() {
                   size="large"
                   color="inherit"
                   onClick={() => navigate("/chat")}
+                  sx={{ p: 1 }} // ✅ ضبط الـ padding
+
                 >
                   <Badge badgeContent={unreadCount} color="error" max={99}>
-                    <MessageIcon />
+                    {/* <MessageIcon /> */}
+                    <img
+                      src={MessegeIcon}
+                      alt="Messege Icon"
+                      style={{
+                        height: "20px", // ✅ ضبطي الحجم
+                        width: "20px", // ✅ نفس حجم الأيقونات العادية
+                        display: "block", // ✅ مهم عشان يلغي أي spacing زيادة
+                      }}
+                    />
                   </Badge>
                 </IconButton>
               )}
@@ -437,228 +450,250 @@ export default function PrimarySearchAppBar() {
                 size="large"
                 color="inherit"
                 onClick={handleNotifClick}
+                sx={{ p: 1 }} // ✅ ضبط الـ padding
+
               >
                 <Badge
                   badgeContent={unreadNotificationCount}
                   color="error"
                   max={99}
                 >
-                  <NotificationsIcon />
+                  <img
+                    src={NotificationIcon}
+                    alt="Notification Icon"
+                    style={{
+                      height: "20px", // ✅ ضبطي الحجم
+                      width: "20px", // ✅ نفس حجم الأيقونات العادية
+                      display: "block", // ✅ مهم عشان يلغي أي spacing زيادة
+                    }}
+                  />
+                  {/* <NotificationsNoneIcon /> */}
                 </Badge>
               </IconButton>
               <Menu
-  anchorEl={notifAnchor}
-  open={Boolean(notifAnchor)}
-  onClose={handleNotifClose}
-  PaperProps={{
-    elevation: 3,
-    sx: {
-      mt: 1.5,
-      maxHeight: 500,
-      width: 400,  // ← عرض أكبر شوي
-      borderRadius: "16px",  // ← زوايا أكثر استدارة
-      overflow: "hidden",
-    },
-  }}
-  transformOrigin={{ horizontal: "right", vertical: "top" }}
-  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
->
-  {/* ========== Header ========== */}
-  <Box
-    sx={{
-      px: 3,
-      py: 2,
-      borderBottom: "1px solid #E5E7EB",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      bgcolor: "white",
-    }}
-  >
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <NotificationsIcon sx={{ color: "#3B82F6", fontSize: 24 }} />
-      <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827" }}>
-        Notifications
-      </Typography>
-      {unreadNotificationCount > 0 && (
-        <Box
-          sx={{
-            bgcolor: "#EF4444",
-            color: "white",
-            borderRadius: "12px",
-            px: 1,
-            py: 0.25,
-            fontSize: "0.75rem",
-            fontWeight: 700,
-          }}
-        >
-          {unreadNotificationCount} new
-        </Box>
-      )}
-    </Box>
-
-    {notifications.some((n) => !n.isRead) && (
-      <Button
-        size="small"
-        onClick={markAllAsRead}
-        sx={{
-          textTransform: "none",
-          fontSize: "0.875rem",
-          color: "#3B82F6",
-          fontWeight: 600,
-          "&:hover": {
-            bgcolor: "#EFF6FF",
-          },
-        }}
-      >
-        Mark all read
-      </Button>
-    )}
-  </Box>
-
-  {/* ========== Empty State ========== */}
-  {notifications.length === 0 && (
-    <Box sx={{ p: 5, textAlign: "center" }}>
-      <Box
-        sx={{
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
-          bgcolor: "#F3F4F6",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          margin: "0 auto 16px",
-        }}
-      >
-        <NotificationsIcon sx={{ fontSize: 40, color: "#9CA3AF" }} />
-      </Box>
-      <Typography
-        variant="h6"
-        sx={{ color: "#374151", fontWeight: 600, mb: 0.5 }}
-      >
-        No notifications yet
-      </Typography>
-      <Typography variant="body2" sx={{ color: "#9CA3AF" }}>
-        We'll notify you when something arrives
-      </Typography>
-    </Box>
-  )}
-
-  {/* ========== Notifications List ========== */}
-  {notifications.length > 0 && (
-    <Box sx={{ maxHeight: 420, overflowY: "auto" }}>
-      {notifications.map((notif, index) => (
-        <Box
-          key={notif.id}
-          onClick={() => handleNotifItemClick(notif)}
-          sx={{
-            px: 3,
-            py: 2.5,
-            cursor: "pointer",
-            bgcolor: notif.isRead ? "white" : "#F0F9FF",
-            borderLeft: notif.isRead ? "none" : "4px solid #3B82F6",
-            transition: "all 0.2s ease",
-            "&:hover": {
-              bgcolor: notif.isRead ? "#F9FAFB" : "#E0F2FE",
-            },
-            borderBottom:
-              index < notifications.length - 1 ? "1px solid #F3F4F6" : "none",
-          }}
-        >
-          <Box sx={{ display: "flex", gap: 2 }}>
-            {/* ========== Icon ========== */}
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: "12px",
-                bgcolor: notif.isRead ? "#F3F4F6" : "#DBEAFE",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              {getNotificationIcon(notif.verb)}
-            </Box>
-
-            {/* ========== Content ========== */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              {/* Title */}
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 600,
-                  color: "#111827",
-                  mb: 0.5,
-                  fontSize: "0.9375rem",
+                anchorEl={notifAnchor}
+                open={Boolean(notifAnchor)}
+                onClose={handleNotifClose}
+                PaperProps={{
+                  elevation: 3,
+                  sx: {
+                    mt: 1.5,
+                    maxHeight: 500,
+                    width: 400, // ← عرض أكبر شوي
+                    borderRadius: "16px", // ← زوايا أكثر استدارة
+                    overflow: "hidden",
+                  },
                 }}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               >
-                {notif.title}
-              </Typography>
-
-              {/* Message */}
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "#6B7280",
-                  mb: 0.75,
-                  fontSize: "0.875rem",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  lineHeight: 1.5,
-                }}
-              >
-                {notif.message}
-              </Typography>
-
-              {/* Time */}
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#9CA3AF",
-                  fontSize: "0.8125rem",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                }}
-              >
+                {/* ========== Header ========== */}
                 <Box
-                  component="span"
                   sx={{
-                    width: 4,
-                    height: 4,
-                    borderRadius: "50%",
-                    bgcolor: "#9CA3AF",
+                    px: 3,
+                    py: 2,
+                    borderBottom: "1px solid #E5E7EB",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    bgcolor: "white",
                   }}
-                />
-                {notif.timeAgo}
-              </Typography>
-            </Box>
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <NotificationsNoneIcon
+                      sx={{ color: "#3B82F6", fontSize: 24 }}
+                    />
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 700, color: "#111827" }}
+                    >
+                      Notifications
+                    </Typography>
+                    {unreadNotificationCount > 0 && (
+                      <Box
+                        sx={{
+                          bgcolor: "#EF4444",
+                          color: "white",
+                          borderRadius: "12px",
+                          px: 1,
+                          py: 0.25,
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {unreadNotificationCount} new
+                      </Box>
+                    )}
+                  </Box>
 
-            {/* ========== Unread Indicator ========== */}
-            {!notif.isRead && (
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  bgcolor: "#3B82F6",
-                  flexShrink: 0,
-                  mt: 0.5,
-                }}
-              />
-            )}
-          </Box>
-        </Box>
-      ))}
-    </Box>
-  )}
-</Menu>
+                  {notifications.some((n) => !n.isRead) && (
+                    <Button
+                      size="small"
+                      onClick={markAllAsRead}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "0.875rem",
+                        color: "#3B82F6",
+                        fontWeight: 600,
+                        "&:hover": {
+                          bgcolor: "#EFF6FF",
+                        },
+                      }}
+                    >
+                      Mark all read
+                    </Button>
+                  )}
+                </Box>
+
+                {/* ========== Empty State ========== */}
+                {notifications.length === 0 && (
+                  <Box sx={{ p: 5, textAlign: "center" }}>
+                    <Box
+                      sx={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: "50%",
+                        bgcolor: "#F3F4F6",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        margin: "0 auto 16px",
+                      }}
+                    >
+                      <NotificationsNoneIcon
+                        sx={{ fontSize: 40, color: "#9CA3AF" }}
+                      />
+                    </Box>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#374151", fontWeight: 600, mb: 0.5 }}
+                    >
+                      No notifications yet
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#9CA3AF" }}>
+                      We'll notify you when something arrives
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* ========== Notifications List ========== */}
+                {notifications.length > 0 && (
+                  <Box sx={{ maxHeight: 420, overflowY: "auto" }}>
+                    {notifications.map((notif, index) => (
+                      <Box
+                        key={notif.id}
+                        onClick={() => handleNotifItemClick(notif)}
+                        sx={{
+                          px: 3,
+                          py: 2.5,
+                          cursor: "pointer",
+                          bgcolor: notif.isRead ? "white" : "#F0F9FF",
+                          borderLeft: notif.isRead
+                            ? "none"
+                            : "4px solid #3B82F6",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            bgcolor: notif.isRead ? "#F9FAFB" : "#E0F2FE",
+                          },
+                          borderBottom:
+                            index < notifications.length - 1
+                              ? "1px solid #F3F4F6"
+                              : "none",
+                        }}
+                      >
+                        <Box sx={{ display: "flex", gap: 2 }}>
+                          {/* ========== Icon ========== */}
+                          <Box
+                            sx={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: "12px",
+                              bgcolor: notif.isRead ? "#F3F4F6" : "#DBEAFE",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {getNotificationIcon(notif.verb)}
+                          </Box>
+
+                          {/* ========== Content ========== */}
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            {/* Title */}
+                            <Typography
+                              variant="subtitle2"
+                              sx={{
+                                fontWeight: 600,
+                                color: "#111827",
+                                mb: 0.5,
+                                fontSize: "0.9375rem",
+                              }}
+                            >
+                              {notif.title}
+                            </Typography>
+
+                            {/* Message */}
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: "#6B7280",
+                                mb: 0.75,
+                                fontSize: "0.875rem",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              {notif.message}
+                            </Typography>
+
+                            {/* Time */}
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "#9CA3AF",
+                                fontSize: "0.8125rem",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                              }}
+                            >
+                              <Box
+                                component="span"
+                                sx={{
+                                  width: 4,
+                                  height: 4,
+                                  borderRadius: "50%",
+                                  bgcolor: "#9CA3AF",
+                                }}
+                              />
+                              {notif.timeAgo}
+                            </Typography>
+                          </Box>
+
+                          {/* ========== Unread Indicator ========== */}
+                          {!notif.isRead && (
+                            <Box
+                              sx={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: "50%",
+                                bgcolor: "#3B82F6",
+                                flexShrink: 0,
+                                mt: 0.5,
+                              }}
+                            />
+                          )}
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </Menu>
               {/* ACCOUNT MENU */}
               <IconButton
                 size="large"
@@ -801,19 +836,19 @@ export default function PrimarySearchAppBar() {
                       Profile
                     </MenuItem>
 
-                    <MenuItem>
+                    {/* <MenuItem>
                       <ListItemIcon>
                         <Settings fontSize="small" />
                       </ListItemIcon>
                       Settings
-                    </MenuItem>
+                    </MenuItem> */}
 
-                    <MenuItem>
+                    {/* <MenuItem>
                       <ListItemIcon>
                         <AdminPanelSettingsIcon fontSize="small" />
                       </ListItemIcon>
                       Switch to Admin Mode
-                    </MenuItem>
+                    </MenuItem> */}
 
                     <Divider />
 
