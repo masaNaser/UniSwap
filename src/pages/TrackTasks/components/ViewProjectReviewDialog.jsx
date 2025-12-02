@@ -14,9 +14,7 @@ import StarIcon from '@mui/icons-material/Star';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-dayjs.extend(utc);
+import { formatTime } from "../../../utils/timeHelper";
 
 export default function ViewProjectReviewDialog({
   open,
@@ -27,25 +25,6 @@ export default function ViewProjectReviewDialog({
 }) {
   const isRejected = projectData?.projectStatus === 'Active' && projectDetails?.rejectionReason;
   const isCompleted = projectData?.projectStatus === 'Completed';
-
-  const normalizeTime = (timestamp) => {
-    if (!timestamp) return null;
-    // إذا الوقت فيه +01:00 أو أي timezone → اتركيه
-    if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
-      return timestamp;
-    }
-    // إذا بدون timezone → اعتبريه +01:00
-    return timestamp + "+01:00";
-  };
-
-  const formatTime = (timestamp) => {
-    if (!timestamp) return 'N/A';
-    try {
-      return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
-    } catch {
-      return 'N/A';
-    }
-  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
