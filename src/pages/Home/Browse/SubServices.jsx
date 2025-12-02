@@ -160,7 +160,7 @@ const SubServices = () => {
           <Grid size={{ xs: 12, sm: 6, md: 4 }} key={sub.id}>
             <ServiceCard
               title={sub.name}
-              count="3 projects"
+              // count="3 projects"
               url={`/app/services/${sub.id}/projects?name=${encodeURIComponent(
                 sub.name
               )}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`} // هون راح يوديك ع صفحة SubServiceProjects

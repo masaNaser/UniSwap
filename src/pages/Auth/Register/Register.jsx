@@ -21,6 +21,10 @@ import {
   CheckCircle,
 } from "@mui/icons-material";
 
+import { IconButton } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -29,27 +33,56 @@ import CustomButton from "../../../components/CustomButton/CustomButton";
 import { register as registerApi } from "../../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { LinearProgress } from "@mui/material"; 
+import { LinearProgress } from "@mui/material";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 export default function Register() {
+  // const validationSchema = yup.object({
+  //   userName: yup
+  //     .string()
+  //     .required("User Name is required")
+  //     .min(5, "User Name must be at least 5 characters"),
+  //   email: yup
+  //     .string()
+  //     .required("Email is required")
+  //     .email("Invalid email address"),
+  //   password: yup
+  //     .string()
+  //     .required("Password is required")
+  //     .min(8, "Password must be at least 8 characters")
+  //     .matches(
+  //       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+  //       "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+  //     ),
+  //   confirmPassword: yup
+  //     .string()
+  //     .required("Please confirm your password")
+  //     .oneOf([yup.ref("password")], "Passwords must match"),
+  // });
+
   const validationSchema = yup.object({
     userName: yup
       .string()
       .required("User Name is required")
       .min(5, "User Name must be at least 5 characters"),
+
     email: yup
       .string()
       .required("Email is required")
       .email("Invalid email address"),
+
     password: yup
       .string()
       .required("Password is required")
       .min(8, "Password must be at least 8 characters")
+      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+      .matches(/[0-9]/, "Password must contain at least one digit")
       .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        /[^a-zA-Z0-9]/,
+        "Password must contain at least one special character"
       ),
+
     confirmPassword: yup
       .string()
       .required("Please confirm your password")
@@ -59,35 +92,37 @@ export default function Register() {
   const [passwordStrength, setPasswordStrength] = useState(0);
 
   const checkStrength = (value) => {
-    // بنفحص قوة الباسورد بحيث نعطيه نقاط على حسب الشروط انه على الاقل 8 حروف، حرف كبير، رقم، وحرف خاص ( رمز))
     let score = 0;
-    if (value.length >= 8) score++;
-    if (/[A-Z]/.test(value)) score++;
-    if (/[0-9]/.test(value)) score++;
-    if (/[^A-Za-z0-9]/.test(value)) score++;
+    if (value.length >= 8) score++; // طول ≥ 8
+    if (/[A-Z]/.test(value)) score++; // حرف كبير
+    if (/[a-z]/.test(value)) score++; // حرف صغير
+    if (/[0-9]/.test(value)) score++; // رقم
+    if (/[^A-Za-z0-9]/.test(value)) score++; // حرف خاص
     setPasswordStrength(score);
   };
-
   const getStrengthLabel = () => {
-    // بنرجع النص واللون المناسبين على حسب قوة الباسورد اللي هو حسب قيمة السكور اللي حسبناها في الفنكشن اللي فوق
     switch (passwordStrength) {
       case 0:
         return { text: "", color: "inherit" };
       case 1:
-        return { text: "very week", color: "red" };
+        return { text: "very weak", color: "red" };
       case 2:
-        return { text: "week", color: "orange" };
+        return { text: "weak", color: "orange" };
       case 3:
+        return { text: "medium", color: "yellow" };
       case 4:
         return { text: "strong", color: "green" };
+      case 5:
+        return { text: "very strong", color: "darkgreen" };
       default:
         return { text: "", color: "inherit" };
     }
   };
-  const [showPassword, setshowPassword] = useState(false);
   const [skills, setSkills] = useState([]); // skills as array
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -112,11 +147,8 @@ export default function Register() {
       confirmPassword: data.confirmPassword.trim(),
       skills: skills,
       universityMajor: data.universityMajor.toUpperCase(),
-      academicYear: data.academicYear.trim()
+      academicYear: data.academicYear.trim(),
     };
-
-
-
 
     console.log("Final Data Sent:", JSON.stringify(finalData));
 
@@ -126,7 +158,8 @@ export default function Register() {
       console.log(response);
       if (response.status === 200) {
         Swal.fire({
-          title: "Registration successful! Please check your email to verify your account.",
+          title:
+            "Registration successful! Please check your email to verify your account.",
           icon: "success",
           draggable: true,
           timer: 1500,
@@ -147,7 +180,6 @@ export default function Register() {
       setLoading(false);
     }
   };
-
 
   return (
     <>
@@ -371,7 +403,7 @@ export default function Register() {
                   ),
                 }}
               />
-
+   
               <TextField
                 {...register("password")}
                 fullWidth
@@ -384,9 +416,8 @@ export default function Register() {
                 error={errors.password}
                 helperText={errors.password?.message}
                 onChange={(e) => {
-                  // خلي الريأكت هوك فورم يقرأ القيمة
                   register("password").onChange(e);
-                  checkStrength(e.target.value); // حساب قوة الباسورد
+                  checkStrength(e.target.value);
                 }}
                 InputProps={{
                   startAdornment: (
@@ -394,6 +425,16 @@ export default function Register() {
                       <Lock />
                     </InputAdornment>
                   ),
+                  // endAdornment: (
+                  //   <InputAdornment position="end">
+                  //     <IconButton
+                  //       onClick={() => setShowPassword(!showPassword)}
+                  //       edge="end"
+                  //     >
+                  //       {showPassword ? <VisibilityOff /> : <Visibility />}
+                  //     </IconButton>
+                  //   </InputAdornment>
+                  // ),
                 }}
               />
 
@@ -401,15 +442,16 @@ export default function Register() {
                 <>
                   <LinearProgress
                     variant="determinate"
-                    value={(passwordStrength / 4) * 100}
-                    sx={{ height: 8, borderRadius: 5, mt: 1 }}
-                    color={
-                      passwordStrength < 2
-                        ? "error"
-                        : passwordStrength === 2
-                          ? "warning"
-                          : "success"
-                    }
+                    value={(passwordStrength / 5) * 100} // نسبة من 0 إلى 100%
+                    sx={{
+                      height: 8,
+                      borderRadius: 5,
+                      mt: 1,
+                      bgcolor: "#e0e0e0", // خلفية رمادية خفيفة
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: getStrengthLabel().color, // اللون حسب القوة
+                      },
+                    }}
                   />
                   <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
                     {getStrengthLabel().text}
@@ -434,6 +476,16 @@ export default function Register() {
                       <Lock />
                     </InputAdornment>
                   ),
+                  // endAdornment: (
+                  //   <InputAdornment position="end">
+                  //     <IconButton
+                  //       onClick={() => setShowPassword(!showPassword)}
+                  //       edge="end"
+                  //     >
+                  //       {showPassword ? <VisibilityOff /> : <Visibility />}
+                  //     </IconButton>
+                  //   </InputAdornment>
+                  // ),
                 }}
               />
 

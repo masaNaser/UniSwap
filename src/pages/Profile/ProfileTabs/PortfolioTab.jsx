@@ -214,22 +214,22 @@ export default function PortfolioTab() {
         </Typography>
 
         {/* عرض ملف المشروع بشكل آمن */}
-        {p.projectFile && typeof p.projectFile === "string" && (
-          <Box sx={{ mt: 1 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<FolderIcon />}
-              component="a"
-              href={`https://uni.runasp.net/${p.projectFile}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ textTransform: "none" }}
-            >
-              View Project File
-            </Button>
-          </Box>
-        )}
+{p.projectFilePath && typeof p.projectFilePath === "string" && (
+  <Box sx={{ mt: 1 }}>
+    <Button
+      variant="outlined"
+      size="small"
+      startIcon={<FolderIcon />}
+      component="a"
+      href={`https://uni.runasp.net/${p.projectFilePath}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      sx={{ textTransform: "none" }}
+    >
+      View Project File
+    </Button>
+  </Box>
+)}
 
         <Box display="flex" justifyContent={"space-between"}>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>

@@ -97,7 +97,7 @@ const Services = () => {
   const handleUpdateService = async () => {
     const fd = new FormData();
     fd.append("Name", formData.name);
-    fd.append("Description ", formData.description);
+    fd.append("Description", formData.description);
     if (formData.image) fd.append("Image", formData.image);
 
     setIsSubmitting(true);
@@ -110,7 +110,8 @@ const Services = () => {
       prev.map(s =>
         s.id === selectedService.id ? response.data : s
       )
-    );    } finally {
+    );  
+    } finally {
       setIsSubmitting(false);
     }
   };

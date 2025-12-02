@@ -38,6 +38,7 @@ export default function UserProjectModal({
     projectFile: null,
   });
   const [coverImagePreview, setCoverImagePreview] = useState(null);
+  const [projectFilePreview, setProjectFilePreview] = useState(null);
   const [tagInput, setTagInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
@@ -56,6 +57,10 @@ export default function UserProjectModal({
       if (editData.coverImage) {
         setCoverImagePreview(`https://uni.runasp.net/${editData.coverImage}`);
       }
+      // لو في ملف مشروع موجود مسبقاً
+    if (editData.projectFile) {
+    setProjectFilePreview(editData.projectFile);
+}
     } else {
       setFormData({
         title: "",
@@ -66,6 +71,7 @@ export default function UserProjectModal({
         projectFile: null,
       });
       setCoverImagePreview(null);
+      setProjectFilePreview(null);
     }
     setTagInput("");
   }, [editData, open]);
@@ -87,6 +93,11 @@ export default function UserProjectModal({
         };
         reader.readAsDataURL(files[0]);
       }
+      
+      // Preview لملف المشروع
+      if (name === "projectFile") {
+        setProjectFilePreview(files[0].name);
+      }
     }
   };
 
@@ -97,11 +108,12 @@ export default function UserProjectModal({
     if (input) input.value = "";
   };
 
-  const handleRemoveProjectFile = () => {
+const handleRemoveProjectFile = () => {
     setFormData((prev) => ({ ...prev, projectFile: null }));
+    setProjectFilePreview(editData?.projectFilePath || null);  // ✅ هون
     const input = document.getElementById("projectFile-upload");
     if (input) input.value = "";
-  };
+};
 
   const handleAddTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
@@ -120,7 +132,6 @@ export default function UserProjectModal({
     }));
   };
 
-  // ✅ التحقق من امتلاء الحقول المطلوبة
   const isFormValid = () => {
     return (
       formData.title.trim() !== "" &&
@@ -129,7 +140,7 @@ export default function UserProjectModal({
     );
   };
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     if (!isFormValid()) {
       setSnackbar({
         open: true,
@@ -174,11 +185,39 @@ export default function UserProjectModal({
       onClose();
     } catch (err) {
       console.error(err);
-      const errorMessage =
-    err.response?.data?.errors ||
-    err.response?.data ||
-    err.message ||
-   "Failed to submit project. Try again!";
+      
+      // ✅ الحل: معالجة صحيحة للـ error
+      let errorMessage = "Failed to submit project. Try again!";
+      
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        
+        // لو الـ error object فيه errors (validation errors)
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          // جمع كل الـ validation errors
+          const errorMessages = Object.values(errorData.errors)
+            .flat() // لو في arrays جواها
+            .join(', ');
+          errorMessage = errorMessages || errorMessage;
+        } 
+        // لو الـ error string عادي
+        else if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        }
+        // لو في message property
+        else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+        // لو في title property (بعض الـ APIs بترجع هيك)
+        else if (errorData.title) {
+          errorMessage = errorData.title;
+        }
+      } 
+      // لو في message على الـ error نفسه
+      else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -197,7 +236,7 @@ export default function UserProjectModal({
       icon={<WorkOutlineIcon color="primary" />}
       primaryButtonText={editData ? "Update" : "Create"}
       onPrimaryAction={handleSubmit}
-      isPrimaryDisabled={!isFormValid()} // ✅ هون الحل
+      isPrimaryDisabled={!isFormValid()}
       isSubmitting={isSubmitting}
       snackbar={snackbar}
       onSnackbarClose={() => setSnackbar(null)}
@@ -239,7 +278,7 @@ export default function UserProjectModal({
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
             Cover Image{" "}
             <Typography component="span" variant="caption" color="text.secondary">
-              (Optional)
+              {/* (Optional) */}
             </Typography>
           </Typography>
 
@@ -290,88 +329,69 @@ export default function UserProjectModal({
         </Box>
 
         {/* Project File Section */}
-        {/* Project File Section */}
-<Box>
-  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-    Project File{" "}
-    <Typography component="span" variant="caption" color="text.secondary">
-      (Optional)
-    </Typography>
-  </Typography>
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+            Project File{" "}
+            <Typography component="span" variant="caption" color="text.secondary">
+              {/* (Optional) */}
+            </Typography>
+          </Typography>
 
-  {formData.projectFile ? (
-    // لو المشروع موجود بالـ state (ملف جديد أو جاري التعديل)
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-        p: 2,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 1,
-        bgcolor: "grey.50",
-      }}
-    >
-      <InsertDriveFileIcon color="primary" />
-      <Typography variant="body2" sx={{ flex: 1 }}>
-        {typeof formData.projectFile === "string"
-          ? formData.projectFile.split("/").pop() // اسم الملف فقط لو رابط
-          : formData.projectFile.name}   {/* اسم الملف لو جديد */}
-      </Typography>
-      <IconButton size="small" onClick={handleRemoveProjectFile}>
-        <CloseIcon fontSize="small" />
-      </IconButton>
-    </Box>
-  ) : editData?.projectFile ? (
-    // لو في مشروع موجود مسبقاً (Edit Mode) ورابط للملف
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-        p: 2,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 1,
-        bgcolor: "grey.50",
-      }}
-    >
-      <InsertDriveFileIcon color="primary" />
-      <Button
-        component="a"
-        href={`https://uni.runasp.net/${editData.projectFile}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        sx={{ flex: 1, textTransform: "none" }}
-      >
-        {editData.projectFile.split("/").pop()}
-      </Button>
-      <IconButton size="small" onClick={handleRemoveProjectFile}>
-        <CloseIcon fontSize="small" />
-      </IconButton>
-    </Box>
-  ) : (
-    <label htmlFor="projectFile-upload">
-      <input
-        id="projectFile-upload"
-        name="projectFile"
-        type="file"
-        hidden
-        onChange={handleFileChange}
-      />
-      <Button
-        component="span"
-        variant="outlined"
-        startIcon={<FolderIcon />}
-        sx={{ textTransform: "none" }}
-      >
-        Upload Project File
-      </Button>
-    </label>
-  )}
-</Box>
-
+          {projectFilePreview ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                p: 2,
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 1,
+                bgcolor: "grey.50",
+              }}
+            >
+              <InsertDriveFileIcon color="primary" />
+              {formData.projectFile ? (
+                // ملف جديد تم اختياره
+                <Typography variant="body2" sx={{ flex: 1 }}>
+                  {formData.projectFile.name}
+                </Typography>
+              ) : (
+                // ملف موجود مسبقاً من الـ editData
+                <Button
+                  component="a"
+                  href={`https://uni.runasp.net/${projectFilePreview}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ flex: 1, textTransform: "none", justifyContent: "flex-start" }}
+                >
+                  {projectFilePreview.split("/").pop()}
+                </Button>
+              )}
+              <IconButton size="small" onClick={handleRemoveProjectFile}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ) : (
+            <label htmlFor="projectFile-upload">
+              <input
+                id="projectFile-upload"
+                name="projectFile"
+                type="file"
+                hidden
+                onChange={handleFileChange}
+              />
+              <Button
+                component="span"
+                variant="outlined"
+                startIcon={<FolderIcon />}
+                sx={{ textTransform: "none" }}
+              >
+                Upload Project File
+              </Button>
+            </label>
+          )}
+        </Box>
 
         {/* Tags Input - للCreate Mode فقط */}
         {!editData && (
@@ -379,7 +399,7 @@ export default function UserProjectModal({
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
               Tags{" "}
               <Typography component="span" variant="caption" color="text.secondary">
-                (Optional)
+                {/* (Optional) */}
               </Typography>
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -434,13 +454,6 @@ export default function UserProjectModal({
             </Box>
           </Box>
         )}
-
-        {/* Validation Message */}
-        {/* {!isFormValid() && (
-          <Typography variant="caption" color="error" sx={{ mt: 1 }}>
-            * Please fill in all required fields (Title, Description, Duration)
-          </Typography>
-        )} */}
       </Stack>
     </GenericModal>
   );
