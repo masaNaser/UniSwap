@@ -1,13 +1,15 @@
-// AddServiceModal.jsx
 import React, { useEffect, useState } from "react";
 import {
   TextField,
   MenuItem,
   Stack,
+  Button,
+  Typography,
+  Avatar,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import GenericModal from "../../components/Modals/GenericModal";
-import { CreateService, EditUserService } from "../../services/profileService";
+import { CreateServices, EditServices } from "../../services/servicesService";
 import { getServices } from "../../services/servicesService";
 import { getSubServices } from "../../services/subServiceServices";
 
@@ -19,16 +21,20 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
   const [formData, setFormData] = useState({
     serviceId: "",
     subServiceId: "",
+    name: "",
     description: "",
     avgPoints: "",
     avgDurationDays: "",
+    image: null,
   });
+  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingSub, setLoadingSub] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
 
   // تحميل الخدمات الرئيسية
   useEffect(() => {
+    if (!open) return;
     const fetchAllServices = async () => {
       try {
         const res = await getServices();
@@ -37,22 +43,21 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
         console.error(err);
       }
     };
-    if (open) fetchAllServices();
-  }, [open]);
+    fetchAllServices();
+  }, [open, token]);
 
-  // تحميل الخدمات الفرعية عند اختيار الخدمة الرئيسية
+  // تحميل الخدمات الفرعية
   useEffect(() => {
+    if (!formData.serviceId) {
+      setSubServices([]);
+      setFormData((prev) => ({ ...prev, subServiceId: "" }));
+      return;
+    }
     const fetchSubServices = async () => {
-      if (!formData.serviceId) {
-        setSubServices([]);
-        setFormData((prev) => ({ ...prev, subServiceId: "" }));
-        return;
-      }
       setLoadingSub(true);
       try {
         const res = await getSubServices(token, formData.serviceId);
         setSubServices(res.data || []);
-        // لو الخدمة الفرعية موجودة من تعديل سابق نحتفظ بها
         if (!editingService) setFormData((prev) => ({ ...prev, subServiceId: "" }));
       } catch (err) {
         console.error(err);
@@ -68,53 +73,75 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
       setFormData({
         serviceId: editingService.serviceId,
         subServiceId: editingService.subServiceId,
+        name: editingService.name,
         description: editingService.description,
         avgPoints: editingService.avgPoints,
         avgDurationDays: editingService.avgDurationDays,
+        Image: null,
       });
+      setImagePreview(editingService.Image || null);
     } else {
       setFormData({
         serviceId: "",
         subServiceId: "",
+        name: "",
         description: "",
         avgPoints: "",
         avgDurationDays: "",
+        Image: null,
       });
+      setImagePreview(null);
     }
   }, [editingService, open]);
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setFormData({ ...formData, image: file });
+
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result);
+    reader.readAsDataURL(file);
+  } else {
+    setFormData({ ...formData, image: null });
+    setImagePreview(null);
+  }
+};
+
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      const fd = new FormData();
+      fd.append("Name", formData.name);
+      fd.append("Description", formData.description);
+      fd.append("AvgPoints", formData.avgPoints);
+      fd.append("AvgDurationDays", formData.avgDurationDays);
+      fd.append("ServiceId", formData.serviceId);
+      fd.append("SubServiceId", formData.subServiceId);
+      fd.append("Image", formData.Image); // لازم تكون موجودة!
+       
+      if (!formData.Image) {
+  console.log("No image selected!");
+}
+
       if (editingService) {
-        // تعديل الخدمة
-        await EditUserService(token, formData, editingService.id);
-        setSnackbar({
-          open: true,
-          message: "Service updated successfully!",
-          severity: "success",
-        });
+        await EditServices(token, editingService.id, fd);
+        setSnackbar({ open: true, message: "Service updated successfully!", severity: "success" });
       } else {
-        // إضافة خدمة جديدة
-        await CreateService(token, formData);
-        setSnackbar({
-          open: true,
-          message: "Service added successfully!",
-          severity: "success",
-        });
+        await CreateServices(token, fd);
+        setSnackbar({ open: true, message: "Service added successfully!", severity: "success" });
       }
       onAdded();
       handleClose();
     } catch (err) {
       console.error(err);
-      setSnackbar({
-        open: true,
-        message: "Operation failed.",
-        severity: "error",
-      });
+      setSnackbar({ open: true, message: "Operation failed.", severity: "error" });
     }
     setLoading(false);
   };
@@ -169,6 +196,13 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
 
         {/* باقي الحقول */}
         <TextField
+          label="Service Name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
           label="Description"
           name="description"
           value={formData.description}
@@ -189,6 +223,19 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
           onChange={handleChange}
           fullWidth
         />
+
+        {/* رفع الصورة مع preview */}
+        <Stack spacing={1}>
+          <Typography variant="body2">Upload Image</Typography>
+          <input type="file" accept="image/*" onChange={handleFileChange} />
+          {imagePreview && (
+            <Avatar
+              src={imagePreview}
+              variant="rounded"
+              sx={{ width: 120, height: 120, mt: 1 }}
+            />
+          )}
+        </Stack>
       </Stack>
     </GenericModal>
   );
