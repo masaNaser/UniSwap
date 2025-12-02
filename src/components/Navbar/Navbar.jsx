@@ -22,7 +22,7 @@ import { useCurrentUser } from "../../Context/CurrentUserContext";
 //icons
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import MailIcon from "@mui/icons-material/Mail";
+import MessageIcon from '@mui/icons-material/Message';
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
@@ -214,7 +214,7 @@ export default function PrimarySearchAppBar() {
               {!userIsAdmin && (
                 <IconButton size="large" color="inherit" onClick={() => navigate("/chat")}>
                   <Badge badgeContent={unreadCount} color="error" max={99}>
-                    <MailIcon />
+                    <MessageIcon />
                   </Badge>
                 </IconButton>
               )}

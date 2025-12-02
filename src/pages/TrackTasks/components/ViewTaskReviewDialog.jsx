@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { formatTime } from "../../../utils/timeHelper";
 
 export default function ViewTaskReviewDialog({ open, onClose, task }) {
   if (!task) {
@@ -19,22 +20,6 @@ export default function ViewTaskReviewDialog({ open, onClose, task }) {
   }
 
   const comment = task.clientReviewComment || 'No comment provided';
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateString;
-    }
-  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -107,7 +92,7 @@ export default function ViewTaskReviewDialog({ open, onClose, task }) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <AccessTimeIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
             <Typography variant="caption" color="text.secondary">
-              Reviewed on {formatDate(task.reviewedAt)}
+              Reviewed on {formatTime(task.reviewedAt)}
             </Typography>
           </Box>
         )}

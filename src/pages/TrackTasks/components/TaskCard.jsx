@@ -16,6 +16,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CustomButton from "../../../components/CustomButton/CustomButton";
+import { formatTime } from "../../../utils/timeHelper";
 
 export default function TaskCard({
   task,
@@ -35,41 +36,6 @@ export default function TaskCard({
     const reviewDue = new Date(task.reviewDueAt);
 
     return reviewDue < now;
-  };
-
-  // ✅ Format date WITH time for review due date
-  const formatDateWithTime = (dateString) => {
-    if (!dateString) return "No deadline";
-
-    try {
-      // Remove any 'Z' or timezone info if present
-      const cleanDate = dateString.replace('Z', '').replace(/[+-]\d{2}:\d{2}$/, '');
-
-      // Parse as local datetime by creating date parts manually
-      const [datePart, timePart] = cleanDate.split('T');
-      const [year, month, day] = datePart.split('-').map(Number);
-      const [hours, minutes] = timePart.split(':').map(Number);
-
-      // Create date in local timezone
-      const date = new Date(year, month - 1, day, hours, minutes);
-
-      // Format manually
-      const dayStr = String(date.getDate()).padStart(2, '0');
-      const monthStr = String(date.getMonth() + 1).padStart(2, '0');
-      const yearStr = date.getFullYear();
-      const hoursStr = String(date.getHours()).padStart(2, '0');
-      const minutesStr = String(date.getMinutes()).padStart(2, '0');
-
-      // Convert hours to 12-hour format
-      const hour12 = hoursStr % 12 || 12;
-      const ampm = date.getHours() >= 12 ? "PM" : "AM";
-
-      return `${dayStr}/${monthStr}/${yearStr} at ${hour12}:${minutesStr} ${ampm}`;
-
-    } catch (error) {
-      console.error('Error formatting date:', error, dateString);
-      return "Invalid date";
-    }
   };
 
   const handleFileClick = () => {
@@ -271,7 +237,7 @@ export default function TaskCard({
                       fontWeight: 500,
                     }}
                   >
-                    Review Due: {formatDateWithTime(task.reviewDueAt)}
+                    Review Due: {formatTime(task.reviewDueAt)}
                   </Typography>
                 </Box>
               </Box>

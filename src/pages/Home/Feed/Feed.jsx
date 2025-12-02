@@ -51,6 +51,8 @@ import { useSearchParams } from "react-router-dom";
 import PostCardSkeleton from "../../../components/Skeletons/PostCardSkeleton";
 import dayjs from "dayjs";
 import { isAdmin } from "../../../utils/authHelpers";
+import { formatTime } from "../../../utils/timeHelper";
+
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
@@ -119,17 +121,6 @@ export default function Feed() {
 
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
-  };
-
-  const normalizeTime = (timestamp) => {
-    if (/[+-]\d\d:\d\d$/.test(timestamp) || timestamp.endsWith("Z")) {
-      return timestamp;
-    }
-    return timestamp + "+01:00";
-  };
-
-  const formatTime = (timestamp) => {
-    return dayjs(normalizeTime(timestamp)).local().format("DD MMM, hh:mm A");
   };
 
   const fetchPosts = async () => {
