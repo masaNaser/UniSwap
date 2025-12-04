@@ -13,6 +13,7 @@ import {
   CircularProgress,
   IconButton,
   Chip,
+  Typography,
 } from "@mui/material";
 
 // icons
@@ -52,7 +53,7 @@ import PostCardSkeleton from "../../../components/Skeletons/PostCardSkeleton";
 import dayjs from "dayjs";
 import { isAdmin } from "../../../utils/authHelpers";
 import { formatTime } from "../../../utils/timeHelper";
-
+import useInfiniteScroll from "../../../hooks/useInfiniteScroll"; // ✅ استيراد الـ hook
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
@@ -83,6 +84,11 @@ export default function Feed() {
   const [highlightedPostId, setHighlightedPostId] = useState(null);
   const postRefs = useRef({});
 
+  // ✅ Infinite Scroll State
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const userToken = localStorage.getItem("accessToken");
   const userName = localStorage.getItem("userName");
 
@@ -92,7 +98,6 @@ export default function Feed() {
   const [modalPost, setModalPost] = useState(null);
   const [userIdCommenting, setUserIdCommenting] = useState(null);
 
-  // ✅ تحديد إذا المستخدم أدمن
   const admin = isAdmin(currentUser);
 
   const [deleteDialog, setDeleteDialog] = useState({
@@ -122,31 +127,54 @@ export default function Feed() {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const fetchPosts = async () => {
+  // ✅ تعديل fetchPosts لدعم الـ pagination
+  const fetchPosts = async (pageNumber = 1, append = false) => {
+    if (loadingMore) return;
+
+    setLoadingMore(true);
+    const startTime = Date.now();
+
     try {
-      const response = await getPosts(userToken);
+      const response = await getPosts(userToken, pageNumber, 10); // ✅ 10 بوستات بالمرة
       console.log(response);
-      const postsData = response.data.map((p) => {
-        return {
-          id: p.id,
-          content: p.content,
-          selectedTags: p.tags?.[0]?.split(",") || [],
-          user: {
-            name: p.author.userName,
-            avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
-            id: p.author.id,
-          },
-          time: formatTime(p.createdAt),
-          likes: p.likesCount,
-          comments: p.commentsCount,
-          shares: "",
-          fileUrl: p.fileUrl ? `https://uni.runasp.net/${p.fileUrl}` : null,
-          isLiked: p.isLikedByMe || false,
-          recentComments: [],
-          isClosed: p.postStatus === "Closed",
-        };
-      });
-      setPosts(postsData);
+
+      const postsData = response.data.map((p) => ({
+        id: p.id,
+        content: p.content,
+        selectedTags: p.tags?.[0]?.split(",") || [],
+        user: {
+          name: p.author.userName,
+          avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
+          id: p.author.id,
+        },
+        time: formatTime(p.createdAt),
+        likes: p.likesCount,
+        comments: p.commentsCount,
+        shares: "",
+        fileUrl: p.fileUrl ? `https://uni.runasp.net/${p.fileUrl}` : null,
+        isLiked: p.isLikedByMe || false,
+        recentComments: [],
+        isClosed: p.postStatus === "Closed",
+      }));
+
+      if (append) {
+        // ✅ إضافة البوستات الجديدة
+        setPosts((prev) => [...prev, ...postsData]);
+      } else {
+        // ✅ استبدال البوستات (للتحميل الأول)
+        setPosts(postsData);
+      }
+
+      // ✅ إذا رجع أقل من 10 معناها خلصت البوستات
+      setHasMore(postsData.length === 10);
+      // ✅ ضمان إن الـ loader يظهر على الأقل 800ms
+      const elapsedTime = Date.now() - startTime;
+      const minimumLoadingTime = 800; // 800 milliseconds
+      const remainingTime = Math.max(0, minimumLoadingTime - elapsedTime);
+
+      if (remainingTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingTime));
+      }
     } catch (error) {
       setSnackbar({
         open: true,
@@ -154,8 +182,21 @@ export default function Feed() {
         severity: "error",
       });
       console.error("Error fetching posts:", error);
+    } finally {
+      setLoadingMore(false);
     }
   };
+
+  // ✅ Function لتحميل المزيد
+  const loadMorePosts = useCallback(() => {
+    if (!hasMore || loadingMore) return;
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchPosts(nextPage, true);
+  }, [page, hasMore, loadingMore]);
+
+  // ✅ استخدام الـ Infinite Scroll Hook
+  const observerRef = useInfiniteScroll(loadMorePosts, hasMore, loadingMore);
 
   const fetchRecentComments = useCallback(
     async (postId) => {
@@ -251,6 +292,7 @@ export default function Feed() {
       });
     }
   };
+
   const openEditDialog = (postId) => {
     const postToEdit = posts.find((p) => p.id === postId);
     if (!postToEdit) return;
@@ -262,7 +304,7 @@ export default function Feed() {
       tags: postToEdit.selectedTags.join(","),
       file: null,
       existingFileUrl: postToEdit.fileUrl || "",
-      previewUrl: "", // ✅ غيّر من postToEdit.fileUrl إلى string فاضي
+      previewUrl: "",
     });
   };
 
@@ -276,19 +318,6 @@ export default function Feed() {
       existingFileUrl: "",
       previewUrl: "",
     });
-  };
-
-  const handleEditFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setEditDialog((prev) => ({
-        ...prev,
-        file,
-        previewUrl: file.type.startsWith("image/")
-          ? URL.createObjectURL(file)
-          : null,
-      }));
-    }
   };
 
   const handleEditPost = async () => {
@@ -306,8 +335,10 @@ export default function Feed() {
       console.log(response);
 
       if (response.status === 204) {
-        // ✅ اعمل refresh للبوستات كلهم
-        await fetchPosts();
+        // ✅ اعمل refresh للصفحة الأولى فقط
+        await fetchPosts(1, false);
+        setPage(1);
+        setHasMore(true);
 
         closeEditDialog();
         setSnackbar({
@@ -385,16 +416,12 @@ export default function Feed() {
 
     try {
       const response = await getComments(userToken, postId);
-      console.log("Comments fetched:", response.data);
-      console.log("First comment user:", response.data[0]?.user);
-
       const sortedComments = response.data
         .map((comment) => normalizeComment(comment, userName, currentUser))
         .sort(
           (a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf()
         );
       setCurrentComments(sortedComments);
-      console.log("Sorted Comments:", sortedComments);
     } catch (error) {
       console.error("Error fetching comments:", error);
       setSnackbar({
@@ -414,7 +441,6 @@ export default function Feed() {
       currentUser?.profilePicture,
       userName
     );
-    console.log("currentUserAvatar:", currentUserAvatar);
 
     const newComment = {
       id: tempCommentId,
@@ -433,10 +459,10 @@ export default function Feed() {
       prev.map((p) =>
         p.id === postId
           ? {
-            ...p,
-            comments: p.comments + 1,
-            recentComments: [newComment, ...p.recentComments].slice(0, 2),
-          }
+              ...p,
+              comments: p.comments + 1,
+              recentComments: [newComment, ...p.recentComments].slice(0, 2),
+            }
           : p
       )
     );
@@ -456,12 +482,12 @@ export default function Feed() {
           prev.map((p) =>
             p.id === postId
               ? {
-                ...p,
-                recentComments: [
-                  finalComment,
-                  ...p.recentComments.filter((c) => c.id !== tempCommentId),
-                ].slice(0, 2),
-              }
+                  ...p,
+                  recentComments: [
+                    finalComment,
+                    ...p.recentComments.filter((c) => c.id !== tempCommentId),
+                  ].slice(0, 2),
+                }
               : p
           )
         );
@@ -478,12 +504,12 @@ export default function Feed() {
         prev.map((p) =>
           p.id === postId
             ? {
-              ...p,
-              comments: p.comments - 1,
-              recentComments: p.recentComments.filter(
-                (c) => c.id !== tempCommentId
-              ),
-            }
+                ...p,
+                comments: p.comments - 1,
+                recentComments: p.recentComments.filter(
+                  (c) => c.id !== tempCommentId
+                ),
+              }
             : p
         )
       );
@@ -558,17 +584,17 @@ export default function Feed() {
       prev.map((p) =>
         p.id === postId
           ? {
-            ...p,
-            recentComments: p.recentComments.map((c) =>
-              c.id === commentId
-                ? {
-                  ...c,
-                  content: newContent,
-                  createdAt: new Date().toISOString(),
-                }
-                : c
-            ),
-          }
+              ...p,
+              recentComments: p.recentComments.map((c) =>
+                c.id === commentId
+                  ? {
+                      ...c,
+                      content: newContent,
+                      createdAt: new Date().toISOString(),
+                    }
+                  : c
+              ),
+            }
           : p
       )
     );
@@ -582,17 +608,17 @@ export default function Feed() {
         prev.map((p) =>
           p.id === postId
             ? {
-              ...p,
-              recentComments: p.recentComments.map((c) =>
-                c.id === commentId
-                  ? {
-                    ...c,
-                    content: originalContent,
-                    createdAt: originalComment.createdAt,
-                  }
-                  : c
-              ),
-            }
+                ...p,
+                recentComments: p.recentComments.map((c) =>
+                  c.id === commentId
+                    ? {
+                        ...c,
+                        content: originalContent,
+                        createdAt: originalComment.createdAt,
+                      }
+                    : c
+                ),
+              }
             : p
         )
       );
@@ -607,7 +633,6 @@ export default function Feed() {
   const handleCloseComments = async (postId) => {
     try {
       const response = await closeCommentPost(userToken, postId);
-      console.log("close comment :", response);
       if (response.status === 200 || response.status === 204) {
         setPosts((prev) =>
           prev.map((p) => (p.id === postId ? { ...p, isClosed: true } : p))
@@ -636,13 +661,12 @@ export default function Feed() {
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(1, false); // ✅ التحميل الأول
   }, [userToken]);
 
   return (
     <>
       <Container maxWidth="lg" className="container">
-        {/* ✅ الرسالة الترحيبية - تظهر للجميع */}
         <div className="welcome-section">
           <h1 className="welcome-heading">
             Welcome back, {userName}! <WavingHand className="wave" />
@@ -652,7 +676,6 @@ export default function Feed() {
           </p>
         </div>
 
-        {/* ✅ الكاردات - تختفي للأدمن */}
         {!admin && (
           <div className="cards-section">
             <SelectActionCard
@@ -675,10 +698,8 @@ export default function Feed() {
 
         <div className="post-section">
           <div className="create-post-main">
-            {/* ✅ صندوق إنشاء البوست - يختفي للأدمن */}
             {!admin && <CreatePost addPost={addPost} token={userToken} />}
 
-            {/* ✅ البوستات - تظهر للجميع */}
             <Box mt={3}>
               {loading ? (
                 <Box mt={3}>
@@ -687,53 +708,116 @@ export default function Feed() {
                   <PostCardSkeleton />
                 </Box>
               ) : (
-                posts.map((post) => (
-                  <Box
-                    key={post.id}
-                    ref={(el) => (postRefs.current[post.id] = el)}
-                    sx={{
-                      transition: "all 0.3s ease",
-                      ...(highlightedPostId === post.id && {
-                        animation: "highlight 2s ease-in-out",
-                        "@keyframes highlight": {
-                          "0%": {
-                            boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.7)",
-                            transform: "scale(1)",
+                <>
+                  {posts.map((post) => (
+                    <Box
+                      key={post.id}
+                      ref={(el) => (postRefs.current[post.id] = el)}
+                      sx={{
+                        transition: "all 0.3s ease",
+                        ...(highlightedPostId === post.id && {
+                          animation: "highlight 2s ease-in-out",
+                          "@keyframes highlight": {
+                            "0%": {
+                              boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.7)",
+                              transform: "scale(1)",
+                            },
+                            "50%": {
+                              boxShadow:
+                                "0 0 20px 10px rgba(59, 130, 246, 0.4)",
+                              transform: "scale(1.02)",
+                            },
+                            "100%": {
+                              boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
+                              transform: "scale(1)",
+                            },
                           },
-                          "50%": {
-                            boxShadow: "0 0 20px 10px rgba(59, 130, 246, 0.4)",
-                            transform: "scale(1.02)",
-                          },
-                          "100%": {
-                            boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
-                            transform: "scale(1)",
-                          },
-                        },
-                      }),
-                    }}
-                  >
-                    <PostCard
-                      post={post}
-                      onDelete={openDeleteDialog}
-                      onEdit={openEditDialog}
-                      onLike={handleLikePost}
-                      onShowComments={handleShowComments}
-                      onShare={handleSharePost}
-                      onCloseComments={handleCloseComments}
-                      onAddCommentInline={handleAddComment}
-                      fetchRecentComments={fetchRecentComments}
-                      currentUserAvatar={getImageUrl(
-                        currentUser?.profilePicture,
-                        currentUser?.userName || userName
-                      )}
-                    />
-                  </Box>
-                ))
+                        }),
+                      }}
+                    >
+                      <PostCard
+                        post={post}
+                        onDelete={openDeleteDialog}
+                        onEdit={openEditDialog}
+                        onLike={handleLikePost}
+                        onShowComments={handleShowComments}
+                        onShare={handleSharePost}
+                        onCloseComments={handleCloseComments}
+                        onAddCommentInline={handleAddComment}
+                        fetchRecentComments={fetchRecentComments}
+                        currentUserAvatar={getImageUrl(
+                          currentUser?.profilePicture,
+                          currentUser?.userName || userName
+                        )}
+                      />
+                    </Box>
+                  ))}
+
+                  {/* ✅ Loading Indicator */}
+                  {loadingMore && (
+                    <Box
+                      sx={{
+                        textAlign: "center",
+                        py: 6,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 2.5,
+                        borderRadius: "16px",
+                        mx: 2,
+                      }}
+                    >
+                      <CircularProgress size={40} sx={{ color: "#3B82F6" }} />
+                      {/* <Typography
+                        sx={{ mt: 2, color: "#6B7280", fontWeight: 500 }}
+                      >
+                        Loading more posts...
+                      </Typography> */}
+                    </Box>
+                  )}
+
+                  {/* ✅ العنصر المراقب للـ Infinite Scroll */}
+                  <div ref={observerRef} style={{ height: "20px" }} />
+
+                  {/* ✅ End Message */}
+                  {!hasMore && posts.length > 0 && (
+                    <Box sx={{ textAlign: "center", py: 4 }}>
+                      <Typography
+                        sx={{
+                          color: "#9CA3AF",
+                          fontWeight: "600",
+                          fontSize: "16px",
+                        }}
+                      >
+                        🎉 You've reached the end!
+                      </Typography>
+                      <Typography
+                        sx={{ color: "#D1D5DB", fontSize: "14px", mt: 0.5 }}
+                      >
+                        No more posts to show
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* ✅ Empty State */}
+                  {!loading && posts.length === 0 && (
+                    <Box sx={{ textAlign: "center", py: 8 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{ color: "#6B7280", fontWeight: 600 }}
+                      >
+                        No posts yet
+                      </Typography>
+                      <Typography sx={{ color: "#9CA3AF", mt: 1 }}>
+                        Be the first to share something!
+                      </Typography>
+                    </Box>
+                  )}
+                </>
               )}
             </Box>
           </div>
 
-          {/* ✅ الـ Sidebar - يختفي للأدمن */}
           {!admin && (
             <div className="feed-sidebar" style={{ flex: 1 }}>
               <Sidebar />
@@ -819,7 +903,7 @@ export default function Feed() {
           <TextField
             fullWidth
             multiline
-            rows={4}
+            rows={5}
             label="Content"
             value={editDialog.content}
             onChange={(e) =>
@@ -904,7 +988,7 @@ export default function Feed() {
           {(editDialog.file || editDialog.existingFileUrl) && (
             <Box sx={{ mt: 2, mb: 2 }}>
               {editDialog.previewUrl &&
-                editDialog.previewUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) ? (
+              editDialog.previewUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) ? (
                 // Image Preview (جديد أو موجود)
                 <Box sx={{ textAlign: "center", position: "relative" }}>
                   <img
@@ -950,10 +1034,11 @@ export default function Feed() {
                 // Document Preview (جديد أو موجود)
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Chip
-                    label={`${editDialog.file
+                    label={`${
+                      editDialog.file
                         ? editDialog.file.name
                         : "Attached document"
-                      }`}
+                    }`}
                     color="primary"
                     variant="outlined"
                     onDelete={() => {

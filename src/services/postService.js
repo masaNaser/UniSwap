@@ -9,8 +9,8 @@ export const createPost = async (postData, token) => {
 };
 
 
-export const getPosts = async (token) => {
-  return await api.get(`/Posts`, {
+export const getPosts = async (token,page=1,pageSize = 20) => {
+  return await api.get(`/Posts?page=${page}&pageSize=${pageSize}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
