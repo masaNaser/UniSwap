@@ -11,7 +11,7 @@ export const Search = async (query,token) => {
 };
 
 export const trendingServices = async (token) => {
-  return await api.get(`/Feeds/trending-topics`, {
+  return await api.get(`/Feeds/trending-services`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

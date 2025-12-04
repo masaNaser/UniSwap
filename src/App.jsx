@@ -1,23 +1,39 @@
-import { RouterProvider } from 'react-router-dom'
-import router from "./routes/Routes"
-// import Chat from './components/Chat/Chat'
+import { RouterProvider } from "react-router-dom";
+import router from "./routes/Routes";
+
 import { CurrentUserProvider } from "./Context/CurrentUserContext";
-import { UnreadCountProvider } from './Context/unreadCountContext';
-import { NotificationProvider } from './Context/NotificationContext';
+import { UnreadCountProvider } from "./Context/unreadCountContext";
+import { NotificationProvider } from "./Context/NotificationContext";
+
+// 🆕 إضافات الدارك مود
+import { ThemeProvider, CssBaseline } from "@mui/material";
+import { ThemeModeProvider, ThemeModeContext } from "./Context/ThemeContext";
+import { useContext } from "react";
 
 function App() {
-
   return (
-    <>
-  
-    <UnreadCountProvider> 
-       <NotificationProvider>
-    <RouterProvider router={router}/> 
-     </NotificationProvider>
-    </UnreadCountProvider>
-  
-    </>
-  )
+    <ThemeModeProvider>
+      <AppWithTheme />
+    </ThemeModeProvider>
+  );
 }
 
-export default App
+function AppWithTheme() {
+  const { theme } = useContext(ThemeModeContext);
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+
+      <CurrentUserProvider>
+        <UnreadCountProvider>
+          <NotificationProvider>
+            <RouterProvider router={router} />
+          </NotificationProvider>
+        </UnreadCountProvider>
+      </CurrentUserProvider>
+    </ThemeProvider>
+  );
+}
+
+export default App;

@@ -13,6 +13,7 @@ import {
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../utils/imageHelper";
+import { useTheme } from "@mui/material/styles";
 
 export default function AllStatusProjectCard({
   id,
@@ -32,6 +33,8 @@ export default function AllStatusProjectCard({
   createdAt,
   projectType,
 }) {
+
+  const theme = useTheme(); // 🔥 ضيفي هاد السطر
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const navigate = useNavigate();
@@ -184,6 +187,7 @@ export default function AllStatusProjectCard({
           },
           cursor: "pointer",
           bgcolor: "#FFFFFF",
+          bgcolor: theme.palette.mode === 'dark' ? '#474646ff' : '#FFFFFF',
         }}
       >
         <CardContent
@@ -220,7 +224,7 @@ export default function AllStatusProjectCard({
             mb={1}
             fontSize="18px"
             lineHeight={1.3}
-            color="#1F2937"
+            color={theme.palette.mode === 'dark' ? '#1F2937' : '#FFFFFF'}
             sx={{
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -237,7 +241,8 @@ export default function AllStatusProjectCard({
             {!showFullDescription ? (
               <Typography
                 variant="body2"
-                color="#6B7280"
+                color=
+                {theme.palette.mode === 'dark' ? '#6B7280' : '#FFFFFF'}
                 fontSize="13px"
                 lineHeight={1.5}
                 sx={{

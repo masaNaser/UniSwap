@@ -10,8 +10,10 @@ import {
   Chip,
 } from "@mui/material";
 import { getImageUrl } from "../../../utils/imageHelper"; // عدلي المسار حسب مشروعك
+import { useTheme } from "@mui/material/styles";
 
 export default function SidebarBox({ title, icon, items, type }) {
+      const theme = useTheme(); // 🔥 ضيفي هاد السطر
   
   // Trending Services
   const renderServices = () => {
@@ -115,7 +117,7 @@ export default function SidebarBox({ title, icon, items, type }) {
         padding: 3,
         borderRadius: 3,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        bgcolor: "#FFF"
+        bgcolor: theme.palette.background.paper
       }}
     >
       {/* Header */}

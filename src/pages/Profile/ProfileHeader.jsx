@@ -1,10 +1,19 @@
 import React, { useState } from "react";
-import { Box, Avatar, Typography, Button, Stack, Chip, IconButton } from "@mui/material";
+import {
+  Box,
+  Avatar,
+  Typography,
+  Button,
+  Stack,
+  Chip,
+  IconButton,
+} from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EditIcon from "@mui/icons-material/Edit";
-import ReportIcon from '@mui/icons-material/Report';
+import ReportIcon from "@mui/icons-material/Report";
+import MessegeIcon from "../../assets/images/MessegeIcon.svg";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../Context/ProfileContext";
 import { useCurrentUser } from "../../Context/CurrentUserContext"; // ⬅️ أضف هذا
@@ -23,19 +32,19 @@ export default function ProfileHeader() {
 
   const handleProfileUpdated = async () => {
     console.log("🔄 Refreshing profile data...");
-    
+
     // انتظر قليلاً للسماح للسيرفر بمعالجة الصور
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     const updatedData = await fetchUserData();
     console.log("✅ Profile refreshed with new data:", updatedData);
-    
+
     // ⬇️ إذا كان هذا بروفايلي، حدّث CurrentUser كمان
     if (isMyProfile) {
       console.log("🔄 Syncing CurrentUser context...");
       setCurrentUser(updatedData);
     }
-    
+
     return updatedData;
   };
 
@@ -96,7 +105,8 @@ export default function ProfileHeader() {
             sx={{
               position: "absolute",
               inset: 0,
-              background: "linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.1))",
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.1))",
             }}
           />
 
@@ -133,7 +143,7 @@ export default function ProfileHeader() {
                   backgroundColor: "rgba(255,255,255,0.2)",
                   color: "rgba(255,255,255,0.9)",
                   backdropFilter: "blur(4px)",
-                  "&:hover": {backgroundColor: "rgba(255,255,255,0.3)",}
+                  "&:hover": { backgroundColor: "rgba(255,255,255,0.3)" },
                 }}
               >
                 <EditIcon />
@@ -152,15 +162,18 @@ export default function ProfileHeader() {
               width: "100%",
             }}
           >
-            <Stack 
-              direction={"row" } 
-              spacing={{ xs: 1, sm: 3 }} 
+            <Stack
+              direction={"row"}
+              spacing={{ xs: 1, sm: 3 }}
               alignItems={{ xs: "center", sm: "flex-end" }}
               sx={{ width: { xs: "100%", sm: "auto" } }}
             >
               <Box sx={{ position: "relative" }}>
                 <Avatar
-                  src={getImageUrl(userData?.profilePicture, userData?.userName)}
+                  src={getImageUrl(
+                    userData?.profilePicture,
+                    userData?.userName
+                  )}
                   alt={userData?.userName}
                   sx={{
                     width: { xs: 70, sm: 80, md: 90 },
@@ -182,31 +195,45 @@ export default function ProfileHeader() {
                 />
               </Box>
 
-              <Box sx={{ textAlign: { xs: "center", sm: "left" }, position: "relative", top: 8 }}>
-                <Typography 
-                  variant="h5" 
+              <Box
+                sx={{
+                  textAlign: { xs: "center", sm: "left" },
+                  position: "relative",
+                  top: 8,
+                }}
+              >
+                <Typography
+                  variant="h5"
                   fontWeight="bold"
                   sx={{ fontSize: { xs: "1rem", sm: "1.4rem", md: "1.5rem" } }}
                 >
                   {userData?.userName}
                 </Typography>
-                <Typography 
+                <Typography
                   variant="body1"
-                  sx={{ fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" } }}
+                  sx={{
+                    fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
+                  }}
                 >
                   {userData?.universityMajor}
                 </Typography>
 
-                <Stack 
+                <Stack
                   direction={{ xs: "column", sm: "row" }}
                   spacing={{ xs: 0.5, sm: 2 }}
-                  mt={1} 
+                  mt={1}
                   alignItems="center"
                 >
                   <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <StarIcon sx={{ fontSize: { xs: 16, md: 18 }, color: "#FFD700" }} />
-                    <Typography variant="body2" sx={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}>
-                      {userData?.averageRating} ({userData?.ratingCount} reviews)
+                    <StarIcon
+                      sx={{ fontSize: { xs: 16, md: 18 }, color: "#FFD700" }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}
+                    >
+                      {userData?.averageRating} ({userData?.ratingCount}{" "}
+                      reviews)
                     </Typography>
                   </Stack>
                 </Stack>
@@ -215,14 +242,35 @@ export default function ProfileHeader() {
 
             {!isMyProfile && (
               <>
-                <Stack 
-                  direction="row" 
+                <Stack
+                  direction="row"
                   spacing={1}
-                  sx={{ display: { xs: "none", md: "flex" }, mt: { md: "-174px" },ml: { md: "-124px" }, }}
+                  sx={{
+                    display: { xs: "none", md: "flex" },
+                    mt: { md: "-174px" },
+                    ml: { md: "-124px" },
+                  }}
                 >
                   <Button
                     variant="contained"
-                    startIcon={<ChatBubbleOutlineIcon />}
+                    startIcon={
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 18 18"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        style={{ color: "white" }}
+                      >
+                        <path
+                          d="M5.75016 15.0062C7.34064 15.8221 9.17023 16.0431 10.9092 15.6294C12.6482 15.2156 14.1823 14.1944 15.235 12.7497C16.2876 11.305 16.7897 9.53181 16.6506 7.74969C16.5116 5.96757 15.7406 4.2937 14.4767 3.02972C13.2127 1.76574 11.5388 0.994767 9.7567 0.855738C7.97457 0.716708 6.20139 1.21876 4.75668 2.27143C3.31197 3.3241 2.29074 4.85815 1.87702 6.59715C1.46329 8.33615 1.68428 10.1657 2.50016 11.7562L0.833496 16.6729L5.75016 15.0062Z"
+                          stroke="currentColor"
+                          strokeWidth="1.66667"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    }
                     onClick={handleMessageClick}
                     sx={{
                       textTransform: "none",
@@ -270,8 +318,8 @@ export default function ProfileHeader() {
                   </Button>
                 </Stack>
 
-                <Stack 
-                  direction="row" 
+                <Stack
+                  direction="row"
                   spacing={1}
                   sx={{ display: { xs: "flex", md: "none" } }}
                 >
@@ -334,7 +382,7 @@ export default function ProfileHeader() {
         userData={userData}
         onProfileUpdated={handleProfileUpdated}
       />
-      
+
       <ReportModal
         open={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}

@@ -25,24 +25,27 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
+import MessegeIcon from "../../../assets/images/MessegeIcon.svg";
+
 import CommentsDisabledIcon from "@mui/icons-material/CommentsDisabled";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 import ShareDialog from "../../../components/Modals/ShareDialog";
 import { formatTime } from "../../../utils/timeHelper";
+import { useTheme } from "@mui/material/styles";
 
 // ✅ FileDisplay Component - لعرض جميع أنواع الملفات
 const FileDisplay = ({ fileUrl }) => {
   if (!fileUrl) return null;
 
   const getFileExtension = (url) => {
-    return url.split('.').pop().toLowerCase();
+    return url.split(".").pop().toLowerCase();
   };
 
   const extension = getFileExtension(fileUrl);
-  const fileName = fileUrl.split('/').pop();
+  const fileName = fileUrl.split("/").pop();
 
   // للصور - نفس العرض القديم
-  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
+  if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(extension)) {
     return (
       <Box
         sx={{
@@ -74,29 +77,41 @@ const FileDisplay = ({ fileUrl }) => {
   // للملفات الأخرى - بطاقة تحميل
   const getFileIcon = () => {
     switch (extension) {
-      case 'pdf': return '📄';
-      case 'doc':
-      case 'docx': return '📝';
-      case 'xls':
-      case 'xlsx': return '📊';
-      case 'txt': return '📃';
-      case 'zip':
-      case 'rar': return '🗜️';
-      default: return '📎';
+      case "pdf":
+        return "📄";
+      case "doc":
+      case "docx":
+        return "📝";
+      case "xls":
+      case "xlsx":
+        return "📊";
+      case "txt":
+        return "📃";
+      case "zip":
+      case "rar":
+        return "🗜️";
+      default:
+        return "📎";
     }
   };
 
   const getFileType = () => {
     switch (extension) {
-      case 'pdf': return 'PDF Document';
-      case 'doc':
-      case 'docx': return 'Word Document';
-      case 'xls':
-      case 'xlsx': return 'Excel Spreadsheet';
-      case 'txt': return 'Text File';
-      case 'zip':
-      case 'rar': return 'Compressed Archive';
-      default: return 'File';
+      case "pdf":
+        return "PDF Document";
+      case "doc":
+      case "docx":
+        return "Word Document";
+      case "xls":
+      case "xlsx":
+        return "Excel Spreadsheet";
+      case "txt":
+        return "Text File";
+      case "zip":
+      case "rar":
+        return "Compressed Archive";
+      default:
+        return "File";
     }
   };
 
@@ -105,17 +120,21 @@ const FileDisplay = ({ fileUrl }) => {
       sx={{
         mt: 2,
         p: 2,
-        border: '2px dashed #e0e0e0',
+        border: "2px dashed #e0e0e0",
         borderRadius: 2,
-        bgcolor: '#fafafa',
-        display: 'flex',
-        alignItems: 'center',
+        bgcolor: "#fafafa",
+        display: "flex",
+        alignItems: "center",
         gap: 2,
       }}
     >
       <Typography sx={{ fontSize: 40 }}>{getFileIcon()}</Typography>
       <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="subtitle2" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
+        <Typography
+          variant="subtitle2"
+          fontWeight="bold"
+          sx={{ wordBreak: "break-word" }}
+        >
           {fileName}
         </Typography>
         <Chip
@@ -132,10 +151,10 @@ const FileDisplay = ({ fileUrl }) => {
         download
         target="_blank"
         sx={{
-          textTransform: 'none',
-          bgcolor: '#3b82f6',
-          '&:hover': { bgcolor: '#2563eb' },
-          minWidth: '100px',
+          textTransform: "none",
+          bgcolor: "#3b82f6",
+          "&:hover": { bgcolor: "#2563eb" },
+          minWidth: "100px",
         }}
       >
         Download
@@ -145,7 +164,7 @@ const FileDisplay = ({ fileUrl }) => {
 };
 
 // Single Comment Bubble
-const CommentBubble = ({ comment }) => (
+const CommentBubble = ({ comment,theme }) => (
   <Box sx={{ display: "flex", gap: 1, mb: 1, minWidth: 0 }}>
     <Avatar
       src={comment.author?.avatar}
@@ -153,7 +172,8 @@ const CommentBubble = ({ comment }) => (
     />
     <Box
       sx={{
-        bgcolor: "#eef1f3",
+        // bgcolor: "#eef1f3",
+        bgcolor: theme.palette.mode === 'dark' ? '#2c2c2c' : '#eef1f3',
         borderRadius: "12px",
         p: 1,
         maxWidth: "100%",
@@ -204,6 +224,8 @@ function PostCard({
   onAddCommentInline,
   currentUserAvatar,
 }) {
+  const theme = useTheme(); // 🔥 ضيفي هاد السطر
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [recentComments, setRecentComments] = useState(
     post.recentComments || []
@@ -359,7 +381,17 @@ function PostCard({
           />
 
           <ActionButton
-            icon={<ChatBubbleOutlineIcon />}
+            icon={
+              <img
+                src={MessegeIcon}
+                alt="Messege Icon"
+                style={{
+                  height: "20px",
+                  width: "20px",
+                  display: "block",
+                }}
+              />
+            }
             label={`${post.comments} Comments`}
             onClick={isPostClosed ? undefined : handleCommentClick}
           />
@@ -371,27 +403,34 @@ function PostCard({
         </CardActions>
 
         {isPostClosed && (
-          <Box sx={{
-            px: 2,
-            py: 1.5,
-            bgcolor: '#fff3cd',
-            borderTop: '1px solid #ffc107',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1
-          }}>
-            <CommentsDisabledIcon sx={{ color: '#856404', fontSize: 20 }} />
-            <Typography variant="body2" sx={{ color: '#856404', fontWeight: 500 }}>
+          <Box
+            sx={{
+              px: 2,
+              py: 1.5,
+              bgcolor: "#fff3cd",
+              borderTop: "1px solid #ffc107",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <CommentsDisabledIcon sx={{ color: "#856404", fontSize: 20 }} />
+            <Typography
+              variant="body2"
+              sx={{ color: "#856404", fontWeight: 500 }}
+            >
               Comments are disabled for this post
             </Typography>
           </Box>
         )}
         <Divider />
 
-        <Box sx={{ px: 2, pb: 1, pt: 1, bgcolor: "#fbfbfb" }}>
+        <Box
+          sx={{ px: 2, pb: 1, pt: 1, bgcolor: theme.palette.background.paper }}
+        >
           {recentComments.length > 0 &&
             recentComments.map((comment, index) => (
-              <CommentBubble key={comment.id || index} comment={comment} />
+              <CommentBubble key={comment.id || index} comment={comment} theme={theme}/>
             ))}
 
           {post.comments > recentComments.length && !isPostClosed && (
@@ -441,7 +480,16 @@ function PostCard({
                 {isCommenting ? (
                   <CircularProgress size={20} />
                 ) : (
-                  <ChatBubbleOutlineIcon fontSize="small" />
+                  // <ChatBubbleOutlineIcon fontSize="small" />
+                      <img
+                src={MessegeIcon}
+                alt="Messege Icon"
+                style={{
+                  height: "20px",
+                  width: "20px",
+                  display: "block",
+                }}
+              />
                 )}
               </IconButton>
             </Box>

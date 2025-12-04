@@ -7,6 +7,7 @@ import { Menu, MenuItem } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getImageUrl } from "../../utils/imageHelper";
+import { useTheme } from "@mui/material/styles";
 
 const ServiceCard = ({
   icon,
@@ -20,6 +21,8 @@ const ServiceCard = ({
   onDelete,
   image
 }) => {
+    const theme = useTheme(); // 🔥 ضيفي هاد السطر
+  
   const [anchorEl, setAnchorEl] = useState(null);
   const [showFullTitle, setShowFullTitle] = useState(false); // ✅ لعرض العنوان الكامل
   const open = Boolean(anchorEl);
@@ -164,7 +167,8 @@ const ServiceCard = ({
           {count && (
             <Box
               sx={{
-                backgroundColor: "#F1F5F9",
+                //  backgroundColor: "#F1F5F9",
+                backgroundColor: theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9',
                 borderRadius: "12px",
                 py: 0.5,
                 px: 1.5,

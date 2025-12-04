@@ -20,9 +20,10 @@ import { getImageUrl } from "../../../utils/imageHelper";
 import { useProfile } from "../../../Context/ProfileContext";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { formatTime } from "../../../utils/timeHelper";
+import { useTheme } from "@mui/material/styles";
 
 const FormWrapper = styled(Box)(({ theme }) => ({
-  backgroundColor: "white",
+  backgroundColor:theme.palette.background.paper,
   padding: theme.spacing(3),
   borderRadius: "12px",
   boxShadow: "0px 0px 3px rgba(0, 0, 0, 0.2)",
@@ -39,6 +40,9 @@ const FormWrapper = styled(Box)(({ theme }) => ({
 }));
 
 const CreatePost = ({ addPost, token }) => {
+
+      const theme = useTheme(); // 🔥 ضيفي هاد السطر
+  
   const { userData } = useProfile();
   const { currentUser } = useCurrentUser();
 
@@ -220,7 +224,7 @@ const CreatePost = ({ addPost, token }) => {
             }
             sx={{
               flexGrow: 1,
-              backgroundColor: "#FFF",
+              backgroundColor: theme.palette.background.paper,
               borderRadius: 3,
               "& .MuiOutlinedInput-root": {
                 borderRadius: 3,

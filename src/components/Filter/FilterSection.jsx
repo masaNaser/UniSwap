@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { useTheme } from "@mui/material/styles";
 
 export default function FilterSection({
   searchPlaceholder = "Search...",
@@ -16,6 +17,10 @@ export default function FilterSection({
   onSearchChange,
   items = [],
 }) {
+
+  const theme = useTheme(); // 🔥 ضيفي هاد السطر
+
+
   const [anchorElements, setAnchorElements] = React.useState({});
 
   const handleMenuClick = React.useCallback((index, event) => {
@@ -43,7 +48,8 @@ export default function FilterSection({
   return (
     <Box
       sx={{
-        backgroundColor: "#fff",
+        // backgroundColor: "#fff",
+        backgroundColor: theme.palette.mode === 'dark' ? '#474646ff' : '#fff',
         borderRadius: "8px",
         border: "1px solid #E2E8F0",
         p: "16px 20px",
@@ -65,7 +71,8 @@ export default function FilterSection({
           minWidth: "300px",
           "& .MuiOutlinedInput-root": {
             borderRadius: "6px",
-            backgroundColor: "#FAFBFC",
+            // backgroundColor: "#FAFBFC",
+            backgroundColor: theme.palette.mode === 'dark' ? '#474646ff' : '#FAFBFC',
             "& fieldset": { borderColor: "#E2E8F0" },
             "&:hover fieldset": { borderColor: "#CBD5E1" },
             "&.Mui-focused fieldset": { borderColor: "#94A3B8" },
@@ -93,8 +100,10 @@ export default function FilterSection({
                 sx={{
                   borderRadius: "6px",
                   textTransform: "none",
-                  color: "#334155",
-                  backgroundColor: "#FAFBFC",
+                  // color: "#334155", 
+                 // backgroundColor: "#FAFBFC",
+                  color: theme.palette.mode === 'dark' ? '#fff' : '#334155',
+                  backgroundColor: theme.palette.mode === 'dark' ? '#474646ff' : '#FAFBFC',
                   border: "1px solid #E2E8F0",
                   padding: "8px 12px",
                   fontSize: "14px",
@@ -102,7 +111,7 @@ export default function FilterSection({
                   minWidth: "fit-content",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                   "&:hover": {
-                    backgroundColor: "#F1F5F9",
+                  backgroundColor: theme.palette.mode === 'dark' ? '#a19f9fff' : '#F1F5F9',
                     borderColor: "#CBD5E1",
                     boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
                   },
@@ -147,7 +156,9 @@ export default function FilterSection({
                 borderRadius: "6px",
                 textTransform: "none",
                 color: item.color || "#334155",
-                backgroundColor: item.backgroundColor || "#FAFBFC",
+                color: theme.palette.mode === 'dark' ? '#fff' : '#334155',
+                  backgroundColor: theme.palette.mode === 'dark' ? '#474646ff' : '#FAFBFC',
+                // backgroundColor: item.backgroundColor || "#FAFBFC",
                 border: item.border || "1px solid #E2E8F0",
                 padding: "8px 12px",
                 fontSize: "14px",
@@ -155,7 +166,7 @@ export default function FilterSection({
                 minWidth: "fit-content",
                 boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                 "&:hover": {
-                  backgroundColor: item.hoverBg || "#F1F5F9",
+                  backgroundColor: theme.palette.mode === 'dark' ? '#a19f9fff' : '#F1F5F9',
                   borderColor: item.borderHover || "#CBD5E1",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
                 },
