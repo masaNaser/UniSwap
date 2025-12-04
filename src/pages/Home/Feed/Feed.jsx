@@ -53,7 +53,8 @@ import PostCardSkeleton from "../../../components/Skeletons/PostCardSkeleton";
 import dayjs from "dayjs";
 import { isAdmin } from "../../../utils/authHelpers";
 import { formatTime } from "../../../utils/timeHelper";
-import useInfiniteScroll from "../../../hooks/useInfiniteScroll"; // ✅ استيراد الـ hook
+import useInfiniteScroll from "../../../hooks/useInfiniteScroll"; 
+import EditPostModal from "../../../components/Modals/EditPostModal"; 
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
@@ -887,7 +888,17 @@ export default function Feed() {
         </DialogActions>
       </Dialog>
 
-      <Dialog
+ <EditPostModal
+      open={editDialog.open}
+      onClose={closeEditDialog}
+      editDialog={editDialog}
+      setEditDialog={setEditDialog}
+      onSubmit={handleEditPost}
+      isUpdating={isUpdating}
+      snackbar={snackbar}
+      onSnackbarClose={handleSnackbarClose}
+    />
+      {/* <Dialog
         open={editDialog.open}
         onClose={closeEditDialog}
         maxWidth="sm"
@@ -922,9 +933,9 @@ export default function Feed() {
           />
 
           {/* Upload Buttons */}
-          <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+          {/* <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
             {/* Image Upload */}
-            <Box>
+            {/* <Box>
               <input
                 type="file"
                 accept="image/*"
@@ -951,10 +962,10 @@ export default function Feed() {
                   Choose Image
                 </Button>
               </label>
-            </Box>
+            </Box>  */}
 
             {/* Document Upload */}
-            <Box>
+            {/* <Box>
               <input
                 type="file"
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
@@ -982,10 +993,10 @@ export default function Feed() {
                 </Button>
               </label>
             </Box>
-          </Box>
+          </Box> */}
 
           {/* Preview Section - للملف الجديد أو الموجود */}
-          {(editDialog.file || editDialog.existingFileUrl) && (
+          {/* {(editDialog.file || editDialog.existingFileUrl) && (
             <Box sx={{ mt: 2, mb: 2 }}>
               {editDialog.previewUrl &&
               editDialog.previewUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) ? (
@@ -1094,7 +1105,7 @@ export default function Feed() {
             )}
           </Button>
         </DialogActions>
-      </Dialog>
+      // </Dialog> */} 
 
       <Snackbar
         open={snackbar.open}

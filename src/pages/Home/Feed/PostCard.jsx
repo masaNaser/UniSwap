@@ -350,17 +350,30 @@ function PostCard({
           <Typography variant="body1" color="text.primary" paragraph>
             {post.content}
           </Typography>
-          <Box sx={{ mb: 1, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-            {post.selectedTags.map((tag, index) => (
-              <Chip
-                key={index}
-                label={tag}
-                size="small"
-                variant="outlined"
-                color="primary"
-              />
-            ))}
-          </Box>
+       <Box sx={{ mb: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
+  {post.selectedTags.map((tag, index) => (
+    <Chip
+      key={index}
+      label={`#${tag}`} // ✅ أضف # قبل التاج
+      size="medium"
+      variant="outlined"
+      color="primary"
+      // cursor="pointer"
+      sx={{
+        minWidth: "80px", // ✅ حجم ثابت على الأقل
+        height: "32px", // ✅ ارتفاع ثابت
+        fontSize: "15px", // ✅ حجم خط أكبر
+        fontWeight: "600", // ✅ خط bold
+        borderRadius: "16px", // ✅ زوايا مدورة أكثر
+        px: 2, // ✅ مسافة أفقية
+          "&:hover": {
+          bgcolor: "rgba(59, 130, 246, 0.25)", // ✅ تأثير hover
+        },
+        cursor: "pointer", // ✅ مؤشر الفأرة على شكل يد
+      }}
+    />
+  ))}
+</Box>
           {/* ✅ استخدام FileDisplay بدل الكود القديم */}
           {post.fileUrl && <FileDisplay fileUrl={post.fileUrl} />}
         </CardContent>

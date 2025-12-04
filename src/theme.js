@@ -48,17 +48,17 @@ export const getTheme = (mode = "light") => {
             },
           }),
     },
-    typography: {
-      fontFamily: [
-        '-apple-system',
-        'BlinkMacSystemFont',
-        '"Segoe UI"',
-        'Roboto',
-        '"Helvetica Neue"',
-        'Arial',
-        'sans-serif',
-      ].join(','),
-    },
+    // typography: {
+    //   fontFamily: [
+    //     '-apple-system',
+    //     'BlinkMacSystemFont',
+    //     '"Segoe UI"',
+    //     'Roboto',
+    //     '"Helvetica Neue"',
+    //     'Arial',
+    //     'sans-serif',
+    //   ].join(','),
+    // },
     components: {
       MuiAppBar: {
         defaultProps: {
@@ -70,41 +70,41 @@ export const getTheme = (mode = "light") => {
           },
         },
       },
-      MuiPaper: {
-        styleOverrides: {
-          root: {
-            borderRadius: 12,
-          },
-        },
-      },
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            borderRadius: 8,
-            textTransform: "none",
-            fontWeight: 600,
-          },
-        },
-      },
-      MuiCard: {
-        styleOverrides: {
-          root: {
-            borderRadius: 12,
-            boxShadow: mode === "light"
-              ? "0 2px 8px rgba(0,0,0,0.1)"
-              : "0 2px 8px rgba(0,0,0,0.3)",
-          },
-        },
-      },
-      MuiTextField: {
-        styleOverrides: {
-          root: {
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 8,
-            },
-          },
-        },
-      },
+      // MuiPaper: {
+      //   styleOverrides: {
+      //     root: {
+      //       borderRadius: 12,
+      //     },
+      //   },
+      // },
+      // MuiButton: {
+      //   styleOverrides: {
+      //     root: {
+      //       borderRadius: 8,
+      //       textTransform: "none",
+      //       fontWeight: 600,
+      //     },
+      //   },
+      // },
+      // MuiCard: {
+      //   styleOverrides: {
+      //     root: {
+      //       borderRadius: 12,
+      //       boxShadow: mode === "light"
+      //         ? "0 2px 8px rgba(0,0,0,0.1)"
+      //         : "0 2px 8px rgba(0,0,0,0.3)",
+      //     },
+      //   },
+      // },
+      // MuiTextField: {
+      //   styleOverrides: {
+      //     root: {
+      //       "& .MuiOutlinedInput-root": {
+      //         borderRadius: 8,
+      //       },
+      //     },
+      //   },
+      // },
       MuiCssBaseline: {
         styleOverrides: {
           body: {

@@ -241,8 +241,7 @@ export default function AllStatusProjectCard({
             {!showFullDescription ? (
               <Typography
                 variant="body2"
-                color=
-                {theme.palette.mode === 'dark' ? '#6B7280' : '#FFFFFF'}
+                color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#6B7280'}
                 fontSize="13px"
                 lineHeight={1.5}
                 sx={{
