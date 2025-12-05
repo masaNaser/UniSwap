@@ -141,7 +141,7 @@ export default function AllStatusProjectCard({
     if (isProvider && actualStatus === "Overdue") {
       setSnackbar({
         open: true,
-        message: "⚠️ This project is overdue. Please contact the client to extend the deadline.",
+        message: "⚠ This project is overdue. Please contact the client to extend the deadline.",
       });
       return;
     }
@@ -224,7 +224,7 @@ export default function AllStatusProjectCard({
             mb={1}
             fontSize="18px"
             lineHeight={1.3}
-            color={theme.palette.mode === 'dark' ? '#1F2937' : '#FFFFFF'}
+            color={theme.palette.mode === 'dark' ? '#1F2937' : 'black'}
             sx={{
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -241,8 +241,7 @@ export default function AllStatusProjectCard({
             {!showFullDescription ? (
               <Typography
                 variant="body2"
-                color=
-                {theme.palette.mode === 'dark' ? '#6B7280' : '#FFFFFF'}
+                color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#6B7280'}
                 fontSize="13px"
                 lineHeight={1.5}
                 sx={{
@@ -448,6 +447,6 @@ export default function AllStatusProjectCard({
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </>
-  );
+    </>
+  );
 }

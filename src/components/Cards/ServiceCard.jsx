@@ -21,8 +21,8 @@ const ServiceCard = ({
   onDelete,
   image
 }) => {
-    const theme = useTheme(); // 🔥 ضيفي هاد السطر
-  
+  const theme = useTheme(); // 🔥 ضيفي هاد السطر
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [showFullTitle, setShowFullTitle] = useState(false); // ✅ لعرض العنوان الكامل
   const open = Boolean(anchorEl);
@@ -114,7 +114,7 @@ const ServiceCard = ({
           ) : (
             <Box sx={{ color: "primary.main" }}>{icon}</Box>
           )}
-          
+
           {image && (
             <Box sx={{ color: "primary.main", display: 'none' }}>{icon}</Box>
           )}
@@ -122,14 +122,14 @@ const ServiceCard = ({
           <Typography
             variant="h6"
             onClick={() => setShowFullTitle(!showFullTitle)} // ✅ يبدل بين مختصر وكامل
-            sx={{    
-              fontWeight: "bold", 
+            sx={{
+              fontWeight: "bold",
               fontSize: "1rem",
               wordBreak: "break-word",
               overflowWrap: "break-word",
               cursor: "pointer",
               transition: "color 0.2s",
-           
+
               // ✅ لو showFullTitle = false، اعرض سطرين بس
               ...(!showFullTitle && {
                 overflow: "hidden",
@@ -190,6 +190,7 @@ const ServiceCard = ({
               size="small"
               sx={{
                 color: "inherit",
+                ml: "auto",
                 transition: "0.2s",
                 "&:hover": { transform: "translateX(3px)", color: "#6A67FE" },
               }}

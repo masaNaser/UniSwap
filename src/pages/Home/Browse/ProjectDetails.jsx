@@ -11,16 +11,19 @@ import {
   TextField,
   Divider,
   Paper,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DownloadIcon from "@mui/icons-material/Download";
+import StarIcon from "@mui/icons-material/Star";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import DisabledCustomButton from "../../../components/CustomButton/DisabledCustomButton";
-import RequestServiceModal from "../../../components/Modals/RequestServiceModal";
-import Point from "../../../assets/images/Point.svg";
 import api from "../../../services/api";
+import { addPublicReview, getPublicReviews } from "../../../services/reviewService";
+import { formatTime } from "../../../utils/timeHelper";
 
 const ProjectDetails = () => {
   const token = localStorage.getItem("accessToken");
@@ -32,19 +35,25 @@ const ProjectDetails = () => {
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(0);
   const [imgError, setImgError] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [hasUserReviewed, setHasUserReviewed] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  // Modal State
-  const [openModal, setOpenModal] = useState(false);
+  const currentUserId = localStorage.getItem("userId");
+  const isReviewDisabled = reviewText.trim().length === 0 || !reviewRating || isSubmittingReview || hasUserReviewed;
 
-  const isReviewDisabled = reviewText.trim().length === 0 || !reviewRating;
-
-  // Fetch project details
+  // Fetch project details and reviews
   const fetchProjectDetails = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log("Fetching project details for ID:", id);
+      console.log("📡 Fetching project details for ID:", id);
 
       const response = await api.get(`/PublishProjects/${id}`, {
         headers: {
@@ -52,10 +61,13 @@ const ProjectDetails = () => {
         },
       });
 
-      console.log("Project details:", response.data);
+      console.log("✅ Project details:", response.data);
       setProject(response.data);
+
+      // Fetch reviews
+      await fetchReviews(id);
     } catch (err) {
-      console.error("Error fetching project:", err);
+      console.error("❌ Error fetching project:", err);
       setError(
         err.response?.data?.message || err.message || "Failed to load project"
       );
@@ -64,15 +76,85 @@ const ProjectDetails = () => {
     }
   };
 
+  // Fetch reviews
+  const fetchReviews = async (publishProjectId) => {
+    try {
+      console.log("📡 Fetching reviews for project:", publishProjectId);
+      const response = await getPublicReviews(publishProjectId, token);
+      console.log("✅ Reviews fetched:", response.data);
+      setReviews(response.data);
+
+      // Check if current user has already reviewed
+      if (currentUserId) {
+        const userHasReviewed = response.data.some(
+          (review) => review.reviewerId === currentUserId
+        );
+        setHasUserReviewed(userHasReviewed);
+        console.log("👤 User has reviewed:", userHasReviewed);
+      }
+    } catch (err) {
+      console.error("❌ Error fetching reviews:", err);
+      // Don't set error state here, as reviews are not critical
+      setReviews([]);
+    }
+  };
+
   useEffect(() => {
     if (id) fetchProjectDetails();
   }, [id]);
 
   // Handle Review Submit
-  const handleReviewSubmit = () => {
-    console.log("Review submitted:", { reviewText, reviewRating });
-    setReviewText("");
-    setReviewRating(0);
+  const handleReviewSubmit = async () => {
+    if (isReviewDisabled) return;
+
+    try {
+      setIsSubmittingReview(true);
+      console.log("📤 Submitting review:", {
+        publishProjectId: id,
+        rating: reviewRating,
+        content: reviewText,
+      });
+
+      const response = await addPublicReview(id, reviewRating, reviewText, token);
+      console.log("✅ Review submitted successfully:", response.data);
+
+      // Clear form
+      setReviewText("");
+      setReviewRating(0);
+
+      // Refresh reviews
+      await fetchReviews(id);
+
+      setSnackbar({
+        open: true,
+        message: "Review submitted successfully! 🎉",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("❌ Error submitting review:", error);
+
+      let errorMessage = "Failed to submit review. Please try again.";
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.title) {
+        errorMessage = error.response.data.title;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   if (loading) {
@@ -123,7 +205,7 @@ const ProjectDetails = () => {
       <Container maxWidth="lg">
         <Breadcrumbs
           separator={<NavigateNextIcon fontSize="small" />}
-          sx={{ mb: 3 }}
+          sx={{ mb: 2 }}
         >
           <Typography
             component={Link}
@@ -133,7 +215,33 @@ const ProjectDetails = () => {
           >
             Services
           </Typography>
-          <Typography color="text.primary">Project Details</Typography>
+          {project.serviceName && project.serviceId && (
+            <Typography
+              component={Link}
+              to={`/app/browse/${project.serviceId}?name=${encodeURIComponent(
+                project.serviceName
+              )}`}
+              color="inherit"
+              sx={{ textDecoration: "none" }}
+            >
+              {project.serviceName}
+            </Typography>
+          )}
+          {project.subServiceName && project.subServiceId && (
+            <Typography
+              component={Link}
+              to={`/app/services/${project.subServiceId}/projects?name=${encodeURIComponent(
+                project.subServiceName
+              )}&parentName=${encodeURIComponent(
+                project.serviceName
+              )}&parentId=${project.serviceId}`}
+              color="inherit"
+              sx={{ textDecoration: "none" }}
+            >
+              {project.subServiceName}
+            </Typography>
+          )}
+          <Typography color="text.primary">{project.title}</Typography>
         </Breadcrumbs>
 
         {/* Back Button */}
@@ -237,17 +345,16 @@ const ProjectDetails = () => {
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
-                  mb: 4,
+                  mb: 2,
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  {/* <img src={Point} alt="points" style={{ width: 20, height: 20 }} /> */}
                   <Box
                     sx={{
                       width: 20,
                       height: 20,
-                      backgroundColor: "#3B82F6", // لون الخلفية
-                      borderRadius: "50%", // دائري
+                      backgroundColor: "#3B82F6",
+                      borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -278,25 +385,6 @@ const ProjectDetails = () => {
                   {project.points || 0} pts
                 </Typography>
               </Box>
-
-              <Divider sx={{ mb: 4 }} />
-
-              {/* Request Service Button */}
-              <CustomButton
-                fullWidth
-                size="large"
-                onClick={() => setOpenModal(true)}
-              >
-                Request Service
-              </CustomButton>
-
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: "block", textAlign: "center", mt: 2 }}
-              >
-                You'll be able to customize your request details
-              </Typography>
             </Paper>
           </Box>
         </Box>
@@ -319,7 +407,15 @@ const ProjectDetails = () => {
         {/* User Info */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
           <Avatar
-            sx={{ width: 56, height: 56, mr: 2.5 }}
+            component={Link}
+            to={`/app/profile/${project.userId}`}
+            sx={{ 
+              width: 56, 
+              height: 56, 
+              mr: 2.5,
+              cursor: "pointer",
+              textDecoration: "none"
+            }}
             src={
               project.profilePicture
                 ? `https://uni.runasp.net${project.profilePicture}`
@@ -331,8 +427,19 @@ const ProjectDetails = () => {
           </Avatar>
           <Box>
             <Typography
+              component={Link}
+              to={`/app/profile/${project.userId}`}
               variant="body1"
-              sx={{ fontWeight: "medium", fontSize: "1.05rem" }}
+              sx={{ 
+                fontWeight: "medium", 
+                fontSize: "1.05rem",
+                textDecoration: "none",
+                color: "inherit",
+                "&:hover": {
+                  color: "#3B82F6",
+                  cursor: "pointer"
+                }
+              }}
             >
               {project.userName || "Anonymous"}
             </Typography>
@@ -481,81 +588,215 @@ const ProjectDetails = () => {
             variant="h5"
             sx={{ fontWeight: "bold", mb: 3, fontSize: "1.3rem" }}
           >
-            Reviews
+            Reviews ({reviews.length})
           </Typography>
 
           {/* Add Review Form */}
-          <Paper
-            elevation={0}
-            sx={{
-              p: 4,
-              bgcolor: "rgb(0 0 0 / 2%)",
-              borderRadius: "12px",
-              mb: 4,
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 3, fontSize: "1.1rem" }}>
-              Leave a Review
-            </Typography>
-
-            {/* Rating */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="body2" sx={{ mb: 1.5, fontWeight: "500" }}>
-                Your Rating:
-              </Typography>
-              <Rating
-                value={reviewRating}
-                onChange={(event, newValue) => setReviewRating(newValue)}
-                size="large"
-              />
-            </Box>
-
-            {/* Review Text */}
-            <TextField
-              fullWidth
-              multiline
-              rows={5}
-              placeholder="Share your experience with this project..."
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
+          {!hasUserReviewed ? (
+            <Paper
+              elevation={0}
               sx={{
-                mb: 3,
-                bgcolor: "#fff",
-                borderRadius: "8px",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                },
+                p: 4,
+                bgcolor: "rgb(0 0 0 / 2%)",
+                borderRadius: "12px",
+                mb: 4,
               }}
-            />
+            >
+              <Typography variant="h6" sx={{ mb: 3, fontSize: "1.1rem" }}>
+                Leave a Review
+              </Typography>
 
-            {isReviewDisabled ? (
-              <DisabledCustomButton fullWidth>
-                Submit Review
-              </DisabledCustomButton>
-            ) : (
-              <CustomButton fullWidth onClick={handleReviewSubmit}>
-                Submit Review
-              </CustomButton>
-            )}
-          </Paper>
+              {/* Rating */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body2" sx={{ mb: 1.5, fontWeight: "500" }}>
+                  Your Rating:
+                </Typography>
+                <Rating
+                  value={reviewRating}
+                  onChange={(event, newValue) => setReviewRating(newValue)}
+                  size="large"
+                  disabled={isSubmittingReview}
+                />
+              </Box>
 
-          {/* Reviews List (Placeholder) */}
-          <Box>
-            <Typography variant="body2" color="text.secondary">
-              No reviews yet. Be the first to review this project!
-            </Typography>
-          </Box>
+              {/* Review Text */}
+              <TextField
+                fullWidth
+                multiline
+                rows={5}
+                placeholder="Share your experience with this project..."
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                disabled={isSubmittingReview}
+                sx={{
+                  mb: 3,
+                  bgcolor: "#fff",
+                  borderRadius: "8px",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "8px",
+                  },
+                }}
+              />
+
+              {isReviewDisabled ? (
+                <DisabledCustomButton fullWidth>
+                  {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                </DisabledCustomButton>
+              ) : (
+                <CustomButton fullWidth onClick={handleReviewSubmit}>
+                  Submit Review
+                </CustomButton>
+              )}
+            </Paper>
+          ) : (
+            <Alert severity="info" sx={{ mb: 4 }}>
+              You have already reviewed this project. Thank you for your feedback!
+            </Alert>
+          )}
+
+          {/* Reviews List - NEW DESIGN */}
+          {reviews.length > 0 ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+              {reviews.map((review) => (
+                <Box
+                  key={review.id}
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 2,
+                    py: 2,
+                  }}
+                >
+                  {/* Avatar */}
+                  <Avatar
+                    sx={{
+                      width: 50,
+                      height: 50,
+                      fontSize: "1.1rem",
+                      fontWeight: "600",
+                    }}
+                    src={
+                      review.reviewerProfilePicture
+                        ? `https://uni.runasp.net${review.reviewerProfilePicture}`
+                        : undefined
+                    }
+                  >
+                    {!review.reviewerProfilePicture &&
+                      (review.reviewerName?.[0]?.toUpperCase() || "U")}
+                  </Avatar>
+
+                  {/* Review Content */}
+                  <Box sx={{ flex: 1 }}>
+                    {/* Reviewer Name */}
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontWeight: "600",
+                        mb: 0.5,
+                        fontSize: "1rem",
+                      }}
+                    >
+                      {review.reviewerName || "Anonymous"}
+                    </Typography>
+
+                    {/* Rating with numeric value */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 1.5,
+                      }}
+                    >
+                      <StarIcon
+                        sx={{
+                          color: "#FFD700",
+                          fontSize: "1.3rem",
+                        }}
+                      />
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: "500",
+                          fontSize: "1rem",
+                        }}
+                      >
+                        {review.rating.toFixed(2)}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.secondary",
+                          fontSize: "0.9rem",
+                          ml: 1,
+                        }}
+                      >
+                        {formatTime(review.createdAt)}
+                      </Typography>
+                    </Box>
+
+                    {/* Review Text */}
+                    {review.content && (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.primary",
+                          lineHeight: 1.6,
+                          fontSize: "0.95rem",
+                        }}
+                      >
+                        {review.content}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                textAlign: "center",
+                p: 4,
+                bgcolor: "rgb(0 0 0 / 2%)",
+                borderRadius: "12px",
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                No reviews yet. Be the first to review this project!
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Container>
 
-      {/* Request Service Modal */}
-      <RequestServiceModal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        projectTitle={project.title}
-        projectId={project.id}
-        pointsBudget={project.points}
-      />
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{
+            width: "100%",
+            bgcolor:
+              snackbar.severity === "success"
+                ? "#3b82f6"
+                : snackbar.severity === "error"
+                ? "#EF4444"
+                : undefined,
+            color: "white",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

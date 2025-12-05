@@ -91,12 +91,25 @@ export default function TaskCard({
       }}
     >
       <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+        {isProvider && (
+          <IconButton
+            size="small"
+            onClick={onMenuOpen}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 1,
+            }}
+          >
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+        )}
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
           }}
         >
           <Box sx={{ flex: 1 }}>
@@ -120,17 +133,46 @@ export default function TaskCard({
             </Typography>
 
             {task.description && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: "block", mb: 1 }}
+              <Box
+                sx={{
+                  maxHeight: 60,
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                  pr: 0.5,
+                  mb: 1,
+                  "&::-webkit-scrollbar": {
+                    width: "4px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    background: "#F3F4F6",
+                    borderRadius: "4px",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    background: "#D1D5DB",
+                    borderRadius: "4px",
+                    "&:hover": {
+                      background: "#9CA3AF",
+                    },
+                  },
+                }}
               >
-                {task.description}
-              </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    wordBreak: "break-word",
+                    fontSize: "12px",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {task.description}
+                </Typography>
+              </Box>
             )}
 
             {/* File Attachment */}
             {task.uploadFile && (
+              <Box sx={{ textAlign: 'center' }}>
               <Button
                 size="small"
                 startIcon={<AttachFileIcon />}
@@ -147,6 +189,7 @@ export default function TaskCard({
               >
                 View Attachment
               </Button>
+              </Box>
             )}
 
             {/* Progress Bar */}
@@ -281,15 +324,6 @@ export default function TaskCard({
               </Box>
             )}
           </Box>
-          {isProvider && (
-            <IconButton
-              size="small"
-              onClick={onMenuOpen}
-              sx={{ mt: -1, mr: -1 }}
-            >
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
-          )}
         </Box>
       </CardContent>
     </Card>

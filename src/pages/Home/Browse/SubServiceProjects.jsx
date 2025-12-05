@@ -12,16 +12,22 @@ import {
   Chip,
   Avatar,
   Pagination,
+  IconButton,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import StarIcon from "@mui/icons-material/Star";
+import EditIcon from "@mui/icons-material/Edit";
 import { browseProjectsBySubService } from "../../../services/publishProjectServices";
 import FilterSection from "../../../components/Filter/FilterSection";
 import CustomButton from "../../../components/CustomButton/CustomButton";
-import Point from "../../../assets/images/Point.svg";
+import PublishProjectModal from "../../../components/Modals/PublishProjectModal";
 
-const ProjectCard = ({ project }) => {
+const ProjectCard = ({ project, onEditClick }) => {
+  const currentUserId = localStorage.getItem("userId");
+  const isOwner = currentUserId === project.userId;
+
   return (
     <Card
       sx={{
@@ -30,8 +36,32 @@ const ProjectCard = ({ project }) => {
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        position: "relative",
       }}
     >
+      {/* Edit Icon - Top Right */}
+      {isOwner && (
+        <IconButton
+          onClick={() => onEditClick(project)}
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            bgcolor: "rgba(255, 255, 255, 0.9)",
+            zIndex: 10,
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+            "&:hover": {
+              bgcolor: "white",
+              transform: "scale(1.1)",
+            },
+            transition: "all 0.2s",
+          }}
+          size="small"
+        >
+          <EditIcon sx={{ fontSize: 18, color: "#3B82F6" }} />
+        </IconButton>
+      )}
+
       <Box sx={{ position: "relative" }}>
         <CardMedia
           component="img"
@@ -44,12 +74,61 @@ const ProjectCard = ({ project }) => {
             objectFit: "cover",
           }}
         />
+        
+        {/* Rating Badge - Bottom Right of Image */}
+        {project.finalRating > 0 && (
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 12,
+              right: 12,
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              px: 1.5,
+              py: 0.5,
+              borderRadius: "20px",
+            }}
+          >
+            <StarIcon
+              sx={{
+                color: "#FFD700",
+                fontSize: "1.1rem",
+                filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))",
+              }}
+            />
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: "700",
+                fontSize: "0.9rem",
+                color: "white",
+                textShadow: "0 1px 3px rgba(0, 0, 0, 0.5)",
+              }}
+            >
+              {project.finalRating.toFixed(1)}
+            </Typography>
+            {project.reviewCount > 0 && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "white",
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  textShadow: "0 1px 3px rgba(0, 0, 0, 0.5)",
+                }}
+              >
+                ({project.reviewCount})
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Link
-            to={`/profile/${project.userId}`}
+            to={`/app/profile/${project.userId}`}
             style={{ textDecoration: "none" }}
           >
             <Avatar
@@ -63,11 +142,22 @@ const ProjectCard = ({ project }) => {
               {!project.profilePicture && project.userName.substring(0, 2).toUpperCase()}
             </Avatar>
           </Link>
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-              {project.userName || "Anonymous"}
-            </Typography>
-          </Box>
+          <Typography
+            component={Link}
+            to={`/app/profile/${project.userId}`}
+            variant="body2"
+            sx={{
+              fontWeight: "medium",
+              textDecoration: "none",
+              color: "inherit",
+              "&:hover": {
+                color: "#3B82F6",
+                cursor: "pointer",
+              },
+            }}
+          >
+            {project.userName || "Anonymous"}
+          </Typography>
         </Box>
 
         <Typography
@@ -155,12 +245,11 @@ const ProjectCard = ({ project }) => {
             </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            {/* <img src={Point} alt="points" style={{ width: 16, height: 16 }} /> */}
-               <Box   sx={{
+            <Box   sx={{
                               width: 20,
                               height: 20,
-                              backgroundColor: "#3B82F6", // لون الخلفية
-                              borderRadius: "50%", // دائري
+                              backgroundColor: "#3B82F6",
+                              borderRadius: "50%",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -213,12 +302,15 @@ export default function SubServiceProjects() {
   const [selectedRated, setSelectedRated] = useState("Highest Rated");
   const [selectedPrice, setSelectedPrice] = useState("All Prices");
 
+  // Edit Modal State
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [projectToEdit, setProjectToEdit] = useState(null);
+
   const fetchServiceProject = async (page = 1) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Debug logging
       console.log("Fetching projects with:", {
         subServiceId: id,
         page,
@@ -234,10 +326,21 @@ export default function SubServiceProjects() {
       );
 
       console.log("Projects data:", response.data);
-
-     setProjects(Array.isArray(response.data.items) ? response.data.items : []);
-setTotalPages(response.data.totalPages || 1);
-setTotalCount(response.data.totalCount || 0);
+      
+      if (Array.isArray(response.data)) {
+        setProjects(response.data);
+        setTotalPages(1);
+        setTotalCount(response.data.length);
+      } else if (response.data.items && Array.isArray(response.data.items)) {
+        setProjects(response.data.items);
+        setTotalPages(response.data.totalPages || 1);
+        setTotalCount(response.data.totalCount || 0);
+      } else {
+        console.warn("Unexpected response format:", response.data);
+        setProjects([]);
+        setTotalPages(1);
+        setTotalCount(0);
+      }
     } catch (err) {
       console.error("Error fetching projects:", err);
       setError(err.message || "Failed to load projects");
@@ -262,6 +365,21 @@ setTotalCount(response.data.totalCount || 0);
     setSelectedPrice(value);
   };
 
+  const handleEditClick = (project) => {
+    setProjectToEdit(project);
+    setEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setEditModalOpen(false);
+    setProjectToEdit(null);
+  };
+
+  const handleEditSuccess = () => {
+    // Refresh projects list after successful edit
+    fetchServiceProject(page);
+  };
+
   const filterItems = [
     {
       type: 'menu',
@@ -284,7 +402,6 @@ setTotalCount(response.data.totalCount || 0);
     }
   ];
 
-  // Loading state
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -295,7 +412,6 @@ setTotalCount(response.data.totalCount || 0);
     );
   }
 
-  // Error state
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -306,9 +422,7 @@ setTotalCount(response.data.totalCount || 0);
     );
   }
 
-  // No projects state
-  if (!projects || projects.length === 0)
- {
+  if (!projects || projects.length === 0) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Breadcrumbs
@@ -421,7 +535,6 @@ setTotalCount(response.data.totalCount || 0);
         </CustomButton>
       </Box>
 
-      {/* Filter Section */}
       <FilterSection
         searchPlaceholder="Search projects..."
         searchValue={searchQuery}
@@ -429,16 +542,14 @@ setTotalCount(response.data.totalCount || 0);
         items={filterItems}
       />
 
-      {/* Project Grid */}
       <Grid container spacing={3}>
         {projects.map((project) => (
           <Grid size={{ xs: 12, sm: 6, md: 4 }} key={project.id}>
-            <ProjectCard project={project} />
+            <ProjectCard project={project} onEditClick={handleEditClick} />
           </Grid>
         ))}
       </Grid>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
           <Pagination
@@ -449,6 +560,18 @@ setTotalCount(response.data.totalCount || 0);
             variant="outlined"
           />
         </Box>
+      )}
+
+      {/* Edit Modal */}
+      {projectToEdit && (
+        <PublishProjectModal
+          open={editModalOpen}
+          onClose={handleEditModalClose}
+          publishProjectId={projectToEdit.id}
+          existingProject={projectToEdit}
+          isEditMode={true}
+          onEditSuccess={handleEditSuccess}
+        />
       )}
     </Container>
   );

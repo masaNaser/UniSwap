@@ -45,7 +45,7 @@ export default function RequestProjectCard({
   onEditRequest,
 }) {
 
-  console.log("image",clientImage);
+  console.log("image", clientImage);
   const [loading, setLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
@@ -473,20 +473,26 @@ export default function RequestProjectCard({
               <Stack direction="row" spacing={1} mb={1.5}>
                 <Button
                   fullWidth
-                  variant="contained"
+                  variant="outlined"
                   startIcon={<EditIcon />}
                   disabled={loading}
                   onClick={handleEdit}
                   sx={{
-                    bgcolor: "#3B82F6",
-                    "&:hover": { bgcolor: "#2563EB" },
+                    color: "#3B82F6",
+                    borderColor: "#3B82F6",
                     textTransform: "none",
                     fontSize: "13px",
                     height: "36px",
+                    bgcolor: "#FFFFFF",
+                    "&:hover": {
+                      bgcolor: "#EFF6FF",
+                      borderColor: "#3B82F6",
+                    },
                   }}
                 >
                   Edit
                 </Button>
+
                 <Button
                   fullWidth
                   variant="outlined"

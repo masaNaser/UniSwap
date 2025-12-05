@@ -48,7 +48,6 @@ const Comment = ({
   onEdit,
   onDelete,
   currentUserName,
-  currentUserAvatar,
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -103,7 +102,7 @@ const Comment = ({
       <Box sx={{ display: "flex", gap: 1.5, my: 2 }}>
         <Avatar
           src={comment.author.avatar}
-          onClick={() => navigateToProfile(comment.authorId)} // ← استخدم authorId من الـ comment
+          onClick={() => navigateToProfile(comment.authorId)} 
           alt={comment.author.userName}
           sx={{ width: 32, height: 32 }}
         />
@@ -150,7 +149,7 @@ const Comment = ({
                   variant="body2"
                   fontWeight="bold"
                   onClick={() => navigateToProfile(comment.authorId)} // ← استخدم authorId
-                  sx={{ cursor: "pointer" }}
+                  sx={{ cursor: "pointer", display: "inline" }}
                 >
                   {comment.author.userName}
                 </Typography>

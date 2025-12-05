@@ -20,15 +20,14 @@ export const addClientReviewToProvider = async (projectId, rating, content, toke
 };
 
 // ===== Get Review by Project =====
-// ✅ FIXED: Changed URL to match backend endpoint
 export const getReviewByProject = async (projectId, token) => {
   console.log("📡 getReviewByProject - Request:", {
     projectId,
-    endpoint: `/Projects/review/${projectId}`,  // ✅ Correct endpoint
+    endpoint: `/Projects/review/${projectId}`,
   });
 
   try {
-    const response = await api.get(`/Projects/review/${projectId}`, {  // ✅ FIXED URL
+    const response = await api.get(`/Projects/review/${projectId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     console.log("✅ getReviewByProject - Success:", response.data);
@@ -43,18 +42,20 @@ export const getReviewByProject = async (projectId, token) => {
   }
 };
 
-// ===== Get Public Reviews =====
-export const getPublicReviews = async (publishProjectId, token) => {
-  return await api.get(`/reviews/publish-projects/${publishProjectId}/reviews`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-};
-
-// ===== Add Public Review =====
+// Add Public Review to Published Project
 export const addPublicReview = async (publishProjectId, rating, content, token) => {
+  console.log("📤 Adding public review:", {
+    publishProjectId,
+    rating,
+    content,
+  });
+
   return await api.post(
-    `/reviews/publish-projects/${publishProjectId}/reviews`,
-    { rating, content },
+    `/PublishProjects/${publishProjectId}/reviews`,
+    { 
+      rating: Number(rating),
+      content: content || '' 
+    },
     {
       headers: { 
         Authorization: `Bearer ${token}`,
@@ -62,4 +63,15 @@ export const addPublicReview = async (publishProjectId, rating, content, token) 
       },
     }
   );
+};
+
+// Get Public Reviews for Published Project
+export const getPublicReviews = async (publishProjectId, token) => {
+  console.log("📡 Fetching public reviews for:", publishProjectId);
+
+  return await api.get(`/PublishProjects/publish-projects/${publishProjectId}/reviews`, {
+    headers: { 
+      Authorization: `Bearer ${token}` 
+    },
+  });
 };
