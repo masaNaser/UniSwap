@@ -26,13 +26,20 @@ export const NotificationProvider = ({ children }) => {
         const connection = createNotificationHub(token);
         connectionRef.current = connection;
 
-        // استقبال إشعار جديد
-        connection.on("ReceiveNotification", (notification) => {
+        // 🔥 استقبال إشعار جديد - مع reload البيانات
+        connection.on("ReceiveNotification", async (notification) => {
           console.log("📬 New notification received:", notification);
-            console.log("Verb:", notification.verb);  // ← شوف شو بيطلع
+          console.log("User Image:", notification.userImage); // ← debug
 
-          setNotifications((prev) => [notification, ...prev]);
-          setunreadNotificationCount((prev) => prev + 1);
+          // 🔥 الحل: نجيب كل الإشعارات من جديد عشان نضمن الصور موجودة
+          try {
+            await loadInitialData();
+          } catch (error) {
+            console.error("❌ Error reloading notifications:", error);
+            // لو فشل الـ reload، نضيف الإشعار كما هو
+            setNotifications((prev) => [notification, ...prev]);
+            setunreadNotificationCount((prev) => prev + 1);
+          }
         });
 
         await connection.start();
@@ -109,13 +116,13 @@ export const NotificationProvider = ({ children }) => {
   const deleteAllNotification = async () => {
     try {
       await deleteAll(token);
-      // بعد الحذف من السيرفر، امسح الإشعارات من الواجهة
-    setNotifications([]);
-    setunreadNotificationCount(0);
+      setNotifications([]);
+      setunreadNotificationCount(0);
     } catch (error) {
       console.error("Error:", error);
     }
   };
+
   return (
     <NotificationContext.Provider
       value={{
@@ -123,7 +130,7 @@ export const NotificationProvider = ({ children }) => {
         unreadNotificationCount,
         markAsRead: handleMarkAsRead,
         markAllAsRead: handleMarkAllAsRead,
-        clearAll: deleteAllNotification, // ← ناقص!
+        clearAll: deleteAllNotification,
       }}
     >
       {children}
