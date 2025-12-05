@@ -29,6 +29,7 @@ import {
   cancelCollaborationRequest,
 } from "../../services/collaborationService";
 import { getImageUrl } from "../../utils/imageHelper";
+import { useTheme } from "@mui/material/styles";
 
 export default function RequestProjectCard({
   id,
@@ -44,8 +45,10 @@ export default function RequestProjectCard({
   onRequestHandled,
   onEditRequest,
 }) {
+   
+    const theme = useTheme(); // 🔥 ضيفي هاد السطر
+  
 
-  console.log("image", clientImage);
   const [loading, setLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
@@ -60,7 +63,6 @@ export default function RequestProjectCard({
     severity: "success",
   });
   const token = localStorage.getItem("accessToken");
-  console.log("clientImage:", clientImage);
 
   const isLongDescription = description && description.length > 100;
   const displayedDescription = showFullDescription
@@ -186,6 +188,8 @@ export default function RequestProjectCard({
             boxShadow: "0 8px 16px rgba(0,0,0,0.12)",
           },
           bgcolor: "#FFFFFF",
+          bgcolor: theme.palette.mode === 'dark' ? '#474646ff ' : '#FFFFFF',
+
         }}
       >
         <CardContent
@@ -239,7 +243,8 @@ export default function RequestProjectCard({
             {!showFullDescription ? (
               <Typography
                 variant="body2"
-                color="#6B7280"
+                // color="#6B7280"
+                color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
                 fontSize="13px"
                 lineHeight={1.5}
                 sx={{
@@ -341,7 +346,8 @@ export default function RequestProjectCard({
               </Typography>
               <Typography
                 variant="caption"
-                color="#6B7280"
+                // color="#6B7280"
+                color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
                 fontSize="12px"
                 fontWeight="400"
                 sx={{
@@ -406,10 +412,12 @@ export default function RequestProjectCard({
             </Box>
             {deadline && new Date(deadline).getFullYear() > 1970 && (
               <Box display="flex" alignItems="center" gap={0.5}>
-                <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF" }} />
+                {/* <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF"}} /> */}
+                <CalendarMonthIcon sx={{ fontSize: 17,color:theme.palette.mode === 'dark' ? '#fff' : '#6B7280' }} />
                 <Typography
                   variant="caption"
-                  color="#6B7280"
+                  // color="#6B7280"
+                 color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
                   fontSize="12px"
                   fontWeight="500"
                 >
@@ -424,7 +432,7 @@ export default function RequestProjectCard({
             <Stack direction="row" spacing={1}>
               <Button
                 fullWidth
-                variant="contained"
+                variant="outlined"
                 startIcon={
                   loading ? (
                     <CircularProgress size={16} color="inherit" />
@@ -435,11 +443,17 @@ export default function RequestProjectCard({
                 disabled={loading}
                 onClick={() => openConfirmDialog("approve")}
                 sx={{
-                  bgcolor: "#3B82F6",
-                  "&:hover": { bgcolor: "#2563EB" },
-                  textTransform: "none",
-                  fontSize: "13px",
-                  height: "36px",
+                   color: "#3B82F6",
+                    borderColor: "#3B82F6",
+                    textTransform: "none",
+                    fontSize: "13px",
+                    height: "36px",
+                    cursor: "pointer",
+                    // bgcolor: "#FFFFFF",
+                    "&:hover": {
+                      bgcolor: "#EFF6FF",
+                      borderColor: "#3B82F6",
+                    },
                 }}
               >
                 Accept
@@ -456,6 +470,7 @@ export default function RequestProjectCard({
                   textTransform: "none",
                   fontSize: "13px",
                   height: "36px",
+                  cursor: "pointer",
                   "&:hover": {
                     bgcolor: "#FEE2E2",
                     borderColor: "#DC2626",

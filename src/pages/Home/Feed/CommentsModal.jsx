@@ -29,6 +29,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { formatTime } from "../../../utils/timeHelper";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
+import { useTheme } from "@mui/material/styles";
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -48,6 +50,7 @@ const Comment = ({
   onEdit,
   onDelete,
   currentUserName,
+  theme,
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -138,7 +141,7 @@ const Comment = ({
           ) : (
             <Box
               sx={{
-                bgcolor: "#f0f2f5",
+                bgcolor:theme.palette.mode === "dark" ? "#2c2c2c" : "#eef1f3",
                 borderRadius: "16px",
                 p: 1.5,
                 position: "relative",
@@ -267,6 +270,8 @@ function CommentsModal({
   isPostClosed, // ✅ إضافة prop جديد
 
 }) {
+  const theme = useTheme();
+
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -404,6 +409,7 @@ function CommentsModal({
                     currentUserName={currentUserName}
                     currentUserAvatar={currentUserAvatar}
                     isPostClosed={isPostClosed} // ✅ تمرير للـ Comment component
+                    theme={theme}
                   />
                 ))}
               </Box>

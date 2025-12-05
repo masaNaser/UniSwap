@@ -13,7 +13,7 @@ import Box from "@mui/material/Box";
 import { getImageUrl } from "../../utils/imageHelper";
 import { useNavigateToProfile } from "../../hooks/useNavigateToProfile";
 import { useUnreadCount } from "../../Context/unreadCountContext";
-
+import { useTheme } from "@mui/material/styles";
 export default function ChatWindow({
   conversationId,
   receiverId,
@@ -22,6 +22,7 @@ export default function ChatWindow({
   receiverImage,
   onBack,
 }) {
+  const theme = useTheme();
   const navigateToProfile = useNavigateToProfile();
   const { decreaseUnreadCount } = useUnreadCount();
 

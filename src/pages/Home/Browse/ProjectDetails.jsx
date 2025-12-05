@@ -22,9 +22,12 @@ import StarIcon from "@mui/icons-material/Star";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import DisabledCustomButton from "../../../components/CustomButton/DisabledCustomButton";
 import api from "../../../services/api";
-import { addPublicReview, getPublicReviews } from "../../../services/reviewService";
+import {
+  addPublicReview,
+  getPublicReviews,
+} from "../../../services/reviewService";
 import { formatTime } from "../../../utils/timeHelper";
-
+import { getImageUrl } from "../../../utils/imageHelper";
 const ProjectDetails = () => {
   const token = localStorage.getItem("accessToken");
   const { id } = useParams();
@@ -45,7 +48,11 @@ const ProjectDetails = () => {
   });
 
   const currentUserId = localStorage.getItem("userId");
-  const isReviewDisabled = reviewText.trim().length === 0 || !reviewRating || isSubmittingReview || hasUserReviewed;
+  const isReviewDisabled =
+    reviewText.trim().length === 0 ||
+    !reviewRating ||
+    isSubmittingReview ||
+    hasUserReviewed;
 
   // Fetch project details and reviews
   const fetchProjectDetails = async () => {
@@ -115,7 +122,12 @@ const ProjectDetails = () => {
         content: reviewText,
       });
 
-      const response = await addPublicReview(id, reviewRating, reviewText, token);
+      const response = await addPublicReview(
+        id,
+        reviewRating,
+        reviewText,
+        token
+      );
       console.log("✅ Review submitted successfully:", response.data);
 
       // Clear form
@@ -230,7 +242,9 @@ const ProjectDetails = () => {
           {project.subServiceName && project.subServiceId && (
             <Typography
               component={Link}
-              to={`/app/services/${project.subServiceId}/projects?name=${encodeURIComponent(
+              to={`/app/services/${
+                project.subServiceId
+              }/projects?name=${encodeURIComponent(
                 project.subServiceName
               )}&parentName=${encodeURIComponent(
                 project.serviceName
@@ -409,12 +423,12 @@ const ProjectDetails = () => {
           <Avatar
             component={Link}
             to={`/app/profile/${project.userId}`}
-            sx={{ 
-              width: 56, 
-              height: 56, 
+            sx={{
+              width: 56,
+              height: 56,
               mr: 2.5,
               cursor: "pointer",
-              textDecoration: "none"
+              textDecoration: "none",
             }}
             src={
               project.profilePicture
@@ -430,15 +444,15 @@ const ProjectDetails = () => {
               component={Link}
               to={`/app/profile/${project.userId}`}
               variant="body1"
-              sx={{ 
-                fontWeight: "medium", 
+              sx={{
+                fontWeight: "medium",
                 fontSize: "1.05rem",
                 textDecoration: "none",
                 color: "inherit",
                 "&:hover": {
                   color: "#3B82F6",
-                  cursor: "pointer"
-                }
+                  cursor: "pointer",
+                },
               }}
             >
               {project.userName || "Anonymous"}
@@ -650,7 +664,8 @@ const ProjectDetails = () => {
             </Paper>
           ) : (
             <Alert severity="info" sx={{ mb: 4 }}>
-              You have already reviewed this project. Thank you for your feedback!
+              You have already reviewed this project. Thank you for your
+              feedback!
             </Alert>
           )}
 
@@ -675,13 +690,12 @@ const ProjectDetails = () => {
                       fontSize: "1.1rem",
                       fontWeight: "600",
                     }}
-                    src={
-                      review.reviewerProfilePicture
-                        ? `https://uni.runasp.net${review.reviewerProfilePicture}`
-                        : undefined
-                    }
+                    src={getImageUrl(
+                      review.reviewerPicture,
+                      review.reviewerName
+                    )}
                   >
-                    {!review.reviewerProfilePicture &&
+                    {!review.reviewerPicture &&
                       (review.reviewerName?.[0]?.toUpperCase() || "U")}
                   </Avatar>
 

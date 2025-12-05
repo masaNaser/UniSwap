@@ -36,6 +36,8 @@ import {
   closeProjectByClient,
 } from "../../../services/taskService";
 import { getReviewByProject } from "../../../services/reviewService";
+// import { useTheme } from "@mui/material/styles";
+
 
 export default function TrackTasksHeader({
   cardData,
@@ -196,12 +198,6 @@ export default function TrackTasksHeader({
   const handleSaveDeadline = async () => {
     const chosen = new Date(newDeadline);
     const current = new Date(cardData.deadline);
-
-    console.log("📅 Saving deadline:", {
-      current: current.toISOString(),
-      chosen: chosen.toISOString(),
-    });
-
     if (chosen <= current) {
       console.warn("⚠️ Invalid deadline - must be after current");
       setSnackbar({
@@ -289,19 +285,19 @@ export default function TrackTasksHeader({
 
     const result = isCompleted || (isActive && hasRejection);
 
-    console.log("👁️ Can view review check:", {
-      isProvider,
-      isCompleted,
-      isActive,
-      hasRejection,
-      result,
-    });
+    // console.log("👁️ Can view review check:", {
+    //   isProvider,
+    //   isCompleted,
+    //   isActive,
+    //   hasRejection,
+    //   result,
+    // });
 
     return result;
   };
 
   const handleCloseProjectClick = () => {
-    console.log("🎯 Close project clicked:", { isProvider });
+    // console.log("🎯 Close project clicked:", { isProvider });
     if (isProvider) {
       setOpenCloseDialog(true);
     } else {
@@ -310,7 +306,7 @@ export default function TrackTasksHeader({
   };
 
   const handleProviderSubmit = async () => {
-    console.log("📤 Provider submitting project for review:", cardData.id);
+    // console.log("📤 Provider submitting project for review:", cardData.id);
     try {
       setClosingProject(true);
       await closeProjectByProvider(cardData.id, token);
@@ -353,7 +349,7 @@ export default function TrackTasksHeader({
   };
 
   const handleClientReview = async (reviewData) => {
-    console.log("📝 Client submitting review:", reviewData);
+    // console.log("📝 Client submitting review:", reviewData);
 
     try {
       setClosingProject(true);
@@ -429,18 +425,18 @@ export default function TrackTasksHeader({
   };
 
   const handleViewReview = () => {
-    console.log("👁️ Opening review dialog:", {
-      projectData: cardData,
-      projectDetails,
-      reviewData,
-    });
+    // console.log("👁️ Opening review dialog:", {
+    //   projectData: cardData,
+    //   projectDetails,
+    //   reviewData,
+    // });
     setOpenViewReviewDialog(true);
   };
 
   return (
     <Box
       sx={{
-        bgcolor: "#fff",
+        bgcolor:theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
         borderRadius: { xs: 2, sm: 3 },
         mb: 3,
         p: { xs: 2, sm: 3 },
@@ -755,7 +751,8 @@ export default function TrackTasksHeader({
           <Box>
             <Typography
               variant="body2"
-              color="#334155"
+              // color="#334155"
+              color={theme.palette.mode === "dark" ? "#fff" : "#334155"}
               fontWeight="600"
               sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
             >

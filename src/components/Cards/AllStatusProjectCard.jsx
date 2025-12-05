@@ -346,7 +346,8 @@ export default function AllStatusProjectCard({
               </Typography>
               <Typography
                 variant="caption"
-                color="#6B7280"
+                // color="#6B7280"
+                color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
                 fontSize="12px"
                 fontWeight="400"
                 sx={{
@@ -410,10 +411,11 @@ export default function AllStatusProjectCard({
             borderTop="1px solid #F3F4F6"
           >
             <Box display="flex" alignItems="center" gap={0.75}>
-              <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF" }} />
+              <CalendarMonthIcon sx={{ fontSize: 17,color:theme.palette.mode === 'dark' ? '#fff' : '#6B7280' }} />
               <Typography
                 variant="caption"
-                color="#6B7280"
+                // color="#6B7280"
+                color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
                 fontSize="12px"
                 fontWeight="500"
               >

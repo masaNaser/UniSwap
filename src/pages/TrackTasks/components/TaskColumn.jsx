@@ -3,6 +3,7 @@ import { Box, Chip, Typography, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import TaskCard from './TaskCard';
 import TaskDialog from './TaskDialog';
+import { useTheme } from "@mui/material/styles";
 
 const statusColors = {
   'ToDo': { bg: '#FEF3C7', text: '#F59E0B' },
@@ -26,6 +27,7 @@ export default function TaskColumn({
   onViewReview,
   projectStatus, // ✅ NEW: Receive project status
 }) {
+  const theme = useTheme();
   const isToDoColumn = status === 'ToDo';
   const [openDialog, setOpenDialog] = useState(false);
   const [newTask, setNewTask] = useState({
@@ -83,6 +85,7 @@ export default function TaskColumn({
         onDrop={isProvider ? (e) => onDrop(e, status) : null}
         sx={{
           backgroundColor: '#F9FAFB',
+          backgroundColor:theme.palette.mode === "dark" ? "#1e1e1e" : "#F9FAFB",
           borderRadius: '12px',
           border: '2px solid #E5E7EB',
           p: 2,

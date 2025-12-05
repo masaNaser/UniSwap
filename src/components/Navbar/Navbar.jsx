@@ -86,8 +86,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function PrimarySearchAppBar() {
   const theme = useTheme(); // 🔥 ضيفي هاد السطر
 
-  const { notifications, unreadNotificationCount, markAsRead, markAllAsRead } =
-    useNotifications();
+  const { notifications, unreadNotificationCount, markAsRead, markAllAsRead,clearAll } = useNotifications();
 
   const { mode, toggleMode } = useContext(ThemeModeContext);
 
@@ -263,7 +262,7 @@ export default function PrimarySearchAppBar() {
             >
               <SearchBox
                 sx={{
-                  bgcolor: "#F8FAFC",
+                  bgcolor:theme.palette.mode === 'dark' ? '#474646ff' : '#F8FAFC',
                   width: "100%",
                   maxWidth: windowWidth >= 1029 ? 300 : 400,
                 }}
@@ -359,6 +358,7 @@ export default function PrimarySearchAppBar() {
                 unreadNotificationCount={unreadNotificationCount}
                 markAsRead={markAsRead}
                 markAllAsRead={markAllAsRead}
+                clearAll={clearAll}
               />
 
               {/* ACCOUNT MENU */}

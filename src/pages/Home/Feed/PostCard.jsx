@@ -164,7 +164,7 @@ const FileDisplay = ({ fileUrl }) => {
 };
 
 // Single Comment Bubble
-const CommentBubble = ({ comment,theme }) => (
+const CommentBubble = ({ comment, theme }) => (
   <Box sx={{ display: "flex", gap: 1, mb: 1, minWidth: 0 }}>
     <Avatar
       src={comment.author?.avatar}
@@ -173,7 +173,7 @@ const CommentBubble = ({ comment,theme }) => (
     <Box
       sx={{
         // bgcolor: "#eef1f3",
-        bgcolor: theme.palette.mode === 'dark' ? '#2c2c2c' : '#eef1f3',
+        bgcolor: theme.palette.mode === "dark" ? "#2c2c2c" : "#eef1f3",
         borderRadius: "12px",
         p: 1,
         maxWidth: "100%",
@@ -350,30 +350,30 @@ function PostCard({
           <Typography variant="body1" color="text.primary" paragraph>
             {post.content}
           </Typography>
-       <Box sx={{ mb: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
-  {post.selectedTags.map((tag, index) => (
-    <Chip
-      key={index}
-      label={`#${tag}`} // ✅ أضف # قبل التاج
-      size="medium"
-      variant="outlined"
-      color="primary"
-      // cursor="pointer"
-      sx={{
-        minWidth: "80px", // ✅ حجم ثابت على الأقل
-        height: "32px", // ✅ ارتفاع ثابت
-        fontSize: "15px", // ✅ حجم خط أكبر
-        fontWeight: "600", // ✅ خط bold
-        borderRadius: "16px", // ✅ زوايا مدورة أكثر
-        px: 2, // ✅ مسافة أفقية
-          "&:hover": {
-          bgcolor: "rgba(59, 130, 246, 0.25)", // ✅ تأثير hover
-        },
-        cursor: "pointer", // ✅ مؤشر الفأرة على شكل يد
-      }}
-    />
-  ))}
-</Box>
+          <Box sx={{ mb: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
+            {post.selectedTags.map((tag, index) => (
+              <Chip
+                key={index}
+                label={`#${tag}`} // ✅ أضف # قبل التاج
+                size="medium"
+                variant="outlined"
+                color="primary"
+                // cursor="pointer"
+                sx={{
+                  minWidth: "80px", // ✅ حجم ثابت على الأقل
+                  height: "32px", // ✅ ارتفاع ثابت
+                  fontSize: "15px", // ✅ حجم خط أكبر
+                  fontWeight: "600", // ✅ خط bold
+                  borderRadius: "16px", // ✅ زوايا مدورة أكثر
+                  px: 2, // ✅ مسافة أفقية
+                  "&:hover": {
+                    bgcolor: "rgba(59, 130, 246, 0.25)", // ✅ تأثير hover
+                  },
+                  cursor: "pointer", // ✅ مؤشر الفأرة على شكل يد
+                }}
+              />
+            ))}
+          </Box>
           {/* ✅ استخدام FileDisplay بدل الكود القديم */}
           {post.fileUrl && <FileDisplay fileUrl={post.fileUrl} />}
         </CardContent>
@@ -443,7 +443,11 @@ function PostCard({
         >
           {recentComments.length > 0 &&
             recentComments.map((comment, index) => (
-              <CommentBubble key={comment.id || index} comment={comment} theme={theme}/>
+              <CommentBubble
+                key={comment.id || index}
+                comment={comment}
+                theme={theme}
+              />
             ))}
 
           {post.comments > recentComments.length && !isPostClosed && (
@@ -494,15 +498,15 @@ function PostCard({
                   <CircularProgress size={20} />
                 ) : (
                   // <ChatBubbleOutlineIcon fontSize="small" />
-                      <img
-                src={MessegeIcon}
-                alt="Messege Icon"
-                style={{
-                  height: "20px",
-                  width: "20px",
-                  display: "block",
-                }}
-              />
+                  <img
+                    src={MessegeIcon}
+                    alt="Messege Icon"
+                    style={{
+                      height: "20px",
+                      width: "20px",
+                      display: "block",
+                    }}
+                  />
                 )}
               </IconButton>
             </Box>

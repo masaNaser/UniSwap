@@ -5,7 +5,6 @@ import Container from "@mui/material/Container";
 import { useLocation } from "react-router-dom";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import "./Chat.css";
-
 export default function ChatPage() {
   const location = useLocation();
   const initialConv = location.state || null;

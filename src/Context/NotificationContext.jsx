@@ -5,6 +5,7 @@ import {
   getUnreadCount,
   markAsRead,
   markAllAsRead,
+  deleteAll
 } from "../services/notificationService";
 
 const NotificationContext = createContext();
@@ -104,7 +105,17 @@ export const NotificationProvider = ({ children }) => {
       console.error("Error:", error);
     }
   };
-
+  
+  const deleteAllNotification = async () => {
+    try {
+      await deleteAll(token);
+      // بعد الحذف من السيرفر، امسح الإشعارات من الواجهة
+    setNotifications([]);
+    setunreadNotificationCount(0);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
   return (
     <NotificationContext.Provider
       value={{
@@ -112,6 +123,7 @@ export const NotificationProvider = ({ children }) => {
         unreadNotificationCount,
         markAsRead: handleMarkAsRead,
         markAllAsRead: handleMarkAllAsRead,
+        clearAll: deleteAllNotification, // ← ناقص!
       }}
     >
       {children}

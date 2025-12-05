@@ -41,3 +41,10 @@ export const markAllAsRead = async (token) => {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
+
+// حذف إشعار
+export const deleteAll = async (token) => {
+  return await api.delete(`/Notifications/all`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};

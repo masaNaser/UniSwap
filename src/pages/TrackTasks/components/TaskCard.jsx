@@ -17,6 +17,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import { formatTime } from "../../../utils/timeHelper";
+import { useTheme } from "@mui/material/styles";
 
 export default function TaskCard({
   task,
@@ -28,6 +29,7 @@ export default function TaskCard({
   onViewReview,
 }) {
 
+  const theme = useTheme();
   // ✅ Check if review due date has passed (for RequestProject)
   const isReviewOverdue = () => {
     if (!task.reviewDueAt || status !== "InReview") return false;
@@ -78,7 +80,8 @@ export default function TaskCard({
       sx={{
         cursor: isProvider ? "grab" : "default",
         transition: "all 0.2s ease",
-        backgroundColor: "#FFFFFF",
+        // backgroundColor: "#FFFFFF",
+        backgroundColor:theme.palette.mode === "dark" ? "#1e1e1e" : "#FFFFFF",
         border: "1px solid #E5E7EB",
         position: "relative",
         "&:hover": {

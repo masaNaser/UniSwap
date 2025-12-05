@@ -19,11 +19,12 @@ import {
   ElectricBoltSharp,
   CalendarMonth,
   CheckCircle,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 
 import { IconButton } from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -59,7 +60,7 @@ export default function Register() {
   //     .required("Please confirm your password")
   //     .oneOf([yup.ref("password")], "Passwords must match"),
   // });
-
+  const theme = useTheme();
   const validationSchema = yup.object({
     userName: yup
       .string()
@@ -90,6 +91,7 @@ export default function Register() {
   });
 
   const [passwordStrength, setPasswordStrength] = useState(0);
+ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const checkStrength = (value) => {
     let score = 0;
@@ -234,7 +236,8 @@ export default function Register() {
                 fontSize: "36px",
                 fontWeight: "700",
                 lineHeight: "44px",
-                color: "#0f172a",
+                // color: "#0f172a",
+                color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
               }}
             >
               Join the Future of <br />
@@ -278,7 +281,13 @@ export default function Register() {
                   sx={{ display: "flex", alignItems: "center", mb: 1.5 }}
                 >
                   <CheckCircle sx={{ color: "#22c55e", mr: 1 }} />
-                  <Typography sx={{ color: "#0f172a" }}>{text}</Typography>
+                  <Typography
+                    sx={{
+                      color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                    }}
+                  >
+                    {text}
+                  </Typography>
                 </Box>
               ))}
             </Box>
@@ -298,7 +307,12 @@ export default function Register() {
               }}
             >
               <Box>
-                <Typography sx={{ fontWeight: "600", color: "#0f172a" }}>
+                <Typography
+                  sx={{
+                    fontWeight: "600",
+                    color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                  }}
+                >
                   University Verified
                 </Typography>
                 <Typography sx={{ fontSize: "14px", color: "#475569" }}>
@@ -316,12 +330,16 @@ export default function Register() {
               p: 4,
               borderRadius: 4,
               boxShadow: 3,
-              bgcolor: "white",
+              bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#FFFFFF",
             }}
           >
             <Box sx={{ textAlign: "center", mb: 3 }}>
               <Typography
-                sx={{ fontSize: "20px", fontWeight: "600", color: "#0f172a" }}
+                sx={{
+                  fontSize: "20px",
+                  fontWeight: "600",
+                  color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                }}
               >
                 Welcome to UniSwap
               </Typography>
@@ -341,6 +359,8 @@ export default function Register() {
               textColor="inherit"
               sx={{
                 bgcolor: "#F1F5F9",
+                bgcolor:
+                  theme.palette.mode === "dark" ? "#565555ff" : "#F1F5F9",
                 borderRadius: "50px",
                 minHeight: "40px",
                 "& .MuiTab-root": {
@@ -403,7 +423,7 @@ export default function Register() {
                   ),
                 }}
               />
-   
+
               <TextField
                 {...register("password")}
                 fullWidth
@@ -419,22 +439,49 @@ export default function Register() {
                   register("password").onChange(e);
                   checkStrength(e.target.value);
                 }}
+                sx={{
+                  // تخفية أيقونة الـ browser
+                  "& input::-ms-reveal, & input::-ms-clear": {
+                    display: "none",
+                  },
+                  "& input::-webkit-credentials-auto-fill-button": {
+                    display: "none",
+                  },
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <Lock />
                     </InputAdornment>
                   ),
-                  // endAdornment: (
-                  //   <InputAdornment position="end">
-                  //     <IconButton
-                  //       onClick={() => setShowPassword(!showPassword)}
-                  //       edge="end"
-                  //     >
-                  //       {showPassword ? <VisibilityOff /> : <Visibility />}
-                  //     </IconButton>
-                  //   </InputAdornment>
-                  // ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? (
+                          <VisibilityOff
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? "#fff"
+                                  : "inherit",
+                            }}
+                          />
+                        ) : (
+                          <Visibility
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? "#fff"
+                                  : "inherit",
+                            }}
+                          />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
               />
 
@@ -464,28 +511,55 @@ export default function Register() {
                 fullWidth
                 margin="normal"
                 label="Confirm Password"
-                type={showPassword ? "text" : "password"}
+                type={showConfirmPassword  ? "text" : "password"}
                 placeholder="Confirm your password"
                 variant="outlined"
                 required
                 error={errors.confirmPassword}
                 helperText={errors.confirmPassword?.message}
+                sx={{
+                  // تخفية أيقونة الـ browser
+                  "& input::-ms-reveal, & input::-ms-clear": {
+                    display: "none",
+                  },
+                  "& input::-webkit-credentials-auto-fill-button": {
+                    display: "none",
+                  },
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <Lock />
                     </InputAdornment>
                   ),
-                  // endAdornment: (
-                  //   <InputAdornment position="end">
-                  //     <IconButton
-                  //       onClick={() => setShowPassword(!showPassword)}
-                  //       edge="end"
-                  //     >
-                  //       {showPassword ? <VisibilityOff /> : <Visibility />}
-                  //     </IconButton>
-                  //   </InputAdornment>
-                  // ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowConfirmPassword (!showConfirmPassword)}
+                        edge="end"
+                      >
+                        {showConfirmPassword ? (
+                          <VisibilityOff
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? "#fff"
+                                  : "inherit",
+                            }}
+                          />
+                        ) : (
+                          <Visibility
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? "#fff"
+                                  : "inherit",
+                            }}
+                          />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
               />
 

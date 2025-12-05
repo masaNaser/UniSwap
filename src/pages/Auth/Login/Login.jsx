@@ -11,7 +11,7 @@ import {
   Container,
   InputAdornment,
   Typography,
-  IconButton 
+  IconButton,
 } from "@mui/material";
 import {
   Email,
@@ -19,6 +19,8 @@ import {
   CheckCircle,
   School,
   ElectricBoltSharp,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
 import Logo from "../../../assets/images/logo.png";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
@@ -32,25 +34,26 @@ import { login as loginApi } from "../../../services/authService";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { jwtDecode } from "jwt-decode";
-import { isAdmin } from '../../../utils/authHelpers';
-
+import { isAdmin } from "../../../utils/authHelpers";
+import { useTheme } from "@mui/material/styles";
 export default function Login() {
+  const theme = useTheme();
   const validationSchema = yup.object({
     email: yup
       .string()
       .required("Email is required")
       .email("Invalid email address"),
     password: yup
-    .string()
-    .required("Password is required")
-    .min(8, "Password must be at least 8 characters")
-    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
-    .matches(/[0-9]/, "Password must contain at least one digit")
-    .matches(
-      /[^a-zA-Z0-9]/,
-      "Password must contain at least one special character"
-    ),
+      .string()
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+      .matches(/[0-9]/, "Password must contain at least one digit")
+      .matches(
+        /[^a-zA-Z0-9]/,
+        "Password must contain at least one special character"
+      ),
   });
 
   const {
@@ -70,56 +73,64 @@ export default function Login() {
   // تحديد التاب الحالي
   const currentTab = location.pathname === "/login" ? 0 : 1;
 
+  const loginHandle = async (data) => {
+    try {
+      setLoading(true);
+      const response = await loginApi(data);
 
-const loginHandle = async (data) => {
-  try {
-    setLoading(true);
-    const response = await loginApi(data);
-    
-    if (response.status === 200) {
-      const { accessToken, refreshToken, refreshTokenExpiration } = response.data;
-      
-      // حفظ في localStorage
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("refreshTokenExpiration", refreshTokenExpiration);
-      
-      // فك Token
-      const decoded = jwtDecode(accessToken);
-      const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-      const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-      const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-      
-      // حفظ معلومات المستخدم
-      localStorage.setItem("userName", userName);
-      localStorage.setItem("userId", userId);
+      if (response.status === 200) {
+        const { accessToken, refreshToken, refreshTokenExpiration } =
+          response.data;
+
+        // حفظ في localStorage
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("refreshTokenExpiration", refreshTokenExpiration);
+
+        // فك Token
+        const decoded = jwtDecode(accessToken);
+        const userName =
+          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+        const userId =
+          decoded[
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+          ];
+        const userRole =
+          decoded[
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          ];
+
+        // حفظ معلومات المستخدم
+        localStorage.setItem("userName", userName);
+        localStorage.setItem("userId", userId);
+
+        Swal.fire({
+          title: "Login successful!",
+          icon: "success",
+          timer: 1500,
+        }).then(() => {
+          // التوجيه حسب Role
+          if (userRole === "Admin") {
+            navigate("/admin");
+          } else {
+            navigate("/app/feed");
+          }
+        });
+      }
+    } catch (error) {
+      const msg =
+        error.response?.data?.message || "Login failed. Please try again.";
+      console.error("Login error:", error);
 
       Swal.fire({
-        title: "Login successful!",
-        icon: "success",
-        timer: 1500,
-      }).then(() => {
-        // التوجيه حسب Role
-        if (userRole === "Admin") {
-          navigate("/admin");
-        } else {
-          navigate("/app/feed");
-        }
+        icon: "error",
+        title: "Login failed",
+        text: msg,
       });
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    const msg = error.response?.data?.message || "Login failed. Please try again.";
-    console.error("Login error:", error);
-    
-    Swal.fire({
-      icon: "error",
-      title: "Login failed",
-      text: msg,
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   return (
     <>
       {/* Navbar */}
@@ -171,7 +182,7 @@ const loginHandle = async (data) => {
                 fontSize: "36px",
                 fontWeight: "700",
                 lineHeight: "44px",
-                color: "#0f172a",
+                color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
               }}
             >
               Join the Future of <br />
@@ -215,7 +226,13 @@ const loginHandle = async (data) => {
                   sx={{ display: "flex", alignItems: "center", mb: 1.5 }}
                 >
                   <CheckCircle sx={{ color: "#22c55e", mr: 1 }} />
-                  <Typography sx={{ color: "#0f172a" }}>{text}</Typography>
+                  <Typography
+                    sx={{
+                      color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                    }}
+                  >
+                    {text}
+                  </Typography>
                 </Box>
               ))}
             </Box>
@@ -235,7 +252,12 @@ const loginHandle = async (data) => {
               }}
             >
               <Box>
-                <Typography sx={{ fontWeight: "600", color: "#0f172a" }}>
+                <Typography
+                  sx={{
+                    fontWeight: "600",
+                    color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                  }}
+                >
                   University Verified
                 </Typography>
                 <Typography sx={{ fontSize: "14px", color: "#475569" }}>
@@ -255,12 +277,16 @@ const loginHandle = async (data) => {
               p: 4,
               borderRadius: 4,
               boxShadow: 3,
-              bgcolor: "white",
+              bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#FFFFFF",
             }}
           >
             <Box sx={{ textAlign: "center", mb: 3 }}>
               <Typography
-                sx={{ fontSize: "20px", fontWeight: "600", color: "#0f172a" }}
+                sx={{
+                  fontSize: "20px",
+                  fontWeight: "600",
+                  color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                }}
               >
                 Welcome to UniSwap
               </Typography>
@@ -279,7 +305,8 @@ const loginHandle = async (data) => {
               centered
               textColor="inherit"
               sx={{
-                bgcolor: "#F1F5F9",
+                bgcolor:
+                  theme.palette.mode === "dark" ? "#565555ff" : "#F1F5F9",
                 borderRadius: "50px",
                 minHeight: "40px",
                 "& .MuiTab-root": {
@@ -331,12 +358,49 @@ const loginHandle = async (data) => {
               type={showPassword ? "text" : "password"}
               variant="outlined"
               required
-              error={errors.password}
+              error={!!errors.password}
               helperText={errors.password?.message}
+              sx={{
+                // تخفية أيقونة الـ browser
+                "& input::-ms-reveal, & input::-ms-clear": {
+                  display: "none",
+                },
+                "& input::-webkit-credentials-auto-fill-button": {
+                  display: "none",
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <Lock />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? (
+                        <VisibilityOff
+                          sx={{
+                            color:
+                              theme.palette.mode === "dark"
+                                ? "#fff"
+                                : "inherit",
+                          }}
+                        />
+                      ) : (
+                        <Visibility
+                          sx={{
+                            color:
+                              theme.palette.mode === "dark"
+                                ? "#fff"
+                                : "inherit",
+                          }}
+                        />
+                      )}
+                    </IconButton>
                   </InputAdornment>
                 ),
               }}
@@ -377,7 +441,7 @@ const loginHandle = async (data) => {
                 mt: 2,
                 textAlign: "center",
                 fontSize: "12px",
-                color: "#475569",
+                color: theme.palette.mode === "dark" ? "#fff" : "#475569",
               }}
             >
               <Lock

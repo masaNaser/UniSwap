@@ -21,7 +21,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import UpdateIcon from "@mui/icons-material/Update";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import CancelIcon from "@mui/icons-material/Cancel";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import CloseIcon from "@mui/icons-material/Close";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import NotificationIcon from "../../assets/images/NotificationIcon.svg";
@@ -198,7 +198,7 @@ const NotificationMenu = ({
       Updated: <UpdateIcon sx={{ ...iconStyle, color: "#6366F1" }} />,
       Approved: <ThumbUpIcon sx={{ ...iconStyle, color: "#10B981" }} />,
       Rejected: <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
-      Deleted: <DeleteIcon sx={{ ...iconStyle, color: "#9CA3AF" }} />,
+      Deleted: <DeleteOutlineOutlinedIcon sx={{ ...iconStyle, color: "#9CA3AF" }} />,
 
       // ========== Tasks & Projects ==========
       "Task Created": (
@@ -336,6 +336,7 @@ const NotificationMenu = ({
             {/* Mark all read */}
             <Button
               size="small"
+              variant="outlined"
               startIcon={<DoneAllIcon sx={{ fontSize: 16 }} />}
               onClick={markAllAsRead}
               disabled={!notifications.some((n) => !n.isRead)} // ← disabled لما كلهم مقروءين
@@ -343,6 +344,7 @@ const NotificationMenu = ({
                 textTransform: "none",
                 fontSize: "0.875rem",
                 color: "#3B82F6",
+                borderColor: "#3B82F6",
                 fontWeight: 500,
                 px: 1.5,
                 py: 0.5,
@@ -363,12 +365,14 @@ const NotificationMenu = ({
             {clearAll && notifications.length > 0 && (
               <Button
                 size="small"
-                startIcon={<DeleteIcon sx={{ fontSize: 16 }} />}
+                variant="outlined"
+                startIcon={<DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />}
                 onClick={clearAll}
                 sx={{
                   textTransform: "none",
                   fontSize: "0.875rem",
                   color: "#EF4444",
+                  borderColor: "#EF4444",
                   fontWeight: 500,
                   px: 1.5,
                   py: 0.5,
@@ -405,11 +409,11 @@ const NotificationMenu = ({
               variant="h6"
               sx={{ color: "#374151", fontWeight: 600, mb: 0.5 }}
             >
-              No notifications yet
+              No notifications yet !
             </Typography>
-            <Typography variant="body2" sx={{ color: "#9CA3AF" }}>
+            {/* <Typography variant="body2" sx={{ color: "#9CA3AF" }}>
               We'll notify you when something arrives
-            </Typography>
+            </Typography> */}
           </Box>
         )}
 

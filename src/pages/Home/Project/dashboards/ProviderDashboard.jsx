@@ -7,6 +7,7 @@ import AllStatusProjectCard from "../../../../components/Cards/AllStatusProjectC
 import RequestProjectCard from "../../../../components/Cards/RequestProjectCard";
 import RequestServiceModal from "../../../../components/Modals/RequestServiceModal";
 import { getPendingRequests } from "../../../../services/collaborationService";
+import { useTheme } from "@mui/material/styles";
 
 export default function ProviderDashboard({
   data,
@@ -14,6 +15,8 @@ export default function ProviderDashboard({
   onStatusFilterChange,
   onRefresh,
 }) {
+
+  const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const[requsetType,setRequsetType]= useState("");
@@ -61,7 +64,6 @@ export default function ProviderDashboard({
       const requests = response.data || [];
       console.log("res pro",requests);
       setRequsetType(requests.type);
-      console.log("type",requsetType);
       const updatedRequests = requests.map(req => ({
         ...req,
         clientImage: req.clientImage || null,
@@ -217,6 +219,7 @@ const filterProjects = (projects) => {
                     title={request.title}
                     description={request.description}
                     clientName={request.clientName}
+                    clientImage={request.clientPicture}
                     clientInitials={request.clientName?.substring(0, 2).toUpperCase()}
                     pointsOffered={request.pointsOffered}
                     deadline={new Date(request.deadline).toLocaleDateString()}
@@ -230,8 +233,11 @@ const filterProjects = (projects) => {
               ))}
             </Grid>
           ) : (
-            <Box textAlign="center" py={8} bgcolor="#f9fafb" borderRadius={2}>
-              <Typography variant="h6" color="text.secondary">
+             <Box textAlign="center" py={8} borderRadius={2}>
+              <Typography
+                variant="h6"
+                color={theme.palette.mode === "dark" ? "#fff" : "#6B7280"}
+              >
                 No pending requests found
               </Typography>
             </Box>
@@ -254,8 +260,8 @@ const filterProjects = (projects) => {
               ))}
             </Grid>
           ) : (
-            <Box textAlign="center" py={8} bgcolor="#f9fafb" borderRadius={2}>
-              <Typography variant="h6" color="text.secondary">
+          <Box textAlign="center" py={8}  borderRadius={2}>
+              <Typography variant="h6" color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}>
                 No projects found
               </Typography>
             </Box>

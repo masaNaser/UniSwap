@@ -69,6 +69,8 @@ export default function ForgetPassword() {
         p: 8,
         boxShadow: 3,
         borderRadius: 2,
+        bgcolor: (theme) =>
+          theme.palette.mode === "dark" ? "#1E1E1E" : "#FFFFFF",
       }}
     >
       <Typography variant="h6" mb={2}>

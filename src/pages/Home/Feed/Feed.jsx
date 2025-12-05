@@ -55,6 +55,7 @@ import { isAdmin } from "../../../utils/authHelpers";
 import { formatTime } from "../../../utils/timeHelper";
 import useInfiniteScroll from "../../../hooks/useInfiniteScroll"; 
 import EditPostModal from "../../../components/Modals/EditPostModal"; 
+import { useTheme } from "@mui/material/styles";
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
@@ -79,6 +80,9 @@ const updatePost = (posts, postId, newData) =>
   posts.map((p) => (p.id === postId ? { ...p, ...newData } : p));
 
 export default function Feed() {
+  const theme = useTheme(); // 🔥 ضيفي هاد السطر
+
+
   const { currentUser, loading } = useCurrentUser();
   const [posts, setPosts] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -683,16 +687,19 @@ export default function Feed() {
               title="Active Services"
               value="12"
               icon={<AccessTimeIcon />}
+              iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
             />
             <SelectActionCard
               title="Completed Tasks"
               value={currentUser?.completedProjectsCount}
               icon={<WorkspacePremiumOutlinedIcon />}
+               iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
             />
             <SelectActionCard
               title="Peer Rating"
               value={currentUser?.averageRating}
               icon={<GroupIcon />}
+              iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
             />
           </div>
         )}
