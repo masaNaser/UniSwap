@@ -29,6 +29,7 @@ import {
 import dayjs from "dayjs";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
+import { formatDateTime } from "../../../utils/timeHelper";
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
@@ -110,7 +111,7 @@ export default function PostsTab({ username }) {
           avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
           id: p.author.id,
         },
-        time: dayjs(p.createdAt).format("DD MMM, hh:mm A"),
+        time: formatDateTime(p.createdAt),
         likes: p.likesCount,
         comments: p.commentsCount,
         shares: "",

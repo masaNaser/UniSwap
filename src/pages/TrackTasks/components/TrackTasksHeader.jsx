@@ -36,15 +36,13 @@ import {
   closeProjectByClient,
 } from "../../../services/taskService";
 import { getReviewByProject } from "../../../services/reviewService";
-// import { useTheme } from "@mui/material/styles";
+import { formatDate } from "../../../utils/timeHelper";
 
 
 export default function TrackTasksHeader({
   cardData,
   projectDetails,
   isProvider,
-  totalTasks,
-  completedTasks,
   progressPercentage,
   onBack,
   onDeadlineUpdate,
@@ -94,6 +92,12 @@ export default function TrackTasksHeader({
     : displayName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
   const token = localStorage.getItem("accessToken");
+
+  // ✅ Backend now handles overdue status
+  const isOverdue = cardData.projectStatus === 'Overdue';
+  
+  // ✅ Check for rejection
+  const hasRejection = projectDetails?.rejectionReason && cardData.projectStatus === "Active";
 
   useEffect(() => {
     const fetchReview = async () => {
@@ -154,39 +158,9 @@ export default function TrackTasksHeader({
       severity: "success",
     });
 
-    // Refresh project data if needed
     if (onProjectClosed) {
       onProjectClosed();
     }
-  };
-
-  const isProjectOverdue = () => {
-    if (!cardData.deadline) return false;
-    const now = new Date();
-    const deadline = new Date(cardData.deadline);
-    return deadline < now && cardData.projectStatus === "Active";
-  };
-
-  const projectOverdue = isProjectOverdue();
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const formatDateWithTime = (dateString) => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const minSelectableDate = (() => {
@@ -285,19 +259,10 @@ export default function TrackTasksHeader({
 
     const result = isCompleted || (isActive && hasRejection);
 
-    // console.log("👁️ Can view review check:", {
-    //   isProvider,
-    //   isCompleted,
-    //   isActive,
-    //   hasRejection,
-    //   result,
-    // });
-
     return result;
   };
 
   const handleCloseProjectClick = () => {
-    // console.log("🎯 Close project clicked:", { isProvider });
     if (isProvider) {
       setOpenCloseDialog(true);
     } else {
@@ -306,7 +271,6 @@ export default function TrackTasksHeader({
   };
 
   const handleProviderSubmit = async () => {
-    // console.log("📤 Provider submitting project for review:", cardData.id);
     try {
       setClosingProject(true);
       await closeProjectByProvider(cardData.id, token);
@@ -349,8 +313,6 @@ export default function TrackTasksHeader({
   };
 
   const handleClientReview = async (reviewData) => {
-    // console.log("📝 Client submitting review:", reviewData);
-
     try {
       setClosingProject(true);
 
@@ -425,71 +387,21 @@ export default function TrackTasksHeader({
   };
 
   const handleViewReview = () => {
-    // console.log("👁️ Opening review dialog:", {
-    //   projectData: cardData,
-    //   projectDetails,
-    //   reviewData,
-    // });
     setOpenViewReviewDialog(true);
   };
 
   return (
     <Box
       sx={{
-        bgcolor:theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
+        bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
         borderRadius: { xs: 2, sm: 3 },
         mb: 3,
         p: { xs: 2, sm: 3 },
         pb: 0,
-        border: projectOverdue ? "2px solid #DC2626" : "1px solid #E5E7EB",
+        border: (isOverdue || hasRejection) ? "2px solid #DC2626" : "1px solid #E5E7EB",
         position: "relative",
       }}
     >
-      {/* Project Overdue Warning Banner */}
-      {projectOverdue && (
-        <Box
-          sx={{
-            bgcolor: "#FEE2E2",
-            borderLeft: "4px solid #DC2626",
-            borderRadius: 1,
-            p: { xs: 1.5, sm: 2 },
-            mb: { xs: 2, sm: 3 },
-            display: "flex",
-            alignItems: "flex-start",
-            gap: { xs: 1, sm: 2 },
-            flexDirection: { xs: "column", sm: "row" },
-          }}
-        >
-          <WarningAmberIcon
-            sx={{
-              color: "#DC2626",
-              fontSize: { xs: 24, sm: 28 },
-              mt: { xs: 0, sm: 0 }
-            }}
-          />
-          <Box>
-            <Typography
-              variant="body2"
-              fontWeight="bold"
-              color="#DC2626"
-              sx={{ mb: 0.5, fontSize: { xs: "0.875rem", sm: "0.875rem" } }}
-            >
-              ⚠️ PROJECT OVERDUE
-            </Typography>
-            <Typography
-              variant="body2"
-              color="#991B1B"
-              sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
-            >
-              This project passed its deadline on{" "}
-              {formatDateWithTime(cardData.deadline)}.
-              {!isProvider &&
-                " You can extend the deadline by clicking the edit button."}
-            </Typography>
-          </Box>
-        </Box>
-      )}
-
       {/* EDIT BUTTON (CLIENT ONLY) */}
       {!isProvider && cardData.projectStatus === "Active" && (
         <IconButton
@@ -659,7 +571,6 @@ export default function TrackTasksHeader({
           flexDirection: { xs: "column", md: "row" },
           gap: { xs: 2, md: 0 },
           mb: 2,
-          // position: "relative"
         }}
       >
         <Box flex={1}>
@@ -681,36 +592,6 @@ export default function TrackTasksHeader({
           >
             {cardData.description}
           </Typography>
-
-          {/* Rejection Reason Banner */}
-          {projectDetails?.rejectionReason &&
-            cardData.projectStatus === "Active" && (
-              <Box
-                sx={{
-                  mt: 2,
-                  p: { xs: 1.5, sm: 2 },
-                  bgcolor: "#FEF2F2",
-                  borderLeft: "4px solid #DC2626",
-                  borderRadius: 1,
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  fontWeight="600"
-                  color="#DC2626"
-                  sx={{ mb: 0.5, fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
-                >
-                  ⚠️ Project Rejected - Rework Required
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="#991B1B"
-                  sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                >
-                  <strong>Reason:</strong> {projectDetails.rejectionReason}
-                </Typography>
-              </Box>
-            )}
         </Box>
 
         {/* Progress Section - Responsive positioning */}
@@ -722,13 +603,12 @@ export default function TrackTasksHeader({
               md: !isProvider && cardData.projectStatus === "Active" ? 56 : 16
             },
             width: { xs: "100%", sm: "100%", md: "280px" },
-            // mt: { xs: 2, md: 0 }
           }}
         >
-          <ProgressSection
-            progressPercentage={progressPercentage}
-            projectPoints={projectDetails?.points || 0}
-          />
+            <ProgressSection
+              progressPercentage={progressPercentage}
+              projectPoints={projectDetails?.points || 0}
+            />
         </Box>
       </Box>
 
@@ -751,7 +631,6 @@ export default function TrackTasksHeader({
           <Box>
             <Typography
               variant="body2"
-              // color="#334155"
               color={theme.palette.mode === "dark" ? "#fff" : "#334155"}
               fontWeight="600"
               sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
@@ -765,18 +644,18 @@ export default function TrackTasksHeader({
           <CalendarMonthIcon
             sx={{
               fontSize: { xs: 14, sm: 16 },
-              color: projectOverdue ? "#DC2626" : "text.secondary",
+              color: isOverdue ? "#DC2626" : "text.secondary",
             }}
           />
           <Typography
             variant="caption"
             sx={{
               fontSize: { xs: "0.7rem", sm: "12px" },
-              color: projectOverdue ? "#DC2626" : "text.secondary",
-              fontWeight: projectOverdue ? 600 : 400,
+              color: isOverdue ? "#DC2626" : "text.secondary",
+              fontWeight: isOverdue ? 600 : 400,
             }}
           >
-            {projectOverdue ? "Was due: " : "Due: "}
+            {isOverdue ? "Was due: " : "Due: "}
             {formatDate(cardData.deadline)}
           </Typography>
         </Box>
@@ -784,11 +663,9 @@ export default function TrackTasksHeader({
         {cardData.projectStatus && (
           <Chip
             label={
-              projectOverdue
-                ? "Overdue"
-                : cardData.projectStatus === "SubmittedForFinalReview"
-                  ? "In Review"
-                  : cardData.projectStatus
+              cardData.projectStatus === "SubmittedForFinalReview"
+                ? "In Review"
+                : cardData.projectStatus
             }
             size="small"
             sx={{
@@ -798,7 +675,7 @@ export default function TrackTasksHeader({
               px: { xs: 1, sm: 1.5 },
               borderRadius: "6px",
               backgroundColor: (() => {
-                if (projectOverdue) return "#FEE2E2";
+                if (cardData.projectStatus === "Overdue") return "#FEE2E2";
                 if (cardData.projectStatus === "Active") return "#D1FAE5";
                 if (cardData.projectStatus === "Completed") return "#DBEAFE";
                 if (cardData.projectStatus === "SubmittedForFinalReview")
@@ -806,7 +683,7 @@ export default function TrackTasksHeader({
                 return "#EFF6FF";
               })(),
               color: (() => {
-                if (projectOverdue) return "#DC2626";
+                if (cardData.projectStatus === "Overdue") return "#DC2626";
                 if (cardData.projectStatus === "Active") return "#059669";
                 if (cardData.projectStatus === "Completed") return "#0284C7";
                 if (cardData.projectStatus === "SubmittedForFinalReview")
@@ -817,6 +694,93 @@ export default function TrackTasksHeader({
           />
         )}
       </Box>
+
+      {/* Project Overdue Warning Banner */}
+      {isOverdue && (
+        <Box
+          sx={{
+            bgcolor: "#FEE2E2",
+            borderLeft: "4px solid #DC2626",
+            borderRadius: 1,
+            p: { xs: 1.5, sm: 2 },
+            mb: { xs: 2, sm: 3 },
+            display: "flex",
+            alignItems: "flex-start",
+            gap: { xs: 1, sm: 2 },
+            flexDirection: { xs: "column", sm: "row" },
+          }}
+        >
+          <WarningAmberIcon
+            sx={{
+              color: "#DC2626",
+              fontSize: { xs: 24, sm: 28 },
+              mt: { xs: 0, sm: 0 }
+            }}
+          />
+          <Box>
+            <Typography
+              variant="body2"
+              fontWeight="bold"
+              color="#DC2626"
+              sx={{ mb: 0.5, fontSize: { xs: "0.875rem", sm: "0.875rem" } }}
+            >
+              ⚠️ PROJECT OVERDUE
+            </Typography>
+            <Typography
+              variant="body2"
+              color="#991B1B"
+              sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+            >
+              This project passed its deadline on{" "}
+              {formatDate(cardData.deadline)}.
+              {!isProvider &&
+                " You can extend the deadline by clicking the edit button."}
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      {/* Rejection Reason Banner */}
+      {hasRejection && (
+        <Box
+          sx={{
+            bgcolor: "#FEF2F2",
+            borderLeft: "4px solid #DC2626",
+            borderRadius: 1,
+            p: { xs: 1.5, sm: 2 },
+            mb: { xs: 2, sm: 3 },
+            display: "flex",
+            alignItems: "flex-start",
+            gap: { xs: 1, sm: 2 },
+            flexDirection: { xs: "column", sm: "row" },
+          }}
+        >
+          <WarningAmberIcon
+            sx={{
+              color: "#DC2626",
+              fontSize: { xs: 24, sm: 28 },
+              mt: { xs: 0, sm: 0 }
+            }}
+          />
+          <Box>
+            <Typography
+              variant="body2"
+              fontWeight="bold"
+              color="#DC2626"
+              sx={{ mb: 0.5, fontSize: { xs: "0.875rem", sm: "0.875rem" } }}
+            >
+              ⚠️ PROJECT REJECTED - REWORK REQUIRED
+            </Typography>
+            <Typography
+              variant="body2"
+              color="#991B1B"
+              sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+            >
+              <strong>Reason:</strong> {projectDetails.rejectionReason}
+            </Typography>
+          </Box>
+        </Box>
+      )}
 
       {/* Provider Submit Dialog */}
       <Dialog

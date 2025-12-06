@@ -14,7 +14,7 @@ import StarIcon from '@mui/icons-material/Star';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { formatTime } from "../../../utils/timeHelper";
+import { formatDateTime } from "../../../utils/timeHelper";
 
 export default function ViewProjectReviewDialog({
   open,
@@ -187,7 +187,7 @@ export default function ViewProjectReviewDialog({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <AccessTimeIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                 <Typography variant="caption" color="text.secondary">
-                  Reviewed on {formatTime(reviewData.createdAt)}
+                  Reviewed on {formatDateTime(reviewData.createdAt)}
                 </Typography>
               </Box>
             )}

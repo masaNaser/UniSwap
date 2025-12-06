@@ -26,7 +26,7 @@ import {
   addPublicReview,
   getPublicReviews,
 } from "../../../services/reviewService";
-import { formatTime } from "../../../utils/timeHelper";
+import { formatDateTime } from "../../../utils/timeHelper";
 import { getImageUrl } from "../../../utils/imageHelper";
 const ProjectDetails = () => {
   const token = localStorage.getItem("accessToken");
@@ -745,7 +745,7 @@ const ProjectDetails = () => {
                           ml: 1,
                         }}
                       >
-                        {formatTime(review.createdAt)}
+                        {formatDateTime(review.createdAt)}
                       </Typography>
                     </Box>
 

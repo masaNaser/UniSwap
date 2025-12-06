@@ -27,7 +27,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { formatTime } from "../../../utils/timeHelper";
+import { formatDateTime } from "../../../utils/timeHelper";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 import { useTheme } from "@mui/material/styles";
 
@@ -173,9 +173,9 @@ const Comment = ({
                   ml: "auto",
                 }}
               >
-                {formatTime(comment.createdAt)}
+                {formatDateTime(comment.createdAt)}
               </Typography>
-              {console.log("time in modal:", formatTime(comment.createdAt))}
+              {console.log("time in modal:", formatDateTime(comment.createdAt))}
               {isCurrentUser && (
                 <IconButton
                   aria-label="more"
@@ -322,7 +322,7 @@ function CommentsModal({
                     {post?.user?.name}
                   </Typography>
                 }
-                subheader={formatTime(post?.time)}
+                subheader={formatDateTime(post?.time)}
 
                 sx={{ p: 0, mb: 1 }}
               />

@@ -121,32 +121,30 @@ export default function ClientDashboard({
   const calculateProgress = (value, total) =>
     total === 0 ? 0 : (value / total) * 100;
 
+  // ✅ CLEANED: Removed frontend overdue checking - backend handles it
   const filterProjects = (projects) => {
     if (!projects) return [];
 
     return projects.filter((project) => {
-      // ✅ فحص البحث
+      // Search filter
       const matchesSearch =
         searchQuery === "" ||
         project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // ✅ فحص إذا المشروع overdue
-      const isOverdue =
-        new Date(project.deadline) < new Date() &&
-        (project.projectStatus === "Active" || project.status === "Active");
-
-      // ✅ فحص الـ status
+      // Status filter - backend already provides correct status including "Overdue"
       let matchesStatus = false;
 
       if (statusFilter === "All Status") {
         matchesStatus = true;
       } else if (statusFilter === "Overdue") {
-        matchesStatus = isOverdue;
+        matchesStatus =
+          project.projectStatus === "Overdue" ||
+          project.status === "Overdue";
       } else if (statusFilter === "Active") {
         matchesStatus =
-          (project.projectStatus === "Active" || project.status === "Active") &&
-          !isOverdue;
+          project.projectStatus === "Active" ||
+          project.status === "Active";
       } else {
         matchesStatus =
           project.projectStatus === statusFilter ||

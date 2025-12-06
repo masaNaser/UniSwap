@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { formatTime } from "../../../utils/timeHelper";
+import { formatDateTime } from "../../../utils/timeHelper";
 
 export default function ViewTaskReviewDialog({ open, onClose, task }) {
   if (!task) {
@@ -92,7 +92,7 @@ export default function ViewTaskReviewDialog({ open, onClose, task }) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <AccessTimeIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
             <Typography variant="caption" color="text.secondary">
-              Reviewed on {formatTime(task.reviewedAt)}
+              Reviewed on {formatDateTime(task.reviewedAt)}
             </Typography>
           </Box>
         )}

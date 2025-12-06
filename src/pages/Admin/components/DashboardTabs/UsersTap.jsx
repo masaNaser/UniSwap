@@ -1,6 +1,3 @@
-// src/pages/Admin/components/DashboardTabs/UsersTap.jsx
-// ✅ VERSION WITHOUT useMemo - Clean & Simple
-
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -25,6 +22,7 @@ import {
   School as SchoolIcon,
 } from "@mui/icons-material";
 import { GetUsers } from "../../../../services/adminService";
+import { formatDate } from "../../../../utils/timeHelper";
 
 export default function UsersTap() {
   const token = localStorage.getItem("accessToken");
@@ -80,16 +78,6 @@ export default function UsersTap() {
   const getInitials = (name) => {
     if (!name) return "?";
     return name.charAt(0).toUpperCase();
-  };
-
-  // دالة لتنسيق التاريخ
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   if (loading) {

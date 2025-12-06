@@ -52,7 +52,7 @@ import { useSearchParams } from "react-router-dom";
 import PostCardSkeleton from "../../../components/Skeletons/PostCardSkeleton";
 import dayjs from "dayjs";
 import { isAdmin } from "../../../utils/authHelpers";
-import { formatTime } from "../../../utils/timeHelper";
+import { formatDateTime } from "../../../utils/timeHelper";
 import useInfiniteScroll from "../../../hooks/useInfiniteScroll"; 
 import EditPostModal from "../../../components/Modals/EditPostModal"; 
 import { useTheme } from "@mui/material/styles";
@@ -152,7 +152,7 @@ export default function Feed() {
           avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
           id: p.author.id,
         },
-        time: formatTime(p.createdAt),
+        time: formatDateTime(p.createdAt),
         likes: p.likesCount,
         comments: p.commentsCount,
         shares: "",

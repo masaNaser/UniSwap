@@ -19,7 +19,7 @@ import { createPost as createPostApi } from "../../../services/postService";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useProfile } from "../../../Context/ProfileContext";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
-import { formatTime } from "../../../utils/timeHelper";
+import { formatDateTime } from "../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 const FormWrapper = styled(Box)(({ theme }) => ({
@@ -167,7 +167,7 @@ const CreatePost = ({ addPost, token }) => {
         avatar: getImageUrl(currentUser?.profilePicture, currentUser?.userName), // ✅
         id: currentUser?.id, // ✅
       },
-      time: formatTime(postData.createdAt),
+      time: formatDateTime(postData.createdAt),
       likes: 0, // ✅ بوست جديد
       comments: 0, // ✅ بوست جديد
       fileUrl: postData.fileUrl

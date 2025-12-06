@@ -19,7 +19,7 @@ export default function ProviderDashboard({
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const[requsetType,setRequsetType]= useState("");
+  const [requestType, setRequestType] = useState("");
   const [showRequests, setShowRequests] = useState(() => {
     const saved = localStorage.getItem("providerShowRequests");
     return saved ? JSON.parse(saved) : false;
@@ -28,7 +28,7 @@ export default function ProviderDashboard({
   const [pendingRequests, setPendingRequests] = useState([]);
   const [editingRequest, setEditingRequest] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  
+
   const token = localStorage.getItem("accessToken");
 
   const handleImageUpdate = (userId, newAvatarUrl) => {
@@ -62,13 +62,12 @@ export default function ProviderDashboard({
       setLoading(true);
       const response = await getPendingRequests(token, "Provider");
       const requests = response.data || [];
-      console.log("res pro",requests);
-      setRequsetType(requests.type);
+      console.log("res pro", requests);
+      setRequestType(requests.type);
       const updatedRequests = requests.map(req => ({
         ...req,
         clientImage: req.clientImage || null,
-          projectType: req.type   
-
+        projectType: req.type
       }));
 
       setPendingRequests(updatedRequests);
@@ -113,41 +112,44 @@ export default function ProviderDashboard({
   const calculateProgress = (value, total) =>
     total === 0 ? 0 : (value / total) * 100;
 
-const filterProjects = (projects) => {
-  if (!projects) return [];
-  
-  return projects.filter(project => {
-    // ✅ فحص البحث
-    const matchesSearch =
-      searchQuery === "" ||
-      project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.description?.toLowerCase().includes(searchQuery.toLowerCase());
+  // ✅ CLEANED: Removed frontend overdue checking - backend handles it
+  const filterProjects = (projects) => {
+    if (!projects) return [];
 
-    // ✅ فحص إذا المشروع overdue
-    const isOverdue = new Date(project.deadline) < new Date() && 
-                      (project.projectStatus === "Active" || project.status === "Active");
+    return projects.filter(project => {
+      // Search filter
+      const matchesSearch =
+        searchQuery === "" ||
+        project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // ✅ فحص الـ status
-    let matchesStatus = false;
-    
-    if (statusFilter === "All Status") {
-      matchesStatus = true;
-    } else if (statusFilter === "Overdue") {
-      matchesStatus = isOverdue;
-    } else if (statusFilter === "Active") {
-      matchesStatus = (project.projectStatus === "Active" || project.status === "Active") && !isOverdue;
-    } else {
-      matchesStatus = project.projectStatus === statusFilter || project.status === statusFilter;
-    }
+      // Status filter - backend already provides correct status including "Overdue"
+      let matchesStatus = false;
 
-    return matchesSearch && matchesStatus;
-  });
-};
+      if (statusFilter === "All Status") {
+        matchesStatus = true;
+      } else if (statusFilter === "Overdue") {
+        matchesStatus =
+          project.projectStatus === "Overdue" ||
+          project.status === "Overdue";
+      } else if (statusFilter === "Active") {
+        matchesStatus =
+          project.projectStatus === "Active" ||
+          project.status === "Active";
+      } else {
+        matchesStatus =
+          project.projectStatus === statusFilter ||
+          project.status === statusFilter;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  };
 
   const currentProjects = data?.items || [];
   const [filteredProjects, setFilteredProjects] = useState([]);
   const stats = data?.summary || {};
-  
+
   const inReviewCount = stats.submittedForFinalReview || 0;
 
   const filterItems = [
@@ -196,7 +198,7 @@ const filterProjects = (projects) => {
         <StatCard value={stats.active || 0} label="Active" color="#059669" progress={calculateProgress(stats.active, stats.total)} />
         <StatCard value={inReviewCount} label="In Review" color="#A855F7" progress={calculateProgress(inReviewCount, stats.total)} />
         <StatCard value={stats.completed || 0} label="Completed" color="#0284C7" progress={calculateProgress(stats.completed, stats.total)} />
-        <StatCard value={stats.overdue || 0} label="Overdue" color="#DC2626"   progress={stats.overdue > 0 ? Math.min((stats.overdue / stats.total) * 100, 100) : 0} />
+        <StatCard value={stats.overdue || 0} label="Overdue" color="#DC2626" progress={stats.overdue > 0 ? Math.min((stats.overdue / stats.total) * 100, 100) : 0} />
       </Box>
 
       <Box sx={{ mt: 5 }}>
@@ -233,7 +235,7 @@ const filterProjects = (projects) => {
               ))}
             </Grid>
           ) : (
-             <Box textAlign="center" py={8} borderRadius={2}>
+            <Box textAlign="center" py={8} borderRadius={2}>
               <Typography
                 variant="h6"
                 color={theme.palette.mode === "dark" ? "#fff" : "#6B7280"}
@@ -247,20 +249,19 @@ const filterProjects = (projects) => {
             <Grid container spacing={3}>
               {filteredProjects.map(project => (
                 <Grid item xs={12} sm={6} lg={4} key={project.id}>
-                    {console.log("type in pro dash",project.type)}
-                       {console.log("project in pro",project)}
-                  <AllStatusProjectCard 
+                  {console.log("type in pro dash", project.type)}
+                  {console.log("project in pro", project)}
+                  <AllStatusProjectCard
                     {...project}
-                    projectStatus={project.projectStatus || project.status} 
-                    isProvider={true} 
-                      projectType={project.type}   
-
+                    projectStatus={project.projectStatus || project.status}
+                    isProvider={true}
+                    projectType={project.type}
                   />
                 </Grid>
               ))}
             </Grid>
           ) : (
-          <Box textAlign="center" py={8}  borderRadius={2}>
+            <Box textAlign="center" py={8} borderRadius={2}>
               <Typography variant="h6" color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}>
                 No projects found
               </Typography>

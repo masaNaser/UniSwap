@@ -13,6 +13,7 @@ import {
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../utils/imageHelper";
+import { formatDate } from "../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 export default function AllStatusProjectCard({
@@ -52,8 +53,8 @@ export default function AllStatusProjectCard({
   const displayedDescription = showFullDescription
     ? description
     : isLongDescription
-    ? description.substring(0, 100) + "..."
-    : description;
+      ? description.substring(0, 100) + "..."
+      : description;
 
   const getStatusStyles = (status) => {
     const styles = {
@@ -87,47 +88,6 @@ export default function AllStatusProjectCard({
   const displayAvatar = getImageUrl(rawAvatar, displayName);
 
   const displayRole = isProvider ? "Client" : "Service Provider";
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        month: "numeric",
-        day: "numeric",
-        year: "numeric",
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
-  const formattedDeadline = formatDate(deadline);
-
-  const formatCreatedAt = (dateString) => {
-    if (!dateString || dateString.startsWith("0001-01-01")) return "";
-
-    try {
-      const date = new Date(dateString);
-
-      if (isNaN(date.getTime())) return "";
-
-      const now = new Date();
-      const diffTime = Math.abs(now - date);
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 0) return "Today";
-      if (diffDays === 1) return "Yesterday";
-      if (diffDays < 7) return `${diffDays} days ago`;
-      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-      if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-      return `${Math.floor(diffDays / 365)} years ago`;
-    } catch {
-      return "";
-    }
-  };
-
-  const formattedCreatedAt = formatCreatedAt(createdAt);
 
   const getStatusDisplayLabel = (status) => {
     if (status === "SubmittedForFinalReview") {
@@ -357,7 +317,6 @@ export default function AllStatusProjectCard({
                 }}
               >
                 {displayRole}
-                {formattedCreatedAt && ` • ${formattedCreatedAt}`}
               </Typography>
             </Box>
           </Box>
@@ -411,7 +370,7 @@ export default function AllStatusProjectCard({
             borderTop="1px solid #F3F4F6"
           >
             <Box display="flex" alignItems="center" gap={0.75}>
-              <CalendarMonthIcon sx={{ fontSize: 17,color:theme.palette.mode === 'dark' ? '#fff' : '#6B7280' }} />
+              <CalendarMonthIcon sx={{ fontSize: 17, color: theme.palette.mode === 'dark' ? '#fff' : '#6B7280' }} />
               <Typography
                 variant="caption"
                 // color="#6B7280"
@@ -419,7 +378,7 @@ export default function AllStatusProjectCard({
                 fontSize="12px"
                 fontWeight="500"
               >
-                Due: {formattedDeadline}
+                Due: {formatDate(deadline)}
               </Typography>
             </Box>
           </Box>
@@ -449,6 +408,6 @@ export default function AllStatusProjectCard({
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </>
-  );
+    </>
+  );
 }

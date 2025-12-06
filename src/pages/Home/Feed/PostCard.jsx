@@ -30,7 +30,7 @@ import MessegeIcon from "../../../assets/images/MessegeIcon.svg";
 import CommentsDisabledIcon from "@mui/icons-material/CommentsDisabled";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 import ShareDialog from "../../../components/Modals/ShareDialog";
-import { formatTime } from "../../../utils/timeHelper";
+import { formatDateTime } from "../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 // ✅ FileDisplay Component - لعرض جميع أنواع الملفات
@@ -190,7 +190,7 @@ const CommentBubble = ({ comment, theme }) => (
         color="text.secondary"
         sx={{ display: "block", textAlign: "right", mt: 0.5, lineHeight: 1 }}
       >
-        {formatTime(comment.createdAt)}
+        {formatDateTime(comment.createdAt)}
       </Typography>
     </Box>
   </Box>

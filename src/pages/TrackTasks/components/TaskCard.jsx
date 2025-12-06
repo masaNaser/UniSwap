@@ -13,10 +13,9 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CustomButton from "../../../components/CustomButton/CustomButton";
-import { formatTime } from "../../../utils/timeHelper";
+import { formatDateTime } from "../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 export default function TaskCard({
@@ -283,7 +282,7 @@ export default function TaskCard({
                       fontWeight: 500,
                     }}
                   >
-                    Review Due: {formatTime(task.reviewDueAt)}
+                    Review Due: {formatDateTime(task.reviewDueAt)}
                   </Typography>
                 </Box>
               </Box>

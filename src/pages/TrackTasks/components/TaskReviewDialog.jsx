@@ -18,6 +18,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { formatDateTime } from "../../../utils/timeHelper";
 
 export default function TaskReviewDialog({
     open,
@@ -27,34 +28,6 @@ export default function TaskReviewDialog({
 }) {
     const [reviewDecision, setReviewDecision] = React.useState('');
     const [reviewComment, setReviewComment] = React.useState('');
-
-    const formatDateWithTime = (dateString) => {
-        if (!dateString) return "No deadline";
-        try {
-            // Remove any 'Z' or timezone info if present
-            const cleanDate = dateString.replace('Z', '').replace(/[+-]\d{2}:\d{2}$/, '');
-
-            // Parse as local datetime by creating date parts manually
-            const [datePart, timePart] = cleanDate.split('T');
-            const [year, month, day] = datePart.split('-').map(Number);
-            const [hours, minutes] = timePart.split(':').map(Number);
-
-            // Create date in local timezone
-            const date = new Date(year, month - 1, day, hours, minutes);
-
-            // Format manually
-            const dayStr = String(date.getDate()).padStart(2, '0');
-            const monthStr = String(date.getMonth() + 1).padStart(2, '0');
-            const yearStr = date.getFullYear();
-            const hoursStr = String(date.getHours()).padStart(2, '0');
-            const minutesStr = String(date.getMinutes()).padStart(2, '0');
-
-            return `${dayStr}/${monthStr}/${yearStr} at ${hoursStr}:${minutesStr}`;
-        } catch (error) {
-            console.error('Error formatting date:', error, dateString);
-            return "Invalid date";
-        }
-    };
 
     const isReviewOverdue = () => {
         if (!task?.reviewDueAt) return false;
@@ -148,7 +121,7 @@ export default function TaskReviewDialog({
                                 </Typography>
 
                                 <Typography variant="body2" sx={{ color: reviewOverdue ? '#991B1B' : '#374151' }}>
-                                    {formatDateWithTime(task.reviewDueAt)}
+                                    {formatDateTime(task.reviewDueAt)}
                                 </Typography>
 
                                 <Typography
