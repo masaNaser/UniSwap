@@ -18,7 +18,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-
+import { useTheme } from "@mui/material/styles";
 import {
   GetUserService,
   RemoveService,
@@ -29,6 +29,7 @@ import AddServiceModal from "../../../../components/Modals/AddServiceModal";
 import { useProfile } from "../../../../Context/ProfileContext";
 
 export default function ServicesSection() {
+  const theme = useTheme();
   const token = localStorage.getItem("accessToken");
   const { isMyProfile, userData } = useProfile();
 
@@ -151,6 +152,8 @@ export default function ServicesSection() {
                   position: "relative",
                   mb: 1,
                   backgroundColor: "rgba(248, 250, 252, 1)",
+                  backgroundColor:theme.palette.mode === 'dark' ? '#323232ff' : 'rgba(248, 250, 252, 1)',
+
                 }}
               >
                 {isMyProfile && (

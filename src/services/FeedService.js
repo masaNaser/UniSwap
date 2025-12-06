@@ -1,14 +1,15 @@
 
 import api from "./api";
 
-export const Search = async (query,token) => {
-  return await api.get(`/search`, {
-       params: { query }, 
+export const Search = async (query, token) => {
+  return await api.get(`/feeds/search`, {
+    params: { query },
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 };
+
 
 export const trendingServices = async (token) => {
   return await api.get(`/Feeds/trending-services`, {

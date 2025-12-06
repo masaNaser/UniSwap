@@ -4,8 +4,13 @@ import ChatWindow from "./ChatWindow";
 import Container from "@mui/material/Container";
 import { useLocation } from "react-router-dom";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import { useTheme } from "@mui/material/styles"; // ✅ أضف هذا
 import "./Chat.css";
+
 export default function ChatPage() {
+  const theme = useTheme(); // ✅ استخدم الـ theme
+  const isDark = theme.palette.mode === "dark"; // ✅ تحقق من Dark Mode
+  
   const location = useLocation();
   const initialConv = location.state || null;
 
@@ -13,22 +18,20 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState([]);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-const [showChatList, setShowChatList] = useState(() => {
-  // إذا موبايل + جاي من profile → افتح الشات
-  if (window.innerWidth <= 768 && initialConv?.autoOpen) {
-    return false;
-  }
-  return true; // الافتراضي: افتح قائمة المحادثات
-});
+  const [showChatList, setShowChatList] = useState(() => {
+    if (window.innerWidth <= 768 && initialConv?.autoOpen) {
+      return false;
+    }
+    return true;
+  });
 
-  // تحديث حالة الموبايل عند تغيير حجم الشاشة
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
 
       if (!mobile) {
-        setShowChatList(true); // على الكمبيوتر دائمًا تظهر القائمة
+        setShowChatList(true);
       }
     };
 
@@ -36,17 +39,15 @@ const [showChatList, setShowChatList] = useState(() => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // لو جاي من الـ profile → افتح المحادثة مباشرة (حسب اختيارك رقم 2)
-useEffect(() => {
-  if (isMobile && initialConv?.autoOpen) {
-    setSelectedConv(initialConv);
-    setShowChatList(false);
-  } else if (isMobile && !initialConv) {
-    setSelectedConv(null);
-    setShowChatList(true); // لو مش جاي من profile → افتح القائمة
-  }
-}, [initialConv, isMobile]);
-
+  useEffect(() => {
+    if (isMobile && initialConv?.autoOpen) {
+      setSelectedConv(initialConv);
+      setShowChatList(false);
+    } else if (isMobile && !initialConv) {
+      setSelectedConv(null);
+      setShowChatList(true);
+    }
+  }, [initialConv, isMobile]);
 
   const handleSelectConversation = (convObj) => {
     setSelectedConv(convObj);
@@ -63,11 +64,12 @@ useEffect(() => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 5, mb: 5 }}>
-      <div className="chat-container">
+      {/* ✅ أضف class "dark-mode" لو Dark Mode مفعّل */}
+      <div className={`chat-container ${isDark ? "dark-mode" : ""}`}>
 
-        {/* قائمة المحادثات */}
         {(!isMobile || showChatList) && (
-          <ChatList   className={isMobile && showChatList ? "mobile-show" : ""}
+          <ChatList
+            className={isMobile && showChatList ? "mobile-show" : ""}
             conversations={conversations}
             setConversations={setConversations}
             selectedConvId={selectedConv?.convId}
@@ -82,7 +84,6 @@ useEffect(() => {
           />
         )}
 
-        {/* نافذة الدردشة */}
         {(!isMobile || (!showChatList && selectedConv)) && (
           selectedConv ? (
             <ChatWindow

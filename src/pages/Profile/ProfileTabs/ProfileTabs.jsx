@@ -8,10 +8,11 @@ import PortfolioTab from "./PortfolioTab";
 import PostsTab from "./PostsTab";
 // import ReviewsTab from "./tabs/ReviewsTab";
 // import AchievementsTab from "./tabs/AchievementsTab";
+import { useTheme } from "@mui/material/styles";
 
 export default function ProfileTabs({ userData }) {
   const [currentTab, setCurrentTab] = useState(0);
-
+const theme = useTheme();
   return (
     <Box sx={{ mt: 3 }}>
       {/* الأزرار */}
@@ -45,7 +46,7 @@ export default function ProfileTabs({ userData }) {
         label={label}
          sx={{
                     textTransform: "none",
-                    minWidth: "auto", // هذا أهم سطر لحل المشكلة
+                    minWidth: "auto",
                     marginRight:40,
                     fontWeight: currentTab === index ? "bold" : "normal",
                     fontSize: "16px",
@@ -56,7 +57,7 @@ export default function ProfileTabs({ userData }) {
                     WebkitBackgroundClip:
                       currentTab === index ? "text" : "none",
                     WebkitTextFillColor:
-                      currentTab === index ? "transparent" : "black",
+                      currentTab === index ? "transparent" : theme.palette.mode === 'dark' ? '#fff' : 'black',
                   }}
       />
     ))}

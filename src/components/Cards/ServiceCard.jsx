@@ -121,7 +121,7 @@ const ServiceCard = ({
 
           <Typography
             variant="h6"
-            onClick={() => setShowFullTitle(!showFullTitle)} // ✅ يبدل بين مختصر وكامل
+            onClick={() => setShowFullTitle(!showFullTitle)} //  يبدل بين مختصر وكامل
             sx={{
               fontWeight: "bold",
               fontSize: "1rem",
@@ -130,7 +130,7 @@ const ServiceCard = ({
               cursor: "pointer",
               transition: "color 0.2s",
 
-              // ✅ لو showFullTitle = false، اعرض سطرين بس
+              //  لو showFullTitle = false، اعرض سطرين بس
               ...(!showFullTitle && {
                 overflow: "hidden",
                 textOverflow: "ellipsis",

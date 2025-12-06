@@ -328,7 +328,6 @@ import { EditProfile } from "../../services/profileService";
 import { getImageUrl } from "../../utils/imageHelper";
 
 const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
-  const token = localStorage.getItem("accessToken");
   
   const [formData, setFormData] = useState({
     userName: "",
@@ -385,6 +384,16 @@ const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
   };
 
 const handleSubmit = async () => {
+    const token = localStorage.getItem("accessToken");
+  if (!token) {
+      console.error("❌ No token found!");
+      setSnackbar({ 
+        open: true, 
+        message: "Please login again!", 
+        severity: "error" 
+      });
+      return;
+    }
   setIsSubmitting(true);
   try {
     const form = new FormData();

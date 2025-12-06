@@ -15,6 +15,7 @@ export default function PostCardSkeleton() {
         mb: 3,
         borderRadius: 2,
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        // height:150
       }}
     >
       {/* Header */}
@@ -57,9 +58,9 @@ export default function PostCardSkeleton() {
           borderTop: '1px solid #eee',
         }}
       >
-        <Skeleton variant="text" width={80} height={30} />
-        <Skeleton variant="text" width={80} height={30} />
-        <Skeleton variant="text" width={80} height={30} />
+        <Skeleton variant="text" width={80} height={20} />
+        <Skeleton variant="text" width={80} height={20} />
+        <Skeleton variant="text" width={80} height={20} />
       </Box>
     </Card>
   );

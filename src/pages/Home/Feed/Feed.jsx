@@ -789,8 +789,8 @@ export default function Feed() {
 
                   {/* ✅ End Message */}
                   {!hasMore && posts.length > 0 && (
-                    <Box sx={{ textAlign: "center", py: 4 }}>
-                      <Typography
+                    <Box sx={{ textAlign: "center", py: 3 }}>
+                      {/* <Typography
                         sx={{
                           color: "#9CA3AF",
                           fontWeight: "600",
@@ -798,7 +798,7 @@ export default function Feed() {
                         }}
                       >
                         🎉 You've reached the end!
-                      </Typography>
+                      </Typography> */}
                       <Typography
                         sx={{ color: "#D1D5DB", fontSize: "14px", mt: 0.5 }}
                       >

@@ -443,3 +443,106 @@
 .chat-item:hover {
   background-color: #f5f5f5;
 }
+
+
+/* ==================== DARK MODE ==================== */
+
+.chat-container.dark-mode {
+  background: #1e1e1e;
+  color: #ffffff;
+}
+
+.chat-container.dark-mode .chat-list {
+  background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 100%);
+  border-right: 1px solid #333;
+}
+
+.chat-container.dark-mode .chat-list-items::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.chat-container.dark-mode .chat-list-items::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.chat-container.dark-mode .chat-item {
+  border-bottom: 1px solid #333;
+}
+
+.chat-container.dark-mode .chat-item:hover {
+  background: rgba(14, 165, 233, 0.15);
+}
+
+.chat-container.dark-mode .chat-item.active {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(152, 16, 250, 0.2));
+}
+
+.chat-container.dark-mode .chat-name {
+  color: #fff;
+}
+
+.chat-container.dark-mode .chat-last {
+  color: #bbb;
+}
+
+.chat-container.dark-mode .chat-time {
+  color: #aaa;
+}
+
+.chat-container.dark-mode .chat-date {
+  color: #888;
+}
+
+.chat-container.dark-mode .chat-window {
+  background: #1e1e1e;
+}
+
+.chat-container.dark-mode .chat-header {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(152, 16, 250, 0.1));
+  border-bottom: 1px solid #333;
+}
+
+.chat-container.dark-mode .messages {
+  background: #121212;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(152, 16, 250, 0.05) 0%, transparent 50%);
+}
+
+.chat-container.dark-mode .message.them {
+  background: #2a2a2a;
+  color: #fff !important;
+}
+
+.chat-container.dark-mode .message-input-wrapper {
+  background: #1e1e1e;
+  border-top: 1px solid #333;
+}
+
+.chat-container.dark-mode .attached-files {
+  background: #2a3a2a;
+  border-bottom: 1px solid #333;
+}
+
+.chat-container.dark-mode .message-input {
+  background: #1e1e1e;
+}
+
+.chat-container.dark-mode .message-input input {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #333;
+}
+
+.chat-container.dark-mode .message-input input::placeholder {
+  color: #666;
+}
+
+.chat-container.dark-mode .empty-window {
+  background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 100%);
+  color: #666;
+}
+
+.chat-container.dark-mode .empty-window p {
+  color: #666;
+}

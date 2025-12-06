@@ -6,8 +6,9 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import LanguageIcon from '@mui/icons-material/Language';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import FacebookIcon from '@mui/icons-material/Facebook';
-
+import { useTheme } from "@mui/material/styles";
 export default function ProfileInfo() {
+   const theme = useTheme();
   const { userData } = useProfile();
 
   const getFirstName = (userName) => {
@@ -87,7 +88,8 @@ const detectPlatform = (url) => {
     <Box
       sx={{
         mt: 4,
-        background: "rgba(255, 255, 255, 0.95)",
+        // background: "rgba(255, 255, 255, 0.95)",
+        backgroundColor: theme.palette.mode === 'dark' ? '#323232ff' : 'rgba(255, 255, 255, 0.95)',
         borderRadius: "16px",
         padding: "24px",
       }}
@@ -97,7 +99,7 @@ const detectPlatform = (url) => {
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
           About {getFirstName(userData.userName)}
         </Typography>
-        <Typography sx={{ color: "rgba(0, 0, 0, 0.7)", lineHeight: 1.6 }}>
+        <Typography sx={{color: theme.palette.mode === 'dark' ? '#fff' : 'rgba(0, 0, 0, 0.7)', lineHeight: 1.6 }}>
           {userData.bio || "No bio available yet."}
         </Typography>
       </Box>
@@ -202,7 +204,8 @@ const detectPlatform = (url) => {
   {/* Contact */}
   <Box 
     sx={{
-      background: "rgba(241, 245, 249, 1)",
+      // background: "rgba(241, 245, 249, 1)",
+      backgroundColor: theme.palette.mode === 'dark' ? '#4f4d4dff' : 'rgba(241, 245, 249, 1)',
       p: 2.5,
       borderRadius: "12px",
       border: "1px solid rgba(226, 232, 240, 1)",
@@ -218,6 +221,7 @@ const detectPlatform = (url) => {
         fontSize: "13px",
         mb: 1.5,
         color: "rgba(71, 85, 105, 1)",
+       color: theme.palette.mode === 'dark' ? '#fff' : 'rgba(71, 85, 105, 1)',
         textTransform: "uppercase",
         letterSpacing: "0.5px",
       }}

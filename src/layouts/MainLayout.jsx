@@ -86,12 +86,12 @@ export default function MainLayout() {
 //   }
 // };
 
-  useEffect(() => {
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    fetchUserData(); // 🔥 هيك من أول ما يفتح المستخدم الموقع بنجيب بياناته
-  }
-}, []);
+//   useEffect(() => {
+//   const token = localStorage.getItem("accessToken");
+//   if (token) {
+//     fetchUserData(); // 🔥 هيك من أول ما يفتح المستخدم الموقع بنجيب بياناته
+//   }
+// }, []);
 
 
   return (
