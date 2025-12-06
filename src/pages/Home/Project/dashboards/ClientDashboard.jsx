@@ -7,6 +7,7 @@ import AllStatusProjectCard from "../../../../components/Cards/AllStatusProjectC
 import RequestProjectCard from "../../../../components/Cards/RequestProjectCard";
 import RequestServiceModal from "../../../../components/Modals/RequestServiceModal";
 import { getPendingRequests } from "../../../../services/collaborationService";
+import { formatDate } from "../../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 export default function ClientDashboard({
@@ -59,13 +60,13 @@ export default function ClientDashboard({
   const fetchPendingRequests = async () => {
     try {
       setLoading(true);
-      const response = await getPendingRequests(token, "Client");
+      console.log("🔍 Calling API:", `/collaborations/requests/pending`);
+const response = await getPendingRequests(token, "Client");
       const requests = response.data || [];
       console.log("client pending", response);
       const updatedRequests = requests.map((req) => ({
         ...req,
-        clientImage: req.clientImage || null,
-        providerImage: req.providerImage || null,
+        providerImage: req.providerAvatar || req.ProviderAvatar || null,
         projectType: req.type,
       }));
 
@@ -271,21 +272,16 @@ export default function ClientDashboard({
                     title={request.title}
                     description={request.description}
                     clientName={request.providerName}
-                    clientImage={request.clientPicture}
+                    clientImage={request.providerImage}
                     clientInitials={request.providerName
                       ?.substring(0, 2)
                       .toUpperCase()}
                     pointsOffered={request.pointsOffered}
-                    deadline={new Date(request.deadline).toLocaleDateString()}
+                    deadline={formatDate(request.deadline)}
                     category={request.type}
                     isProvider={false}
                     onRequestHandled={handleRequestHandled}
                     onEditRequest={handleEditRequest}
-                    sentDate={
-                      request.createdAt
-                        ? new Date(request.createdAt).toLocaleDateString()
-                        : null
-                    }
                   />
                 </Grid>
               ))}

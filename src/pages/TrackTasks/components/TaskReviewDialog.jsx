@@ -29,13 +29,6 @@ export default function TaskReviewDialog({
     const [reviewDecision, setReviewDecision] = React.useState('');
     const [reviewComment, setReviewComment] = React.useState('');
 
-    const isReviewOverdue = () => {
-        if (!task?.reviewDueAt) return false;
-        const now = new Date();
-        const reviewDue = new Date(task.reviewDueAt);
-        return reviewDue < now;
-    };
-
     const handleSubmit = () => {
         if (!reviewDecision) {
             return;
@@ -68,8 +61,6 @@ export default function TaskReviewDialog({
         return 'linear-gradient(to right, #DC2626, #EF4444)';
     })();
 
-    const reviewOverdue = isReviewOverdue();
-
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ fontWeight: 'bold', pb: 1 }}>
@@ -96,9 +87,9 @@ export default function TaskReviewDialog({
                             sx={{
                                 mb: 3,
                                 p: 2,
-                                bgcolor: reviewOverdue ? '#FEE2E2' : '#F3F4F6',
+                                bgcolor: '#F3F4F6',
                                 borderRadius: 1,
-                                border: reviewOverdue ? '1px solid #DC2626' : '1px solid #9CA3AF',
+                                border: '1px solid #9CA3AF',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 1.5,
@@ -106,7 +97,7 @@ export default function TaskReviewDialog({
                         >
                             <AccessTimeIcon
                                 sx={{
-                                    color: reviewOverdue ? '#DC2626' : '#6B7280',
+                                    color: '#6B7280',
                                     fontSize: 24,
                                 }}
                             />
@@ -115,26 +106,24 @@ export default function TaskReviewDialog({
                                 <Typography
                                     variant="body2"
                                     fontWeight="bold"
-                                    sx={{ color: reviewOverdue ? '#DC2626' : '#374151', mb: 0.5 }}
+                                    sx={{ color: '#374151', mb: 0.5 }}
                                 >
-                                    {reviewOverdue ? '⚠️ Review Deadline Passed' : 'Review Deadline'}
+                                    Review Deadline
                                 </Typography>
 
-                                <Typography variant="body2" sx={{ color: reviewOverdue ? '#991B1B' : '#374151' }}>
+                                <Typography variant="body2" sx={{ color: '#374151' }}>
                                     {formatDateTime(task.reviewDueAt)}
                                 </Typography>
 
                                 <Typography
                                     variant="caption"
                                     sx={{
-                                        color: reviewOverdue ? '#991B1B' : '#374151',
+                                        color: '#374151',
                                         display: 'block',
                                         mt: 0.5,
                                     }}
                                 >
-                                    {reviewOverdue
-                                        ? 'This task will be automatically approved soon if no review is submitted.'
-                                        : 'The task will be automatically approved if no review is submitted by this deadline.'}
+                                    The task will be automatically approved if no review is submitted by this deadline.
                                 </Typography>
                             </Box>
                         </Box>

@@ -29,15 +29,8 @@ export default function TaskCard({
 }) {
 
   const theme = useTheme();
-  // ✅ Check if review due date has passed (for RequestProject)
-  const isReviewOverdue = () => {
-    if (!task.reviewDueAt || status !== "InReview") return false;
 
-    const now = new Date();
-    const reviewDue = new Date(task.reviewDueAt);
-
-    return reviewDue < now;
-  };
+  console.log("🔎 ReviewDueAt:", task.reviewDueAt);
 
   const handleFileClick = () => {
     if (task.uploadFile) {
@@ -70,8 +63,6 @@ export default function TaskCard({
     }
   };
 
-  const reviewIsOverdue = isReviewOverdue();
-
   return (
     <Card
       draggable={isProvider}
@@ -80,7 +71,7 @@ export default function TaskCard({
         cursor: isProvider ? "grab" : "default",
         transition: "all 0.2s ease",
         // backgroundColor: "#FFFFFF",
-        backgroundColor:theme.palette.mode === "dark" ? "#1e1e1e" : "#FFFFFF",
+        backgroundColor: theme.palette.mode === "dark" ? "#1e1e1e" : "#FFFFFF",
         border: "1px solid #E5E7EB",
         position: "relative",
         "&:hover": {
@@ -175,22 +166,22 @@ export default function TaskCard({
             {/* File Attachment */}
             {task.uploadFile && (
               <Box sx={{ textAlign: 'center' }}>
-              <Button
-                size="small"
-                startIcon={<AttachFileIcon />}
-                onClick={handleFileClick}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "11px",
-                  mb: 1,
-                  color: "#0284C7",
-                  "&:hover": {
-                    backgroundColor: "#F0F9FF",
-                  },
-                }}
-              >
-                View Attachment
-              </Button>
+                <Button
+                  size="small"
+                  startIcon={<AttachFileIcon />}
+                  onClick={handleFileClick}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "11px",
+                    mb: 1,
+                    color: "#0284C7",
+                    "&:hover": {
+                      backgroundColor: "#F0F9FF",
+                    },
+                  }}
+                >
+                  View Attachment
+                </Button>
               </Box>
             )}
 
@@ -271,14 +262,14 @@ export default function TaskCard({
                   <AccessTimeIcon
                     sx={{
                       fontSize: 14,
-                      color: reviewIsOverdue ? "#DC2626" : "#6B7280",
+                      color: "#6B7280",
                     }}
                   />
                   <Typography
                     variant="caption"
                     sx={{
                       fontSize: "11px",
-                      color: reviewIsOverdue ? "#DC2626" : "#6B7280",
+                      color: "#6B7280",
                       fontWeight: 500,
                     }}
                   >

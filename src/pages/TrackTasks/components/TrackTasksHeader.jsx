@@ -57,9 +57,15 @@ export default function TrackTasksHeader({
   const [isEditing, setIsEditing] = useState(false);
   const [newDeadline, setNewDeadline] = useState(() => {
     if (!cardData.deadline) return "";
-    const d = new Date(cardData.deadline);
-    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-    return local.toISOString().split("T")[0];
+    try {
+      const date = new Date(cardData.deadline);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch {
+      return "";
+    }
   });
 
   const [loading, setLoading] = useState(false);
@@ -93,10 +99,8 @@ export default function TrackTasksHeader({
 
   const token = localStorage.getItem("accessToken");
 
-  // ✅ Backend now handles overdue status
   const isOverdue = cardData.projectStatus === 'Overdue';
-  
-  // ✅ Check for rejection
+
   const hasRejection = projectDetails?.rejectionReason && cardData.projectStatus === "Active";
 
   useEffect(() => {
@@ -163,10 +167,23 @@ export default function TrackTasksHeader({
     }
   };
 
+  //const minSelectableDate = (() => {
+  //const d = new Date(cardData.deadline);
+  //d.setDate(d.getDate() + 1);
+  //return d.toISOString().split("T")[0];
+  //})();
+
+  // للاوفر و الاكتيف مع بعض
   const minSelectableDate = (() => {
-    const d = new Date(cardData.deadline);
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split("T")[0];
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const currentDeadlinePlusOne = new Date(cardData.deadline);
+    currentDeadlinePlusOne.setDate(currentDeadlinePlusOne.getDate() + 1);
+
+    const minDate = tomorrow > currentDeadlinePlusOne ? tomorrow : currentDeadlinePlusOne;
+    return minDate.toISOString().split("T")[0];
   })();
 
   const handleSaveDeadline = async () => {
@@ -578,7 +595,7 @@ export default function TrackTasksHeader({
             variant="h5"
             fontWeight="bold"
             sx={{
-              mb: 0.5,
+              mb: 2,
               fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" },
               pr: { xs: 0, md: 2 }
             }}
@@ -605,10 +622,10 @@ export default function TrackTasksHeader({
             width: { xs: "100%", sm: "100%", md: "280px" },
           }}
         >
-            <ProgressSection
-              progressPercentage={progressPercentage}
-              projectPoints={projectDetails?.points || 0}
-            />
+          <ProgressSection
+            progressPercentage={progressPercentage}
+            projectPoints={projectDetails?.points || 0}
+          />
         </Box>
       </Box>
 
@@ -617,7 +634,7 @@ export default function TrackTasksHeader({
         display="flex"
         alignItems="center"
         gap={{ xs: 1.5, sm: 3 }}
-        mb={3}
+        mb={1}
         sx={{ flexWrap: "wrap" }}
       >
         <Box display="flex" alignItems="center" gap={1}>
@@ -703,7 +720,8 @@ export default function TrackTasksHeader({
             borderLeft: "4px solid #DC2626",
             borderRadius: 1,
             p: { xs: 1.5, sm: 2 },
-            mb: { xs: 2, sm: 3 },
+            mb: { xs: 2, sm: 1 },
+            mt: { xs: 2, sm: 3 },
             display: "flex",
             alignItems: "flex-start",
             gap: { xs: 1, sm: 2 },
@@ -748,7 +766,8 @@ export default function TrackTasksHeader({
             borderLeft: "4px solid #DC2626",
             borderRadius: 1,
             p: { xs: 1.5, sm: 2 },
-            mb: { xs: 2, sm: 3 },
+            mb: { xs: 2, sm: 1 },
+            mt: { xs: 2, sm: 3 },
             display: "flex",
             alignItems: "flex-start",
             gap: { xs: 1, sm: 2 },

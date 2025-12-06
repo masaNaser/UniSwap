@@ -25,7 +25,6 @@ export default function ReviewDueDateDialog({
 
   const getMinDateTime = () => {
     const now = new Date();
-    now.setHours(now.getHours() + 1);
     return now.toISOString().slice(0, 16);
   };
 
@@ -43,7 +42,8 @@ export default function ReviewDueDateDialog({
       return;
     }
 
-    onSubmit(reviewDueDate);
+    const isoDateString = selectedDate.toISOString();
+    onSubmit(isoDateString);
     handleClose();
   };
 

@@ -4,7 +4,7 @@ import { useTheme } from "@mui/material/styles";
 export default function ProgressSection({ progressPercentage, projectPoints }) {
   const theme = useTheme();
   return (
-    <Box sx={{ mb: 0, pr: 2, mt: -1.1}}>
+    <Box sx={{ mb: 0, pr: 2, mt: 2}}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="body2" color="text.secondary" fontWeight="500">
           Progress
