@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useState, useEffect, useContext } from "react";
 import { styled, alpha } from "@mui/material/styles";
 import {
@@ -89,7 +88,15 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-// ✅ Enhanced Search Results Component with Beautiful Design
+//  Enhanced Search Results Component with Beautiful Design
+// يعرض ثلاث حالات رئيسية:
+
+// isSearching true → يظهر CircularProgress و"Searching..."
+
+// لا يوجد نتائج → يعرض أيقونة بحث ورسالة "No results found"
+
+// نتائج موجودة → يعرض قسم Users (إن وُجدت) ثم Posts (إن وُجدت).
+
 const SearchResultsDropdown = ({ 
   searchResults, 
   isSearching, 
@@ -407,12 +414,17 @@ export default function PrimarySearchAppBar() {
 
   // ✅ Search Handler with Debounce
   useEffect(() => {
+    /**
+     * يتم وضع setTimeout لمدة 500ms عند تغيير searchQuery. هذا يعني لو المستخدم بيكتب بسرعة،
+     *  الطلب ما يرسل إلا بعد 500ms من آخر حرف
+     *  — هذا اسمه debounce ويقلل عدد طلبات الـAPI ويحسن الأداء.
+     */
     const delaySearch = setTimeout(async () => {
       if (searchQuery.trim().length > 0) {
         setIsSearching(true);
         setShowSearchResults(true);
         try {
-          const token = localStorage.getItem("token");
+          const token = localStorage.getItem("accessToken");
           const response = await Search(searchQuery, token);
           console.log("Search response:", response);
           setSearchResults(response.data || { posts: [], users: [] });

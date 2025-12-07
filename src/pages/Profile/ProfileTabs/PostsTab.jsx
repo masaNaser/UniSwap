@@ -604,7 +604,7 @@ export default function PostsTab({ username }) {
           // maxWidth: "800px",
           // px: { xs: 1, sm: 2, md: 3 },
           py: 2,
-          width:"100%"
+          width:"42%"
         }}
       >
         {posts.map((post) => (

@@ -110,7 +110,7 @@ const NotificationMenu = ({
     messages: <CommentIcon sx={{ fontSize: 14 }} />,
   };
 
- const handleNotifItemClick = async (notification) => {
+const handleNotifItemClick = async (notification) => {
   if (!notification.isRead) {
     await markAsRead(notification.id);
   }
@@ -139,9 +139,9 @@ const NotificationMenu = ({
       break;
 
     case "Collaboration":
-      targetRoute = 
-        // ? `/app/project/${notification.refId}`
-         "/app/project";
+      targetRoute = notification.refId
+        ? `/app/project/${notification.refId}`
+        : "/app/project";
       break;
 
     case "RequestProject":

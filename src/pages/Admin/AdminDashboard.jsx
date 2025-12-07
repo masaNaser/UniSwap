@@ -99,7 +99,7 @@ const AdminDashboard = () => {
 
   return (
     <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh", py: 4 }}>
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         
         {/* HEADER */}
         <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">

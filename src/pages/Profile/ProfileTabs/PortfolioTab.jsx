@@ -126,26 +126,28 @@ export default function PortfolioTab() {
         <Typography>No projects yet.</Typography>
       ) : (
         <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 2,
-            mt: 0,
-          }}
-        >
-        {projects.map((p) => (
-  <Box
-    key={p.id}
-    sx={{
-      width: {
-        xs: "100%",
-        sm: "calc(50% - 8px)",
-        md: "calc(50% - 8px)",
-      },
-      flexGrow: 0,
-      flexShrink: 0,
-    }}
-  >
+        sx={{
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 3,
+    mt: 0,
+    justifyContent:"space-between",
+    mb: 5,
+  }}
+>
+  {projects.map((p) => (
+    <Box
+      key={p.id}
+       sx={{
+        width: {
+          xs: "100%",
+          sm: "calc(40% - 30px)", 
+          md: "calc(40% - 30px)",
+        },
+        flexGrow: 0,
+        flexShrink: 0,
+      }}
+    >
     <Card
       sx={{
         borderRadius: 3,
