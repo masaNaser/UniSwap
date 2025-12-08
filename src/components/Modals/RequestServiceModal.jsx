@@ -26,6 +26,7 @@ import {
   createCollaborationRequest,
   editCollaborationRequest,
 } from "../../services/collaborationService";
+import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ أضيفي هاد
 
 const RequestServiceModal = ({
   open,
@@ -38,6 +39,9 @@ const RequestServiceModal = ({
   isEditMode = false,
   editData = null,
 }) => {
+
+  const { updateCurrentUser } = useCurrentUser(); // ✅ أضيفي هاد
+
   const [serviceTitle, setServiceTitle] = useState(projectTitle || "");
   const [serviceDescription, setServiceDescription] = useState("");
   const [serviceCategory, setServiceCategory] = useState("");
@@ -181,7 +185,6 @@ const RequestServiceModal = ({
         }
       }
 
-
       console.log(
         isEditMode ? "✏️ Editing request data:" : "➕ Creating request data:",
         requestData
@@ -212,7 +215,7 @@ const RequestServiceModal = ({
         console.log("✅ Request created successfully:", response);
       }
 
-      // ✅ عرض رسالة النجاح
+   // ✅ عرض رسالة النجاح
       setSnackbar({
         open: true,
         message: isEditMode
@@ -220,6 +223,10 @@ const RequestServiceModal = ({
           : "Request sent successfully!",
         severity: "success",
       });
+
+      // 🔥 حدّث النقاط في الـ Navbar
+      await updateCurrentUser();
+      console.log("✅ Points updated in Navbar!");
 
       // ✅ إغلاق الـ Modal بعد 1.5 ثانية
       setTimeout(() => {
@@ -405,54 +412,75 @@ const RequestServiceModal = ({
             >
               Points Budget
             </Typography>
-            <TextField
-              fullWidth
-              type="number"
-              placeholder="e.g., 150"
-              value={pointsBudget}
-              onChange={(e) => setPointsBudget(e.target.value)}
-              disabled={isSubmitting}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Box
-                      sx={{
-                        width: 20,
-                        height: 20,
-                        backgroundColor: "#3B82F6",
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="10"
-                        height="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="rgba(255, 255, 255, 1)"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="8" cy="8" r="6"></circle>
-                        <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-                        <path d="M7 6h1v4"></path>
-                        <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-                      </svg>
-                    </Box>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                  height: "46px",
-                },
-              }}
-            />
+         <TextField
+  fullWidth
+  type="number"
+  placeholder="e.g., 150"
+  value={pointsBudget}
+  onChange={(e) => {
+    const value = e.target.value;
+    // ✅ امنع إدخال صفر أو أرقام سالبة
+    if (value === "" || parseInt(value) > 0) {
+      setPointsBudget(value);
+    }
+  }}
+  disabled={isSubmitting}
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <Box
+          sx={{
+            width: 20,
+            height: 20,
+            backgroundColor: "#3B82F6",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="rgba(255, 255, 255, 1)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="8" cy="8" r="6"></circle>
+            <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+            <path d="M7 6h1v4"></path>
+            <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+          </svg>
+        </Box>
+      </InputAdornment>
+    ),
+    inputProps: {
+      min: 1, // ✅ الحد الأدنى = 1
+    },
+  }}
+  sx={{
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "8px",
+      height: "46px",
+    },
+    // ✅ إخفاء الأسهم (spinner arrows)
+    "& input[type=number]": {
+      MozAppearance: "textfield", // Firefox
+    },
+    "& input[type=number]::-webkit-outer-spin-button": {
+      WebkitAppearance: "none", // Chrome, Safari, Edge
+      margin: 0,
+    },
+    "& input[type=number]::-webkit-inner-spin-button": {
+      WebkitAppearance: "none", // Chrome, Safari, Edge
+      margin: 0,
+    },
+  }}
+/>
           </Grid>
         </Grid>
 
@@ -513,7 +541,7 @@ const RequestServiceModal = ({
         )}
       </GenericModal>
 
-      {/* 💳 الـ Dialog الخاص بتأكيد تجميد النقاط - يظهر فقط في وضع الإنشاء (Create) */}
+      {/*  الـ Dialog الخاص بتأكيد تجميد النقاط - يظهر فقط في وضع الإنشاء (Create) */}
       {!isEditMode && (
         <Dialog
           open={isConfirmDialogOpen}

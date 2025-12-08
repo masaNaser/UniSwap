@@ -31,7 +31,7 @@ import {
 import { getImageUrl } from "../../utils/imageHelper";
 import { formatDate } from "../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
-
+import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ أضيفي هاد
 export default function RequestProjectCard({
   id,
   title,
@@ -48,7 +48,8 @@ export default function RequestProjectCard({
 }) {
    
     const theme = useTheme(); // 🔥 ضيفي هاد السطر
-  
+  const { updateCurrentUser } = useCurrentUser(); // ✅ أضيفي هاد السطر
+
 
   const [loading, setLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -122,6 +123,9 @@ export default function RequestProjectCard({
 
         case "reject":
           await rejectCollaborationRequest(token, id);
+           // 🔥 حدّث النقاط بعد الرفض
+        await updateCurrentUser();
+        console.log("✅ Points updated after rejection");
           setSnackbar({
             open: true,
             message: "Request rejected ❌",
@@ -131,6 +135,11 @@ export default function RequestProjectCard({
 
         case "cancel":
           await cancelCollaborationRequest(token, id);
+
+            // 🔥 حدّث النقاط بعد الإلغاء
+        await updateCurrentUser();
+        console.log("✅ Points updated after cancellation");
+
           setSnackbar({
             open: true,
             message: "Request cancelled successfully ❌",
@@ -145,11 +154,17 @@ export default function RequestProjectCard({
       onRequestHandled?.();
     } catch (error) {
       console.error(`Error ${confirmDialog.type}ing request:`, error);
+
+        // ✅ معالجة أفضل للـ error
+    const errorMessage = 
+      error.response?.data?.detail || 
+      error.response?.data?.message ||
+      error.response?.data?.title ||
+      `Failed to ${confirmDialog.type} request`;
+
       setSnackbar({
         open: true,
-        message:
-          error.response?.data?.message ||
-          `Failed to ${confirmDialog.type} request`,
+        message:errorMessage,
         severity: "error",
       });
     } finally {

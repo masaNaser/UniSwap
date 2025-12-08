@@ -59,10 +59,13 @@ export default function Login() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm({
     //هاي الخطوة عشان نحكي للمكتبة الرياكت هوك فورم انه ما تعمل الفالديشن منها وانما الفالديشن اللي حطيناه باستخدام ال yup
     resolver: yupResolver(validationSchema),
+     shouldUseNativeValidation: false, // ✅ أضيفي هاد
+  mode: 'onSubmit', // ✅ وهاد
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -99,7 +102,7 @@ export default function Login() {
           decoded[
             "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
           ];
-
+       console.log("userRole:", userRole);
         // حفظ معلومات المستخدم
         localStorage.setItem("userName", userName);
         localStorage.setItem("userId", userId);
@@ -118,9 +121,17 @@ export default function Login() {
         });
       }
     } catch (error) {
-      const msg =
-        error.response?.data?.message || "Login failed. Please try again.";
-      console.error("Login error:", error);
+         // ✅ هون المشكلة - لازم نمنع الـ form من الـ reset
+    const msg =
+      error.response?.data?.message || 
+      error.response?.data?.title ||
+      "Invalid email or password"; // ✅ غيّرت الرسالة لتكون أوضح
+        // ✅ عرض الـ error تحت حقل الـ password
+    setError("password", {
+      type: "manual",
+      message: msg,
+    });
+    console.error("Login error:", error);
 
       Swal.fire({
         icon: "error",

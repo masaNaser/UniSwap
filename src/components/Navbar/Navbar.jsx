@@ -45,7 +45,6 @@ import { isAdmin } from "../../utils/authHelpers";
 import { useNotifications } from "../../Context/NotificationContext";
 import { ThemeModeContext } from "../../Context/ThemeContext";
 import { useTheme } from "@mui/material/styles";
-
 // ✅ Import Search API
 import { Search } from "../../services/FeedService";
 
@@ -108,9 +107,9 @@ const SearchResultsDropdown = ({
   if (!searchQuery) return null;
 
   // Helper function to get user avatar
-  const getUserAvatar = (userName) => {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=3B82F6&color=fff&bold=true&size=40`;
-  };
+  // const getUserAvatar = (userName) => {
+  //   return `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=3B82F6&color=fff&bold=true&size=40`;
+  // };
 
   return (
     <Paper
@@ -199,7 +198,8 @@ const SearchResultsDropdown = ({
                 >
                   {/* User Avatar */}
                   <Avatar
-                    src={getUserAvatar(user.userName)}
+                    // src={getUserAvatar(user.userName)}
+                    src={getImageUrl(user.profilePicture) }
                     alt={user.userName}
                     sx={{
                       width: 40,
@@ -312,15 +312,27 @@ const SearchResultsDropdown = ({
                       alignItems: "center",
                       justifyContent: "center",
                       borderRadius: 2,
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(34, 197, 94, 0.15)" : "rgba(34, 197, 94, 0.1)",
+                      // bgcolor: theme.palette.mode === "dark" ? "rgba(34, 197, 94, 0.15)" : "rgba(34, 197, 94, 0.1)",
                       flexShrink: 0,
                     }}
                   >
-                    <ArticleIcon sx={{ color: "#22C55E", fontSize: 20 }} />
+                    {/* <ArticleIcon sx={{ color: "#22C55E", fontSize: 20 }} /> */}
+                        <Avatar
+                    // src={getUserAvatar(user.userName)}
+                    src={getImageUrl(post.authorPicture) }
+                    alt={post.author}
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      border: `2px solid ${theme.palette.divider}`,
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    }}
+                  />
                   </Box>
 
                   {/* Post Content */}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
+
                     <Typography
                       sx={{
                         fontSize: "0.9rem",
@@ -769,6 +781,13 @@ export default function PrimarySearchAppBar() {
                         <PersonOutlineOutlinedIcon fontSize="small" />
                       </ListItemIcon>
                       Profile
+                    </MenuItem>
+                    
+                       <MenuItem onClick={() => navigate("/changePassword")}>
+                      <ListItemIcon>
+                        <PersonOutlineOutlinedIcon fontSize="small" />
+                      </ListItemIcon>
+                      Change Password
                     </MenuItem>
 
                     <MenuItem onClick={toggleMode}>

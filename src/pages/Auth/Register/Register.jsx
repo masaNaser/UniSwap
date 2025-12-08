@@ -10,6 +10,7 @@ import {
   Tab,
   Autocomplete,
   Chip,
+  IconButton
 } from "@mui/material";
 import {
   Email,
@@ -23,8 +24,6 @@ import {
   VisibilityOff,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-
-import { IconButton } from "@mui/material";
 
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -91,7 +90,7 @@ export default function Register() {
   });
 
   const [passwordStrength, setPasswordStrength] = useState(0);
- const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const checkStrength = (value) => {
     let score = 0;
@@ -511,7 +510,7 @@ export default function Register() {
                 fullWidth
                 margin="normal"
                 label="Confirm Password"
-                type={showConfirmPassword  ? "text" : "password"}
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 variant="outlined"
                 required
@@ -535,7 +534,9 @@ export default function Register() {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() => setShowConfirmPassword (!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         edge="end"
                       >
                         {showConfirmPassword ? (

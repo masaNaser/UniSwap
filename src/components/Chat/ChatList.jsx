@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { getConversations, markMessageAsSeen } from "../../services/chatService";
 import { getImageUrl } from "../../utils/imageHelper";
-import { useUnreadCount } from "../../Context/unreadCountContext";
+import { useUnreadCount,refreshUnreadCount } from "../../Context/unreadCountContext";
 
 export default function ChatList({
   conversations,
@@ -41,6 +41,8 @@ export default function ChatList({
       );
 
       setConversations(sorted);
+       // ✅ حدّث العداد في الـ Navbar بعد جلب المحادثات
+      refreshUnreadCount();
     } catch (err) {
       console.error("فشل في جلب المحادثات:", err);
     }
@@ -48,6 +50,9 @@ export default function ChatList({
 
   useEffect(() => {
     fetchConversations();
+     // ✅ جلب المحادثات كل 10 ثواني لتحديث الرسائل الجديدة
+    const interval = setInterval(fetchConversations, 50000);
+    return () => clearInterval(interval);
   }, []);
 
  const handleConversationClick = async (

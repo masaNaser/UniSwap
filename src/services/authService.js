@@ -12,7 +12,18 @@ export const resetPassword = ({ email, code, newPassword, confirmPassword }) =>
     confirmPassword,
   });
 
+  export const changePassword = async (data,token) =>
+  {
+  return await api.post(
+    `/Account/ChangePassword`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );  }
 export const logout = () => {
-  localStorage.removeItem("token");
+  localStorage.removeItem("accessToken");
   localStorage.removeItem("userName");
 };

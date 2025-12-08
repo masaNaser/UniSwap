@@ -15,6 +15,7 @@ import Profile from "../pages/Profile/Profile";
 import ChatPage from '../components/Chat/ChatPage'
 import TrackTasks from "../pages/TrackTasks/TrackTasks";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
+import ChangePassword from "../pages/Auth/ChangePassword";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: "/resetPassword",
     element: <ResetPassword />,
+  },
+    {
+    path: "/changePassword",
+    element: <ChangePassword />,
   },
     {
     path: "/Chat",

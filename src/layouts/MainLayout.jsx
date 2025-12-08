@@ -1,31 +1,5 @@
 
 
-// import React from 'react'
-// import Navbar from '../components/Navbar/Navbar'
-// import { Outlet } from 'react-router-dom'
-// import Footer from '../components/Footer/Footer'
-// import { ProfileContext } from "../Context/ProfileContext";
-// import { CurrentUserProvider } from "../Context/CurrentUserContext"; // ✅ استورد الجديد
-// import { useState } from "react";
-
-// export default function MainLayout() {
-//     const [userData, setUserData] = useState(null);
-//     const [isMyProfile, setIsMyProfile] = useState(false);
-
-//   return (
-//     <>
-//       {/* ✅ لف الكل بالـ CurrentUserProvider */}
-//       <CurrentUserProvider>
-//         <ProfileContext.Provider value={{ userData, setUserData, isMyProfile, setIsMyProfile }}>
-//           <Navbar/>
-//           <Outlet/>
-//         </ProfileContext.Provider>
-//         <Footer/>
-//       </CurrentUserProvider>
-//     </>
-//   )
-// }
-
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar/Navbar';
 import { Outlet } from 'react-router-dom';
@@ -34,12 +8,12 @@ import { ProfileContext } from "../Context/ProfileContext";
 import { CurrentUserProvider } from "../Context/CurrentUserContext";
 import { GetFullProfile, GetProfileById } from "../services/profileService";
 import { useEffect } from "react";
-// import { useCurrentUser } from "../Context/CurrentUserContext";
+ import { useCurrentUser } from "../Context/CurrentUserContext";
 
 export default function MainLayout() {
   const [userData, setUserData] = useState(null);
   const [isMyProfile, setIsMyProfile] = useState(false);
-  // const { currentUser, updateCurrentUser } = useCurrentUser();
+  const { updateCurrentUser } = useCurrentUser(); // ✅ أضيفي هاي
 
   // ⬅️ دالة لجلب البيانات (هاي الأهم!)
   const fetchUserData = async (userId) => {
@@ -61,6 +35,9 @@ export default function MainLayout() {
       
       setUserData(res.data);
       console.log(" Profile data refreshed:", res.data);
+         if (mine) {
+        await updateCurrentUser();
+      }
           return res.data;   // ⬅⬅⬅ المهم هذا
 
     } catch (error) {

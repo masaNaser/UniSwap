@@ -24,7 +24,7 @@ export default function ChatWindow({
 }) {
   const theme = useTheme();
   const navigateToProfile = useNavigateToProfile();
-  const { decreaseUnreadCount } = useUnreadCount();
+  const { decreaseUnreadCount,refreshUnreadCount } = useUnreadCount();
 
   const [messages, setMessages] = useState([]);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -137,6 +137,9 @@ useEffect(() => {
             ...newMsgs.filter((n) => !prev.some((m) => m.id === n.id)),
           ]);
         }
+         // ✅ حدّث عداد الرسائل غير المقروءة في الـ Navbar
+          refreshUnreadCount();
+          console.log("✅ New messages received, refreshing unread count");
       } catch (err) {
         console.error("فشل جلب الرسائل الجديدة:", err);
       }
@@ -144,7 +147,7 @@ useEffect(() => {
 
     const interval = setInterval(fetchNewMessages, 5000);
     return () => clearInterval(interval);
-  }, [conversationId, messages, token]);
+  }, [conversationId, messages, token, refreshUnreadCount]);
 
   // تحميل الرسائل القديمة عند السحب للأعلى
   const fetchOlderMessages = async () => {
