@@ -29,11 +29,13 @@ import CustomButton from "../../../components/CustomButton/CustomButton";
 import ProgressSection from "./ProgressSection";
 import ProjectCloseReviewDialog from "./ProjectCloseReviewDialog";
 import ViewProjectReviewDialog from "./ViewProjectReviewDialog";
+import OverdueDecisionDialog from "./OverdueDecisionDialog";
 import PublishProjectModal from "../../../components/Modals/PublishProjectModal";
 import { editCollaborationRequest } from "../../../services/collaborationService";
 import {
   closeProjectByProvider,
   closeProjectByClient,
+  handleOverdueDecision,
 } from "../../../services/taskService";
 import { getReviewByProject } from "../../../services/reviewService";
 import { formatDate } from "../../../utils/timeHelper";
@@ -72,6 +74,10 @@ export default function TrackTasksHeader({
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
+
+  // ✅ NEW STATE: Control the Overdue Dialog open/close
+  const [openOverdueDialog, setOpenOverdueDialog] = useState(false);
+
   const [openPublishModal, setOpenPublishModal] = useState(false);
   const [closingProject, setClosingProject] = useState(false);
   const [reviewData, setReviewData] = useState(null);
@@ -399,6 +405,54 @@ export default function TrackTasksHeader({
     }
   };
 
+  // ✅ NEW FUNCTION: Handle overdue decision submission
+  const handleOverdueSubmit = async (decisionData) => {
+    try {
+      console.log('📤 Submitting overdue decision:', decisionData);
+
+      const response = await handleOverdueDecision(cardData.id, token, decisionData);
+
+      console.log('✅ Overdue decision submitted successfully');
+      console.log('📊 Server response:', response.data);
+
+      const successMessage = decisionData.acceptExtend
+        ? "Project deadline extended successfully! The project is now Active. ⏰"
+        : "Project cancelled successfully! Points have been refunded to your account. 💰";
+
+      setSnackbar({
+        open: true,
+        message: successMessage,
+        severity: "success",
+      });
+
+      setOpenOverdueDialog(false);
+
+      if (onProjectClosed) {
+        console.log("🔄 Calling onProjectClosed callback");
+        await onProjectClosed();
+      }
+    } catch (err) {
+      console.error('❌ Error handling overdue decision:', err);
+      console.log('📋 Error details:', {
+        status: err.response?.status,
+        data: err.response?.data,
+      });
+
+      let errorMessage = "Failed to process your request.";
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
+
   const handleSnackbarClose = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
@@ -420,7 +474,7 @@ export default function TrackTasksHeader({
       }}
     >
       {/* EDIT BUTTON (CLIENT ONLY) */}
-      {!isProvider && cardData.projectStatus === "Active" && (
+      {!isProvider && cardData.projectStatus === "Active" && !isOverdue && (
         <IconButton
           onClick={handleOpenEdit}
           sx={{
@@ -509,19 +563,16 @@ export default function TrackTasksHeader({
           gap: { xs: 1.5, sm: 1 },
         }}
       >
-        <CustomButton
-          onClick={onBack}
-          startIcon={<ArrowBackIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
+        <IconButton
+          onClick={() => navigate(-1)}
           sx={{
-            textTransform: "none",
-            fontSize: { xs: "12px", sm: "14px" },
-            py: { xs: 0.5, sm: 0.75 },
-            px: { xs: 1, sm: 1.5 },
-            minWidth: "auto",
+            color: "#6B7280",
+            p: 0,
+            mb: 2,
           }}
         >
-          {isMobile ? "Back" : "Back to Projects"}
-        </CustomButton>
+          <ArrowBackIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
+        </IconButton>
 
         <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 1 }, flexWrap: "wrap", justifyContent: "flex-end" }}>
           {canPublishProject() && (
@@ -590,7 +641,10 @@ export default function TrackTasksHeader({
           mb: 2,
         }}
       >
-        <Box flex={1}>
+        <Box
+          flex={1}
+          sx={{ pr: { xs: 0, md: "320px" } }}
+        >
           <Typography
             variant="h5"
             fontWeight="bold"
@@ -617,7 +671,7 @@ export default function TrackTasksHeader({
             position: { xs: "static", md: "absolute" },
             top: { md: 80 },
             right: {
-              md: !isProvider && cardData.projectStatus === "Active" ? 56 : 16
+              md: !isProvider && cardData.projectStatus === "Active" && !isOverdue ? 56 : 16
             },
             width: { xs: "100%", sm: "100%", md: "280px" },
           }}
@@ -712,7 +766,6 @@ export default function TrackTasksHeader({
         )}
       </Box>
 
-      {/* Project Overdue Warning Banner */}
       {isOverdue && (
         <Box
           sx={{
@@ -735,7 +788,7 @@ export default function TrackTasksHeader({
               mt: { xs: 0, sm: 0 }
             }}
           />
-          <Box>
+          <Box sx={{ flex: 1 }}>
             <Typography
               variant="body2"
               fontWeight="bold"
@@ -744,15 +797,38 @@ export default function TrackTasksHeader({
             >
               ⚠️ PROJECT OVERDUE
             </Typography>
+
+            {/* ✅ Inline text with underlined clickable link */}
             <Typography
               variant="body2"
               color="#991B1B"
               sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
             >
-              This project passed its deadline on{" "}
-              {formatDate(cardData.deadline)}.
-              {!isProvider &&
-                " You can extend the deadline by clicking the edit button."}
+              This project passed its deadline on {formatDate(cardData.deadline)}.
+              {!isProvider && (
+                <>
+                  {' '}
+                  <Box
+                    component="span"
+                    onClick={() => setOpenOverdueDialog(true)}
+                    sx={{
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      color: '#DC2626',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        color: '#991B1B',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: '3px',
+                      },
+                    }}
+                  >
+                    Click here to extend the deadline or cancel the project
+                  </Box>
+                  .
+                </>
+              )}
             </Typography>
           </Box>
         </Box>
@@ -858,6 +934,16 @@ export default function TrackTasksHeader({
         projectTitle={cardData.title}
         projectDescription={cardData.description}
         onSubmitReview={handleClientReview}
+      />
+
+      {/* ✅ Overdue Decision Dialog */}
+      <OverdueDecisionDialog
+        open={openOverdueDialog}
+        onClose={() => setOpenOverdueDialog(false)}
+        projectTitle={cardData.title}
+        projectDescription={cardData.description}
+        currentDeadline={cardData.deadline}
+        onSubmit={handleOverdueSubmit}
       />
 
       {/* View Project Review Dialog */}

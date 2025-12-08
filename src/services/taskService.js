@@ -117,3 +117,15 @@ export const closeProjectByProvider = async (projectId, token) => {
   );
 };
 
+// ===== Overdue Project Management =====
+export const handleOverdueDecision = async (projectId, token, data) => {
+  return await api.post(`/Projects/cancel-overdue/${projectId}`,
+    data,
+    {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+    }
+  );
+};

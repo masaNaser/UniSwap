@@ -60,13 +60,12 @@ export default function ClientDashboard({
   const fetchPendingRequests = async () => {
     try {
       setLoading(true);
-      console.log("🔍 Calling API:", `/collaborations/requests/pending`);
-const response = await getPendingRequests(token, "Client");
+      const response = await getPendingRequests(token, "Client");
       const requests = response.data || [];
       console.log("client pending", response);
       const updatedRequests = requests.map((req) => ({
         ...req,
-        providerImage: req.providerAvatar || req.ProviderAvatar || null,
+        providerImage: req.providerPicture || null,
         projectType: req.type,
       }));
 
