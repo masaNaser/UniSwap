@@ -661,6 +661,7 @@ export default function TrackTasks() {
                 onSubmit={handleReviewDueDateSubmit}
                 taskTitle={taskForReview?.title || ''}
                 projectType={cardData?.projectType || 'RequestProject'}
+                projectDeadline={cardData?.deadline}
             />
 
             <TaskMenu
