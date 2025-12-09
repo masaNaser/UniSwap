@@ -581,7 +581,7 @@ export default function Feed() {
     setCurrentComments((prev) =>
       prev.map((c) =>
         c.id === commentId
-          ? { ...c, content: newContent, createdAt: new Date().toISOString() }
+          ? { ...c, content: newContent, createdAt: new Date() }
           : c
       )
     );

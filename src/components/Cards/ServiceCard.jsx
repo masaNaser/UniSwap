@@ -98,8 +98,8 @@ const ServiceCard = ({
               src={getImageUrl(image)}
               alt={title}
               sx={{
-                width: 48,
-                height: 48,
+                width: 30,
+                height: 30,
                 objectFit: "cover",
                 borderRadius: 2,
                 flexShrink: 0,

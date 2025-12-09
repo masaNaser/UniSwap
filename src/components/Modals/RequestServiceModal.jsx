@@ -39,7 +39,6 @@ const RequestServiceModal = ({
   isEditMode = false,
   editData = null,
 }) => {
-
   const { updateCurrentUser } = useCurrentUser(); // ✅ أضيفي هاد
 
   const [serviceTitle, setServiceTitle] = useState(projectTitle || "");
@@ -147,7 +146,8 @@ const RequestServiceModal = ({
 
       // ✅ في وضع الإنشاء (Create)
       if (!isEditMode) {
-        requestData.type = serviceCategory === "Project" ? "RequestProject" : "Course";
+        requestData.type =
+          serviceCategory === "Project" ? "RequestProject" : "Course";
         requestData.providerId = providerId;
 
         // أضف deadline بس للـ Project
@@ -215,7 +215,7 @@ const RequestServiceModal = ({
         console.log("✅ Request created successfully:", response);
       }
 
-   // ✅ عرض رسالة النجاح
+      // ✅ عرض رسالة النجاح
       setSnackbar({
         open: true,
         message: isEditMode
@@ -232,7 +232,6 @@ const RequestServiceModal = ({
       setTimeout(() => {
         handleClose();
       }, 1500);
-
     } catch (error) {
       console.error(
         isEditMode ? "❌ Error editing request:" : "❌ Error creating request:",
@@ -249,7 +248,8 @@ const RequestServiceModal = ({
         error.response?.data?.title ||
         error.response?.data ||
         error.message ||
-        `Failed to ${isEditMode ? "update" : "send"
+        `Failed to ${
+          isEditMode ? "update" : "send"
         } request. Please try again.`;
 
       setSnackbar({
@@ -412,75 +412,75 @@ const RequestServiceModal = ({
             >
               Points Budget
             </Typography>
-         <TextField
-  fullWidth
-  type="number"
-  placeholder="e.g., 150"
-  value={pointsBudget}
-  onChange={(e) => {
-    const value = e.target.value;
-    // ✅ امنع إدخال صفر أو أرقام سالبة
-    if (value === "" || parseInt(value) > 0) {
-      setPointsBudget(value);
-    }
-  }}
-  disabled={isSubmitting}
-  InputProps={{
-    startAdornment: (
-      <InputAdornment position="start">
-        <Box
-          sx={{
-            width: 20,
-            height: 20,
-            backgroundColor: "#3B82F6",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="10"
-            height="10"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="rgba(255, 255, 255, 1)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="8" cy="8" r="6"></circle>
-            <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-            <path d="M7 6h1v4"></path>
-            <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-          </svg>
-        </Box>
-      </InputAdornment>
-    ),
-    inputProps: {
-      min: 1, // ✅ الحد الأدنى = 1
-    },
-  }}
-  sx={{
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "8px",
-      height: "46px",
-    },
-    // ✅ إخفاء الأسهم (spinner arrows)
-    "& input[type=number]": {
-      MozAppearance: "textfield", // Firefox
-    },
-    "& input[type=number]::-webkit-outer-spin-button": {
-      WebkitAppearance: "none", // Chrome, Safari, Edge
-      margin: 0,
-    },
-    "& input[type=number]::-webkit-inner-spin-button": {
-      WebkitAppearance: "none", // Chrome, Safari, Edge
-      margin: 0,
-    },
-  }}
-/>
+            <TextField
+              fullWidth
+              type="number"
+              placeholder="e.g., 150"
+              value={pointsBudget}
+              onChange={(e) => {
+                const value = e.target.value;
+                // ✅ امنع إدخال صفر أو أرقام سالبة
+                if (value === "" || parseInt(value) > 0) {
+                  setPointsBudget(value);
+                }
+              }}
+              disabled={isSubmitting}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        backgroundColor: "#3B82F6",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="rgba(255, 255, 255, 1)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="8" cy="8" r="6"></circle>
+                        <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                        <path d="M7 6h1v4"></path>
+                        <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                      </svg>
+                    </Box>
+                  </InputAdornment>
+                ),
+                inputProps: {
+                  min: 1, // ✅ الحد الأدنى = 1
+                },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  height: "46px",
+                },
+                // ✅ إخفاء الأسهم (spinner arrows)
+                "& input[type=number]": {
+                  MozAppearance: "textfield", // Firefox
+                },
+                "& input[type=number]::-webkit-outer-spin-button": {
+                  WebkitAppearance: "none", // Chrome, Safari, Edge
+                  margin: 0,
+                },
+                "& input[type=number]::-webkit-inner-spin-button": {
+                  WebkitAppearance: "none", // Chrome, Safari, Edge
+                  margin: 0,
+                },
+              }}
+            />
           </Grid>
         </Grid>
 

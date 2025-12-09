@@ -370,7 +370,7 @@ export default function PostsTab({ username }) {
     const newComment = {
       id: tempCommentId,
       content,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
       author: {
         userName: currentUserName,
         avatar: currentUserAvatar,
@@ -488,7 +488,7 @@ export default function PostsTab({ username }) {
     setCurrentComments((prev) =>
       prev.map((c) =>
         c.id === commentId
-          ? { ...c, content: newContent, createdAt: new Date().toISOString() }
+          ? { ...c, content: newContent, createdAt: new Date()}
           : c
       )
     );

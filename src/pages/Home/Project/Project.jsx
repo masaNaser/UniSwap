@@ -1,4 +1,12 @@
-import { Box, Typography, Container, Tabs, Tab, Chip, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Container,
+  Tabs,
+  Tab,
+  Chip,
+  CircularProgress,
+} from "@mui/material";
 import VolunteerActivismOutlinedIcon from "@mui/icons-material/VolunteerActivismOutlined";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import { useState, useEffect } from "react";
@@ -138,23 +146,31 @@ export default function Project() {
             value={value}
             onChange={handleChange}
             TabIndicatorProps={{ style: { display: "none" } }}
+            orientation="horizontal"
+            variant="fullWidth"
             sx={{
               width: "100%",
+              "& .MuiTabs-flexContainer": {
+                flexDirection: { xs: "column", md: "row" }, // ✅ عمودي بس على الموبايل
+                gap: { xs: 1, md: 0 },
+              },
               "& .MuiTab-root": {
                 textTransform: "none",
                 borderRadius: "20px",
-                px: 1,
-                py: 1,
+                px: { xs: 1.5, md: 1 },
+                py: { xs: 1.5, md: 1 },
                 flex: 1,
                 maxWidth: "none",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
+                justifyContent: "center", // ✅ center للشاشات الكبيرة
                 bgcolor: "#FFFFFFCC",
                 color: "#686f78ff",
+                width: { xs: "100%", md: "auto" },
               },
               "& .Mui-selected": {
-                background: "linear-gradient(to right, #0EA4E8 0%, #0284C7 100%)",
+                background:
+                  "linear-gradient(to right, #0EA4E8 0%, #0284C7 100%)",
                 color: "#FFFFFF",
               },
             }}
@@ -165,21 +181,40 @@ export default function Project() {
                 <Box
                   display="flex"
                   alignItems="center"
-                  justifyContent="center"
-                  gap={8}
+                  justifyContent={{ xs: "space-between", md: "center" }} // ✅ space-between بس على الموبايل
+                  gap={{ xs: 1, md: 8 }} // ✅ gap زي الأول على الشاشات الكبيرة
                   width="100%"
                 >
-                  <Box display="flex" flexDirection="row" gap={2} alignItems="center">
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    gap={2}
+                    alignItems="center"
+                  >
                     <VolunteerActivismOutlinedIcon
                       sx={{
                         color: value === 0 ? "#FFF" : "#686f78ff",
+                        // fontSize: { xs: "1.25rem", md: "default" },
                       }}
                     />
-                    <Box display="flex" flexDirection="column">
-                      <Typography fontWeight="bold" color={value === 0 ? "#FFF" : "#686f78ff"}>
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="flex-start"
+                    >
+                      <Typography
+                        fontWeight="bold"
+                        color={value === 0 ? "#FFF" : "#686f78ff"}
+                        fontSize={{ xs: "0.8rem", md: "1rem" }}
+                      >
                         Projects I'm Working On
                       </Typography>
-                      <Typography variant="body2" color={value === 0 ? "#FFF" : "#686f78ff"}>
+                      <Typography
+                        variant="body2"
+                        color={value === 0 ? "#FFF" : "#686f78ff"}
+                        fontSize={{ xs: "0.65rem", md: "0.875rem" }}
+                        sx={{ display: { xs: "none", sm: "block" } }} // ✅ إخفاء على الموبايل الصغير فقط
+                      >
                         Providing services to others
                       </Typography>
                     </Box>
@@ -188,11 +223,16 @@ export default function Project() {
                     label={providerStats.total || 0}
                     size="small"
                     sx={{
-                      bgcolor: value === 0 ? "rgba(255, 255, 255, 0.4)" : "rgba(100, 180, 207, 0.2)",
+                      bgcolor:
+                        value === 0
+                          ? "rgba(255, 255, 255, 0.4)"
+                          : "rgba(100, 180, 207, 0.2)",
                       color: value === 0 ? "#FFF" : "#3b82f6",
                       fontWeight: "bold",
                       borderRadius: "8px",
                       px: 1,
+                      height: { xs: "24px", md: "auto" },
+                      // fontSize: { xs: "0.7rem", md: "inherit" },
                     }}
                   />
                 </Box>
@@ -205,21 +245,40 @@ export default function Project() {
                 <Box
                   display="flex"
                   alignItems="center"
-                  justifyContent="center"
-                  gap={8}
+                  justifyContent={{ xs: "space-between", md: "center" }}
+                  gap={{ xs: 1, md: 8 }}
                   width="100%"
                 >
-                  <Box display="flex" flexDirection="row" gap={2} alignItems="center">
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    gap={2}
+                    alignItems="center"
+                  >
                     <WorkOutlineIcon
                       sx={{
                         color: value === 1 ? "#FFF" : "#686f78ff",
+                        // fontSize: { xs: "1.25rem", md: "default" },
                       }}
                     />
-                    <Box display="flex" flexDirection="column">
-                      <Typography fontWeight="bold" color={value === 1 ? "#FFF" : "#686f78ff"}>
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="flex-start"
+                    >
+                      <Typography
+                        fontWeight="bold"
+                        color={value === 1 ? "#FFF" : "#686f78ff"}
+                        fontSize={{ xs: "0.8rem", md: "1rem" }}
+                      >
                         Projects I Requested
                       </Typography>
-                      <Typography variant="body2" color={value === 1 ? "#FFF" : "#686f78ff"}>
+                      <Typography
+                        variant="body2"
+                        color={value === 1 ? "#FFF" : "#686f78ff"}
+                        fontSize={{ xs: "0.65rem", md: "0.875rem" }}
+                        sx={{ display: { xs: "none", sm: "block" } }}
+                      >
                         Services I need from others
                       </Typography>
                     </Box>
@@ -228,11 +287,16 @@ export default function Project() {
                     label={clientStats.total || 0}
                     size="small"
                     sx={{
-                      bgcolor: value === 1 ? "rgba(255, 255, 255, 0.4)" : "rgba(100, 180, 207, 0.2)",
+                      bgcolor:
+                        value === 1
+                          ? "rgba(255, 255, 255, 0.4)"
+                          : "rgba(100, 180, 207, 0.2)",
                       color: value === 1 ? "#FFF" : "#3b82f6",
                       fontWeight: "bold",
                       borderRadius: "10px",
                       px: 1,
+                      height: { xs: "24px", md: "auto" },
+                      // fontSize: { xs: "0.7rem", md: "inherit" },
                     }}
                   />
                 </Box>
