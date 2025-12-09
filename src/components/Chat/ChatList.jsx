@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { getConversations, markMessageAsSeen } from "../../services/chatService";
 import { getImageUrl } from "../../utils/imageHelper";
-import { useUnreadCount,refreshUnreadCount } from "../../Context/unreadCountContext";
+import { useUnreadCount } from "../../Context/unreadCountContext";
 
 export default function ChatList({
   conversations,
@@ -13,7 +13,7 @@ export default function ChatList({
   const userId = localStorage.getItem("userId");
   
   // ✅ استخدم الـ Context
-  const { decreaseUnreadCount } = useUnreadCount();
+  const { decreaseUnreadCount, fetchUnreadCount } = useUnreadCount();
 
   const fetchConversations = async () => {
     try {
@@ -42,7 +42,7 @@ export default function ChatList({
 
       setConversations(sorted);
        // ✅ حدّث العداد في الـ Navbar بعد جلب المحادثات
-      refreshUnreadCount();
+      await fetchUnreadCount();
     } catch (err) {
       console.error("فشل في جلب المحادثات:", err);
     }

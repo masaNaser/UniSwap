@@ -73,7 +73,6 @@ export default function MainLayout() {
 
   return (
     <>
-      <CurrentUserProvider>
         <ProfileContext.Provider value={{ 
           userData, 
           setUserData, 
@@ -86,7 +85,6 @@ export default function MainLayout() {
           <Outlet/>
         </ProfileContext.Provider>
         <Footer/>
-      </CurrentUserProvider>
     </>
   );
 }

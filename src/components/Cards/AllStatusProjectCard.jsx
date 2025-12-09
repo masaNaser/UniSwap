@@ -101,7 +101,7 @@ export default function AllStatusProjectCard({
     if (isProvider && actualStatus === "Overdue") {
       setSnackbar({
         open: true,
-        message: "⚠ This project is overdue. Please contact the client to extend the deadline.",
+        message: "⚠ This project is overdue. Waiting for client decision to extend or cancel.",
       });
       return;
     }

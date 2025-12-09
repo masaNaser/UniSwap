@@ -74,10 +74,7 @@ export default function TrackTasksHeader({
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
-
-  // ✅ NEW STATE: Control the Overdue Dialog open/close
   const [openOverdueDialog, setOpenOverdueDialog] = useState(false);
-
   const [openPublishModal, setOpenPublishModal] = useState(false);
   const [closingProject, setClosingProject] = useState(false);
   const [reviewData, setReviewData] = useState(null);
@@ -285,6 +282,10 @@ export default function TrackTasksHeader({
     return result;
   };
 
+  const canHandleOverdue = () => {
+    return !isProvider && isOverdue;
+  };
+
   const handleCloseProjectClick = () => {
     if (isProvider) {
       setOpenCloseDialog(true);
@@ -405,7 +406,6 @@ export default function TrackTasksHeader({
     }
   };
 
-  // ✅ NEW FUNCTION: Handle overdue decision submission
   const handleOverdueSubmit = async (decisionData) => {
     try {
       console.log('📤 Submitting overdue decision:', decisionData);
@@ -415,6 +415,7 @@ export default function TrackTasksHeader({
       console.log('✅ Overdue decision submitted successfully');
       console.log('📊 Server response:', response.data);
 
+      // رسالة النجاح تختلف حسب القرار المتخذ
       const successMessage = decisionData.acceptExtend
         ? "Project deadline extended successfully! The project is now Active. ⏰"
         : "Project cancelled successfully! Points have been refunded to your account. 💰";
@@ -564,11 +565,10 @@ export default function TrackTasksHeader({
         }}
       >
         <IconButton
-          onClick={() => navigate(-1)}
+          onClick={onBack}
           sx={{
             color: "#6B7280",
-            p: 0,
-            mb: 2,
+            p: 1,
           }}
         >
           <ArrowBackIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
@@ -589,6 +589,23 @@ export default function TrackTasksHeader({
               }}
             >
               {isMobile ? "Publish" : "Publish Project"}
+            </CustomButton>
+          )}
+
+          {canHandleOverdue() && (
+            <CustomButton
+              startIcon={<WarningAmberIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
+              onClick={() => setOpenOverdueDialog(true)}
+              sx={{
+                textTransform: "none",
+                fontSize: { xs: "11px", sm: "14px" },
+                py: { xs: 0.5, sm: 0.75 },
+                px: { xs: 1, sm: 2 },
+                background: 'linear-gradient(to right, #DC2626, #EF4444)',
+                whiteSpace: "nowrap",
+              }}
+            >
+              {isMobile ? "Handle" : "Handle Overdue"}
             </CustomButton>
           )}
 
@@ -766,6 +783,7 @@ export default function TrackTasksHeader({
         )}
       </Box>
 
+      {/* Project Overdue Warning Banner */}
       {isOverdue && (
         <Box
           sx={{
@@ -788,7 +806,7 @@ export default function TrackTasksHeader({
               mt: { xs: 0, sm: 0 }
             }}
           />
-          <Box sx={{ flex: 1 }}>
+          <Box>
             <Typography
               variant="body2"
               fontWeight="bold"
@@ -797,38 +815,15 @@ export default function TrackTasksHeader({
             >
               ⚠️ PROJECT OVERDUE
             </Typography>
-
-            {/* ✅ Inline text with underlined clickable link */}
             <Typography
               variant="body2"
               color="#991B1B"
               sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
             >
-              This project passed its deadline on {formatDate(cardData.deadline)}.
-              {!isProvider && (
-                <>
-                  {' '}
-                  <Box
-                    component="span"
-                    onClick={() => setOpenOverdueDialog(true)}
-                    sx={{
-                      textDecoration: 'underline',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      color: '#DC2626',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        color: '#991B1B',
-                        textDecoration: 'underline',
-                        textUnderlineOffset: '3px',
-                      },
-                    }}
-                  >
-                    Click here to extend the deadline or cancel the project
-                  </Box>
-                  .
-                </>
-              )}
+              This project passed its deadline on{" "}
+              {formatDate(cardData.deadline)}.
+              {!isProvider &&
+                " Please use the 'Handle Overdue' button above to extend the deadline or cancel the project."}
             </Typography>
           </Box>
         </Box>
@@ -936,7 +931,6 @@ export default function TrackTasksHeader({
         onSubmitReview={handleClientReview}
       />
 
-      {/* ✅ Overdue Decision Dialog */}
       <OverdueDecisionDialog
         open={openOverdueDialog}
         onClose={() => setOpenOverdueDialog(false)}

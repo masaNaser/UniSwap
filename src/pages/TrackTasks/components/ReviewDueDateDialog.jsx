@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { formatDate } from '../../../utils/timeHelper';
 
 export default function ReviewDueDateDialog({
   open,
@@ -19,6 +20,7 @@ export default function ReviewDueDateDialog({
   onSubmit,
   taskTitle,
   projectType,
+  projectDeadline,
 }) {
   const [reviewDueDate, setReviewDueDate] = useState('');
   const [error, setError] = useState('');
@@ -26,6 +28,12 @@ export default function ReviewDueDateDialog({
   const getMinDateTime = () => {
     const now = new Date();
     return now.toISOString().slice(0, 16);
+  };
+
+  const getMaxDateTime = () => {
+    if (!projectDeadline) return null;
+    const deadline = new Date(projectDeadline);
+    return deadline.toISOString().slice(0, 16);
   };
 
   const handleSubmit = () => {
@@ -42,6 +50,14 @@ export default function ReviewDueDateDialog({
       return;
     }
 
+    if (projectDeadline) {
+      const deadline = new Date(projectDeadline);
+      if (selectedDate > deadline) {
+        setError('Review due date cannot be after the project deadline');
+        return;
+      }
+    }
+
     const isoDateString = selectedDate.toISOString();
     onSubmit(isoDateString);
     handleClose();
@@ -54,6 +70,7 @@ export default function ReviewDueDateDialog({
   };
 
   const isRequestProject = projectType === 'RequestProject';
+  const maxDateTime = getMaxDateTime();
 
   return (
     <Dialog
@@ -96,9 +113,15 @@ export default function ReviewDueDateDialog({
             }}
             inputProps={{
               min: getMinDateTime(),
+              max: maxDateTime,
             }}
             error={!!error}
-            helperText={error || 'Set the deadline for client to review this task'}
+            helperText={
+              error ||
+              (projectDeadline
+                ? `Set the deadline for client review (must be before ${formatDate(projectDeadline)})`
+                : 'Set the deadline for client to review this task')
+            }
             InputLabelProps={{
               shrink: true,
             }}
