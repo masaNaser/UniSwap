@@ -81,7 +81,7 @@ const PublishProjectModal = ({
         
         // Set existing image preview
         if (existingProject.img) {
-          setImagePreview(`https://uni.runasp.net${existingProject.img}`);
+          setImagePreview(`https://uni1swap.runasp.net/${existingProject.img}`);
         }
         
         // Set existing file name

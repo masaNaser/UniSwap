@@ -40,7 +40,7 @@ export default function TaskCard({
       } else if (typeof task.uploadFile === "string") {
         const fileUrl = task.uploadFile.startsWith("http")
           ? task.uploadFile
-          : `https://uni.runasp.net/${task.uploadFile}`;
+          : `https://uni1swap.runasp.net/${task.uploadFile}`;
         window.open(fileUrl, "_blank");
       }
     }

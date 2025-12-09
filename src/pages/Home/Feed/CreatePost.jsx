@@ -167,11 +167,11 @@ const CreatePost = ({ addPost, token }) => {
         avatar: getImageUrl(currentUser?.profilePicture, currentUser?.userName), // ✅
         id: currentUser?.id, // ✅
       },
-      time: formatDateTime(postData.createdAt),
+     time: formatDateTime(new Date().toISOString()), // ✅ استخدمي الوقت المحلي
       likes: 0, // ✅ بوست جديد
       comments: 0, // ✅ بوست جديد
       fileUrl: postData.fileUrl
-        ? `https://uni.runasp.net/${postData.fileUrl}`
+        ? `https://uni1swap.runasp.net/${postData.fileUrl}`
         : null,
       isLiked: false,
       recentComments: [],

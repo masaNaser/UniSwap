@@ -169,7 +169,7 @@ export default function Register() {
       }
     } catch (error) {
       console.log("Full Error Response:", error.response);
-      const msg = error.response?.data || "An error occurred";
+      const msg = error.response?.data.detail || "An error occurred";
       Swal.fire({
         icon: "error",
         title: "Register failed",

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://uni.runasp.net/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://uni1swap.runasp.net/",
 });
 
 // 🔒 متغير لمنع محاولات refresh متعددة في نفس الوقت
@@ -38,7 +38,7 @@ api.interceptors.request.use(
         
         // ⚠️ استخدم axios العادي (مش api) عشان ما يدخل بـ loop
         const response = await axios.post(
-          'https://uni.runasp.net/api/Account/refresh-token',
+          'https://uni1swap.runasp.net/Account/refresh-token',
           { refreshToken },
           { 
             headers: { 'Content-Type': 'application/json' }
@@ -161,7 +161,7 @@ api.interceptors.response.use(
         // 🌐 اطلب Access Token جديد من الـ Backend
         // ⚠️ مهم: استخدم axios العادي (مش api) عشان ما ندخل بالـ interceptor مرة ثانية
         const response = await axios.post(
-          'https://uni.runasp.net/api/Account/refresh-token',
+          'https://uni1swap.runasp.net/Account/refresh-token',
           { refreshToken }, // أرسل الـ Refresh Token
           { headers: { 'Content-Type': 'application/json' } }
         );

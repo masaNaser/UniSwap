@@ -82,13 +82,13 @@ export default function Message({ text, filePath, content, sender }) {
       {isFileMessage ? (
         isImage ? (
           <img
-            src={`https://uni.runasp.net${filePath}`}
+            src={`https://uni1swap.runasp.net${filePath}`}
             alt={fileName}
             style={{ maxWidth: "200px", borderRadius: "8px", display: "block" }}
           />
         ) : (
           <a
-            href={`https://uni.runasp.net${filePath}`}
+            href={`https://uni1swap.runasp.net${filePath}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{

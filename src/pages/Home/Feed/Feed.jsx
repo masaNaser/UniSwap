@@ -156,7 +156,7 @@ export default function Feed() {
         likes: p.likesCount,
         comments: p.commentsCount,
         shares: "",
-        fileUrl: p.fileUrl ? `https://uni.runasp.net/${p.fileUrl}` : null,
+        fileUrl: p.fileUrl ? `https://uni1swap.runasp.net/${p.fileUrl}` : null,
         isLiked: p.isLikedByMe || false,
         recentComments: [],
         isClosed: p.postStatus === "Closed",
@@ -450,7 +450,7 @@ export default function Feed() {
     const newComment = {
       id: tempCommentId,
       content,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
       author: {
         userName,
         avatar: currentUserAvatar,

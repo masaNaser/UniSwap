@@ -55,7 +55,7 @@ export default function UserProjectModal({
       });
       // لو في صورة موجودة مسبقاً
       if (editData.coverImage) {
-        setCoverImagePreview(`https://uni.runasp.net/${editData.coverImage}`);
+        setCoverImagePreview(`https://uni1swap.runasp.net/editData.coverImage}`);
       }
       // لو في ملف مشروع موجود مسبقاً
     if (editData.projectFile) {
@@ -103,7 +103,7 @@ export default function UserProjectModal({
 
   const handleRemoveCoverImage = () => {
     setFormData((prev) => ({ ...prev, coverImage: null }));
-    setCoverImagePreview(editData?.coverImage ? `https://uni.runasp.net/${editData.coverImage}` : null);
+    setCoverImagePreview(editData?.coverImage ? `https://uni1swap.runasp.net/${editData.coverImage}` : null);
     const input = document.getElementById("coverImage-upload");
     if (input) input.value = "";
   };
@@ -360,7 +360,7 @@ const handleRemoveProjectFile = () => {
                 // ملف موجود مسبقاً من الـ editData
                 <Button
                   component="a"
-                  href={`https://uni.runasp.net/${projectFilePreview}`}
+                  href={`https://uni1swap.runasp.net/projectFilePreview}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{ flex: 1, textTransform: "none", justifyContent: "flex-start" }}

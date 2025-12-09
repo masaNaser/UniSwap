@@ -191,6 +191,7 @@ const CommentBubble = ({ comment, theme }) => (
         sx={{ display: "block", textAlign: "right", mt: 0.5, lineHeight: 1 }}
       >
         {formatDateTime(comment.createdAt)}
+        
       </Typography>
     </Box>
   </Box>

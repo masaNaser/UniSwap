@@ -1,7 +1,7 @@
 import * as signalR from "@microsoft/signalr";
 import api from "./api";
 
-const HUB_BASE_URL = "https://uni.runasp.net";  // ← ثابت مباشرة
+const HUB_BASE_URL = "https://uni1swap.runasp.net";  // ← ثابت مباشرة
 
 // إنشاء اتصال SignalR
 export function createNotificationHub(token) {

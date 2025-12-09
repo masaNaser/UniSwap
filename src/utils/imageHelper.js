@@ -10,7 +10,7 @@
 
 // src/utils/imageHelper.js
 
-const BASE_URL = import.meta.env.VITE_API_URL || "https://uni.runasp.net";
+const BASE_URL = import.meta.env.VITE_API_URL || "https://uni1swap.runasp.net";
 
 export const getImageUrl = (path, userName="") => {
   // إذا ما في صورة (null)، رجّع صورة افتراضية بأول حرفين من الاسم

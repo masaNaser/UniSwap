@@ -285,7 +285,7 @@ const ProjectDetails = () => {
             {project.img && !imgError ? (
               <Box
                 component="img"
-                src={`https://uni.runasp.net${project.img}`}
+                src={`https://uni1swap.runasp.net/${project.img}`}
                 alt={project.title}
                 onError={() => setImgError(true)}
                 sx={{
@@ -432,7 +432,7 @@ const ProjectDetails = () => {
             }}
             src={
               project.profilePicture
-                ? `https://uni.runasp.net${project.profilePicture}`
+                ? `https://uni1swap.runasp.net/${project.profilePicture}`
                 : undefined
             }
           >
@@ -566,7 +566,7 @@ const ProjectDetails = () => {
               <CustomButton
                 size="small"
                 component="a"
-                href={`https://uni.runasp.net${project.filePath}`}
+                href={`https://uni1swap.runasp.net/${project.filePath}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{ minWidth: "120px" }}

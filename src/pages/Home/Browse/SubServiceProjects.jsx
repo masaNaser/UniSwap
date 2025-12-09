@@ -66,7 +66,7 @@ const ProjectCard = ({ project, onEditClick }) => {
         <CardMedia
           component="img"
           height="200"
-          image={project.img ? `https://uni.runasp.net${project.img}` : null}
+          image={project.img ? `https://uni1swap.runasp.net/${project.img}` : null}
           alt={project.title}
           sx={{
             borderTopLeftRadius: "12px",
@@ -135,7 +135,7 @@ const ProjectCard = ({ project, onEditClick }) => {
               sx={{ width: 32, height: 32, mr: 1, cursor: "pointer" }}
               src={
                   project.profilePicture
-                  ? `https://uni.runasp.net${project.profilePicture}`
+                  ? `https://uni1swap.runasp.net${project.profilePicture}`
                   : null
               }
             >
