@@ -165,7 +165,7 @@ export default function TaskCard({
 
             {/* File Attachment */}
             {task.uploadFile && (
-              <Box sx={{ textAlign: 'center' }}>
+              <Box >
                 <Button
                   size="small"
                   startIcon={<AttachFileIcon />}

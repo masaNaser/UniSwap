@@ -39,7 +39,6 @@ const ProjectCard = ({ project, onEditClick }) => {
         position: "relative",
       }}
     >
-      {/* Edit Icon - Top Right */}
       {isOwner && (
         <IconButton
           onClick={() => onEditClick(project)}
@@ -75,7 +74,6 @@ const ProjectCard = ({ project, onEditClick }) => {
           }}
         />
         
-        {/* Rating Badge - Bottom Right of Image */}
         {project.finalRating > 0 && (
           <Box
             sx={{
@@ -134,7 +132,7 @@ const ProjectCard = ({ project, onEditClick }) => {
             <Avatar
               sx={{ width: 32, height: 32, mr: 1, cursor: "pointer" }}
               src={
-                  project.profilePicture
+                project.profilePicture
                   ? `https://uni1swap.runasp.net${project.profilePicture}`
                   : null
               }
@@ -204,7 +202,6 @@ const ProjectCard = ({ project, onEditClick }) => {
                   e.currentTarget.style.display = "none";
                 }}
               />
-
               {project.tags.slice(3).map((tag, i) => (
                 <Chip
                   key={i + 3}
@@ -245,33 +242,34 @@ const ProjectCard = ({ project, onEditClick }) => {
             </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Box   sx={{
-                              width: 20,
-                              height: 20,
-                              backgroundColor: "#3B82F6",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="10"
-                              height="10"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="rgba(255, 255, 255, 1)"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <circle cx="8" cy="8" r="6"></circle>
-                              <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-                              <path d="M7 6h1v4"></path>
-                              <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-                            </svg>
-                          </Box>
+            <Box
+              sx={{
+                width: 20,
+                height: 20,
+                backgroundColor: "#3B82F6",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="rgba(255, 255, 255, 1)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="8" cy="8" r="6"></circle>
+                <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                <path d="M7 6h1v4"></path>
+                <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+              </svg>
+            </Box>
             <Typography variant="caption" color="text.secondary">
               {project.points} pts
             </Typography>
@@ -302,7 +300,6 @@ export default function SubServiceProjects() {
   const [selectedRated, setSelectedRated] = useState("Highest Rated");
   const [selectedPrice, setSelectedPrice] = useState("All Prices");
 
-  // Edit Modal State
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState(null);
 
@@ -311,21 +308,7 @@ export default function SubServiceProjects() {
       setLoading(true);
       setError(null);
 
-      console.log("Fetching projects with:", {
-        subServiceId: id,
-        page,
-        pageSize,
-        token: token ? "present" : "missing",
-      });
-
-      const response = await browseProjectsBySubService(
-        token,
-        id,
-        page,
-        pageSize
-      );
-
-      console.log("Projects data:", response.data);
+      const response = await browseProjectsBySubService(token, id, page, pageSize);
       
       if (Array.isArray(response.data)) {
         setProjects(response.data);
@@ -336,7 +319,6 @@ export default function SubServiceProjects() {
         setTotalPages(response.data.totalPages || 1);
         setTotalCount(response.data.totalCount || 0);
       } else {
-        console.warn("Unexpected response format:", response.data);
         setProjects([]);
         setTotalPages(1);
         setTotalCount(0);
@@ -352,6 +334,33 @@ export default function SubServiceProjects() {
   useEffect(() => {
     if (id) fetchServiceProject(page);
   }, [id, page]);
+
+  // 🔥 الفلترة
+  const filteredProjects = React.useMemo(() => {
+    let filtered = [...projects];
+
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(project =>
+        project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
+    if (selectedRated === "Highest Rated") {
+      filtered.sort((a, b) => (b.finalRating || 0) - (a.finalRating || 0));
+    } else if (selectedRated === "Most Reviewed") {
+      filtered.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+    }
+
+    if (selectedPrice === "Low to High") {
+      filtered.sort((a, b) => (a.points || 0) - (b.points || 0));
+    } else if (selectedPrice === "High to Low") {
+      filtered.sort((a, b) => (b.points || 0) - (a.points || 0));
+    }
+
+    return filtered;
+  }, [projects, searchQuery, selectedRated, selectedPrice]);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -376,7 +385,6 @@ export default function SubServiceProjects() {
   };
 
   const handleEditSuccess = () => {
-    // Refresh projects list after successful edit
     fetchServiceProject(page);
   };
 
@@ -422,64 +430,6 @@ export default function SubServiceProjects() {
     );
   }
 
-  if (!projects || projects.length === 0) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Breadcrumbs
-          separator={<NavigateNextIcon fontSize="small" />}
-          sx={{ mb: 2 }}
-        >
-          <Typography
-            component={Link}
-            to="/app/browse"
-            color="inherit"
-            sx={{ textDecoration: "none" }}
-          >
-            Services
-          </Typography>
-          <Typography
-            component={Link}
-            to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
-              parentServiceName
-            )}`}
-            color="inherit"
-            sx={{ textDecoration: "none" }}
-          >
-            {parentServiceName}
-          </Typography>
-          <Typography color="text.primary">{subServiceName}</Typography>
-        </Breadcrumbs>
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 4,
-          }}
-        >
-          <Typography variant="h4" component="h1">
-            {subServiceName}
-          </Typography>
-          <CustomButton
-            component={Link}
-            to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
-              parentServiceName
-            )}`}
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-          >
-            Back
-          </CustomButton>
-        </Box>
-
-        <Typography variant="h6" color="text.secondary">
-          No projects found for this subservice.
-        </Typography>
-      </Container>
-    );
-  }
-
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
       <Breadcrumbs
@@ -496,9 +446,7 @@ export default function SubServiceProjects() {
         </Typography>
         <Typography
           component={Link}
-          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
-            parentServiceName
-          )}`}
+          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
           color="inherit"
           sx={{ textDecoration: "none" }}
         >
@@ -525,9 +473,7 @@ export default function SubServiceProjects() {
         </Box>
         <CustomButton
           component={Link}
-          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
-            parentServiceName
-          )}`}
+          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
           variant="outlined"
           startIcon={<ArrowBackIcon />}
         >
@@ -542,27 +488,34 @@ export default function SubServiceProjects() {
         items={filterItems}
       />
 
-      <Grid container spacing={3}>
-        {projects.map((project) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={project.id}>
-            <ProjectCard project={project} onEditClick={handleEditClick} />
+      {filteredProjects.length === 0 ? (
+        <Typography variant="h6" color="text.secondary" sx={{ textAlign: "center", mt: 4 }}>
+          No projects found.
+        </Typography>
+      ) : (
+        <>
+          <Grid container spacing={3}>
+            {filteredProjects.map((project) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={project.id}>
+                <ProjectCard project={project} onEditClick={handleEditClick} />
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
 
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={(event, value) => setPage(value)}
-            color="primary"
-            variant="outlined"
-          />
-        </Box>
+          {totalPages > 1 && (
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(event, value) => setPage(value)}
+                color="primary"
+                variant="outlined"
+              />
+            </Box>
+          )}
+        </>
       )}
 
-      {/* Edit Modal */}
       {projectToEdit && (
         <PublishProjectModal
           open={editModalOpen}

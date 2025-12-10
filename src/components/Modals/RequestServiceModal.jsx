@@ -203,7 +203,7 @@ const RequestServiceModal = ({
 
       const errorMessage =
         error.response?.data?.message ||
-        error.response?.data?.title ||
+        error.response?.data?.detail ||
         error.response?.data ||
         error.message ||
         `Failed to ${
