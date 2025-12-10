@@ -220,7 +220,7 @@ const detectPlatform = (url) => {
         fontWeight: 600,
         fontSize: "13px",
         mb: 1.5,
-        color: "rgba(71, 85, 105, 1)",
+        // color: "rgba(71, 85, 105, 1)",
        color: theme.palette.mode === 'dark' ? '#fff' : 'rgba(71, 85, 105, 1)',
         textTransform: "uppercase",
         letterSpacing: "0.5px",

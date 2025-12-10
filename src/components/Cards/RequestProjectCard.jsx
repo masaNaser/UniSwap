@@ -372,9 +372,8 @@ export default function RequestProjectCard({
                   whiteSpace: "nowrap",
                 }}
               >
-                {isProvider
-                  ? `Requesting ${category?.replace("Request", "")}`
-                  : `Providing ${category?.replace("Request", "")}`}
+                 {isProvider ? "Requesting Project" : "Providing Project"}
+
               </Typography>
             </Box>
           </Box>
