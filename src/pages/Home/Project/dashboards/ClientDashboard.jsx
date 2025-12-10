@@ -212,7 +212,7 @@ export default function ClientDashboard({
           value={stats.total || 0}
           label="Total Requests"
           color="#00c853"
-          progress={100}
+          progress={stats.total > 0 ? 100 : 0}
         />
         <StatCard
           value={stats.pendingRequests || 0}

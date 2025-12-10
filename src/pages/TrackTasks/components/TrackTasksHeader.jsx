@@ -956,6 +956,7 @@ export default function TrackTasksHeader({
         projectId={cardData.id}
         projectTitle={cardData.title}
         projectDescription={cardData.description}
+        projectPoints={projectDetails?.points}
         onPublishSuccess={handlePublishSuccess}
       />
 

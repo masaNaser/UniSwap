@@ -202,12 +202,7 @@ export default function TrackTasks() {
             console.log('🔄 handleProjectClosed called - refreshing project data...');
 
             await fetchProjectData();
-
-            setSnackbar({
-                open: true,
-                message: 'Project status updated successfully!',
-                severity: 'success',
-            });
+            
         } catch (error) {
             console.error('Error refreshing project data:', error);
             setSnackbar({

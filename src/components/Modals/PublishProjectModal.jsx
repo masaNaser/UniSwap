@@ -20,9 +20,9 @@ import ImageIcon from "@mui/icons-material/Image";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import GenericModal from "../Modals/GenericModal";
-import { 
-  publishFromCompletedProject, 
-  editPublishProject 
+import {
+  publishFromCompletedProject,
+  editPublishProject
 } from "../../services/publishProjectServices";
 import { getServices } from "../../services/servicesService";
 import { getSubServices } from "../../services/subServiceServices";
@@ -30,12 +30,12 @@ import { getSubServices } from "../../services/subServiceServices";
 const PublishProjectModal = ({
   open,
   onClose,
-  projectId, // For creating new
+  projectId,
   projectTitle,
   projectDescription,
+  projectPoints,
   onPublishSuccess,
-  // Edit mode props
-  publishProjectId, // For editing existing
+  publishProjectId,
   existingProject,
   isEditMode = false,
   onEditSuccess,
@@ -52,12 +52,12 @@ const PublishProjectModal = ({
   const [fileName, setFileName] = useState("");
   const [tags, setTags] = useState([]);
   const [currentTag, setCurrentTag] = useState("");
-  
+
   const [services, setServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
   const [loadingServices, setLoadingServices] = useState(false);
   const [loadingSubServices, setLoadingSubServices] = useState(false);
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -78,12 +78,12 @@ const PublishProjectModal = ({
         setPoints(existingProject.points?.toString() || "");
         setDeliveryTimeInDays(existingProject.deliveryTimeInDays?.toString() || "");
         setTags(existingProject.tags || []);
-        
+
         // Set existing image preview
         if (existingProject.img) {
           setImagePreview(`https://uni1swap.runasp.net/${existingProject.img}`);
         }
-        
+
         // Set existing file name
         if (existingProject.filePath) {
           setFileName(existingProject.filePath.split("/").pop());
@@ -91,10 +91,11 @@ const PublishProjectModal = ({
       } else {
         setTitle(projectTitle || "");
         setDescription(projectDescription || "");
+        setPoints(projectPoints?.toString() || "0");
       }
       fetchServices();
     }
-  }, [open, isEditMode, existingProject, projectTitle, projectDescription]);
+  }, [open, isEditMode, existingProject, projectTitle, projectDescription, projectPoints]);
 
   useEffect(() => {
     if (serviceId) {
@@ -209,17 +210,17 @@ const PublishProjectModal = ({
   // For edit mode, image is optional if already exists
   const isFormValid = isEditMode
     ? title.trim() !== "" &&
-      description.trim() !== "" &&
-      subServiceId !== "" &&
-      points !== "" &&
-      deliveryTimeInDays !== ""
+    description.trim() !== "" &&
+    subServiceId !== "" &&
+    points !== "" &&
+    deliveryTimeInDays !== ""
     : title.trim() !== "" &&
-      description.trim() !== "" &&
-      serviceId !== "" &&
-      subServiceId !== "" &&
-      points !== "" &&
-      deliveryTimeInDays !== "" &&
-      image !== null;
+    description.trim() !== "" &&
+    serviceId !== "" &&
+    subServiceId !== "" &&
+    points !== "" &&
+    deliveryTimeInDays !== "" &&
+    image !== null;
 
   const handleSubmit = async () => {
     if (!isFormValid) {
@@ -260,7 +261,7 @@ const PublishProjectModal = ({
         console.log("📤 Editing published project:", publishProjectId);
         response = await editPublishProject(token, publishProjectId, formData);
         console.log("✅ Project updated successfully:", response);
-        
+
         setSnackbar({
           open: true,
           message: "Project updated successfully! 🎉",
@@ -339,7 +340,7 @@ const PublishProjectModal = ({
       icon={isEditMode ? <EditIcon sx={{ color: "#3b82f6" }} /> : <PublishIcon sx={{ color: "#3b82f6" }} />}
       headerInfo={
         <Typography variant="body2" sx={{ color: "#6B7280", mt: 1 }}>
-          {isEditMode 
+          {isEditMode
             ? "Update your published project details"
             : "Share your completed project with others in the marketplace"}
         </Typography>
@@ -471,13 +472,13 @@ const PublishProjectModal = ({
                 {!serviceId
                   ? "Select a service first"
                   : loadingSubServices
-                  ? (
+                    ? (
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <CircularProgress size={16} />
                         <span>Loading...</span>
                       </Box>
                     )
-                  : "Select SubService"}
+                    : "Select SubService"}
               </MenuItem>
               {subServices.map((subService) => (
                 <MenuItem key={subService.id} value={subService.id}>
@@ -504,7 +505,7 @@ const PublishProjectModal = ({
             placeholder="e.g., 150"
             value={points}
             onChange={(e) => setPoints(e.target.value)}
-            disabled={isSubmitting}
+            disabled={true}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

@@ -242,13 +242,12 @@ const ProjectDetails = () => {
           {project.subServiceName && project.subServiceId && (
             <Typography
               component={Link}
-              to={`/app/services/${
-                project.subServiceId
-              }/projects?name=${encodeURIComponent(
-                project.subServiceName
-              )}&parentName=${encodeURIComponent(
-                project.serviceName
-              )}&parentId=${project.serviceId}`}
+              to={`/app/services/${project.subServiceId
+                }/projects?name=${encodeURIComponent(
+                  project.subServiceName
+                )}&parentName=${encodeURIComponent(
+                  project.serviceName
+                )}&parentId=${project.serviceId}`}
               color="inherit"
               sx={{ textDecoration: "none" }}
             >
@@ -703,11 +702,19 @@ const ProjectDetails = () => {
                   <Box sx={{ flex: 1 }}>
                     {/* Reviewer Name */}
                     <Typography
+                      component={Link}
+                      to={`/app/profile/${review.reviewerId}`}
                       variant="body1"
                       sx={{
                         fontWeight: "600",
                         mb: 0.5,
                         fontSize: "1rem",
+                        textDecoration: "none",
+                        color: "inherit",
+                        cursor: "pointer",
+                        "&:hover": {
+                          color: "#3B82F6",
+                        },
                       }}
                     >
                       {review.reviewerName || "Anonymous"}
@@ -799,8 +806,8 @@ const ProjectDetails = () => {
               snackbar.severity === "success"
                 ? "#3b82f6"
                 : snackbar.severity === "error"
-                ? "#EF4444"
-                : undefined,
+                  ? "#EF4444"
+                  : undefined,
             color: "white",
             "& .MuiAlert-icon": {
               color: "white",

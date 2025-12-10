@@ -194,7 +194,7 @@ export default function ProviderDashboard({
       />
 
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 5 }}>
-        <StatCard value={stats.total || 0} label="Total Projects" color="#00c853" progress={100} />
+        <StatCard value={stats.total || 0} label="Total Projects" color="#00c853" progress={stats.total > 0 ? 100 : 0} />
         <StatCard value={stats.pendingRequests || 0} label="Pending" color="#F59E0B" progress={calculateProgress(stats.pendingRequests, stats.total)} />
         <StatCard value={stats.active || 0} label="Active" color="#059669" progress={calculateProgress(stats.active, stats.total)} />
         <StatCard value={inReviewCount} label="In Review" color="#A855F7" progress={calculateProgress(inReviewCount, stats.total)} />

@@ -393,7 +393,7 @@ export default function Register() {
                 fullWidth
                 margin="normal"
                 label="User Name"
-                placeholder="john doe"
+                placeholder="JohnDoe"
                 variant="outlined"
                 error={errors.userName}
                 helperText={errors.userName?.message}
@@ -411,7 +411,7 @@ export default function Register() {
                 fullWidth
                 margin="normal"
                 label="Email"
-                placeholder="john.doe@gmail.com"
+                placeholder="johndoe@gmail.com"
                 variant="outlined"
                 required
                 InputProps={{
@@ -622,7 +622,7 @@ export default function Register() {
                 fullWidth
                 margin="normal"
                 label="University Major"
-                placeholder="cse"
+                placeholder="Computer Systems Engineering"
                 variant="outlined"
                 required
                 InputProps={{
