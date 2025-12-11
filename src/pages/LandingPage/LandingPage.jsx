@@ -20,11 +20,13 @@ import { ElectricBoltSharp } from "@mui/icons-material";
 import Logo from "../../assets/images/logo.png";
 import heroImg from "../../assets/images/hero-bg.png";
 import MenuIcon from "@mui/icons-material/Menu";
+import { useTheme } from "@mui/material/styles";
 
 export default function LandingPage() {
+  const theme = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
+    
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 0) setScrolled(true);
@@ -140,7 +142,8 @@ export default function LandingPage() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          backgroundColor: "rgba(255,255,255,0.9)",
+          // backgroundColor: "rgba(255,255,255,0.9)",
+          backgroundColor: theme.palette.mode === "dark" ? "#2d2d2d" : "#rgba(255,255,255,0.9)",
           backdropFilter: "blur(8px)",
           transition: "background-color 0.3s ease",
           flexWrap: "wrap", // يسمح بإضافة صف ثاني عند الحاجة
@@ -180,8 +183,10 @@ export default function LandingPage() {
             to="/login"
             variant="outlined"
             sx={{
-              borderColor: "#004aad",
-              color: "#004aad",
+              // borderColor: "#004aad",
+              // color: "#004aad",
+              color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+              borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               fontWeight: 600,
               borderRadius: "25px",
               px: 3,
@@ -196,8 +201,10 @@ export default function LandingPage() {
             to="/register"
             variant="outlined"
             sx={{
-              borderColor: "#004aad",
-              color: "#004aad",
+              // borderColor: "#004aad",
+              // color: "#004aad",
+              color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+              borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               fontWeight: 600,
               borderRadius: "25px",
               px: 3,
@@ -228,7 +235,8 @@ export default function LandingPage() {
       <Collapse in={menuOpen}>
         <Box
           sx={{
-            backgroundColor: "rgba(255,255,255,0.95)",
+            // backgroundColor: "rgba(255,255,255,0.95)",
+          backgroundColor: theme.palette.mode === "dark" ? "#363636ff" : "rgba(255,255,255,0.95)",
             backdropFilter: "blur(8px)",
             display: "flex",
             justifyContent: "center",
@@ -244,8 +252,8 @@ export default function LandingPage() {
             to="/login"
             variant="outlined"
             sx={{
-              borderColor: "#004aad",
-              color: "#004aad",
+                color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+              borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderRadius: "25px",
               px: 3,
               textTransform: "none",
@@ -258,8 +266,8 @@ export default function LandingPage() {
             to="/register"
             variant="outlined"
             sx={{
-              borderColor: "#004aad",
-              color: "#004aad",
+               color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+              borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderRadius: "25px",
               px: 3,
               textTransform: "none",

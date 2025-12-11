@@ -6,7 +6,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SidebarBox from './SidebarBox ';
 import { trendingServices, topContributors, trendingTopics } from '../../../services/FeedService'; // عدلي المسار حسب مشروعك
 
-export default function Sidebar() {
+export default function Sidebar({ postsUpdated }) {
   const token = localStorage.getItem("accessToken");
   
   const [services, setServices] = useState([]);
@@ -14,32 +14,36 @@ export default function Sidebar() {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
 
- useEffect(() => {
+useEffect(() => {
   const fetchData = async () => {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
     try {
       setLoading(true);
       
       // ✅ اجلبي كل واحد لحاله
       try {
         const servicesRes = await trendingServices(token);
-        console.log("trendingServices",servicesRes);
-        setServices(servicesRes.data);
+        console.log("trendingServices", servicesRes);
+        setServices(servicesRes.data || []); // ✅ ضيفي || []
       } catch (err) {
         console.error("Error fetching services:", err);
       }
 
       try {
         const contributorsRes = await topContributors(token);
-        console.log("topContributors",contributorsRes);
-        setContributors(contributorsRes.data);
+        console.log("topContributors", contributorsRes);
+        setContributors(contributorsRes.data || []); // ✅ ضيفي || []
       } catch (err) {
         console.error("Error fetching contributors:", err);
       }
 
       try {
         const topicsRes = await trendingTopics(token);
-      console.log("trendingTopics",topicsRes);
-        setTopics(topicsRes.data);
+        console.log("trendingTopics", topicsRes);
+            console.log("🔥 trendingTopics BEFORE:", topics); // ✅ قبل
+        console.log("🔥 trendingTopics NEW:", topicsRes); // ✅ بعد
+        setTopics(topicsRes.data || []); // ✅ ضيفي || []
       } catch (err) {
         console.error("Error fetching topics:", err);
       }
@@ -50,7 +54,7 @@ export default function Sidebar() {
   };
 
   fetchData();
-}, [token]);
+}, [token, postsUpdated]); // ✅ postsUpdated موجود بالـ dependencies
 
   if (loading) {
     return (

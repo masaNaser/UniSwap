@@ -54,7 +54,7 @@ useEffect(() => {
       const response = await getOneConversation(
         convId,
         receiverId,
-        20,
+        6,
         token
       );
 

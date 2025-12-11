@@ -7,6 +7,8 @@ import {
   Typography,
   InputAdornment,
   LinearProgress,
+  Container,
+  Button,
 } from "@mui/material";
 import { Email, Lock, VpnKey } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -15,7 +17,8 @@ import { resetPassword as resetPasswordApi } from "../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
+import Logo from "../../assets/images/logo.png";
 export default function ResetPassword() {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
@@ -26,17 +29,17 @@ export default function ResetPassword() {
   // -------------------- VALIDATION --------------------
   const validationSchema = yup.object({
     code: yup.string().required("Code is required"),
-     newPassword: yup
-    .string()
-    .required("Password is required")
-    .min(8, "Password must be at least 8 characters")
-    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
-    .matches(/[0-9]/, "Password must contain at least one digit")
-    .matches(
-      /[^a-zA-Z0-9]/,
-      "Password must contain at least one special character"
-    ),
+    newPassword: yup
+      .string()
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+      .matches(/[0-9]/, "Password must contain at least one digit")
+      .matches(
+        /[^a-zA-Z0-9]/,
+        "Password must contain at least one special character"
+      ),
     confirmPassword: yup
       .string()
       .required("Please confirm your password")
@@ -54,33 +57,33 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
 
-const checkStrength = (value) => {
-  let score = 0;
-  if (value.length >= 8) score++;          // طول ≥ 8
-  if (/[A-Z]/.test(value)) score++;        // حرف كبير
-  if (/[a-z]/.test(value)) score++;        // حرف صغير
-  if (/[0-9]/.test(value)) score++;        // رقم
-  if (/[^A-Za-z0-9]/.test(value)) score++; // حرف خاص
-  setPasswordStrength(score);
-};
- const getStrengthLabel = () => {
-  switch (passwordStrength) {
-    case 0:
-      return { text: "", color: "inherit" };
-    case 1:
-      return { text: "very weak", color: "red" };
-    case 2:
-      return { text: "weak", color: "orange" };
-    case 3:
-      return { text: "medium", color: "yellow" };
-    case 4:
-      return { text: "strong", color: "green" };
-    case 5:
-      return { text: "very strong", color: "darkgreen" };
-    default:
-      return { text: "", color: "inherit" };
-  }
-};
+  const checkStrength = (value) => {
+    let score = 0;
+    if (value.length >= 8) score++; // طول ≥ 8
+    if (/[A-Z]/.test(value)) score++; // حرف كبير
+    if (/[a-z]/.test(value)) score++; // حرف صغير
+    if (/[0-9]/.test(value)) score++; // رقم
+    if (/[^A-Za-z0-9]/.test(value)) score++; // حرف خاص
+    setPasswordStrength(score);
+  };
+  const getStrengthLabel = () => {
+    switch (passwordStrength) {
+      case 0:
+        return { text: "", color: "inherit" };
+      case 1:
+        return { text: "very weak", color: "red" };
+      case 2:
+        return { text: "weak", color: "orange" };
+      case 3:
+        return { text: "medium", color: "yellow" };
+      case 4:
+        return { text: "strong", color: "green" };
+      case 5:
+        return { text: "very strong", color: "darkgreen" };
+      default:
+        return { text: "", color: "inherit" };
+    }
+  };
   // -------------------- TIMER 15 MINUTES --------------------
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [codeExpired, setCodeExpired] = useState(false);
@@ -141,158 +144,191 @@ const checkStrength = (value) => {
 
   // -------------------- UI --------------------
   return (
-    <Box
-      sx={{
-        maxWidth: 500,
-        mx: "auto",
-        mt: 8,
-        p: 8,
-        boxShadow: 3,
-        borderRadius: 2,
-      }}
-    >
-      <Typography variant="h6" mb={2}>
-        Reset Password
-      </Typography>
-
-      {/* TIMER UNDER THE TITLE */}
-      <Box sx={{ mb: 3, mt: -1 }}>
-        {!codeExpired ? (
+    <>
+      {/* Navbar */}
+      <Container maxWidth="lg">
+        <Box sx={{ display: "flex", alignItems: "center", py: 2 }}>
+          <Button
+            startIcon={<KeyboardBackspaceIcon />}
+            color="inherit"
+            sx={{ textTransform: "none", color: "#74767a" }}
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </Button>
           <Box
-            sx={{
-              display: "inline-block",
-              bgcolor: "#3B82F6",
-              color: "white",
-              px: 3,
-              py: 1,
-              borderRadius: 3,
-              fontSize: "20px",
-              fontWeight: "bold",
-              letterSpacing: "0.5px",
-            }}
+            sx={{ display: "flex", alignItems: "center", gap: "6px", ml: 2 }}
           >
-            Code valid for: {minutes}:{seconds < 10 ? "0" + seconds : seconds}
+            <img
+              src={Logo}
+              alt="UniSwap logo"
+              style={{ height: "36px", width: "36px" }}
+            />
+            <Typography
+              component={"span"}
+              sx={{ fontWeight: "600", color: "#74767a", fontSize: "14px" }}
+            >
+              UniSwap
+            </Typography>
           </Box>
-        ) : (
-          <Typography
-            color="error"
-            sx={{ fontWeight: "bold", fontSize: "20px" }}
-          >
-            Code expired. Please request a new one.
-          </Typography>
-        )}
-      </Box>
+        </Box>
+      </Container>
 
-      <Box component={"form"} onSubmit={handleSubmit(ResetHandle)}>
-        {/* EMAIL (DISABLED) */}
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Email"
-          value={email}
-          disabled
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Email />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* CODE INPUT */}
-        <TextField
-          {...register("code")}
-          fullWidth
-          margin="normal"
-          label="Code"
-          placeholder="xxxx"
-          variant="outlined"
-          required
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <VpnKey />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* NEW PASSWORD */}
-        <TextField
-          {...register("newPassword")}
-          fullWidth
-          margin="normal"
-          label="New Password"
-          type={showPassword ? "text" : "password"}
-          variant="outlined"
-          error={errors.newPassword}
-          helperText={errors.newPassword?.message}
-          onChange={(e) => {
-            register("newPassword").onChange(e);
-            checkStrength(e.target.value);
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Lock />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* PASSWORD STRENGTH */}
-       {passwordStrength > 0 && (
-  <>
-    <LinearProgress
-      variant="determinate"
-      value={(passwordStrength / 5) * 100} // نسبة من 0 إلى 100%
-      sx={{
-        height: 8,
-        borderRadius: 5,
-        mt: 1,
-        bgcolor: "#e0e0e0", // خلفية رمادية خفيفة
-        "& .MuiLinearProgress-bar": {
-          bgcolor: getStrengthLabel().color, // اللون حسب القوة
-        },
-      }}
-    />
-    <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
-      {getStrengthLabel().text}
-    </Typography>
-  </>
-)}
-
-        {/* CONFIRM PASSWORD */}
-        <TextField
-          {...register("confirmPassword")}
-          fullWidth
-          margin="normal"
-          label="Confirm Password"
-          type={showPassword ? "text" : "password"}
-          variant="outlined"
-          error={!!errors.confirmPassword}
-          helperText={errors.confirmPassword?.message}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Lock />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* SUBMIT BUTTON */}
-        <CustomButton
-          fullWidth
-          loading={loading}
-          variant="contained"
-          sx={{ mt: 5 }}
-          type="submit"
-        >
+      <Box
+        sx={{
+    width: { xs: "90%", sm: "400px" },
+          maxWidth: "400px",
+                    mx: "auto",
+          mt: 4,
+          p:  { xs: 4, sm: 8 },
+          boxShadow: 3,
+          mb: 6,
+          borderRadius: 2,
+        }}
+      >
+        <Typography variant="h6" mb={2}>
           Reset Password
-        </CustomButton>
+        </Typography>
+
+        {/* TIMER UNDER THE TITLE */}
+        <Box sx={{ mb: 3, mt: -1 }}>
+          {!codeExpired ? (
+            <Box
+              sx={{
+                display: "inline-block",
+                bgcolor: "#3B82F6",
+                color: "white",
+                px: 3,
+                py: 1,
+                borderRadius: 3,
+                fontSize: "20px",
+                fontWeight: "bold",
+                letterSpacing: "0.5px",
+              }}
+            >
+              Code valid for: {minutes}:{seconds < 10 ? "0" + seconds : seconds}
+            </Box>
+          ) : (
+            <Typography
+              color="error"
+              sx={{ fontWeight: "bold", fontSize: "20px" }}
+            >
+              Code expired. Please request a new one.
+            </Typography>
+          )}
+        </Box>
+
+        <Box component={"form"} onSubmit={handleSubmit(ResetHandle)}>
+          {/* EMAIL (DISABLED) */}
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Email"
+            value={email}
+            disabled
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* CODE INPUT */}
+          <TextField
+            {...register("code")}
+            fullWidth
+            margin="normal"
+            label="Code"
+            placeholder="xxxx"
+            variant="outlined"
+            required
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <VpnKey />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* NEW PASSWORD */}
+          <TextField
+            {...register("newPassword")}
+            fullWidth
+            margin="normal"
+            label="New Password"
+            type={showPassword ? "text" : "password"}
+            variant="outlined"
+            error={errors.newPassword}
+            helperText={errors.newPassword?.message}
+            onChange={(e) => {
+              register("newPassword").onChange(e);
+              checkStrength(e.target.value);
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* PASSWORD STRENGTH */}
+          {passwordStrength > 0 && (
+            <>
+              <LinearProgress
+                variant="determinate"
+                value={(passwordStrength / 5) * 100} // نسبة من 0 إلى 100%
+                sx={{
+                  height: 8,
+                  borderRadius: 5,
+                  mt: 1,
+                  bgcolor: "#e0e0e0", // خلفية رمادية خفيفة
+                  "& .MuiLinearProgress-bar": {
+                    bgcolor: getStrengthLabel().color, // اللون حسب القوة
+                  },
+                }}
+              />
+              <Typography sx={{ mt: 1, color: getStrengthLabel().color }}>
+                {getStrengthLabel().text}
+              </Typography>
+            </>
+          )}
+
+          {/* CONFIRM PASSWORD */}
+          <TextField
+            {...register("confirmPassword")}
+            fullWidth
+            margin="normal"
+            label="Confirm Password"
+            type={showPassword ? "text" : "password"}
+            variant="outlined"
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword?.message}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* SUBMIT BUTTON */}
+          <CustomButton
+            fullWidth
+            loading={loading}
+            variant="contained"
+            sx={{ mt: 5 }}
+            type="submit"
+          >
+            Reset Password
+          </CustomButton>
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 }

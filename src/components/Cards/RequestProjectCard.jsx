@@ -142,7 +142,7 @@ export default function RequestProjectCard({
 
           setSnackbar({
             open: true,
-            message: "Request cancelled successfully ❌",
+            message: "Request cancelled successfully ",
             severity: "info",
           });
           break;

@@ -81,6 +81,7 @@ const updatePost = (posts, postId, newData) =>
 
 export default function Feed() {
   const theme = useTheme(); // 🔥 ضيفي هاد السطر
+  const [postsUpdated, setPostsUpdated] = useState(false);
 
 
   const { currentUser, loading } = useCurrentUser();
@@ -263,8 +264,21 @@ export default function Feed() {
     }
   }, [posts, searchParams, setSearchParams]);
 
-  const addPost = (newPost) =>
-    setPosts([{ ...newPost, isLiked: false, recentComments: [] }, ...posts]);
+const addPost = (newPost) => {
+  const formattedPost = {
+    ...newPost,
+    selectedTags: newPost.tags?.[0]?.split(",") || [],
+    isLiked: false,
+    recentComments: [],
+  };
+
+  setPosts((prev) => [formattedPost, ...prev]);
+  
+  // ✅ استخدمي timestamp بدل boolean
+  setPostsUpdated(Date.now()); // ✅ هيك بيضمن إنه في تغيير حقيقي
+};
+
+
 
   const openDeleteDialog = (postId) => {
     setDeleteDialog({ open: true, postId });
@@ -788,9 +802,9 @@ export default function Feed() {
                   <div ref={observerRef} style={{ height: "20px" }} />
 
                   {/* ✅ End Message */}
-                  {!hasMore && posts.length > 0 && (
+                  {/* {!hasMore && posts.length > 0 && (
                     <Box sx={{ textAlign: "center", py: 3 }}>
-                      {/* <Typography
+                      <Typography
                         sx={{
                           color: "#9CA3AF",
                           fontWeight: "600",
@@ -799,13 +813,13 @@ export default function Feed() {
                       >
                         🎉 You've reached the end!
                       </Typography> */}
-                      <Typography
+                      {/* <Typography
                         sx={{ color: "#D1D5DB", fontSize: "14px", mt: 0.5 }}
                       >
                         No more posts to show
-                      </Typography>
+                      </Typography> 
                     </Box>
-                  )}
+                  )}*/}
 
                   {/* ✅ Empty State */}
                   {!loading && posts.length === 0 && (
@@ -828,7 +842,7 @@ export default function Feed() {
 
           {!admin && (
             <div className="feed-sidebar" style={{ flex: 1 }}>
-              <Sidebar />
+<Sidebar postsUpdated={postsUpdated} />
             </div>
           )}
         </div>

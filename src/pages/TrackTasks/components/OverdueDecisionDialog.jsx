@@ -277,7 +277,7 @@ export default function OverdueDecisionDialog({
               </>
             ) : (
               <>
-                <strong>What happens next:</strong> The project will be cancelled permanently. All frozen points ({/* You can add points here if available */}) will be immediately refunded to your account. This action cannot be undone.
+                <strong>What happens next:</strong> The project will be cancelled permanently. All frozen points  will be immediately refunded to your account. This action cannot be undone.
               </>
             )}
           </Typography>

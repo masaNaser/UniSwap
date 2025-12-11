@@ -16,49 +16,69 @@ export default function SidebarBox({ title, icon, items, type }) {
       const theme = useTheme(); // 🔥 ضيفي هاد السطر
   
   // Trending Services
-  const renderServices = () => {
-    // حساب الـ max popularity عشان الـ percentage
-    const maxPopularity = Math.max(...items.map(item => item.popularity), 1);
+const renderServices = () => {
+  const activeServices = items.filter(item => item.popularity > 0);
+  
+  if (activeServices.length === 0) {
+    return (
+      <Typography variant="body2" color="text.secondary" textAlign="center" py={2}>
+        No projects yet
+      </Typography>
+    );
+  }
+  
+  // ✅ احسبي المجموع الكلي
+  const totalProjects = activeServices.reduce((sum, item) => sum + item.popularity, 0);
+  
+  return activeServices.map((item, index) => {
+    // ✅ النسبة من المجموع
+    const percentage = Math.round((item.popularity / totalProjects) * 100);
     
-    return items.map((item, index) => {
-      const percentage = Math.round((item.popularity / maxPopularity) * 100);
-      
-      return (
-        <ListItem 
-          key={item.subServiceId} 
-          sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'flex-start',
-            py: 2,
-            borderBottom: index < items.length - 1 ? '1px solid #f0f0f0' : 'none'
-          }}
-        >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mb: 1 }}>
-            <Typography variant="body2" fontWeight="600">
-              {item.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" fontSize="0.875rem">
-              {percentage}%
+    return (
+      <ListItem key={item.subServiceId} 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'flex-start',
+          py: 2,
+          borderBottom: index < activeServices.length - 1 ? `1px solid ${theme.palette.divider}` : 'none'
+        }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mb: 1 }}>
+          <Typography variant="body2" fontWeight="600">
+            {item.name}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+            {/* <Typography 
+              variant="body2" 
+              fontWeight="600"
+              color="primary"
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {item.popularity}
+            </Typography> */}
+            <Typography 
+              variant="caption" 
+              color="text.disabled" 
+              fontSize="0.7rem"
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              ({percentage}%)
             </Typography>
           </Box>
-          <LinearProgress 
-            variant="determinate" 
-            value={percentage} 
-            sx={{ 
-              width: '100%', 
-              height: 6, 
-              borderRadius: 3,
-              bgcolor: '#e3f2fd',
-              '& .MuiLinearProgress-bar': {
-                bgcolor: '#2196f3'
-              }
-            }} 
-          />
-        </ListItem>
-      );
-    });
-  };
+        </Box>
+        <LinearProgress variant="determinate" value={percentage}     sx={{ 
+            width: '100%', 
+            height: 6, 
+            borderRadius: 3,
+            bgcolor: theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.2)' : '#e3f2fd',
+            '& .MuiLinearProgress-bar': {
+              bgcolor: '#2196f3'
+            }
+          }} />
+      </ListItem>
+    );
+  });
+};
 
   // Top Contributors
   const renderContributors = () => {
@@ -90,26 +110,51 @@ export default function SidebarBox({ title, icon, items, type }) {
   };
 
   // Trending Topics
-  const renderTopics = () => {
-    return items.map((item) => (
-      <ListItem 
-        key={item.tag}
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          py: 1.5,
-          px: 0
-        }}
-      >
-        <Typography variant="body2" fontWeight="500">
-          #{item.tag}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {item.count} posts
-        </Typography>
-      </ListItem>
-    ));
-  };
+const renderTopics = () => {
+  // 1) توسعة tags: فصل react,c++ → react و c++
+  const expanded = items.flatMap(item => {
+    if (!item.tag) return [];
+
+    const parts = item.tag.split(",").map(t => t.trim());
+    return parts.map(t => ({
+      tag: t,
+      count: item.count
+    }));
+  });
+
+  // 2) تجميع counts حسب كل تاغ
+  const grouped = expanded.reduce((acc, cur) => {
+    if (!acc[cur.tag]) {
+      acc[cur.tag] = { tag: cur.tag, count: 0 };
+    }
+    acc[cur.tag].count += cur.count;
+    return acc;
+  }, {});
+
+  const finalTopics = Object.values(grouped);
+
+  // 3) العرض النهائي
+  return finalTopics.map((item) => (
+    <ListItem
+      key={item.tag}
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        py: 1.5,
+        px: 0
+      }}
+    >
+      <Typography variant="body2" fontWeight="500">
+        #{item.tag}
+      </Typography>
+      <Typography variant="caption" color="text.secondary">
+        {item.count} posts
+      </Typography>
+    </ListItem>
+  ));
+};
+
+
 
   return (
     <Box

@@ -366,9 +366,11 @@ return (
           onChange={(e) => setDeadline(e.target.value)}
           disabled={isSubmitting}
           required
-          inputProps={{
-            min: new Date().toISOString().split("T")[0],
-          }}
+                inputProps={{
+  min: new Date(new Date().setDate(new Date().getDate() + 1))
+    .toISOString()
+    .split("T")[0],
+}}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">

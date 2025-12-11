@@ -10,7 +10,7 @@ import {
   Tab,
   Autocomplete,
   Chip,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import {
   Email,
@@ -360,9 +360,8 @@ export default function Register() {
               centered
               textColor="inherit"
               sx={{
-                bgcolor: "#F1F5F9",
-                bgcolor:
-                  theme.palette.mode === "dark" ? "#565555ff" : "#F1F5F9",
+                // bgcolor: "#F1F5F9",
+                bgcolor:theme.palette.mode === "dark" ? "#565555ff" : "#F1F5F9",
                 borderRadius: "50px",
                 minHeight: "40px",
                 "& .MuiTab-root": {
@@ -371,8 +370,10 @@ export default function Register() {
                   color: "#0F172A",
                   borderRadius: "50px",
                   minHeight: "40px",
-                  minWidth: "120px",
+                  minWidth: { xs: "100px", sm: "120px" }, // ✅ غيّرت هون
+                  fontSize: { xs: "13px", sm: "14px" }, // ✅ وزدت هاي
                   margin: "4px",
+                  padding: { xs: "6px 12px", sm: "6px 16px" }, // ✅ وهاي
                 },
                 "& .Mui-selected": {
                   background: "#FFFFFF",

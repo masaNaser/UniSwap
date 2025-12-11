@@ -173,6 +173,7 @@ export default function ClientDashboard({
         { label: "Active", value: "Active" },
         { label: "In Review", value: "SubmittedForFinalReview" },
         { label: "Completed", value: "Completed" },
+        { label: "Cancelled", value: "Cancelled" },
         { label: "Overdue", value: "Overdue" },
       ],
       onSelect: handleStatusSelect,
