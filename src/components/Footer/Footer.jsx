@@ -26,6 +26,7 @@ export default function Footer() {
               gap: 2,
               justifyContent: "space-between",
               flexDirection: { xs: "column", md: "row" },
+              textAlign: { xs: "center", md: "left" },
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>

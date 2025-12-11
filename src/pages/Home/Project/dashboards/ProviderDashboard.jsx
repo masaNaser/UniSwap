@@ -193,7 +193,7 @@ export default function ProviderDashboard({
         description="Projects where you're helping other students with your skills and expertise, building your reputation and earning points."
       />
 
-      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 5 }}>
+      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 5, justifyContent: { xs: "center", md: "flex-start"} }}>
         <StatCard value={stats.total || 0} label="Total Projects" color="#00c853" progress={stats.total > 0 ? 100 : 0} />
         <StatCard value={stats.pendingRequests || 0} label="Pending" color="#F59E0B" progress={calculateProgress(stats.pendingRequests, stats.total)} />
         <StatCard value={stats.active || 0} label="Active" color="#059669" progress={calculateProgress(stats.active, stats.total)} />

@@ -221,10 +221,11 @@ export default function Register() {
             flexDirection: { xs: "column", md: "row" },
             alignItems: { xs: "center", md: "flex-start" },
             justifyContent: "space-between",
-            mt: "70px",
-            gap: { xs: 4, md: 0.5 },
+            mt: { xs: 4, md: "70px" },
+            gap: { xs: 4, md: 8 },
             flexWrap: "wrap",
             pb: 5,
+            px: { xs: 2, md: 0 },
           }}
         >
           {/* LEFT SECTION */}
@@ -325,11 +326,13 @@ export default function Register() {
           {/* RIGHT SECTION (Form) */}
           <Box
             sx={{
-              width: 400,
+              width: { xs: "100%", sm: "400px" },
+              maxWidth: "400px",
               p: 4,
               borderRadius: 4,
               boxShadow: 3,
               bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#FFFFFF",
+              mx: { xs: "auto", md: 0 },
             }}
           >
             <Box sx={{ textAlign: "center", mb: 3 }}>

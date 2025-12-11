@@ -64,8 +64,8 @@ export default function Login() {
   } = useForm({
     //هاي الخطوة عشان نحكي للمكتبة الرياكت هوك فورم انه ما تعمل الفالديشن منها وانما الفالديشن اللي حطيناه باستخدام ال yup
     resolver: yupResolver(validationSchema),
-     shouldUseNativeValidation: false, // ✅ أضيفي هاد
-  mode: 'onSubmit', // ✅ وهاد
+    shouldUseNativeValidation: false, // ✅ أضيفي هاد
+    mode: 'onSubmit', // ✅ وهاد
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -96,13 +96,13 @@ export default function Login() {
           decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
         const userId =
           decoded[
-            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
           ];
         const userRole =
           decoded[
-            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
           ];
-       console.log("userRole:", userRole);
+        console.log("userRole:", userRole);
         // حفظ معلومات المستخدم
         localStorage.setItem("userName", userName);
         localStorage.setItem("userId", userId);
@@ -121,17 +121,17 @@ export default function Login() {
         });
       }
     } catch (error) {
-         // ✅ هون المشكلة - لازم نمنع الـ form من الـ reset
-    const msg =
-      error.response?.data?.message || 
-      error.response?.data?.title ||
-      "Invalid email or password"; // ✅ غيّرت الرسالة لتكون أوضح
-        // ✅ عرض الـ error تحت حقل الـ password
-    setError("password", {
-      type: "manual",
-      message: msg,
-    });
-    console.error("Login error:", error);
+      // ✅ هون المشكلة - لازم نمنع الـ form من الـ reset
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data?.title ||
+        "Invalid email or password"; // ✅ غيّرت الرسالة لتكون أوضح
+      // ✅ عرض الـ error تحت حقل الـ password
+      setError("password", {
+        type: "manual",
+        message: msg,
+      });
+      console.error("Login error:", error);
 
       Swal.fire({
         icon: "error",
@@ -179,10 +179,11 @@ export default function Login() {
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             alignItems: { xs: "center", md: "flex-start" },
-            justifyContent: "center", // الفورم بالمنتصف بالموبايل
-            mt: 10, // margin مناسب للشاشات الصغيرة
-            gap: { xs: 4, md: 30 },
+            justifyContent: "space-between",
+            mt: { xs: 4, md: 10 },
+            gap: { xs: 4, md: 8 },
             pb: 5,
+            px: { xs: 2, md: 0 },
           }}
         >
           {/* LEFT SECTION */}
@@ -284,11 +285,13 @@ export default function Login() {
             component="form"
             onSubmit={handleSubmit(loginHandle)}
             sx={{
-              width: { xs: "130%", sm: 400 }, // 90% على الموبايل
+              width: { xs: "100%", sm: "400px" },
+              maxWidth: "400px",
               p: 4,
               borderRadius: 4,
               boxShadow: 3,
               bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#FFFFFF",
+              mx: { xs: "auto", md: 0 },
             }}
           >
             <Box sx={{ textAlign: "center", mb: 3 }}>
@@ -423,14 +426,29 @@ export default function Login() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 mt: 1,
+                flexWrap: "wrap",
+                gap: 1,
               }}
             >
               <FormControlLabel
-                control={<Checkbox />}
+                control={<Checkbox size="small" />}
                 {...register("rememberMe")}
-                label="Remember me"
+                label={
+                  <Typography sx={{ fontSize: { xs: "11px", sm: "14px" } }}>
+                    Remember me
+                  </Typography>
+                }
+                sx={{ m: 0 }}
               />
-              <Link component={RouterLink} to="/forgetPassword" variant="body2">
+              <Link
+                component={RouterLink}
+                to="/forgetPassword"
+                variant="body2"
+                sx={{
+                  fontSize: { xs: "11px", sm: "14px" },
+                  whiteSpace: "nowrap"
+                }}
+              >
                 Forgot password?
               </Link>
             </Box>

@@ -21,10 +21,10 @@ const ServiceCard = ({
   onDelete,
   image
 }) => {
-  const theme = useTheme(); // 🔥 ضيفي هاد السطر
+  const theme = useTheme(); 
 
   const [anchorEl, setAnchorEl] = useState(null);
-  const [showFullTitle, setShowFullTitle] = useState(false); // ✅ لعرض العنوان الكامل
+  const [showFullTitle, setShowFullTitle] = useState(false);
   const open = Boolean(anchorEl);
 
   const handleMenuOpen = (event) => {
@@ -38,7 +38,7 @@ const ServiceCard = ({
     <Card
       sx={{
         height: "100%",
-        width: "368px",
+        maxWidth: "368px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",

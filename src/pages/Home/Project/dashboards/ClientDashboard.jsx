@@ -207,7 +207,7 @@ export default function ClientDashboard({
         description="Projects where you're asking for help from others to learn, collaborate, or get tasks done."
       />
 
-      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 5 }}>
+      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 5, justifyContent: { xs: "center", md: "flex-start" } }}>
         <StatCard
           value={stats.total || 0}
           label="Total Requests"

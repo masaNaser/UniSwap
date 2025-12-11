@@ -37,12 +37,7 @@ export default function LandingPage() {
   const FeatureCard = [
     {
       title: "Student Community",
-      description: (
-        <>
-          Connect with fellow students and build <br /> meaningful academic
-          relationships
-        </>
-      ),
+      description: "Connect with fellow students and build meaningful academic relationships",
       icon: (
         <PeopleOutlinedIcon
           sx={{
@@ -57,12 +52,7 @@ export default function LandingPage() {
     },
     {
       title: "Skill Exchange",
-      description: (
-        <>
-          Trade your expertise for others' help using our <br /> innovative
-          points system
-        </>
-      ),
+      description: "Trade your expertise for others' help using our innovative points system",
       icon: (
         <ElectricBoltSharp
           sx={{
@@ -77,12 +67,7 @@ export default function LandingPage() {
     },
     {
       title: "Academic Support",
-      description: (
-        <>
-          Get help with assignments, projects, and exam <br /> preparation from
-          peers
-        </>
-      ),
+      description: "Get help with assignments, projects, and exam preparation from peers",
       icon: (
         <ImportContactsTwoToneIcon
           sx={{
@@ -97,11 +82,7 @@ export default function LandingPage() {
     },
     {
       title: "Real-time Chat",
-      description: (
-        <>
-          Instant messaging and collaboration tools to <br /> stay connected
-        </>
-      ),
+      description: "Instant messaging and collaboration tools to stay connected",
       icon: (
         <ChatBubbleOutlineOutlinedIcon
           sx={{
@@ -116,11 +97,7 @@ export default function LandingPage() {
     },
     {
       title: "Portfolio Building",
-      description: (
-        <>
-          Showcase your skills and build a strong <br /> academic portfolio
-        </>
-      ),
+      description: "Showcase your skills and build a strong academic portfolio",
       icon: (
         <WorkspacePremiumOutlinedIcon
           sx={{
@@ -135,12 +112,7 @@ export default function LandingPage() {
     },
     {
       title: "Safe & Secure",
-      description: (
-        <>
-          University-verified platform ensuring a trusted <br /> learning
-          environment
-        </>
-      ),
+      description: "University-verified platform ensuring a trusted learning environment",
       icon: (
         <ShieldOutlinedIcon
           sx={{
@@ -452,6 +424,7 @@ export default function LandingPage() {
               gap: 2,
               justifyContent: "space-between",
               flexDirection: { xs: "column", md: "row" },
+              textAlign: { xs: "center", md: "left" },
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
