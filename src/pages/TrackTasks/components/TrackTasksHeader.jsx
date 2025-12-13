@@ -159,15 +159,10 @@ export default function TrackTasksHeader({
 
   const handlePublishSuccess = (publishedData) => {
     console.log("✅ Project published:", publishedData);
-    setSnackbar({
-      open: true,
-      message: "Project published successfully and is now available in Browse! 🎉",
-      severity: "success",
-    });
-
+    
     if (onProjectClosed) {
-      onProjectClosed();
-    }
+    onProjectClosed(true);
+  }
   };
 
   //const minSelectableDate = (() => {

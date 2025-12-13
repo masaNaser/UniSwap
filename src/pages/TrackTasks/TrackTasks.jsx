@@ -197,12 +197,21 @@ export default function TrackTasks() {
         setProjectDetails(prev => ({ ...prev, deadline: newDeadline }));
     };
 
-    const handleProjectClosed = async () => {
+    const handleProjectClosed = async (skipSuccessMessage = false) => {
         try {
             console.log('🔄 handleProjectClosed called - refreshing project data...');
 
             await fetchProjectData();
-            
+
+            // Only show snackbar if skipSuccessMessage is false
+            if (!skipSuccessMessage) {
+                setSnackbar({
+                    open: true,
+                    message: 'Project status updated successfully!',
+                    severity: 'success',
+                });
+            }
+
         } catch (error) {
             console.error('Error refreshing project data:', error);
             setSnackbar({
@@ -498,13 +507,28 @@ export default function TrackTasks() {
             });
         } catch (error) {
             console.error('Error moving task:', error);
+
+            const backendError = error.response?.data?.detail || error.response?.data?.message;
+
+            let errorMessage;
+            let severity = 'warning';
+
+            if (backendError &&
+                (backendError.includes('must be Rejected') ||
+                    backendError.includes('Forbidden') ||
+                    backendError.includes('not allowed'))) {
+                errorMessage = `Cannot move task from ${statusLabels[currentStatus]} to ${statusLabels[targetStatus]}`;
+            } else {
+                errorMessage = backendError || 'Failed to move task';
+                severity = 'error';
+            }
+
             setSnackbar({
                 open: true,
-                message: 'Failed to move task',
-                severity: 'error',
+                message: errorMessage,
+                severity: severity,
             });
         }
-
         setDraggedTask(null);
     };
 

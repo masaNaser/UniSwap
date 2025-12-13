@@ -342,7 +342,7 @@ const PublishProjectModal = ({
         <Typography variant="body2" sx={{ color: "#6B7280", mt: 1 }}>
           {isEditMode
             ? "Update your published project details"
-            : "Share your completed project with others in the marketplace"}
+            : "Share your completed project with others on the Browse page"}
         </Typography>
       }
       primaryButtonText={isEditMode ? "Update Project" : "Publish Project"}
@@ -352,7 +352,6 @@ const PublishProjectModal = ({
       isSubmitting={isSubmitting}
       snackbar={snackbar}
       onSnackbarClose={handleSnackbarClose}
-      maxWidth="md"
     >
       {/* Project Title */}
       <Box sx={{ mb: 2 }}>
@@ -508,7 +507,7 @@ const PublishProjectModal = ({
             disabled={true}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start">
+                <InputAdornment position="start" sx={{ mr: 0.5 }}>
                   <Box
                     sx={{
                       width: 20,
@@ -548,7 +547,6 @@ const PublishProjectModal = ({
             }}
           />
         </Grid>
-
         <Grid item xs={6}>
           <Typography
             variant="body2"
