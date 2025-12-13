@@ -22,7 +22,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FolderIcon from "@mui/icons-material/Folder";
 import UserProjectModal from "../../../components/Modals/UserProjectModal";
-import {GetUserProject,DeleteProject} from "../../../services/profileService";
+import {
+  GetUserProject,
+  DeleteProject,
+} from "../../../services/profileService";
 import { useProfile } from "../../../Context/ProfileContext";
 import { getImageUrl } from "../../../utils/imageHelper";
 
@@ -126,149 +129,177 @@ export default function PortfolioTab() {
         <Typography>No projects yet.</Typography>
       ) : (
         <Box
-        sx={{
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 3,
-    mt: 0,
-    justifyContent:"space-between",
-    mb: 5,
-  }}
->
-  {projects.map((p) => (
-    <Box
-      key={p.id}
-       sx={{
-        width: {
-          xs: "100%",
-          sm: "calc(40% - 30px)", 
-          md: "calc(40% - 30px)",
-        },
-        flexGrow: 0,
-        flexShrink: 0,
-      }}
-    >
-    <Card
-      sx={{
-        borderRadius: 3,
-        overflow: "hidden",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        transition: "transform 0.2s, box-shadow 0.2s",
-        "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
-        },
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-      }}
-    >
-      {isMyProfile && (
-        <IconButton
-          onClick={(e) => handleClick(e, p)}
           sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            bgcolor: "white",
-            boxShadow: 1,
-            zIndex: 1,
-            "&:hover": { bgcolor: "grey.100" },
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 3,
+            mt: 0,
+            justifyContent: "space-between",
+            mb: 5,
           }}
         >
-          <MoreVertIcon />
-        </IconButton>
-      )}
-
-      {p.coverImage && (
-        <Box
-          component="img"
-          src={getImageUrl(p.coverImage, p.title)}
-          alt={p.title}
-          sx={{
-            width: "100%",
-            height: { xs: 180, sm: 200, md: 220 },
-            objectFit: "cover",
-            display: "block",
-          }}
-        />
-      )}
-
-      <CardContent
-        sx={{
-          p: 2,
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
-        }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-          {p.title}
-        </Typography>
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ lineHeight: 1.5 }}
-        >
-          {p.description}
-        </Typography>
-
-        {/* عرض ملف المشروع بشكل آمن */}
-{p.projectFilePath && typeof p.projectFilePath === "string" && (
-  <Box sx={{ mt: 1 }}>
-    <Button
-      variant="outlined"
-      size="small"
-      startIcon={<FolderIcon />}
-      component="a"
-      href={`https://uni1swap.runasp.net/${p.projectFilePath}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      sx={{ textTransform: "none" }}
-    >
-      View Project File
-    </Button>
-  </Box>
-)}
-
-        <Box display="flex" justifyContent={"space-between"}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-            {p.tags && p.tags.map((tag, idx) => (
-              <Chip
-                key={idx}
-                label={tag}
-                size="medium"
-                fontWeight="700"
-                sx={{ bgcolor: '#F3F4F6', color: "rgba(51, 65, 85, 1)" }}
-              />
-            ))}
-          </Box>
-          <Box>
-            <Typography
-              variant="span"
-              fontWeight="700"
-              fontSize="15px"
-              color="rgba(71, 85, 105, 1)"
+          {projects.map((p) => (
+            <Box
+              key={p.id}
+              sx={{
+                width: {
+                  xs: "100%",
+                  sm: "calc(50% - 50px)",
+                  md: "calc(50% - 50px)",
+                },
+                flexGrow: 0,
+                flexShrink: 0,
+              }}
             >
-              Duration: 
-            </Typography>
-            <Typography
-              variant="span"
-              fontWeight="400"
-              fontSize="15px"
-              color="rgba(71, 85, 105, 1)"
-            >
-              {p.duration}
-            </Typography>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  </Box>
-))}
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  overflow: "hidden",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+                  },
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%", // ✅ هاد بخلي الكارد ياخذ كل ارتفاع الـ Box الأب
+                }}
+              >
+                {isMyProfile && (
+                  <IconButton
+                    onClick={(e) => handleClick(e, p)}
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      bgcolor: "white",
+                      boxShadow: 1,
+                      zIndex: 1,
+                      "&:hover": { bgcolor: "grey.100" },
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                )}
 
+                {p.coverImage && (
+                  <Box
+                    component="img"
+                    src={getImageUrl(p.coverImage, p.title)}
+                    alt={p.title}
+                    sx={{
+                      width: "100%",
+                      height: 220, // ✅ ارتفاع ثابت (بدون responsive)
+                      objectFit: "cover", // ✅ بقص الصورة عشان تملأ المساحة
+                      display: "block",
+                      flexShrink: 0, // ✅ ما يصغر
+                    }}
+                  />
+                )}
+
+                <CardContent
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                    flexGrow: 1, // ✅ بياخذ باقي المساحة
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      minHeight: "2em", // ✅ سطرين على الأقل
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    {p.title}
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      lineHeight: 1.6,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      wordBreak: "break-word", // ✅ إضافة
+                      minHeight: "4.8em",
+                    }}
+                  >
+                    {p.description}
+                  </Typography>
+
+                  {/* عرض ملف المشروع بشكل آمن */}
+                  {p.projectFilePath &&
+                    typeof p.projectFilePath === "string" && (
+                      <Box sx={{ mt: 1 }}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<FolderIcon />}
+                          component="a"
+                          href={`https://uni1swap.runasp.net/${p.projectFilePath}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{ textTransform: "none" }}
+                        >
+                          View Project File
+                        </Button>
+                      </Box>
+                    )}
+
+                  <Box display="flex" justifyContent={"space-between"}>
+                    <Box
+                      sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}
+                    >
+                      {p.tags &&
+                        p.tags.map((tag, idx) => (
+                          <Chip
+                            key={idx}
+                            label={tag}
+                            size="medium"
+                            fontWeight="700"
+                            sx={{
+                              bgcolor: "#F3F4F6",
+                              color: "rgba(51, 65, 85, 1)",
+                            }}
+                          />
+                        ))}
+                    </Box>
+                    <Box>
+                      <Typography
+                        variant="span"
+                        fontWeight="700"
+                        fontSize="15px"
+                        color="rgba(71, 85, 105, 1)"
+                      >
+                        Duration:
+                      </Typography>
+                      <Typography
+                        variant="span"
+                        fontWeight="400"
+                        fontSize="15px"
+                        color="rgba(71, 85, 105, 1)"
+                      >
+                        {p.duration}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+          ))}
         </Box>
       )}
 

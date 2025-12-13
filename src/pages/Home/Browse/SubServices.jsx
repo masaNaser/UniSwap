@@ -15,6 +15,7 @@ import {
 import GenericModal from "../../../components/Modals/GenericModal";
 import { isAdmin } from "../../../utils/authHelpers";
 import AddIcon from "@mui/icons-material/Add";
+
 const SubServices = () => {
   const token = localStorage.getItem("accessToken");
   const { id } = useParams(); // id الخدمة من الرابط
@@ -33,6 +34,7 @@ const SubServices = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({ name: "" });
+  
   // جلب الداتا
   const fetchSubServices = async () => {
     try {
@@ -67,7 +69,6 @@ const SubServices = () => {
       await EditSubServices(token, id, selectedSub.id, formData);
       setOpenEditModal(false);
       fetchSubServices();
-      fetch();
     } finally {
       setIsSubmitting(false);
     }
@@ -83,8 +84,6 @@ const SubServices = () => {
       setIsSubmitting(false);
     }
   };
-
-
 
   // لو ما في id أو بيانات
   if (!id) {
@@ -150,22 +149,28 @@ const SubServices = () => {
             >
               Create
             </CustomButton>
-          )}{" "}
+          )}
         </Box>
       </Box>
 
       {/* عرض الـ subservices */}
       <Grid container spacing={3} sx={{ mb: "55px" }}>
         {subservices.map((sub) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={sub.id}>
+          <Grid item xs={12} sm={6} md={4} key={sub.id}>
             <ServiceCard
               title={sub.name}
-              url={`/app/services/${sub.id}/projects?name=${encodeURIComponent(
-                sub.name
-              )}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`} // هون راح يوديك ع صفحة SubServiceProjects
-              adminMode={adminMode}
               cardWidth="368px"
               cardHeight="160px"
+              url={
+                serviceName === "Study Support"
+                  ? `/app/browse/${id}/${sub.id}/subjects?serviceName=${encodeURIComponent(
+                      serviceName
+                    )}&subServiceName=${encodeURIComponent(sub.name)}`
+                  : `/app/services/${sub.id}/projects?name=${encodeURIComponent(
+                      sub.name
+                    )}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`
+              }
+              adminMode={adminMode}
               onEdit={() => {
                 setSelectedSub(sub);
                 setFormData({ name: sub.name });
@@ -196,7 +201,6 @@ const SubServices = () => {
           onChange={(e) => setFormData({ name: e.target.value })}
         />
       </GenericModal>
-
 
       {/* EDIT */}
       <GenericModal

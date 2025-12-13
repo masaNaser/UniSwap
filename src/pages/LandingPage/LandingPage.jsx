@@ -143,7 +143,7 @@ export default function LandingPage() {
           justifyContent: "space-between",
           alignItems: "center",
           // backgroundColor: "rgba(255,255,255,0.9)",
-          backgroundColor: theme.palette.mode === "dark" ? "#2d2d2d" : "#rgba(255,255,255,0.9)",
+          backgroundColor: theme.palette.mode === "dark" ? "#2d2d2d" : "rgba(255,255,255,0.9)",
           backdropFilter: "blur(8px)",
           transition: "background-color 0.3s ease",
           flexWrap: "wrap", // يسمح بإضافة صف ثاني عند الحاجة

@@ -682,7 +682,7 @@ return (
             )}
 
             {!userIsAdmin && (
-              <IconButton size="large" color="inherit" onClick={() => navigate("/chat")} sx={{ p: { xs: 0.5, sm: 1 } }}>
+              <IconButton size="large" color="inherit" onClick={() => navigate("/app/chat")} sx={{ p: { xs: 0.5, sm: 1 } }}>
                 <Badge badgeContent={unreadCount} color="error" max={99}>
                   <img src={MessegeIcon} alt="Messege Icon" style={{ height: "20px", width: "20px", display: "block" }} />
                 </Badge>

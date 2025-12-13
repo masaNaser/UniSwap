@@ -89,6 +89,7 @@ const Services = () => {
   const fetchService = async () => {
     try {
       const response = await getServices(token);
+      console.log("Fetched Services:", response.data);
       setServices(response.data);
     } catch (err) {
       console.error(err);
