@@ -53,14 +53,15 @@ export default function UserProjectModal({
         coverImage: null,
         projectFile: null,
       });
-      // لو في صورة موجودة مسبقاً
+      
+      // ✅ تصحيح: اضافة ${} بشكل صحيح
       if (editData.coverImage) {
-        setCoverImagePreview(`https://uni1swap.runasp.net/editData.coverImage}`);
+        setCoverImagePreview(`https://uni1swap.runasp.net/${editData.coverImage}`);
       }
-      // لو في ملف مشروع موجود مسبقاً
-    if (editData.projectFile) {
-    setProjectFilePreview(editData.projectFile);
-}
+      
+      if (editData.projectFile) {
+        setProjectFilePreview(editData.projectFile);
+      }
     } else {
       setFormData({
         title: "",
@@ -85,7 +86,6 @@ export default function UserProjectModal({
     if (files && files[0]) {
       setFormData((prev) => ({ ...prev, [name]: files[0] }));
       
-      // Preview للصورة
       if (name === "coverImage") {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -94,7 +94,6 @@ export default function UserProjectModal({
         reader.readAsDataURL(files[0]);
       }
       
-      // Preview لملف المشروع
       if (name === "projectFile") {
         setProjectFilePreview(files[0].name);
       }
@@ -103,17 +102,18 @@ export default function UserProjectModal({
 
   const handleRemoveCoverImage = () => {
     setFormData((prev) => ({ ...prev, coverImage: null }));
+    // ✅ تصحيح: اضافة ${}
     setCoverImagePreview(editData?.coverImage ? `https://uni1swap.runasp.net/${editData.coverImage}` : null);
     const input = document.getElementById("coverImage-upload");
     if (input) input.value = "";
   };
 
-const handleRemoveProjectFile = () => {
+  const handleRemoveProjectFile = () => {
     setFormData((prev) => ({ ...prev, projectFile: null }));
-    setProjectFilePreview(editData?.projectFilePath || null);  // ✅ هون
+    setProjectFilePreview(editData?.projectFile || null);
     const input = document.getElementById("projectFile-upload");
     if (input) input.value = "";
-};
+  };
 
   const handleAddTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
@@ -140,7 +140,7 @@ const handleRemoveProjectFile = () => {
     );
   };
 
- const handleSubmit = async () => {
+  const handleSubmit = async () => {
     if (!isFormValid()) {
       setSnackbar({
         open: true,
@@ -186,34 +186,27 @@ const handleRemoveProjectFile = () => {
     } catch (err) {
       console.error(err);
       
-      // ✅ الحل: معالجة صحيحة للـ error
       let errorMessage = "Failed to submit project. Try again!";
       
       if (err.response?.data) {
         const errorData = err.response.data;
         
-        // لو الـ error object فيه errors (validation errors)
         if (errorData.errors && typeof errorData.errors === 'object') {
-          // جمع كل الـ validation errors
           const errorMessages = Object.values(errorData.errors)
-            .flat() // لو في arrays جواها
+            .flat()
             .join(', ');
           errorMessage = errorMessages || errorMessage;
         } 
-        // لو الـ error string عادي
         else if (typeof errorData === 'string') {
           errorMessage = errorData;
         }
-        // لو في message property
         else if (errorData.message) {
           errorMessage = errorData.message;
         }
-        // لو في title property (بعض الـ APIs بترجع هيك)
         else if (errorData.title) {
           errorMessage = errorData.title;
         }
       } 
-      // لو في message على الـ error نفسه
       else if (err.message) {
         errorMessage = err.message;
       }
@@ -226,6 +219,15 @@ const handleRemoveProjectFile = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // ✅ دالة مساعدة لعرض اسم الملف
+  const getFileName = (filePath) => {
+    if (!filePath) return "";
+    if (typeof filePath === 'string') {
+      return filePath.split("/").pop();
+    }
+    return filePath;
   };
 
   return (
@@ -276,10 +278,7 @@ const handleRemoveProjectFile = () => {
         {/* Cover Image Section */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Cover Image{" "}
-            <Typography component="span" variant="caption" color="text.secondary">
-              {/* (Optional) */}
-            </Typography>
+            Cover Image
           </Typography>
 
           {coverImagePreview ? (
@@ -331,10 +330,7 @@ const handleRemoveProjectFile = () => {
         {/* Project File Section */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Project File{" "}
-            <Typography component="span" variant="caption" color="text.secondary">
-              {/* (Optional) */}
-            </Typography>
+            Project File
           </Typography>
 
           {projectFilePreview ? (
@@ -352,20 +348,19 @@ const handleRemoveProjectFile = () => {
             >
               <InsertDriveFileIcon color="primary" />
               {formData.projectFile ? (
-                // ملف جديد تم اختياره
                 <Typography variant="body2" sx={{ flex: 1 }}>
                   {formData.projectFile.name}
                 </Typography>
               ) : (
-                // ملف موجود مسبقاً من الـ editData
+                // ✅ تصحيح: اضافة ${} واستخدام دالة مساعدة
                 <Button
                   component="a"
-                  href={`https://uni1swap.runasp.net/projectFilePreview}`}
+                  href={`https://uni1swap.runasp.net/${projectFilePreview}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{ flex: 1, textTransform: "none", justifyContent: "flex-start" }}
                 >
-                  {projectFilePreview.split("/").pop()}
+                  {getFileName(projectFilePreview)}
                 </Button>
               )}
               <IconButton size="small" onClick={handleRemoveProjectFile}>
@@ -397,10 +392,7 @@ const handleRemoveProjectFile = () => {
         {!editData && (
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              Tags{" "}
-              <Typography component="span" variant="caption" color="text.secondary">
-                {/* (Optional) */}
-              </Typography>
+              Tags
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <TextField
