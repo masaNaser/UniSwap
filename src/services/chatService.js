@@ -3,11 +3,11 @@ import api from "./api";
 
 // روابط السيرفر
 // const API_BASE_URL = "https://uni.runasp.net/api";
-// const HUB_BASE_URL = "https://uni.runasp.net";
+ const HUB_BASE_URL = "https://uni1swap.runasp.net";
 //  إنشاء اتصال SignalR
 export function createChatHubConnection(token) {
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${VITE_API_URL}/chatHub`, {
+    .withUrl(`${HUB_BASE_URL}/chatHub`, {
       accessTokenFactory: () => token,
     })
     .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])

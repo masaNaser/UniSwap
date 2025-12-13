@@ -89,6 +89,7 @@ const Services = () => {
   const fetchService = async () => {
     try {
       const response = await getServices(token);
+      console.log("Fetched Services:", response.data);
       setServices(response.data);
     } catch (err) {
       console.error(err);
@@ -230,14 +231,8 @@ const Services = () => {
             <ServiceCard
               title={service.name}
               description={service.description}
-              image={service.image}
-              icon={
-                service.image
-                  ? null
-                  : iconMap[service.name] || (
-                      <DesignServicesIcon fontSize="large" sx={{ color: "#888" }} />
-                    )
-              }
+            image={service.image}
+             icon={iconMap[service.name] || <DesignServicesIcon fontSize="large" />}
               count={`${service.subServices.length} services`}
               url={`/app/browse/${service.id}?name=${encodeURIComponent(service.name)}`}
               adminMode={adminMode}

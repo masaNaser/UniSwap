@@ -7,7 +7,6 @@ import {
   IconButton,
   Badge,
   Avatar,
-  Chip,
 } from "@mui/material";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -24,6 +23,9 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import CloseIcon from "@mui/icons-material/Close";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
+import ReportIcon from "@mui/icons-material/Report";
+import SchoolIcon from "@mui/icons-material/School";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import NotificationIcon from "../../assets/images/NotificationIcon.svg";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../utils/imageHelper";
@@ -85,6 +87,10 @@ const NotificationMenu = ({
     project: "Projects",
     requestProjectTasks: "Tasks",
     "Task Created": "Tasks",
+    courseTasks: "Course Tasks",
+    reviews: "Reviews",
+    reports: "Reports",
+    System: "System",
     messages: "Messages",
     Other: "Other",
   };
@@ -96,6 +102,10 @@ const NotificationMenu = ({
     project: { bg: "#D1FAE5", text: "#10B981" },
     requestProjectTasks: { bg: "#DBEAFE", text: "#3B82F6" },
     "Task Created": { bg: "#DBEAFE", text: "#3B82F6" },
+    courseTasks: { bg: "#FEF3C7", text: "#F59E0B" },
+    reviews: { bg: "#FEF3C7", text: "#F59E0B" },
+    reports: { bg: "#FEE2E2", text: "#EF4444" },
+    System: { bg: "#ECFDF5", text: "#10B981" },
     messages: { bg: "#FEF3C7", text: "#F59E0B" },
     Other: { bg: "#F3F4F6", text: "#6B7280" },
   };
@@ -107,94 +117,154 @@ const NotificationMenu = ({
     project: <AssignmentIcon sx={{ fontSize: 14 }} />,
     requestProjectTasks: <AssignmentIcon sx={{ fontSize: 14 }} />,
     "Task Created": <AssignmentIcon sx={{ fontSize: 14 }} />,
+    courseTasks: <SchoolIcon sx={{ fontSize: 14 }} />,
+    reviews: <StarIcon sx={{ fontSize: 14 }} />,
+    reports: <ReportIcon sx={{ fontSize: 14 }} />,
+    System: <EmojiEventsIcon sx={{ fontSize: 14 }} />,
     messages: <CommentIcon sx={{ fontSize: 14 }} />,
   };
 
- const handleNotifItemClick = async (notification) => {
-  if (!notification.isRead) {
-    await markAsRead(notification.id);
-  }
+  const handleNotifItemClick = async (notification) => {
+    if (!notification.isRead) {
+      await markAsRead(notification.id);
+    }
 
-  let targetRoute = "/app/feed";
+    let targetRoute = "/app/feed";
 
-  switch (notification.refType) {
-    case "Post":
-    case "Liked":
-    case "Comment":
-    case "Commented":
-    case "Shared":
-    case "Mentioned":
-      // 🔥 هون التعديل - استخدمي refId مع query parameter زي البحث
-      targetRoute = `/app/feed?postId=${notification.refId}`;
-      break;
+    switch (notification.refType) {
+      // ✅ Posts
+      case "Post":
+      case "Liked":
+      case "Comment":
+      case "Commented":
+      case "Shared":
+      // case "Mentioned":
+        targetRoute = `/app/feed?postId=${notification.refId}`;
+        break;
 
-    case "Project":
-    case "Rating":
-    case "Rated":
-    case "Completed":
-    case "Assigned":
-    case "Approved":
-    case "Rejected":
-      targetRoute = `/app/project/${notification.refId}`;
-      break;
+      // ✅ Projects
+      case "Project":
+      case "Rating":
+      case "Rated":
+      case "Completed":
+      case "Assigned":
+      case "Approved":
+      case "Rejected":
+        targetRoute = `/app/project/${notification.refId}`;
+        break;
 
-    case "Collaboration":
-      targetRoute = 
-        // ? `/app/project/${notification.refId}`
-         "/app/project";
-      break;
+      // ✅ RequestProject Tasks
+      case "RequestProject":
+      case "Task":
+      case "Updated":
+        targetRoute = notification.refId
+          ? `/app/TrackTasks/${notification.refId}`
+          : "/app/project";
+        break;
 
-    case "RequestProject":
-      targetRoute = notification.refId
-        ? `/app/project/${notification.refId}`
-        : "/app/project";
-      break;
+      // ✅ Reviews
+      case "Review":
+        targetRoute = notification.refId
+          ? `/app/project/${notification.refId}`
+          : "/app/browse";
+        break;
 
-    case "Message":
-      targetRoute = "/chat";
-      break;
+      // ✅ Reports (للإدارة أو للمستخدم)
+      case "Report":
+        // إذا عندك صفحة reports للإدارة
+        targetRoute = "/admin";
+        break;
 
-    case "User":
-    case "Followed":
-      targetRoute = `/app/profile/${notification.refId}`;
-      break;
+      // ✅ Collaboration
+      case "Collaboration":
+        targetRoute ="/app/project";
+        break;
 
-    case "Task":
-    case "Updated":
-      targetRoute = `/app/TrackTasks/${notification.refId}`;
-      break;
+      // ✅ Messages
+      case "Message":
+        targetRoute = "/app/chat";
+        break;
 
-    default:
-      console.warn(`Unknown notification type: ${notification.refType}`);
-      targetRoute = "/app/feed";
-  }
+      // ✅ Users / Follow
+      case "User":
+      case "Followed":
+        targetRoute = `/app/profile/${notification.refId}`;
+        break;
 
-  navigate(targetRoute);
-  handleNotifClose();
-};
+      // ✅ System Notifications (Points, etc.)
+      case "System":
+        // ممكن تروح لصفحة profile أو dashboard
+        targetRoute = "/app/profile";
+        break;
+
+      default:
+        console.warn(`Unknown notification type: ${notification.refType}`);
+        targetRoute = "/app/feed";
+    }
+
+    navigate(targetRoute);
+    handleNotifClose();
+  };
 
   const getNotificationIcon = (titleOrVerb) => {
     const iconStyle = { fontSize: "18px" };
 
     const icons = {
+      // Posts
       Liked: <FavoriteIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
       Commented: <CommentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
       Shared: <ShareIcon sx={{ ...iconStyle, color: "#10B981" }} />,
       Mentioned: <CampaignIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
+      
+      // Users
       Followed: <PersonAddIcon sx={{ ...iconStyle, color: "#8B5CF6" }} />,
+      
+      // Reviews & Ratings
       Rated: <StarIcon sx={{ ...iconStyle, color: "#FBBF24" }} />,
+      
+      // Projects
       Completed: <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
       Assigned: <AssignmentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
+      
+      // Requests
       "Request Accepted": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
       "Request Rejected": <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
+      
+      // Tasks
       Updated: <UpdateIcon sx={{ ...iconStyle, color: "#6366F1" }} />,
       Approved: <ThumbUpIcon sx={{ ...iconStyle, color: "#10B981" }} />,
       Rejected: <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
       Deleted: <DeleteOutlineOutlinedIcon sx={{ ...iconStyle, color: "#9CA3AF" }} />,
       "Task Created": <AssignmentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
       "Task Completed": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
-      "Task Request": <AssignmentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
+      "Task Submitted": <AssignmentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
+      "Task Accepted": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
+      "Task Rejected": <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
+      "Task Auto-Accepted": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
+      
+      // Course
+      "New Course Task": <SchoolIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
+      "Course Task Submitted": <SchoolIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
+      "Course Task Accepted": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
+      "Course Task Rejected": <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
+      "Course Completed": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
+      
+      // Reports
+      "New Report": <ReportIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
+      "Report Accepted": <ReportIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
+      
+      // Project Deadlines
       "Project Overdue": <UpdateIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
+      "Project Deadline Soon": <UpdateIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
+      "Project Overdue – Action Required": <UpdateIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
+      "Project Cancelled Due to Deadline": <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
+      "Project Deadline Extended": <UpdateIcon sx={{ ...iconStyle, color: "#10B981" }} />,
+      
+      // System
+      "Monthly Bonus Points": <EmojiEventsIcon sx={{ ...iconStyle, color: "#10B981" }} />,
+      "Project Completion Points": <EmojiEventsIcon sx={{ ...iconStyle, color: "#10B981" }} />,
+      
+      // Default
       Notification: <NotificationsNoneIcon sx={{ ...iconStyle, color: "#6366F1" }} />,
       "New Message": <CommentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
     };
@@ -249,7 +319,6 @@ const NotificationMenu = ({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            // borderBottom: "1px solid #E5E7EB",
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -303,7 +372,6 @@ const NotificationMenu = ({
               bgcolor: "white",
               display: "flex",
               gap: 1,
-              // borderBottom: "1px solid #E5E7EB",
             }}
           >
             <Button
@@ -385,7 +453,7 @@ const NotificationMenu = ({
           </Box>
         )}
 
-        {/* 🔥 Sorted Notifications - مع اسم الـ Group بس لما يتغير */}
+        {/* 🔥 Sorted Notifications */}
         {sortedNotifications.length > 0 && (
           <Box sx={{ maxHeight: 400, overflowY: "auto", bgcolor: "white", p: 2 }}>
             {sortedNotifications.map((notif, index) => {
@@ -393,13 +461,11 @@ const NotificationMenu = ({
               const groupLabel = groupLabels[groupName] || groupName;
               const colors = groupColors[groupName] || groupColors.Other;
 
-              // 🔥 نشوف إذا الـ Group تغير عن اللي قبله
               const prevGroupName = index > 0 ? (sortedNotifications[index - 1].group || "Other") : null;
               const showGroupBadge = groupName !== prevGroupName;
 
               return (
                 <Box key={notif.id}>
-                  {/* 🔥 Group Header - بس لما يتغير الـ Group */}
                   {showGroupBadge && (
                     <Box 
                       sx={{ 
@@ -410,7 +476,6 @@ const NotificationMenu = ({
                         gap: 1,
                       }}
                     >
-                      {/* الأيقونة بدون background */}
                       {React.cloneElement(groupIcons[groupName] || <CommentIcon />, {
                         sx: { fontSize: 20, color: colors.text }
                       })}
@@ -425,7 +490,6 @@ const NotificationMenu = ({
                         {groupLabel}
                       </Typography>
                       
-                      {/* 🔥 الخط الرفيع جنب الاسم */}
                       <Box
                         sx={{
                           flex: 1,
@@ -457,90 +521,87 @@ const NotificationMenu = ({
                       },
                     }}
                   >
+                    <Box sx={{ display: "flex", gap: 1.5 }}>
+                      <Box sx={{ position: "relative" }}>
+                        {notif.userImage || notif.senderName ? (
+                          <Avatar
+                            key={`${notif.id}-${notif.userImage}`}
+                            src={getImageUrl(notif.userImage, notif.senderName)}
+                            alt={notif.senderName || "User"}
+                            sx={{ width: 40, height: 40 }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: "50%",
+                              bgcolor: notif.isRead ? "#F3F4F6" : "#DBEAFE",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                            }}
+                          >
+                            {getNotificationIcon(notif.title || notif.verb)}
+                          </Box>
+                        )}
 
-                  <Box sx={{ display: "flex", gap: 1.5 }}>
-                    {/* Avatar or Icon */}
-                    <Box sx={{ position: "relative" }}>
-                      {notif.userImage || notif.senderName ? (
-                        <Avatar
-                          key={`${notif.id}-${notif.userImage}`}
-                          src={getImageUrl(notif.userImage, notif.senderName)}
-                          alt={notif.senderName || "User"}
-                          sx={{ width: 40, height: 40 }}
-                        />
-                      ) : (
-                        <Box
+                        {!notif.isRead && (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: -2,
+                              right: -2,
+                              width: 10,
+                              height: 10,
+                              borderRadius: "50%",
+                              bgcolor: "#3B82F6",
+                              border: "2px solid white",
+                            }}
+                          />
+                        )}
+                      </Box>
+
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
                           sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: "50%",
-                            bgcolor: notif.isRead ? "#F3F4F6" : "#DBEAFE",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                            fontWeight: 600,
+                            color: "#111827",
+                            fontSize: "0.9375rem",
+                            mb: 0.5,
                           }}
                         >
-                          {getNotificationIcon(notif.title || notif.verb)}
-                        </Box>
-                      )}
+                          {notif.title}
+                        </Typography>
 
-                      {!notif.isRead && (
-                        <Box
+                        <Typography
                           sx={{
-                            position: "absolute",
-                            top: -2,
-                            right: -2,
-                            width: 10,
-                            height: 10,
-                            borderRadius: "50%",
-                            bgcolor: "#3B82F6",
-                            border: "2px solid white",
+                            color: "#6B7280",
+                            fontSize: "0.875rem",
+                            mb: 0.5,
+                            overflow: "hidden",
+                            lineHeight: 1.4,
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
                           }}
-                        />
-                      )}
-                    </Box>
+                        >
+                          {notif.message}
+                        </Typography>
 
-                    {/* Content */}
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography
-                        sx={{
-                          fontWeight: 600,
-                          color: "#111827",
-                          fontSize: "0.9375rem",
-                          mb: 0.5,
-                        }}
-                      >
-                        {notif.title}
-                      </Typography>
-
-                      <Typography
-                        sx={{
-                          color: "#6B7280",
-                          fontSize: "0.875rem",
-                          mb: 0.5,
-                          overflow: "hidden",
-                          lineHeight: 1.4,
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                        }}
-                      >
-                        {notif.message}
-                      </Typography>
-
-                      <Typography
-                        sx={{
-                          color: "#9CA3AF",
-                          fontSize: "0.8125rem",
-                        }}
-                      >
-                        {notif.timeAgo}
-                      </Typography>
+                        <Typography
+                          sx={{
+                            color: "#9CA3AF",
+                            fontSize: "0.8125rem",
+                          }}
+                        >
+                          {notif.timeAgo}
+                        </Typography>
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
                 </Box>
               );
             })}

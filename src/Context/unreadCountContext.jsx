@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { getUnreadCount } from '../services/chatService';
+import { createChatHubConnection } from '../services/chatService'; // ✅ استورد الـ Hub
 
 const UnreadCountContext = createContext();
 
@@ -14,6 +15,7 @@ export const useUnreadCount = () => {
 export const UnreadCountProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const token = localStorage.getItem('accessToken');
+  const connectionRef = useRef(null); // ✅ حفظ الاتصال
 
   // ✅ دالة لتحديث العداد من الباك إند
   const refreshUnreadCount = useCallback(async () => {
@@ -27,7 +29,7 @@ export const UnreadCountProvider = ({ children }) => {
     }
   }, [token]);
 
-  // ✅ دالة لتقليل العداد مباشرة بدون استدعاء الباك
+  // ✅ دالة لتقليل العداد مباشرة
   const decreaseUnreadCount = useCallback((amount = 0) => {
     setUnreadCount((prev) => {
       const newCount = Math.max(0, prev - amount);
@@ -36,12 +38,52 @@ export const UnreadCountProvider = ({ children }) => {
     });
   }, []);
 
-  // ✅ جلب العداد عند التحميل وكل 30 ثانية
+  // ✅ اتصال SignalR لاستقبال الرسائل الجديدة
   useEffect(() => {
-    refreshUnreadCount();
+    if (!token) return;
+
+    const startConnection = async () => {
+      try {
+        const connection = createChatHubConnection(token);
+        connectionRef.current = connection;
+
+        // ✅ استقبال رسالة جديدة
+        connection.on("ReceiveMessage", (message) => {
+          console.log("📬 New message received in UnreadCountContext:", message);
+          
+          // ✅ زيادة العداد مباشرة
+          setUnreadCount((prev) => prev + 1);
+          console.log("🔔 Unread count increased");
+        });
+
+        await connection.start();
+        console.log("✅ SignalR Chat Hub connected in UnreadCountContext");
+
+        // جلب العداد الأولي
+        await refreshUnreadCount();
+      } catch (error) {
+        console.error("❌ SignalR connection failed:", error);
+      }
+    };
+
+    startConnection();
+
+    // ✅ تنظيف الاتصال عند الخروج
+    return () => {
+      if (connectionRef.current) {
+        connectionRef.current.stop();
+        console.log("🔌 SignalR disconnected from UnreadCountContext");
+      }
+    };
+  }, [token, refreshUnreadCount]);
+
+  // ✅ جلب العداد كل 30 ثانية (كنسخة احتياطية)
+  useEffect(() => {
+    if (!token) return;
+    
     const interval = setInterval(refreshUnreadCount, 30000);
     return () => clearInterval(interval);
-  }, [refreshUnreadCount]);
+  }, [refreshUnreadCount, token]);
 
   return (
     <UnreadCountContext.Provider

@@ -16,7 +16,7 @@ export default function Sidebar({ postsUpdated }) {
 
 useEffect(() => {
   const fetchData = async () => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
       setLoading(true);

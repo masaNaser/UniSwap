@@ -16,6 +16,8 @@ import ChatPage from '../components/Chat/ChatPage'
 import TrackTasks from "../pages/TrackTasks/TrackTasks";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import ChangePassword from "../pages/Auth/ChangePassword";
+import ParentSubServiceProjects from "../pages/Home/Browse/ParentSubServiceProjects";
+import ParentSubServices from "../pages/Home/Browse/ParentSubServices";
 
 const router = createBrowserRouter([
   {
@@ -42,10 +44,6 @@ const router = createBrowserRouter([
     path: "/changePassword",
     element: <ChangePassword />,
   },
-    {
-    path: "/Chat",
-    element:<ChatPage/>,
-  },
   {
       path:"/admin",
       element: <AdminDashboard/>
@@ -65,6 +63,15 @@ const router = createBrowserRouter([
       {
         path: "browse/:id",
         element: <SubServices />,
+      },
+       // 🔥 مسار جديد للـ ParentSubServices (المواد)
+      {
+        path: "browse/:serviceId/:subServiceId/subjects",
+        element:<ParentSubServices/>
+      },
+      {
+        path:"browse/:serviceId/:subServiceId/:parentSubServiceId/projects",
+        element:<ParentSubServiceProjects />
       },
       {
         path: "services/:id/projects",
@@ -90,6 +97,10 @@ const router = createBrowserRouter([
         path: "TrackTasks/:taskId", 
         element: <TrackTasks/>, 
       },
+         {
+    path: "Chat",
+    element:<ChatPage/>,
+  },
     ],
   },
 ]);

@@ -1,17 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { Container, Grid, Typography, Box, Breadcrumbs,TextField  } from "@mui/material";
+import {
+  Container,
+  Grid,
+  Typography,
+  Box,
+  Breadcrumbs,
+  TextField,
+} from "@mui/material";
 import { Link, useParams, useLocation } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import ServiceCard from "../../../components/Cards/ServiceCard";
-import {  
+import {
   getSubServices,
   CreateSubServices,
   EditSubServices,
   DeleteSubServices,
- } from "../../../services/subServiceServices";
+} from "../../../services/subServiceServices";
 import GenericModal from "../../../components/Modals/GenericModal";
 import { isAdmin } from "../../../utils/authHelpers";
 import AddIcon from "@mui/icons-material/Add";
@@ -52,8 +59,8 @@ const SubServices = () => {
   const handleCreate = async () => {
     setIsSubmitting(true);
     try {
-     const response= await CreateSubServices(token, id, formData);
-     console.log("creatSub",response);
+      const response = await CreateSubServices(token, id, formData);
+      console.log("creatSub", response);
       setOpenCreateModal(false);
       fetchSubServices();
     } finally {
@@ -61,7 +68,7 @@ const SubServices = () => {
     }
   };
 
-    const handleUpdate = async () => {
+  const handleUpdate = async () => {
     setIsSubmitting(true);
     try {
       await EditSubServices(token, id, selectedSub.id, formData);
@@ -73,7 +80,7 @@ const SubServices = () => {
     }
   };
 
-    const handleDelete = async () => {
+  const handleDelete = async () => {
     setIsSubmitting(true);
     try {
       await DeleteSubServices(token, id, selectedSub.id);
@@ -83,8 +90,6 @@ const SubServices = () => {
       setIsSubmitting(false);
     }
   };
-
-
 
   // لو ما في id أو بيانات
   if (!id) {
@@ -143,12 +148,12 @@ const SubServices = () => {
             <CustomButton
               variant="contained"
               startIcon={<AddIcon />}
-                onClick={() => {
+              onClick={() => {
                 setFormData({ name: "" });
                 setOpenCreateModal(true);
               }}
             >
-             Create
+              Create
             </CustomButton>
           )}{" "}
         </Box>
@@ -161,9 +166,19 @@ const SubServices = () => {
             <ServiceCard
               title={sub.name}
               // count="3 projects"
-              url={`/app/services/${sub.id}/projects?name=${encodeURIComponent(
-                sub.name
-              )}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`} // هون راح يوديك ع صفحة SubServiceProjects
+              url={
+                serviceName === "Study Support"
+                  ? `/app/browse/${id}/${
+                      sub.id
+                    }/subjects?serviceName=${encodeURIComponent(
+                      serviceName
+                    )}&subServiceName=${encodeURIComponent(sub.name)}`
+                  : `/app/services/${sub.id}/projects?name=${encodeURIComponent(
+                      sub.name
+                    )}&parentId=${id}&parentName=${encodeURIComponent(
+                      serviceName
+                    )}`
+              }
               adminMode={adminMode} // <--- أضفها هون
               onEdit={() => {
                 setSelectedSub(sub);
@@ -179,7 +194,7 @@ const SubServices = () => {
         ))}
       </Grid>
 
-       {/* CREATE */}
+      {/* CREATE */}
       <GenericModal
         open={openCreateModal}
         onClose={() => setOpenCreateModal(false)}
@@ -196,7 +211,6 @@ const SubServices = () => {
         />
       </GenericModal>
 
-     
       {/* EDIT */}
       <GenericModal
         open={openEditModal}
@@ -214,7 +228,7 @@ const SubServices = () => {
         />
       </GenericModal>
 
-        {/* DELETE */}
+      {/* DELETE */}
       <GenericModal
         open={openDeleteModal}
         onClose={() => setOpenDeleteModal(false)}
