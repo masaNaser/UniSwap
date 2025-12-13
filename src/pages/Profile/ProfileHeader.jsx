@@ -189,6 +189,8 @@ export default function ProfileHeader() {
                     position: "absolute",
                     top: -8,
                     left: { xs: 48, sm: 58, md: 65 },
+                    width: "fit-content",
+                    maxWidth: "none",
                     fontWeight: "bold",
                     fontSize: { xs: "0.65rem", sm: "0.75rem" },
                   }}

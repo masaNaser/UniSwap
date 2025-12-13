@@ -19,10 +19,10 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import StarIcon from "@mui/icons-material/Star";
 import EditIcon from "@mui/icons-material/Edit";
-import { browseProjectsBySubService } from "../../../services/publishProjectServices";
 import FilterSection from "../../../components/Filter/FilterSection";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import PublishProjectModal from "../../../components/Modals/PublishProjectModal";
+import api from "../../../services/api";
 
 const ProjectCard = ({ project, onEditClick }) => {
   const currentUserId = localStorage.getItem("userId");
@@ -73,7 +73,7 @@ const ProjectCard = ({ project, onEditClick }) => {
             objectFit: "cover",
           }}
         />
-        
+
         {project.finalRating > 0 && (
           <Box
             sx={{
@@ -295,7 +295,7 @@ export default function SubServiceProjects() {
   const pageSize = 6;
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRated, setSelectedRated] = useState("Highest Rated");
   const [selectedPrice, setSelectedPrice] = useState("All Prices");
@@ -303,13 +303,35 @@ export default function SubServiceProjects() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState(null);
 
-  const fetchServiceProject = async (page = 1) => {
+  const fetchServiceProject = async (currentPage = 1) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await browseProjectsBySubService(token, id, page, pageSize);
-      
+      // Build query parameters
+      const queryParams = new URLSearchParams({
+        page: currentPage.toString(),
+        pageSize: pageSize.toString(),
+      });
+
+      // Add search if present
+      if (searchQuery.trim()) {
+        queryParams.append('search', searchQuery.trim());
+      }
+
+      console.log("📡 Fetching projects with params:", queryParams.toString());
+
+      const response = await api.get(
+        `/PublishProjects/browse/${id}?${queryParams.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("✅ Projects fetched:", response.data);
+
       if (Array.isArray(response.data)) {
         setProjects(response.data);
         setTotalPages(1);
@@ -324,21 +346,33 @@ export default function SubServiceProjects() {
         setTotalCount(0);
       }
     } catch (err) {
-      console.error("Error fetching projects:", err);
+      console.error("❌ Error fetching projects:", err);
       setError(err.message || "Failed to load projects");
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch when filters change (reset to page 1)
   useEffect(() => {
-    if (id) fetchServiceProject(page);
-  }, [id, page]);
+    if (id) {
+      setPage(1);
+      fetchServiceProject(1);
+    }
+  }, [id, searchQuery, selectedRated, selectedPrice]);
 
-  // 🔥 الفلترة
+  // Fetch when page changes (only if page > 1 to avoid duplicate calls)
+  useEffect(() => {
+    if (id && page > 1) {
+      fetchServiceProject(page);
+    }
+  }, [page]);
+
+  // ⭐ Client-side filtering and sorting - ONLY ONE SORT AT A TIME
   const filteredProjects = React.useMemo(() => {
     let filtered = [...projects];
 
+    // Search filter
     if (searchQuery.trim()) {
       filtered = filtered.filter(project =>
         project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -347,16 +381,18 @@ export default function SubServiceProjects() {
       );
     }
 
-    if (selectedRated === "Highest Rated") {
-      filtered.sort((a, b) => (b.finalRating || 0) - (a.finalRating || 0));
-    } else if (selectedRated === "Most Reviewed") {
-      filtered.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
-    }
-
+    // ⭐ Apply ONLY ONE sort - price takes priority if it's not "All Prices"
     if (selectedPrice === "Low to High") {
       filtered.sort((a, b) => (a.points || 0) - (b.points || 0));
     } else if (selectedPrice === "High to Low") {
       filtered.sort((a, b) => (b.points || 0) - (a.points || 0));
+    } else {
+      // Only apply rating sort if price is "All Prices"
+      if (selectedRated === "Highest Rated") {
+        filtered.sort((a, b) => (b.finalRating || 0) - (a.finalRating || 0));
+      } else if (selectedRated === "Most Reviewed") {
+        filtered.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+      }
     }
 
     return filtered;
@@ -368,10 +404,14 @@ export default function SubServiceProjects() {
 
   const handleRatedSelect = (value) => {
     setSelectedRated(value);
+    setSelectedPrice("All Prices"); // ⭐ Reset price filter when rating is selected
   };
 
   const handlePriceSelect = (value) => {
     setSelectedPrice(value);
+    if (value !== "All Prices") {
+      setSelectedRated("Highest Rated"); // ⭐ Reset rating filter when price is selected
+    }
   };
 
   const handleEditClick = (project) => {

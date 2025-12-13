@@ -32,7 +32,7 @@ import SelfImprovementIcon from "@mui/icons-material/SelfImprovement";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import AddIcon from "@mui/icons-material/Add";
 import GenericModal from "../../../components/Modals/GenericModal";
-import { getImageUrl } from "../../../utils/imageHelper"; 
+import { getImageUrl } from "../../../utils/imageHelper";
 
 // خريطة تربط اسم السيرفس بالأيقونة المناسبة
 const iconMap = {
@@ -231,13 +231,7 @@ const Services = () => {
               title={service.name}
               description={service.description}
               image={service.image}
-              icon={
-                service.image
-                  ? null
-                  : iconMap[service.name] || (
-                      <DesignServicesIcon fontSize="large" sx={{ color: "#888" }} />
-                    )
-              }
+              icon={iconMap[service.name] || <DesignServicesIcon fontSize="large" />}
               count={`${service.subServices.length} services`}
               url={`/app/browse/${service.id}?name=${encodeURIComponent(service.name)}`}
               adminMode={adminMode}
