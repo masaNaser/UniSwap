@@ -54,7 +54,6 @@ export default function UserProjectModal({
         projectFile: null,
       });
       
-      // ✅ تصحيح: اضافة ${} بشكل صحيح
       if (editData.coverImage) {
         setCoverImagePreview(`https://uni1swap.runasp.net/${editData.coverImage}`);
       }
@@ -100,17 +99,18 @@ export default function UserProjectModal({
     }
   };
 
+  // ✅ FIXED: Now removes image completely
   const handleRemoveCoverImage = () => {
     setFormData((prev) => ({ ...prev, coverImage: null }));
-    // ✅ تصحيح: اضافة ${}
-    setCoverImagePreview(editData?.coverImage ? `https://uni1swap.runasp.net/${editData.coverImage}` : null);
+    setCoverImagePreview(null);
     const input = document.getElementById("coverImage-upload");
     if (input) input.value = "";
   };
 
+  // ✅ FIXED: Now removes file completely
   const handleRemoveProjectFile = () => {
     setFormData((prev) => ({ ...prev, projectFile: null }));
-    setProjectFilePreview(editData?.projectFile || null);
+    setProjectFilePreview(null);
     const input = document.getElementById("projectFile-upload");
     if (input) input.value = "";
   };
@@ -221,7 +221,6 @@ export default function UserProjectModal({
     }
   };
 
-  // ✅ دالة مساعدة لعرض اسم الملف
   const getFileName = (filePath) => {
     if (!filePath) return "";
     if (typeof filePath === 'string') {
@@ -352,7 +351,6 @@ export default function UserProjectModal({
                   {formData.projectFile.name}
                 </Typography>
               ) : (
-                // ✅ تصحيح: اضافة ${} واستخدام دالة مساعدة
                 <Button
                   component="a"
                   href={`https://uni1swap.runasp.net/${projectFilePreview}`}
@@ -388,64 +386,42 @@ export default function UserProjectModal({
           )}
         </Box>
 
-        {/* Tags Input - للCreate Mode فقط */}
-        {!editData && (
-          <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              Tags
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <TextField
+        {/* ✅ FIXED: Tags Section - Now works for both Create and Edit */}
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+            Tags
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <TextField
+              size="small"
+              placeholder="Add tag (e.g., React, Design)"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddTag();
+                }
+              }}
+              fullWidth
+            />
+            <IconButton color="primary" onClick={handleAddTag}>
+              <AddIcon />
+            </IconButton>
+          </Box>
+          <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 1 }}>
+            {formData.tags.map((tag, idx) => (
+              <Chip
+                key={idx}
+                label={tag}
+                onDelete={() => handleDeleteTag(tag)}
+                color="primary"
+                variant="outlined"
                 size="small"
-                placeholder="Add tag (e.g., React, Design)"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddTag();
-                  }
-                }}
-                fullWidth
               />
-              <IconButton color="primary" onClick={handleAddTag}>
-                <AddIcon />
-              </IconButton>
-            </Box>
-            <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {formData.tags.map((tag, idx) => (
-                <Chip
-                  key={idx}
-                  label={tag}
-                  onDelete={() => handleDeleteTag(tag)}
-                  color="primary"
-                  variant="outlined"
-                  size="small"
-                />
-              ))}
-            </Box>
+            ))}
           </Box>
-        )}
-
-        {/* Tags Display - للEdit Mode فقط */}
-        {editData && formData.tags.length > 0 && (
-          <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              Tags
-            </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {formData.tags.map((tag, idx) => (
-                <Chip
-                  key={idx}
-                  label={tag}
-                  color="primary"
-                  variant="outlined"
-                  size="small"
-                />
-              ))}
-            </Box>
-          </Box>
-        )}
+        </Box>
       </Stack>
     </GenericModal>
   );

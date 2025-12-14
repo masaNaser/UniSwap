@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import {
   Container,
@@ -296,27 +296,99 @@ export default function SubServiceProjects() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRated, setSelectedRated] = useState("Highest Rated");
+  // Filter states - matching backend parameters
+  const [searchQuery, setSearchQuery] = useState(""); // Local input value
+  const [debouncedSearch, setDebouncedSearch] = useState(""); // Debounced value for API
+  const [selectedSort, setSelectedSort] = useState("Highest Rated");
   const [selectedPrice, setSelectedPrice] = useState("All Prices");
+  const [selectedRating, setSelectedRating] = useState("All Ratings");
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState(null);
+
+  // Debounce search input
+  const debounceTimeout = useRef(null);
+
+  useEffect(() => {
+    // Clear existing timeout
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    // Set new timeout
+    debounceTimeout.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500); // Wait 500ms after user stops typing
+
+    // Cleanup
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchQuery]);
+
+  // Map frontend values to backend API parameters
+  const mapSortToBackend = (sort) => {
+    const mapping = {
+      "Highest Rated": "highestrated",
+      "Price: Low to High": "pricelowtohigh",
+      "Price: High to Low": "pricehightolow",
+    };
+    return mapping[sort] || "highestrated";
+  };
+
+  const mapPriceToBackend = (price) => {
+    const mapping = {
+      "All Prices": null,
+      "Under 50 pts": "under50",
+      "50-100 pts": "50to100",
+      "Over 100 pts": "over100",
+    };
+    return mapping[price];
+  };
+
+  const mapRatingToBackend = (rating) => {
+    const mapping = {
+      "All Ratings": null,
+      "High (4+)": "high",
+      "Average (2.5-4)": "avg",
+      "Low (<2.5)": "low",
+    };
+    return mapping[rating];
+  };
 
   const fetchServiceProject = async (currentPage = 1) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Build query parameters
       const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        pageSize: pageSize.toString(),
+        Page: currentPage.toString(),
+        PageSize: pageSize.toString(),
       });
 
-      // Add search if present
-      if (searchQuery.trim()) {
-        queryParams.append('search', searchQuery.trim());
+      // Add search if present (use debouncedSearch)
+      if (debouncedSearch.trim()) {
+        queryParams.append('Search', debouncedSearch.trim());
+      }
+
+      // Add sort
+      const sortParam = mapSortToBackend(selectedSort);
+      if (sortParam) {
+        queryParams.append('SortBy', sortParam);
+      }
+
+      // Add price range
+      const priceParam = mapPriceToBackend(selectedPrice);
+      if (priceParam) {
+        queryParams.append('PriceRange', priceParam);
+      }
+
+      // Add rating filter
+      const ratingParam = mapRatingToBackend(selectedRating);
+      if (ratingParam) {
+        queryParams.append('RatingFilter', ratingParam);
       }
 
       console.log("📡 Fetching projects with params:", queryParams.toString());
@@ -353,13 +425,13 @@ export default function SubServiceProjects() {
     }
   };
 
-  // Fetch when filters change (reset to page 1)
+  // Fetch when filters change (reset to page 1) - use debouncedSearch instead of searchQuery
   useEffect(() => {
     if (id) {
       setPage(1);
       fetchServiceProject(1);
     }
-  }, [id, searchQuery, selectedRated, selectedPrice]);
+  }, [id, debouncedSearch, selectedSort, selectedPrice, selectedRating]);
 
   // Fetch when page changes (only if page > 1 to avoid duplicate calls)
   useEffect(() => {
@@ -368,50 +440,20 @@ export default function SubServiceProjects() {
     }
   }, [page]);
 
-  // ⭐ Client-side filtering and sorting - ONLY ONE SORT AT A TIME
-  const filteredProjects = React.useMemo(() => {
-    let filtered = [...projects];
-
-    // Search filter
-    if (searchQuery.trim()) {
-      filtered = filtered.filter(project =>
-        project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-    }
-
-    // ⭐ Apply ONLY ONE sort - price takes priority if it's not "All Prices"
-    if (selectedPrice === "Low to High") {
-      filtered.sort((a, b) => (a.points || 0) - (b.points || 0));
-    } else if (selectedPrice === "High to Low") {
-      filtered.sort((a, b) => (b.points || 0) - (a.points || 0));
-    } else {
-      // Only apply rating sort if price is "All Prices"
-      if (selectedRated === "Highest Rated") {
-        filtered.sort((a, b) => (b.finalRating || 0) - (a.finalRating || 0));
-      } else if (selectedRated === "Most Reviewed") {
-        filtered.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
-      }
-    }
-
-    return filtered;
-  }, [projects, searchQuery, selectedRated, selectedPrice]);
-
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+    setSearchQuery(e.target.value); // Update local state immediately
   };
 
-  const handleRatedSelect = (value) => {
-    setSelectedRated(value);
-    setSelectedPrice("All Prices"); // ⭐ Reset price filter when rating is selected
+  const handleSortSelect = (value) => {
+    setSelectedSort(value);
   };
 
   const handlePriceSelect = (value) => {
     setSelectedPrice(value);
-    if (value !== "All Prices") {
-      setSelectedRated("Highest Rated"); // ⭐ Reset rating filter when price is selected
-    }
+  };
+
+  const handleRatingSelect = (value) => {
+    setSelectedRating(value);
   };
 
   const handleEditClick = (project) => {
@@ -431,22 +473,35 @@ export default function SubServiceProjects() {
   const filterItems = [
     {
       type: 'menu',
-      label: selectedRated,
+      label: selectedSort,
       items: [
         { label: "Highest Rated", value: "Highest Rated" },
-        { label: "Most Reviewed", value: "Most Reviewed" }
+        { label: "Price: Low to High", value: "Price: Low to High" },
+        { label: "Price: High to Low", value: "Price: High to Low" }
       ],
-      onSelect: handleRatedSelect
+      onSelect: handleSortSelect
     },
     {
       type: 'menu',
       label: selectedPrice,
       items: [
         { label: "All Prices", value: "All Prices" },
-        { label: "Low to High", value: "Low to High" },
-        { label: "High to Low", value: "High to Low" }
+        { label: "Under 50 pts", value: "Under 50 pts" },
+        { label: "50-100 pts", value: "50-100 pts" },
+        { label: "Over 100 pts", value: "Over 100 pts" }
       ],
       onSelect: handlePriceSelect
+    },
+    {
+      type: 'menu',
+      label: selectedRating,
+      items: [
+        { label: "All Ratings", value: "All Ratings" },
+        { label: "High", value: "High" },
+        { label: "Average", value: "Average" },
+        { label: "Low", value: "Low" }
+      ],
+      onSelect: handleRatingSelect
     }
   ];
 
@@ -528,14 +583,14 @@ export default function SubServiceProjects() {
         items={filterItems}
       />
 
-      {filteredProjects.length === 0 ? (
+      {projects.length === 0 ? (
         <Typography variant="h6" color="text.secondary" sx={{ textAlign: "center", mt: 4 }}>
           No projects found.
         </Typography>
       ) : (
         <>
-          <Grid container spacing={3}>
-            {filteredProjects.map((project) => (
+          <Grid container spacing={5}>
+            {projects.map((project) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={project.id}>
                 <ProjectCard project={project} onEditClick={handleEditClick} />
               </Grid>

@@ -150,24 +150,7 @@ export default function OverdueDecisionDialog({
       onSnackbarClose={handleSnackbarClose}
       maxWidth="sm"
     >
-      {/* Warning Banner */}
-      <Alert
-        icon={<WarningAmberIcon />}
-        severity="error"
-        sx={{
-          mb: 3,
-          bgcolor: '#FEE2E2',
-          border: '1px solid #DC2626',
-          '& .MuiAlert-icon': {
-            color: '#DC2626',
-          },
-        }}
-      >
-        <Typography variant="body2" sx={{ color: '#991B1B' }}>
-          <strong>Project Overdue:</strong> This project has exceeded its deadline. Please choose how you'd like to proceed.
-        </Typography>
-      </Alert>
-
+      
       {/* Decision Options */}
       <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
         Choose Your Action *

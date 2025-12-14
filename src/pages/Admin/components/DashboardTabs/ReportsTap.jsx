@@ -141,79 +141,96 @@ export default function ReportsTab({ onReportReviewed }) {
 
   return (
     <Box p={2}>
-      <Grid container spacing={3}>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 4,
+          justifyContent: { xs: "center", sm: "flex-start" }
+        }}
+      >
         {reports.map((report) => (
-          <Grid item xs={12} sm={6} md={4} key={report.id}>
-            <Card
-              sx={{
-                borderRadius: 3,
-                boxShadow: "0px 2px 8px rgba(0,0,0,0.08)",
-                transition: "0.25s",
-                position: "relative",
-                overflow: "visible",
-                pr: 4,
-                ":hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: "0px 8px 24px rgba(0,0,0,0.12)"
-                },
-                cursor: "pointer",
-              }}
-              onClick={() => fetchReportById(report.id)}
-            >
-              {/* Pending Chip positioned at top */}
-              <Box sx={{ p: 2, pb: 1 }}>
-                <Chip
-                  label={report.status}
-                  color="warning"
-                  size="small"
+          <Card
+            key={report.id}
+            sx={{
+              width: 346,
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              borderRadius: 3,
+              boxShadow: "0px 2px 8px rgba(0,0,0,0.08)",
+              transition: "0.25s",
+              position: "relative",
+              overflow: "hidden",
+              pr: 4,
+              ":hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0px 8px 24px rgba(0,0,0,0.12)"
+              },
+              cursor: "pointer",
+            }}
+            onClick={() => fetchReportById(report.id)}
+          >
+            {/* Pending Chip positioned at top */}
+            <Box sx={{ p: 2, pb: 1 }}>
+              <Chip
+                label={report.status}
+                size="small"
+                sx={{
+                  bgcolor: "#FEF3C7",
+                  color: "#F59E0B",
+                  fontWeight: 600,
+                  fontSize: "12px",
+                  height: "26px",
+                  px: 1.5,
+                  mb: 2,
+                  borderRadius: "6px",
+                }}
+              />
+            </Box>
+
+            <CardHeader
+              sx={{ pt: 0, pb: 1.5 }}
+              avatar={
+                <ReportProblemOutlinedIcon
                   sx={{
-                    fontWeight: 600,
-                    fontSize: "0.75rem",
-                    height: "24px",
+                    fontSize: 32,
+                    color: "#ff9800"
                   }}
                 />
-              </Box>
+              }
+              titleTypographyProps={{ fontWeight: 600, fontSize: "0.95rem" }}
+              title={`Reporter: ${report.reporterName}`}
+              subheaderTypographyProps={{ fontSize: "0.85rem" }}
+              subheader={`Reported user: ${report.reportedUserName}`}
+            />
 
-              <CardHeader
-                sx={{ pt: 0, pb: 1.5 }}
-                avatar={
-                  <ReportProblemOutlinedIcon
-                    sx={{
-                      fontSize: 32,
-                      color: "#ff9800"
-                    }}
-                  />
-                }
-                titleTypographyProps={{ fontWeight: 600, fontSize: "0.95rem" }}
-                title={`Reporter: ${report.reporterName}`}
-                subheaderTypographyProps={{ fontSize: "0.85rem" }}
-                subheader={`Reported user: ${report.reportedUserName}`}
-              />
+            <CardContent sx={{ pt: 2, pb: 2 }}>
+              <Stack spacing={1.3}>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Reason:
+                </Typography>
 
-              {report.img && (
-                <CardMedia
-                  component="img"
-                  height="180"
-                  image={getImageUrl(report.img)}
-                  style={{ objectFit: "cover" }}
-                />
-              )}
-
-              <CardContent sx={{ pt: 2, pb: 2 }}>
-                <Stack spacing={1.3}>
-                  <Typography variant="subtitle2" fontWeight={600}>
-                    Reason:
-                  </Typography>
-
-                  <Typography variant="body2" color="text.secondary">
-                    {report.reason}
-                  </Typography>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    lineHeight: 1.5,
+                    minHeight: "3em", // 2 lines × 1.5 line-height
+                  }}
+                >
+                  {report.reason}
+                </Typography>
+              </Stack>
+            </CardContent>
+          </Card>
         ))}
-      </Grid>
+      </Box>
 
       {selectedReport && (
         <GenericModal

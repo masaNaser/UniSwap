@@ -41,7 +41,8 @@ export default function TaskColumn({
   const shouldShowAddButton = isProvider &&
     isToDoColumn &&
     projectStatus !== 'SubmittedForFinalReview' &&
-    projectStatus !== 'Completed';
+    projectStatus !== 'Completed' &&
+    projectStatus !== 'Cancelled';
 
   const handleAddClick = () => {
     setNewTask({
@@ -85,7 +86,7 @@ export default function TaskColumn({
         onDrop={isProvider ? (e) => onDrop(e, status) : null}
         sx={{
           backgroundColor: '#F9FAFB',
-          backgroundColor:theme.palette.mode === "dark" ? "#1e1e1e" : "#F9FAFB",
+          backgroundColor: theme.palette.mode === "dark" ? "#1e1e1e" : "#F9FAFB",
           borderRadius: '12px',
           border: '2px solid #E5E7EB',
           p: 2,

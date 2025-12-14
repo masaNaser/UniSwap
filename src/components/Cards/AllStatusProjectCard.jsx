@@ -63,6 +63,7 @@ export default function AllStatusProjectCard({
       Completed: { bg: "#DBEAFE", text: "#0284C7" },
       Overdue: { bg: "#FEE2E2", text: "#DC2626" },
       SubmittedForFinalReview: { bg: "#F3E8FF", text: "#A855F7" },
+      Cancelled: { bg: "#F3F4F6", text: "#6B7280" },
     };
     return styles[status] || styles.Active;
   };
