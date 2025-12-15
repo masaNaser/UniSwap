@@ -35,9 +35,6 @@ import { isAdmin } from "../../../utils/authHelpers";
 const ProjectCard = ({ project, onEditClick }) => {
   const currentUserId = localStorage.getItem("userId");
   const isOwner = currentUserId === project.userId;
- const profileImageUrl = project.profilePicture 
-    ? getImageUrl(project.profilePicture) 
-    : null;
   return (
     <Card
       sx={{
@@ -93,7 +90,12 @@ const ProjectCard = ({ project, onEditClick }) => {
           >
             <Avatar
               sx={{ width: 32, height: 32, mr: 1, cursor: "pointer" }}
-              src={getImageUrl(project.profilePicture, project.userName)}
+              // src={getImageUrl(project.profilePicture, project.userName)}
+                src={
+                project.profilePicture
+                  ? `https://uni1swap.runasp.net${project.profilePicture}`
+                  : null
+              }
             >
               {!project.profilePicture &&
                 project.userName?.substring(0, 2).toUpperCase()}
