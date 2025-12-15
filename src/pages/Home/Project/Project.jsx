@@ -17,13 +17,33 @@ import {
   getServiceProviderDashboard,
 } from "../../../services/projectService";
 import { mapProjectsWithStatus } from "../../../utils/projectStatusMapper"; // ✅ Import mapper
+import { useLocation } from 'react-router-dom';
 
 export default function Project() {
+  // Access location to check for state
+    const location = useLocation();
+    // ✅ استقبلي البيانات من الإشعار
+  const notificationData = location.state;
+
   // Initialize from localStorage to persist across page refreshes
-  const [value, setValue] = useState(() => {
+   const [value, setValue] = useState(() => {
+    //  إذا في بيانات من إشعار، استخدميها
+    if (notificationData?.isProvider !== undefined) {
+      return notificationData.isProvider ? 0 : 1;
+    }
+    //  وإلا استخدمي localStorage
     const saved = localStorage.getItem("projectTabIndex");
     return saved ? parseInt(saved) : 0;
   });
+
+   //   state جديد للريكوست المطلوب
+  const [highlightedRequestId, setHighlightedRequestId] = useState(
+    notificationData?.requestId || null
+  );
+//   state جديد لتحديد إذا نعرض الريكوستات من الإشعار
+  const [showRequestsFromNotif, setShowRequestsFromNotif] = useState(
+    notificationData?.showRequests || false
+  );
   const [providerData, setProviderData] = useState(null);
   const [clientData, setClientData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -312,6 +332,8 @@ export default function Project() {
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
             onRefresh={handleRefresh}
+             highlightedRequestId={highlightedRequestId} // ✅ مرّري
+            initialShowRequests={showRequestsFromNotif} // ✅ مرّري
           />
         )}
 
@@ -322,6 +344,8 @@ export default function Project() {
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
             onRefresh={handleRefresh}
+             highlightedRequestId={highlightedRequestId} // ✅ مرّري
+            initialShowRequests={showRequestsFromNotif} // ✅ مرّري
           />
         )}
       </Container>

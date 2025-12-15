@@ -238,31 +238,6 @@ export default function Feed() {
     }
   }, [posts.length, fetchRecentComments]);
 
-  useEffect(() => {
-    const postId = searchParams.get("postId");
-
-    if (postId && posts.length > 0) {
-      setTimeout(() => {
-        const postElement = postRefs.current[postId];
-
-        if (postElement) {
-          postElement.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-
-          setHighlightedPostId(postId);
-
-          setTimeout(() => {
-            setHighlightedPostId(null);
-            setSearchParams({});
-          }, 3000);
-        } else {
-          console.log("Post not found, might be on different page or deleted");
-        }
-      }, 500);
-    }
-  }, [posts, searchParams, setSearchParams]);
 
 const addPost = (newPost) => {
   const formattedPost = {
@@ -678,6 +653,58 @@ const addPost = (newPost) => {
       prev.map((p) => (p.id === postId ? { ...p, shares: p.shares } : p))
     );
   };
+
+  const postIdFromUrl = searchParams.get("postId");
+  const [loadingPostFromNotif, setLoadingPostFromNotif] = useState(false); // ✅ ضيفي هاد
+
+  useEffect(() => {
+    if (!postIdFromUrl || !posts.length || loadingPostFromNotif) return;
+
+    const post = posts.find(p => p.id === postIdFromUrl);
+    
+    if (post) {
+      console.log("✅ Scrolling to post:", postIdFromUrl);
+      setTimeout(() => {
+        const postElement = postRefs.current[postIdFromUrl];
+        if (postElement) {
+          postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          setHighlightedPostId(postIdFromUrl);
+          setTimeout(() => {
+            setHighlightedPostId(null);
+            setSearchParams({});
+          }, 3000);
+        }
+      }, 500);
+    } else {
+      console.log("🔄 Post not found, reloading page 1...");
+      setLoadingPostFromNotif(true);
+      setPage(1);
+      setHasMore(true);
+      
+      fetchPosts(1, false).finally(() => {
+        setTimeout(() => {
+          const postElement = postRefs.current[postIdFromUrl];
+          if (postElement) {
+            postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            setHighlightedPostId(postIdFromUrl);
+            setTimeout(() => {
+              setHighlightedPostId(null);
+              setSearchParams({});
+              setLoadingPostFromNotif(false);
+            }, 3000);
+          } else {
+            setSnackbar({
+              open: true,
+              message: "Post not found.",
+              severity: "info",
+            });
+            setSearchParams({});
+            setLoadingPostFromNotif(false);
+          }
+        }, 1000);
+      });
+    }
+  }, [postIdFromUrl, posts.length, loadingPostFromNotif]);
 
   useEffect(() => {
     fetchPosts(1, false); // ✅ التحميل الأول

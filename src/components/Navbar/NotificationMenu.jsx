@@ -29,9 +29,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import NotificationIcon from "../../assets/images/NotificationIcon.svg";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../utils/imageHelper";
-import {
-  GetOneReports,
-} from "../../services/adminService";
+import { GetOneReports } from "../../services/adminService";
 const NotificationMenu = ({
   notifications,
   unreadNotificationCount,
@@ -127,7 +125,7 @@ const NotificationMenu = ({
     System: <EmojiEventsIcon sx={{ fontSize: 14 }} />,
     messages: <CommentIcon sx={{ fontSize: 14 }} />,
   };
-
+  //  التعامل مع نقرة على عنصر إشعار
   const handleNotifItemClick = async (notification) => {
     if (!notification.isRead) {
       await markAsRead(notification.id);
@@ -147,23 +145,47 @@ const NotificationMenu = ({
         break;
 
       // ✅ Projects
-      case "Project":
+      case "project":
       case "Rating":
       case "Rated":
       case "Completed":
       case "Assigned":
       case "Approved":
       case "Rejected":
-        targetRoute = `/app/project/${notification.refId}`;
-        break;
+      //       if (notification.parentRefId) {
+      //   navigate("/app/project", {
+      //     state: {
+      //       requestId: notification.parentRefId,
+      //       isProvider: notification.isProvider || false,
+      //       showRequests: true,
+      //     }
+      //   });
+      //   handleNotifClose();
+      //   return;
+      // }
+      // إذا مافي، روحي عادي على صفحة التفاصيل
+      targetRoute = `/app/project/${notification.refId}`;
+      break;
 
-      // ✅ RequestProject Tasks
+
+      // ✅ RequestProject Tasks - مع إرسال state
       case "RequestProject":
       case "Task":
       case "Updated":
-        targetRoute = notification.refId
-          ? `/app/TrackTasks/${notification.refId}`
-          : "/app/project";
+        if (notification.parentRefId) {
+          // ✅ بدل navigate فقط، ابعتي state
+          navigate(`/app/TrackTasks/${notification.parentRefId}`, {
+            state: {
+              id: notification.parentRefId,
+              // ✅ بيانات إضافية من الإشعار
+              projectTitle: notification.message || "Project",
+              isProvider: notification.isProvider || false,
+            },
+          });
+          handleNotifClose();
+          return; // ✅ مهم عشان ما يكمل للـ navigate تحت
+        }
+        targetRoute = "/app/project";
         break;
 
       // ✅ Reviews
@@ -174,31 +196,51 @@ const NotificationMenu = ({
         break;
 
       // ✅ Reports (للإدارة أو للمستخدم)
-      // في NotificationMenu.jsx
-
-case "Report":
-  // ✅ تحقق من حالة الـ report قبل التوجيه
-  try {
-    const token = localStorage.getItem("accessToken");
-    const { data } = await GetOneReports(token, notification.refId);
-    
-    // إذا الـ report لسه pending، روح عليه
-    if (data.status === "Pending") {
-      targetRoute = `/admin?tab=reports&reportId=${notification.refId}`;
-    } else {
-      // إذا خلص الـ report، روح على dashboard بدون reportId
-      targetRoute = `/admin?tab=reports`;
-    }
-  } catch (err) {
-    // إذا الـ report محذوف أو في error، روح على dashboard
-    targetRoute = `/admin?tab=reports`;
-  }
-  break;
+      case "Report":
+        // إذا عندك صفحة reports للإدارة
+        targetRoute = `/admin?tab=reports&reportId=${notification.refId}`;
+        break;
 
       // ✅ Collaboration
-      case "Collaboration":
-        targetRoute = "/app/project";
-        break;
+    // ✅ في NotificationMenu.jsx
+case "Collaboration":
+  const collaborationMessage = notification.message?.toLowerCase() || "";
+  
+  // ✅ تحليل صحيح
+  let isProvider;
+  
+  if (collaborationMessage.includes("sent you")) {
+    // "AyaMusamih sent you a collaboration request"
+    // معناها: شخص بعتلك ريكوست → أنتِ Provider
+    isProvider = true; // ✅ أنتِ Provider
+  } else if (collaborationMessage.includes("accepted your")) {
+    // "accepted your collaboration request"
+    // معناها: قبلوا ريكوستك → أنتِ Client
+    isProvider = false; // ✅ أنتِ Client
+  } else if (collaborationMessage.includes("rejected your")) {
+    // "rejected your collaboration request"
+    // معناها: رفضوا ريكوستك → أنتِ Client
+    isProvider = false; // ✅ أنتِ Client
+  } else {
+    // Default: ما بنعرف
+    isProvider = false;
+  }
+  
+  console.log("🚀 Collaboration Navigation:", {
+    requestId: notification.refId,
+    isProvider, // ✅ true عشان أنتِ Provider
+    message: notification.message,
+  });
+  
+  navigate("/app/project", {
+    state: {
+      requestId: notification.refId,
+      isProvider, // ✅ true
+      showRequests: true,
+    }
+  });
+  handleNotifClose();
+  return;
 
       // ✅ Messages
       // case "Message":
