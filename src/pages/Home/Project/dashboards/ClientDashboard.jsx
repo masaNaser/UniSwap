@@ -279,6 +279,7 @@ export default function ClientDashboard({
                     pointsOffered={request.pointsOffered}
                     deadline={formatDate(request.deadline)}
                     category={request.type}
+                    clientAcceptPublished={request.clientAcceptPublished}
                     isProvider={false}
                     onRequestHandled={handleRequestHandled}
                     onEditRequest={handleEditRequest}

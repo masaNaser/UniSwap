@@ -229,7 +229,7 @@ export default function PortfolioTab() {
                     WebkitBoxOrient: "vertical",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    minHeight: "2.8em",
+                    minHeight: "auto",
                   }}
                 >
                   {p.title}

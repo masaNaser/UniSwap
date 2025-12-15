@@ -45,9 +45,10 @@ export default function RequestProjectCard({
   isProvider,
   onRequestHandled,
   onEditRequest,
+  clientAcceptPublished,
 }) {
-   
-    const theme = useTheme(); // 🔥 ضيفي هاد السطر
+
+  const theme = useTheme(); // 🔥 ضيفي هاد السطر
   const { updateCurrentUser } = useCurrentUser(); // ✅ أضيفي هاد السطر
 
 
@@ -123,9 +124,9 @@ export default function RequestProjectCard({
 
         case "reject":
           await rejectCollaborationRequest(token, id);
-           // 🔥 حدّث النقاط بعد الرفض
-        await updateCurrentUser();
-        console.log("✅ Points updated after rejection");
+          // 🔥 حدّث النقاط بعد الرفض
+          await updateCurrentUser();
+          console.log("✅ Points updated after rejection");
           setSnackbar({
             open: true,
             message: "Request rejected ❌",
@@ -136,9 +137,9 @@ export default function RequestProjectCard({
         case "cancel":
           await cancelCollaborationRequest(token, id);
 
-            // 🔥 حدّث النقاط بعد الإلغاء
-        await updateCurrentUser();
-        console.log("✅ Points updated after cancellation");
+          // 🔥 حدّث النقاط بعد الإلغاء
+          await updateCurrentUser();
+          console.log("✅ Points updated after cancellation");
 
           setSnackbar({
             open: true,
@@ -155,16 +156,16 @@ export default function RequestProjectCard({
     } catch (error) {
       console.error(`Error ${confirmDialog.type}ing request:`, error);
 
-        // ✅ معالجة أفضل للـ error
-    const errorMessage = 
-      error.response?.data?.detail || 
-      error.response?.data?.message ||
-      error.response?.data?.title ||
-      `Failed to ${confirmDialog.type} request`;
+      // ✅ معالجة أفضل للـ error
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        error.response?.data?.title ||
+        `Failed to ${confirmDialog.type} request`;
 
       setSnackbar({
         open: true,
-        message:errorMessage,
+        message: errorMessage,
         severity: "error",
       });
     } finally {
@@ -182,6 +183,7 @@ export default function RequestProjectCard({
       category,
       type: category,
       providerName: clientName,
+      clientAcceptPublished,
     };
     console.log("🔵 Sending to edit modal:", requestData);
     onEditRequest?.(requestData);
@@ -372,7 +374,7 @@ export default function RequestProjectCard({
                   whiteSpace: "nowrap",
                 }}
               >
-                 {isProvider ? "Requesting Project" : "Providing Project"}
+                {isProvider ? "Requesting Project" : "Providing Project"}
 
               </Typography>
             </Box>
@@ -428,11 +430,11 @@ export default function RequestProjectCard({
             {deadline && new Date(deadline).getFullYear() > 1970 && (
               <Box display="flex" alignItems="center" gap={0.5}>
                 {/* <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF"}} /> */}
-                <CalendarMonthIcon sx={{ fontSize: 17,color:theme.palette.mode === 'dark' ? '#fff' : '#6B7280' }} />
+                <CalendarMonthIcon sx={{ fontSize: 17, color: theme.palette.mode === 'dark' ? '#fff' : '#6B7280' }} />
                 <Typography
                   variant="caption"
                   // color="#6B7280"
-                 color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
+                  color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
                   fontSize="12px"
                   fontWeight="500"
                 >
@@ -458,17 +460,17 @@ export default function RequestProjectCard({
                 disabled={loading}
                 onClick={() => openConfirmDialog("approve")}
                 sx={{
-                   color: "#3B82F6",
+                  color: "#3B82F6",
+                  borderColor: "#3B82F6",
+                  textTransform: "none",
+                  fontSize: "13px",
+                  height: "36px",
+                  cursor: "pointer",
+                  // bgcolor: "#FFFFFF",
+                  "&:hover": {
+                    bgcolor: "#EFF6FF",
                     borderColor: "#3B82F6",
-                    textTransform: "none",
-                    fontSize: "13px",
-                    height: "36px",
-                    cursor: "pointer",
-                    // bgcolor: "#FFFFFF",
-                    "&:hover": {
-                      bgcolor: "#EFF6FF",
-                      borderColor: "#3B82F6",
-                    },
+                  },
                 }}
               >
                 Accept

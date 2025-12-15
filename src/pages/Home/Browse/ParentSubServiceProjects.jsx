@@ -6,7 +6,6 @@ import {
   Container,
   Typography,
   Box,
-  Grid,
   Breadcrumbs,
   Pagination,
   Card,
@@ -21,11 +20,10 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
-import DescriptionIcon from "@mui/icons-material/Description";
 import FolderIcon from "@mui/icons-material/Folder";
 
 import CustomButton from "../../../components/CustomButton/CustomButton";
-import StudyProjectModal from "../../../components/Modals/StudyProjectModal"; // 🔥 المودال الجديد
+import StudyProjectModal from "../../../components/Modals/StudyProjectModal";
 import { browseProjectsBySubService } from "../../../services/publishProjectServices";
 import FilterSection from "../../../components/Filter/FilterSection";
 import { getImageUrl } from "../../../utils/imageHelper";
@@ -35,15 +33,30 @@ import { isAdmin } from "../../../utils/authHelpers";
 const ProjectCard = ({ project, onEditClick }) => {
   const currentUserId = localStorage.getItem("userId");
   const isOwner = currentUserId === project.userId;
+  const [expandedDescription, setExpandedDescription] = useState(false);
+
+  const toggleDescription = (e) => {
+    e.stopPropagation();
+    setExpandedDescription(!expandedDescription);
+  };
+
+  const isLongDescription = (description) => {
+    return description && description.length > 100;
+  };
+
   return (
     <Card
       sx={{
         borderRadius: "12px",
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-        height: "100%",
         display: "flex",
         flexDirection: "column",
         position: "relative",
+        transition: "transform 0.2s, box-shadow 0.2s",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+        },
       }}
     >
       {isOwner && (
@@ -68,7 +81,7 @@ const ProjectCard = ({ project, onEditClick }) => {
         </IconButton>
       )}
 
-      <Box sx={{ position: "relative" }}>
+      {project.img && (
         <CardMedia
           component="img"
           height="200"
@@ -80,9 +93,17 @@ const ProjectCard = ({ project, onEditClick }) => {
             objectFit: "cover",
           }}
         />
-      </Box>
+      )}
 
-      <CardContent sx={{ flexGrow: 1, p: 2 }}>
+      <CardContent
+        sx={{
+          p: 2,
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: 1,
+        }}
+      >
+        {/* User Info */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Link
             to={`/app/profile/${project.userId}`}
@@ -90,8 +111,7 @@ const ProjectCard = ({ project, onEditClick }) => {
           >
             <Avatar
               sx={{ width: 32, height: 32, mr: 1, cursor: "pointer" }}
-              // src={getImageUrl(project.profilePicture, project.userName)}
-                src={
+              src={
                 project.profilePicture
                   ? `https://uni1swap.runasp.net${project.profilePicture}`
                   : null
@@ -119,70 +139,178 @@ const ProjectCard = ({ project, onEditClick }) => {
           </Typography>
         </Box>
 
+        {/* Title */}
         <Typography
           variant="subtitle1"
           sx={{
             fontWeight: "bold",
-            mb: 1,
-            display: "block",
-            color: "black",
-            textDecoration: "none",
-            "&:hover": {
-              color: "black",
-              textDecoration: "underline",
-              cursor: "pointer",
-            },
+            mb: 0,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            minHeight: "auto",
           }}
         >
           {project.title}
         </Typography>
 
+        {/* Description with Read More and Scroll */}
         {project.description && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              mb: 2,
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {project.description}
-          </Typography>
+          <Box sx={{ mb: 0, minHeight: "70px" }}>
+            {!expandedDescription ? (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  fontSize: "13px",
+                  lineHeight: 1.4,
+                  wordBreak: "break-word",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                }}
+              >
+                {project.description}
+              </Typography>
+            ) : (
+              <Box
+                sx={{
+                  maxHeight: "60px",
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                  pr: 0.5,
+                  "&::-webkit-scrollbar": {
+                    width: "4px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    background: "#F3F4F6",
+                    borderRadius: "4px",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    background: "#D1D5DB",
+                    borderRadius: "4px",
+                    "&:hover": {
+                      background: "#9CA3AF",
+                    },
+                  },
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "13px",
+                    lineHeight: 1.4,
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {project.description}
+                </Typography>
+              </Box>
+            )}
+            {isLongDescription(project.description) && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "#3B82F6",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                  fontSize: "11px",
+                  mt: 0.25,
+                  display: "inline-block",
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
+                }}
+                onClick={toggleDescription}
+              >
+                {expandedDescription ? "Show less" : "Read more"}
+              </Typography>
+            )}
+          </Box>
         )}
-        {project.filePath && typeof project.filePath === "string" && (
-          <Button
-            variant="text"
-            size="small"
-            startIcon={<FolderIcon sx={{ fontSize: 16 }} />}
-            component="a"
-            href={`https://uni1swap.runasp.net/${project.filePath}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{
-              textTransform: "none",
-              fontSize: "0.75rem",
-              px: 1,
-              minWidth: "auto",
-              border: "1px solid #3B82F6",
-              borderRadius: "6px",
-            }}
-          >
-            View File
-          </Button>
-        )}
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2, mt: 2 }}>
-          {project.tags?.slice(0, 3).map((tag, i) => (
+
+        {/* Tags Section */}
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1 }}>
+          {project.tags?.slice(0, 3).map((tag, idx) => (
             <Chip
-              key={i}
+              key={idx}
               label={tag}
               size="small"
-              sx={{ bgcolor: "rgb(0 0 0 / 6%)" }}
+              sx={{
+                bgcolor: "rgb(0 0 0 / 6%)",
+                fontWeight: 500,
+              }}
             />
           ))}
+          {project.tags?.length > 3 && (
+            <>
+              <Chip
+                label="..."
+                size="small"
+                sx={{
+                  bgcolor: "rgb(0 0 0 / 6%)",
+                  cursor: "pointer",
+                }}
+                onClick={(e) => {
+                  const parent = e.currentTarget.parentNode;
+                  const hiddenChips = parent.querySelectorAll(".hidden-chip");
+                  hiddenChips.forEach(
+                    (chip) => (chip.style.display = "inline-flex")
+                  );
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+              {project.tags.slice(3).map((tag, idx) => (
+                <Chip
+                  key={idx + 3}
+                  label={tag}
+                  size="small"
+                  className="hidden-chip"
+                  sx={{
+                    bgcolor: "rgb(0 0 0 / 6%)",
+                    display: "none",
+                    fontWeight: 500,
+                  }}
+                />
+              ))}
+            </>
+          )}
+        </Box>
+
+        {/* Bottom Section - Project File Only */}
+        <Box sx={{ mt: "auto" }}>
+          {project.filePath && typeof project.filePath === "string" && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-start",
+                pt: 1.5,
+              }}
+            >
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<FolderIcon sx={{ fontSize: 16 }} />}
+                component="a"
+                href={`https://uni1swap.runasp.net/${project.filePath}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  textTransform: "none",
+                  fontSize: "0.75rem",
+                  px: 1,
+                  minWidth: "auto",
+                }}
+              >
+                View File
+              </Button>
+            </Box>
+          )}
         </Box>
       </CardContent>
     </Card>
@@ -206,62 +334,62 @@ const ParentSubServiceProjects = () => {
   const pageSize = 6;
   const [totalPages, setTotalPages] = useState(1);
 
-  // 🔥 Modal State
+  // Modal State
   const [openModal, setOpenModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch projects
-  const fetchProjects = async (page = 1) => {
-    try {
-      setLoading(true);
-      const response = await browseProjectsBySubService(
-        token,
-        parentSubServiceId,
-        page,
-        pageSize
-      );
+ const fetchProjects = async (page = 1) => {
+  try {
+    setLoading(true);
+    const response = await browseProjectsBySubService(
+      token,
+      parentSubServiceId,
+      page,
+      pageSize
+    );
 
-      if (Array.isArray(response.data)) {
-        setProjects(response.data);
-        console.log("Response data is an array:", response.data);
-        setTotalPages(1);
-      } else if (response.data.items) {
-        setProjects(response.data.items);
-        setTotalPages(response.data.totalPages || 1);
-      }
-    } catch (err) {
-      console.error("Error fetching projects:", err);
-    } finally {
-      setLoading(false);
+    if (Array.isArray(response.data)) {
+      setProjects(response.data);
+      console.log("Full project data:", response.data[0]); // 🔍 Check this
+      setTotalPages(1);
+    } else if (response.data.items) {
+      setProjects(response.data.items);
+      console.log("Full project data:", response.data.items[0]); // 🔍 Check this
+      setTotalPages(response.data.totalPages || 1);
     }
-  };
-
+  } catch (err) {
+    console.error("Error fetching projects:", err);
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     if (parentSubServiceId) {
       fetchProjects(page);
     }
   }, [parentSubServiceId, page]);
 
-  // 🔥 Open modal for creating
+  // Open modal for creating
   const handleOpenCreateModal = () => {
     setEditData(null);
     setOpenModal(true);
   };
 
-  // 🔥 Open modal for editing
+  // Open modal for editing
   const handleOpenEditModal = (project) => {
     setEditData(project);
     setOpenModal(true);
   };
 
-  // 🔥 Close modal
+  // Close modal
   const handleCloseModal = () => {
     setOpenModal(false);
     setEditData(null);
   };
 
-  // 🔥 Success callback
+  // Success callback
   const handleSuccess = () => {
     fetchProjects(page);
   };
@@ -389,16 +517,26 @@ const ParentSubServiceProjects = () => {
         </Typography>
       ) : (
         <>
-          <Grid container spacing={3}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
+              },
+              gap: 3,
+              mb: 5,
+            }}
+          >
             {filteredProjects.map((project) => (
-              <Grid item xs={12} sm={6} md={4} key={project.id}>
-                <ProjectCard
-                  project={project}
-                  onEditClick={handleOpenEditModal}
-                />
-              </Grid>
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onEditClick={handleOpenEditModal}
+              />
             ))}
-          </Grid>
+          </Box>
 
           {totalPages > 1 && (
             <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
@@ -414,7 +552,7 @@ const ParentSubServiceProjects = () => {
         </>
       )}
 
-      {/* 🔥 Study Project Modal - واحد بس للكريييت والتعديل */}
+      {/* Study Project Modal */}
       <StudyProjectModal
         open={openModal}
         onClose={handleCloseModal}
