@@ -27,7 +27,7 @@ export const NotificationProvider = ({ children }) => {
     if (!token || hasLoadedRef.current) return;
     
     try {
-      console.log("🔄 Loading notifications...");
+      // console.log("🔄 Loading notifications...");
       setLoading(true);
       
       const startTime = Date.now();
@@ -38,9 +38,9 @@ export const NotificationProvider = ({ children }) => {
       ]);
 
       const endTime = Date.now();
-      console.log(`⏱️ API Response Time: ${endTime - startTime}ms`);
+      // console.log(`⏱️ API Response Time: ${endTime - startTime}ms`);
       console.log("📦 Raw API Response:", notifRes.data);
-      console.log("🔢 Unread Count:", countRes.data);
+      // console.log("🔢 Unread Count:", countRes.data);
 
       let flatNotifications = [];
       
@@ -50,8 +50,8 @@ export const NotificationProvider = ({ children }) => {
         );
       }
 
-      console.log("📋 Processed Notifications:", flatNotifications);
-      console.log("✅ Total Notifications:", flatNotifications.length);
+      // console.log("📋 Processed Notifications:", flatNotifications);
+      // console.log("✅ Total Notifications:", flatNotifications.length);
 
       setNotifications(flatNotifications);
       setunreadNotificationCount(countRes.data);
@@ -66,7 +66,7 @@ export const NotificationProvider = ({ children }) => {
       });
     } finally {
       setLoading(false);
-      console.log("✅ Notifications loaded successfully");
+      // console.log("✅ Notifications loaded successfully");
     }
   };
 
@@ -74,7 +74,7 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     const handleStorageChange = () => {
       const newToken = localStorage.getItem("accessToken");
-      console.log("🔄 Token changed:", newToken ? "Token exists" : "No token");
+      // console.log("🔄 Token changed:", newToken ? "Token exists" : "No token");
       setToken(newToken);
       hasLoadedRef.current = false; // ✅ اسمح بتحميل جديد
     };
@@ -106,7 +106,7 @@ export const NotificationProvider = ({ children }) => {
       return;
     }
 
-    console.log("🚀 NotificationProvider Mounted");
+    // console.log("🚀 NotificationProvider Mounted");
     
     // جلب البيانات فوراً
     loadInitialData();

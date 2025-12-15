@@ -31,7 +31,7 @@ import EqualizerIcon from "@mui/icons-material/Equalizer";
 import Brightness2Icon from "@mui/icons-material/Brightness2";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import PersonIcon from "@mui/icons-material/Person";
-import ArticleIcon from "@mui/icons-material/Article";
+import LockResetIcon from '@mui/icons-material/LockReset';
 
 import { useLocation } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
@@ -789,7 +789,7 @@ return (
                   
                   <MenuItem onClick={() => navigate("/changePassword")}>
                     <ListItemIcon>
-                      <PersonOutlineOutlinedIcon fontSize="small" />
+                      <LockResetIcon  fontSize="small" />
                     </ListItemIcon>
                     Change Password
                   </MenuItem>

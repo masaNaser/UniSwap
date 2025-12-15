@@ -34,7 +34,7 @@ export const CreateProject = async (token, data) => {
 };
 
 export const EditProject = async (token, data,projectId) => {
-  return await api.put(`/Profile/project/${projectId}`, data, {
+  return await api.put(`/Profile/projectEdit/${projectId}`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
