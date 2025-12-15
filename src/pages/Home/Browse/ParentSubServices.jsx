@@ -10,6 +10,11 @@ import CustomButton from "../../../components/CustomButton/CustomButton";
 import ServiceCard from "../../../components/Cards/ServiceCard";
 import GenericModal from "../../../components/Modals/GenericModal";
 import { GetByParentSubService } from "../../../services/studySupportService";
+import {
+  CreateSubServices,
+  EditSubServices,
+  DeleteSubServices,
+} from "../../../services/subServiceServices";
 import { isAdmin } from "../../../utils/authHelpers";
 
 const ParentSubServices = () => {
@@ -53,56 +58,62 @@ const ParentSubServices = () => {
     }
   }, [serviceId, subServiceId]);
 
-  // Create Subject (للأدمن) - هون لازم تضيفي API من الباك
-  const handleCreate = async () => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Add API call to create ParentSubService
-      // await CreateParentSubService(token, serviceId, subServiceId, formData);
-      console.log("Create Subject:", formData);
-      setOpenCreateModal(false);
-      setFormData({ name: "" });
-      fetchParentSubServices();
-    } catch (error) {
-      console.error("Error creating subject:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+// Create Subject (ParentSubService)
+const handleCreate = async () => {
+  setIsSubmitting(true);
+  try {
+      console.log("🔍 Creating with:", {
+      serviceId: serviceId,
+      name: formData.name,
+      parentSubServiceId: subServiceId // 🔥 تأكدي إنه موجود
+    });
+    // 🔥 استخدام CreateSubServices مع parentSubServiceId
+    const response = await CreateSubServices(token, serviceId, formData, subServiceId);
+        console.log("✅ Created:", response.data);
 
-  // Update Subject
-  const handleUpdate = async () => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Add API call to edit ParentSubService
-      // await EditParentSubService(token, serviceId, subServiceId, selectedSubject.id, formData);
-      console.log("Update Subject:", formData);
-      setOpenEditModal(false);
-      setFormData({ name: "" });
-      fetchParentSubServices();
-    } catch (error) {
-      console.error("Error updating subject:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    setOpenCreateModal(false);
+    setFormData({ name: "" });
+    fetchParentSubServices();
+  } catch (error) {
+    console.error("Error creating subject:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-  // Delete Subject
-  const handleDelete = async () => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Add API call to delete ParentSubService
-      // await DeleteParentSubService(token, serviceId, subServiceId, selectedSubject.id);
-      console.log("Delete Subject:", selectedSubject.id);
-      setOpenDeleteModal(false);
-      setSelectedSubject(null);
-      fetchParentSubServices();
-    } catch (error) {
-      console.error("Error deleting subject:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+ // Update Subject
+const handleUpdate = async () => {
+  setIsSubmitting(true);
+  try {
+    // 🔥 استخدام EditSubServices
+    await EditSubServices(token, serviceId, selectedSubject.id, formData);
+    
+    setOpenEditModal(false);
+    setFormData({ name: "" });
+    fetchParentSubServices();
+  } catch (error) {
+    console.error("Error updating subject:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+// Delete Subject
+const handleDelete = async () => {
+  setIsSubmitting(true);
+  try {
+    // 🔥 استخدام DeleteSubServices
+    await DeleteSubServices(token, serviceId, selectedSubject.id);
+    
+    setOpenDeleteModal(false);
+    setSelectedSubject(null);
+    fetchParentSubServices();
+  } catch (error) {
+    console.error("Error deleting subject:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   if (!serviceId || !subServiceId) {
     return (

@@ -699,7 +699,7 @@ const addPost = (newPost) => {
           <div className="cards-section">
             <SelectActionCard
               title="Active Services"
-              value="12"
+              // value="12"
               icon={<AccessTimeIcon />}
               iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
             />

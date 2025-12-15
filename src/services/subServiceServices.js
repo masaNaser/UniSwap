@@ -1,6 +1,8 @@
+// src/services/subServiceServices.js
+
 import api from './api';
 
-export const getSubServices = async (token,id) => {
+export const getSubServices = async (token, id) => {
   return await api.get(`/services/${id}/subservices`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -8,7 +10,7 @@ export const getSubServices = async (token,id) => {
   });
 };
 
-export const getOneSubServices = async (token,serviceId,subServiceId) => {
+export const getOneSubServices = async (token, serviceId, subServiceId) => {
   return await api.get(`services/${serviceId}/subservices/${subServiceId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -16,15 +18,26 @@ export const getOneSubServices = async (token,serviceId,subServiceId) => {
   });
 };
 
-
-export const CreateSubServices = async (token, serviceId, data) => {
-  return await api.post(`/services/${serviceId}/subservices`, data, {
+// 🔥 تعديل Create لدعم parentSubServiceId
+export const CreateSubServices = async (token, serviceId, data, parentSubServiceId = null) => {
+  // بناء الـ URL بناءً على وجود parentSubServiceId
+  const url = parentSubServiceId 
+    ? `/services/${serviceId}/subservices?parentSubServiceId=${parentSubServiceId}`
+    : `/services/${serviceId}/subservices`;
+  
+  // تحويل data.name → data.Name (capital N)
+  const payload = { Name: data.name };
+  
+  return await api.post(url, payload, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
 
+// 🔥 تعديل Edit لتحويل name → Name
 export const EditSubServices = async (token, serviceId, subId, data) => {
-  return await api.put(`/services/${serviceId}/subservices/${subId}`, data, {
+  const payload = { Name: data.name };
+  
+  return await api.put(`/services/${serviceId}/subservices/${subId}`, payload, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };

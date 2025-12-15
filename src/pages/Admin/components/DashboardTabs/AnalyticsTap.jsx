@@ -20,6 +20,7 @@ export default function AnalyticsTap() {
   const fetchAnalytics = async () => {
     try {
       const { data } = await Analytics(token);
+      console.log("Analytics Data:", data);
       setAnalytics(data);
     } catch (err) {
       console.error(err);
@@ -49,12 +50,17 @@ export default function AnalyticsTap() {
 
   const COLORS = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2"];
 
+  // Custom label that only shows percentage
+  const renderCustomLabel = ({ percent }) => {
+    return `${(percent * 100).toFixed(0)}%`;
+  };
+
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Dashboard Analytics</h2>
 
       {/* KPI Cards */}
-      <div style={styles.cardsContainer}>
+      {/* <div style={styles.cardsContainer}>
         <div style={styles.card}>
           <h3>New Users This Month</h3>
           <p style={styles.number}>{analytics.newUsersThisMonth}</p>
@@ -69,7 +75,7 @@ export default function AnalyticsTap() {
           <h3>Published Projects</h3>
           <p style={styles.number}>{analytics.publishedProjects}</p>
         </div>
-      </div>
+      </div> */}
 
       {/* Charts */}
       <div style={styles.chartsRow}>
@@ -83,13 +89,11 @@ export default function AnalyticsTap() {
                 data={majorData}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
-                outerRadius={100}
+                labelLine={true}
+                outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) =>
-                  `${name} ${(percent * 100).toFixed(0)}%`
-                }
+                label={renderCustomLabel}
               >
                 {majorData.map((_, index) => (
                   <Cell
@@ -99,7 +103,11 @@ export default function AnalyticsTap() {
                 ))}
               </Pie>
               <Tooltip />
-              <Legend />
+              <Legend
+                verticalAlign="bottom"
+                height={60}
+                wrapperStyle={{ fontSize: '14px' }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>

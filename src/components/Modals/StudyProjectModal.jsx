@@ -13,62 +13,67 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import FolderIcon from "@mui/icons-material/Folder";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
-import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import SchoolIcon from "@mui/icons-material/School";
 import CloseIcon from "@mui/icons-material/Close";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import GenericModal from "../../components/Modals/GenericModal";
-import {CreateProject,EditProject} from "../../services/profileService";
+import EditIcon from "@mui/icons-material/Edit";
+import GenericModal from "./GenericModal";
+import { CreateStudySupportSub } from "../../services/studySupportService";
+import { editPublishProject } from "../../services/publishProjectServices";
+import { getImageUrl } from "../../utils/imageHelper";
 
-export default function UserProjectModal({
+export default function StudyProjectModal({
   open,
   onClose,
   token,
   onSuccess,
   editData = null,
+  parentSubServiceId,
+  subServiceId,
 }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    duration: "",
     tags: [],
-    coverImage: null,
-    projectFile: null,
+    img: null,
+    file: null,
   });
-  const [coverImagePreview, setCoverImagePreview] = useState(null);
-  const [projectFilePreview, setProjectFilePreview] = useState(null);
+  
+  const [imgPreview, setImgPreview] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
   const [tagInput, setTagInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
 
+  // Load data when editing
   useEffect(() => {
     if (editData) {
       setFormData({
         title: editData.title || "",
         description: editData.description || "",
-        duration: editData.duration || "",
         tags: editData.tags || [],
-        coverImage: null,
-        projectFile: null,
+        img: null,
+        file: null,
       });
       
-      if (editData.coverImage) {
-        setCoverImagePreview(`https://uni1swap.runasp.net/${editData.coverImage}`);
+      if (editData.img) {
+        setImgPreview(getImageUrl(editData.img));
       }
       
-      if (editData.projectFile) {
-        setProjectFilePreview(editData.projectFile);
+      if (editData.filePath) {
+        setFilePreview(editData.filePath);
       }
     } else {
+      // Reset for create mode
       setFormData({
         title: "",
         description: "",
-        duration: "",
         tags: [],
-        coverImage: null,
-        projectFile: null,
+        img: null,
+        file: null,
       });
-      setCoverImagePreview(null);
-      setProjectFilePreview(null);
+      setImgPreview(null);
+      setFilePreview(null);
     }
     setTagInput("");
   }, [editData, open]);
@@ -77,41 +82,46 @@ export default function UserProjectModal({
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    if (files && files[0]) {
-      setFormData((prev) => ({ ...prev, [name]: files[0] }));
+  // Handle Image Change
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, img: file }));
       
-      if (name === "coverImage") {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setCoverImagePreview(reader.result);
-        };
-        reader.readAsDataURL(files[0]);
-      }
-      
-      if (name === "projectFile") {
-        setProjectFilePreview(files[0].name);
-      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImgPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  // ✅ FIXED: Now removes image completely
-  const handleRemoveCoverImage = () => {
-    setFormData((prev) => ({ ...prev, coverImage: null }));
-    setCoverImagePreview(null);
-    const input = document.getElementById("coverImage-upload");
+  // Handle File Change
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, file }));
+      setFilePreview(file.name);
+    }
+  };
+
+  // Remove Image
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({ ...prev, img: null }));
+    setImgPreview(null);
+    const input = document.getElementById("study-img-upload");
     if (input) input.value = "";
   };
 
-  // ✅ FIXED: Now removes file completely
-  const handleRemoveProjectFile = () => {
-    setFormData((prev) => ({ ...prev, projectFile: null }));
-    setProjectFilePreview(null);
-    const input = document.getElementById("projectFile-upload");
+  // Remove File
+  const handleRemoveFile = () => {
+    setFormData((prev) => ({ ...prev, file: null }));
+    setFilePreview(null);
+    const input = document.getElementById("study-file-upload");
     if (input) input.value = "";
   };
 
+  // Add Tag
   const handleAddTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
       setFormData((prev) => ({
@@ -122,6 +132,7 @@ export default function UserProjectModal({
     }
   };
 
+  // Delete Tag
   const handleDeleteTag = (tagToDelete) => {
     setFormData((prev) => ({
       ...prev,
@@ -129,19 +140,17 @@ export default function UserProjectModal({
     }));
   };
 
+  // Validation
   const isFormValid = () => {
-    return (
-      formData.title.trim() !== "" &&
-      formData.description.trim() !== "" &&
-      formData.duration.trim() !== ""
-    );
+    return formData.title.trim() !== "" && formData.description.trim() !== "";
   };
 
+  // Submit Handler
   const handleSubmit = async () => {
     if (!isFormValid()) {
       setSnackbar({
         open: true,
-        message: "Title, Description, and Duration are required!",
+        message: "Title and Description are required!",
         severity: "error",
       });
       return;
@@ -153,27 +162,44 @@ export default function UserProjectModal({
       const data = new FormData();
       data.append("Title", formData.title);
       data.append("Description", formData.description);
-      data.append("Duration", formData.duration);
-      formData.tags.forEach((tag) => data.append("Tags", tag));
-      if (formData.coverImage) data.append("CoverImage", formData.coverImage);
-      if (formData.projectFile) data.append("ProjectFile", formData.projectFile);
 
-      console.log("Submitting project with data:", formData);
-      
+      // Add IDs only for create mode
+      if (!editData) {
+        data.append("SubServiceId", parentSubServiceId);
+        data.append("ParentSubServiceId", subServiceId);
+      }
+
+      // Add image if selected
+      if (formData.img) {
+        data.append("Img", formData.img);
+      }
+
+      // Add file if selected
+      if (formData.file) {
+        data.append("File", formData.file);
+      }
+
+      // Add tags
+      formData.tags.forEach((tag) => data.append("Tags", tag));
+
+      console.log("Submitting study project:", formData);
+
       if (editData) {
-        const response = await EditProject(token, data, editData.id);
-        console.log("Edit project response:", response);
+        // Edit mode
+        const response = await editPublishProject(token, editData.id, data);
+        console.log("Edit response:", response);
         setSnackbar({
           open: true,
           message: "Project updated successfully!",
           severity: "success",
         });
       } else {
-        const response = await CreateProject(token, data);
-        console.log("Create project response:", response);
+        // Create mode
+        const response = await CreateStudySupportSub(token, data);
+        console.log("Create response:", response);
         setSnackbar({
           open: true,
-          message: "Project created successfully!",
+          message: "Project published successfully!",
           severity: "success",
         });
       }
@@ -182,32 +208,28 @@ export default function UserProjectModal({
       onClose();
     } catch (err) {
       console.error(err);
-      
+
       let errorMessage = "Failed to submit project. Try again!";
-      
+
       if (err.response?.data) {
         const errorData = err.response.data;
-        
-        if (errorData.errors && typeof errorData.errors === 'object') {
+
+        if (errorData.errors && typeof errorData.errors === "object") {
           const errorMessages = Object.values(errorData.errors)
             .flat()
-            .join(', ');
+            .join(", ");
           errorMessage = errorMessages || errorMessage;
-        } 
-        else if (typeof errorData === 'string') {
+        } else if (typeof errorData === "string") {
           errorMessage = errorData;
-        }
-        else if (errorData.message) {
+        } else if (errorData.message) {
           errorMessage = errorData.message;
-        }
-        else if (errorData.title) {
+        } else if (errorData.title) {
           errorMessage = errorData.title;
         }
-      } 
-      else if (err.message) {
+      } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -220,7 +242,7 @@ export default function UserProjectModal({
 
   const getFileName = (filePath) => {
     if (!filePath) return "";
-    if (typeof filePath === 'string') {
+    if (typeof filePath === "string") {
       return filePath.split("/").pop();
     }
     return filePath;
@@ -230,9 +252,9 @@ export default function UserProjectModal({
     <GenericModal
       open={open}
       onClose={onClose}
-      title={editData ? "Edit Project" : "Create New Project"}
-      icon={<WorkOutlineIcon color="primary" />}
-      primaryButtonText={editData ? "Update" : "Create"}
+      title={editData ? "Edit Study Project" : "Publish Study Project"}
+      icon={editData ? <EditIcon color="primary" /> : <SchoolIcon color="primary" />}
+      primaryButtonText={editData ? "Save Changes" : "Publish"}
       onPrimaryAction={handleSubmit}
       isPrimaryDisabled={!isFormValid()}
       isSubmitting={isSubmitting}
@@ -240,55 +262,50 @@ export default function UserProjectModal({
       onSnackbarClose={() => setSnackbar(null)}
     >
       <Stack spacing={2.5}>
+        {/* Title */}
         <TextField
-          label="Title"
+          label="Project Title"
           name="title"
           fullWidth
           required
           value={formData.title}
           onChange={handleChange}
           helperText="Required field"
+          disabled={isSubmitting}
         />
+
+        {/* Description */}
         <TextField
           label="Description"
           name="description"
           multiline
-          rows={3}
+          rows={4}
           fullWidth
           required
           value={formData.description}
           onChange={handleChange}
           helperText="Required field"
-        />
-        <TextField
-          label="Duration"
-          name="duration"
-          fullWidth
-          required
-          value={formData.duration}
-          onChange={handleChange}
-          placeholder="e.g., 3 months, 2 weeks"
-          helperText="Required field"
+          disabled={isSubmitting}
         />
 
-        {/* Cover Image Section */}
+        {/* Project Image Section */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Cover Image
+            Project Image {!editData && "*"}
           </Typography>
 
-          {coverImagePreview ? (
+          {imgPreview ? (
             <Card sx={{ position: "relative", maxWidth: 400 }}>
               <CardMedia
                 component="img"
                 height="200"
-                image={coverImagePreview}
-                alt="Cover preview"
+                image={imgPreview}
+                alt="Project preview"
                 sx={{ objectFit: "cover" }}
               />
               <IconButton
                 size="small"
-                onClick={handleRemoveCoverImage}
+                onClick={handleRemoveImage}
                 sx={{
                   position: "absolute",
                   top: 8,
@@ -302,34 +319,42 @@ export default function UserProjectModal({
               </IconButton>
             </Card>
           ) : (
-            <label htmlFor="coverImage-upload">
+            <label htmlFor="study-img-upload">
               <input
                 accept="image/*"
-                id="coverImage-upload"
-                name="coverImage"
+                id="study-img-upload"
+                name="img"
                 type="file"
                 hidden
-                onChange={handleFileChange}
+                onChange={handleImageChange}
+                disabled={isSubmitting}
               />
               <Button
                 component="span"
                 variant="outlined"
                 startIcon={<PhotoCameraIcon />}
                 sx={{ textTransform: "none" }}
+                disabled={isSubmitting}
               >
-                Upload Cover Image
+                Upload Project Image
               </Button>
             </label>
+          )}
+          
+          {editData && !formData.img && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+              Leave empty to keep current image
+            </Typography>
           )}
         </Box>
 
         {/* Project File Section */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Project File
+            Project File {!editData && "*"}
           </Typography>
 
-          {projectFilePreview ? (
+          {filePreview ? (
             <Box
               sx={{
                 display: "flex",
@@ -343,55 +368,67 @@ export default function UserProjectModal({
               }}
             >
               <InsertDriveFileIcon color="primary" />
-              {formData.projectFile ? (
+              {formData.file ? (
                 <Typography variant="body2" sx={{ flex: 1 }}>
-                  {formData.projectFile.name}
+                  {formData.file.name}
                 </Typography>
               ) : (
                 <Button
                   component="a"
-                  href={`https://uni1swap.runasp.net/${projectFilePreview}`}
+                  href={`https://uni1swap.runasp.net/${filePreview}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{ flex: 1, textTransform: "none", justifyContent: "flex-start" }}
+                  sx={{
+                    flex: 1,
+                    textTransform: "none",
+                    justifyContent: "flex-start",
+                  }}
                 >
-                  {getFileName(projectFilePreview)}
+                  {getFileName(filePreview)}
                 </Button>
               )}
-              <IconButton size="small" onClick={handleRemoveProjectFile}>
+              <IconButton size="small" onClick={handleRemoveFile}>
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Box>
           ) : (
-            <label htmlFor="projectFile-upload">
+            <label htmlFor="study-file-upload">
               <input
-                id="projectFile-upload"
-                name="projectFile"
+                id="study-file-upload"
+                name="file"
                 type="file"
                 hidden
                 onChange={handleFileChange}
+                disabled={isSubmitting}
               />
               <Button
                 component="span"
                 variant="outlined"
                 startIcon={<FolderIcon />}
                 sx={{ textTransform: "none" }}
+                disabled={isSubmitting}
               >
                 Upload Project File
               </Button>
             </label>
           )}
+          
+          {editData && !formData.file && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+              Leave empty to keep current file
+            </Typography>
+          )}
         </Box>
 
-        {/* ✅ FIXED: Tags Section - Now works for both Create and Edit */}
+        {/* Tags Section */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Tags
+            Tags (Optional)
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <TextField
               size="small"
-              placeholder="Add tag (e.g., React, Design)"
+              placeholder="Add tag..."
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => {
@@ -401,9 +438,14 @@ export default function UserProjectModal({
                 }
               }}
               fullWidth
+              disabled={isSubmitting}
             />
-            <IconButton color="primary" onClick={handleAddTag}>
-              <AddIcon />
+            <IconButton 
+              color="primary" 
+              onClick={handleAddTag}
+              disabled={isSubmitting}
+            >
+              {/* <AddIcon /> */}
             </IconButton>
           </Box>
           <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 1 }}>

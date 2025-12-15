@@ -44,7 +44,7 @@ const SubServices = () => {
   const fetchSubServices = async () => {
     try {
       const response = await getSubServices(token, id);
-      console.log(response.data);
+      console.log("fetchSubServices",response.data);
       setSubServices(response.data);
     } catch (err) {
       console.error(err);
@@ -62,7 +62,7 @@ const SubServices = () => {
       const response = await CreateSubServices(token, id, formData);
       console.log("creatSub", response);
       setOpenCreateModal(false);
-      fetchSubServices();
+      fetchSubServices();z
     } finally {
       setIsSubmitting(false);
     }

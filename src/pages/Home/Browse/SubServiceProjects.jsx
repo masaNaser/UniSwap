@@ -24,9 +24,10 @@ import FilterSection from "../../../components/Filter/FilterSection";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import PublishProjectModal from "../../../components/Modals/PublishProjectModal";
 
-const ProjectCard = ({ project, onEditClick }) => {
+const ProjectCard = ({ project, onEditClick,adminMode,onDeleteClick }) => {
   const currentUserId = localStorage.getItem("userId");
   const isOwner = currentUserId === project.userId;
+  const canEdit = isOwner || adminMode; // 🔥 صاحب المشروع أو الأدمن
 
   return (
     <Card
@@ -39,26 +40,62 @@ const ProjectCard = ({ project, onEditClick }) => {
         position: "relative",
       }}
     >
-      {isOwner && (
-        <IconButton
-          onClick={() => onEditClick(project)}
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            bgcolor: "rgba(255, 255, 255, 0.9)",
-            zIndex: 10,
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-            "&:hover": {
-              bgcolor: "white",
-              transform: "scale(1.1)",
-            },
-            transition: "all 0.2s",
-          }}
-          size="small"
-        >
-          <EditIcon sx={{ fontSize: 18, color: "#3B82F6" }} />
-        </IconButton>
+        {/*  Menu للتعديل والحذف */}
+      {canEdit && (
+        <>
+          <IconButton
+            onClick={handleMenuOpen}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              bgcolor: "rgba(255, 255, 255, 0.9)",
+              zIndex: 10,
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+              "&:hover": {
+                bgcolor: "white",
+                transform: "scale(1.1)",
+              },
+              transition: "all 0.2s",
+            }}
+            size="small"
+          >
+            <MoreVertIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleMenuClose}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+          >
+            <MenuItem
+              onClick={() => {
+                handleMenuClose();
+                onEditClick(project);
+              }}
+            >
+              <EditIcon fontSize="small" sx={{ mr: 1, color: "#3B82F6" }} />
+              Edit
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                handleMenuClose();
+                onDeleteClick(project);
+              }}
+            >
+              <DeleteIcon fontSize="small" sx={{ mr: 1, color: "#EF4444" }} />
+              Delete
+            </MenuItem>
+          </Menu>
+        </>
       )}
 
       <Box sx={{ position: "relative" }}>

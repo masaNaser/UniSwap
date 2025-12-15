@@ -203,7 +203,7 @@ const AdminDashboard = () => {
               scrollButtons="auto"
               sx={{ minHeight: 48, px: 10 }}
             >
-              {["Users", "Reports", "Analytics"].map((label, index) => (
+              {["Analytics", "Users", "Reports"].map((label, index) => (
                 <Tab
                   key={label}
                   label={label}
@@ -225,9 +225,9 @@ const AdminDashboard = () => {
           </Paper>
 
           {/* TAB CONTENT */}
-          {currentTab === 0 && <UsersTap />}
-          {currentTab === 1 && <ReportsTap onReportReviewed={fetchStats} />}
-          {currentTab === 2 && <AnalyticsTap />}
+          {currentTab === 0 && <AnalyticsTap/>}
+          {currentTab === 1 && <UsersTap/>}
+          {currentTab === 2 && <ReportsTap onReportReviewed={fetchStats}  />}
         </Box>
       </Container>
     </Box>

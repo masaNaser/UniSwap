@@ -172,7 +172,7 @@ const NotificationMenu = ({
       // ✅ Reports (للإدارة أو للمستخدم)
       case "Report":
         // إذا عندك صفحة reports للإدارة
-        targetRoute = "/admin";
+  targetRoute = `/admin?tab=reports&reportId=${notification.refId}`;
         break;
 
       // ✅ Collaboration
@@ -181,9 +181,9 @@ const NotificationMenu = ({
         break;
 
       // ✅ Messages
-      case "Message":
-        targetRoute = "/app/chat";
-        break;
+      // case "Message":
+      //   targetRoute = "/app/chat";
+      //   break;
 
       // ✅ Users / Follow
       case "User":
