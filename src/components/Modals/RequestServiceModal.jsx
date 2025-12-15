@@ -234,14 +234,7 @@ const RequestServiceModal = ({
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
-
-  const headerInfo = providerName && (
-    <Typography variant="body1" sx={{ fontWeight: 500, color: "#1e40af" }}>
-      {isEditMode
-        ? `Editing request sent to ${providerName}`
-        : `You're sending a request to ${providerName}`}
-    </Typography>
-  );
+  
 
 return (
   <>
@@ -256,7 +249,6 @@ return (
           <DescriptionIcon sx={{ color: "#3b82f6" }} />
         )
       }
-      headerInfo={headerInfo}
       primaryButtonText={isEditMode ? "Update Request" : "Send Request"}
       primaryButtonIcon={isEditMode ? <EditIcon /> : <SendIcon />}
       onPrimaryAction={handlePreSubmit}

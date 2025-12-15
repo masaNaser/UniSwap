@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Container,
-  Grid,
-  Typography,
-  Box,
-  Breadcrumbs,
-  TextField,
-} from "@mui/material";
+import { Container, Grid, Typography, Box, Breadcrumbs, TextField } from "@mui/material";
 import { Link, useParams, useLocation } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -22,6 +15,7 @@ import {
 import GenericModal from "../../../components/Modals/GenericModal";
 import { isAdmin } from "../../../utils/authHelpers";
 import AddIcon from "@mui/icons-material/Add";
+
 const SubServices = () => {
   const token = localStorage.getItem("accessToken");
   const { id } = useParams(); // id الخدمة من الرابط
@@ -40,6 +34,7 @@ const SubServices = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({ name: "" });
+  
   // جلب الداتا
   const fetchSubServices = async () => {
     try {
@@ -74,7 +69,6 @@ const SubServices = () => {
       await EditSubServices(token, id, selectedSub.id, formData);
       setOpenEditModal(false);
       fetchSubServices();
-      fetch();
     } finally {
       setIsSubmitting(false);
     }
@@ -155,31 +149,28 @@ const SubServices = () => {
             >
               Create
             </CustomButton>
-          )}{" "}
+          )}
         </Box>
       </Box>
 
       {/* عرض الـ subservices */}
       <Grid container spacing={3} sx={{ mb: "55px" }}>
         {subservices.map((sub) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={sub.id}>
+          <Grid item xs={12} sm={6} md={4} key={sub.id}>
             <ServiceCard
               title={sub.name}
-              // count="3 projects"
+              cardWidth="368px"
+              cardHeight="160px"
               url={
                 serviceName === "Study Support"
-                  ? `/app/browse/${id}/${
-                      sub.id
-                    }/subjects?serviceName=${encodeURIComponent(
+                  ? `/app/browse/${id}/${sub.id}/subjects?serviceName=${encodeURIComponent(
                       serviceName
                     )}&subServiceName=${encodeURIComponent(sub.name)}`
                   : `/app/services/${sub.id}/projects?name=${encodeURIComponent(
                       sub.name
-                    )}&parentId=${id}&parentName=${encodeURIComponent(
-                      serviceName
-                    )}`
+                    )}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`
               }
-              adminMode={adminMode} // <--- أضفها هون
+              adminMode={adminMode}
               onEdit={() => {
                 setSelectedSub(sub);
                 setFormData({ name: sub.name });

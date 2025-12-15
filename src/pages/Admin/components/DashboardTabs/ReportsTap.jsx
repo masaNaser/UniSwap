@@ -17,25 +17,23 @@ import {
   Avatar,
   Stack,
   CircularProgress,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Divider,
 } from "@mui/material";
 
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import PersonIcon from "@mui/icons-material/Person";
+import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { getImageUrl } from "../../../../utils/imageHelper";
+import GenericModal from "../../../../components/Modals/GenericModal";
 
-// ✅ استقبلنا onReportReviewed كـ prop
 export default function ReportsTab({ onReportReviewed }) {
   const token = localStorage.getItem("accessToken");
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   const fetchPendingReports = async () => {
     try {
@@ -59,21 +57,65 @@ export default function ReportsTab({ onReportReviewed }) {
     }
   };
 
-  const handleReview = async (accept) => {
+  const handleAccept = async () => {
+    setIsSubmitting(true);
     try {
-      const response = await ReviewReport(token, selectedReport.id, accept);
-      console.log("handleReview", response);
-      setModalOpen(false);
-      
-      // ✅ حدّث قائمة التقارير المحلية
-      fetchPendingReports();
-      
-      // ✅ حدّث الـ stats في الـ Dashboard (العداد رح يقل تلقائي)
-      if (onReportReviewed) {
-        onReportReviewed();
-      }
+      const response = await ReviewReport(token, selectedReport.id, true);
+      console.log("handleAccept", response);
+
+      setSnackbar({
+        open: true,
+        message: "Report accepted successfully",
+        severity: "success",
+      });
+
+      setTimeout(() => {
+        setModalOpen(false);
+        fetchPendingReports();
+        if (onReportReviewed) {
+          onReportReviewed();
+        }
+      }, 1000);
     } catch (err) {
       console.error(err);
+      setSnackbar({
+        open: true,
+        message: "Failed to accept report",
+        severity: "error",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReject = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await ReviewReport(token, selectedReport.id, false);
+      console.log("handleReject", response);
+
+      setSnackbar({
+        open: true,
+        message: "Report rejected successfully",
+        severity: "success",
+      });
+
+      setTimeout(() => {
+        setModalOpen(false);
+        fetchPendingReports();
+        if (onReportReviewed) {
+          onReportReviewed();
+        }
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      setSnackbar({
+        open: true,
+        message: "Failed to reject report",
+        severity: "error",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -99,156 +141,155 @@ export default function ReportsTab({ onReportReviewed }) {
 
   return (
     <Box p={2}>
-      <Grid container spacing={3}>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 4,
+          justifyContent: { xs: "center", sm: "flex-start" }
+        }}
+      >
         {reports.map((report) => (
-          <Grid item xs={12} sm={6} md={4} key={report.id}>
-            <Card
-              sx={{
-                borderRadius: 4,
-                boxShadow: "0px 4px 14px rgba(0,0,0,0.1)",
-                transition: "0.25s",
-                position: "relative",
-                paddingTop: "35px",
-                ":hover": { transform: "scale(1.02)", boxShadow: 4 },
-                cursor: "pointer",
-              }}
-              onClick={() => fetchReportById(report.id)}
-            >
-              {/* Pending label on top-left */}
+          <Card
+            key={report.id}
+            sx={{
+              width: 346,
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              borderRadius: 3,
+              boxShadow: "0px 2px 8px rgba(0,0,0,0.08)",
+              transition: "0.25s",
+              position: "relative",
+              overflow: "hidden",
+              pr: 4,
+              ":hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0px 8px 24px rgba(0,0,0,0.12)"
+              },
+              cursor: "pointer",
+            }}
+            onClick={() => fetchReportById(report.id)}
+          >
+            {/* Pending Chip positioned at top */}
+            <Box sx={{ p: 2, pb: 1 }}>
               <Chip
                 label={report.status}
-                color="warning"
                 size="small"
                 sx={{
-                  position: "absolute",
-                  top: 10,
-                  left: 10,
+                  bgcolor: "#FEF3C7",
+                  color: "#F59E0B",
                   fontWeight: 600,
-                  zIndex: 2,
+                  fontSize: "12px",
+                  height: "26px",
+                  px: 1.5,
+                  mb: 2,
+                  borderRadius: "6px",
                 }}
               />
+            </Box>
 
-              <CardHeader
-                avatar={
-                  <Avatar sx={{ bgcolor: "#ff9800" }}>
-                    <WarningAmberIcon />
-                  </Avatar>
-                }
-                titleTypographyProps={{ fontWeight: 600 }}
-                title={`Reporter: ${report.reporterName}`}
-                subheader={`Reported user: ${report.reportedUserName}`}
-              />
-
-              {report.img && (
-                <CardMedia
-                  component="img"
-                  height="180"
-                  image={getImageUrl(report.img)}
-                  style={{ objectFit: "cover" }}
+            <CardHeader
+              sx={{ pt: 0, pb: 1.5 }}
+              avatar={
+                <ReportProblemOutlinedIcon
+                  sx={{
+                    fontSize: 32,
+                    color: "#ff9800"
+                  }}
                 />
-              )}
+              }
+              titleTypographyProps={{ fontWeight: 600, fontSize: "0.95rem" }}
+              title={`Reporter: ${report.reporterName}`}
+              subheaderTypographyProps={{ fontSize: "0.85rem" }}
+              subheader={`Reported user: ${report.reportedUserName}`}
+            />
 
-              <CardContent>
-                <Stack spacing={1.3}>
-                  <Typography variant="subtitle2" fontWeight={600}>
-                    Reason:
-                  </Typography>
+            <CardContent sx={{ pt: 2, pb: 2 }}>
+              <Stack spacing={1.3}>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Reason:
+                </Typography>
 
-                  <Typography variant="body2" color="text.secondary">
-                    {report.reason}
-                  </Typography>
-
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    lineHeight: 1.5,
+                    minHeight: "3em", // 2 lines × 1.5 line-height
+                  }}
+                >
+                  {report.reason}
+                </Typography>
+              </Stack>
+            </CardContent>
+          </Card>
         ))}
-      </Grid>
+      </Box>
 
       {selectedReport && (
-        <Dialog
+        <GenericModal
           open={modalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={() => !isSubmitting && setModalOpen(false)}
+          title="Report Details"
+          icon={
+            <ReportProblemOutlinedIcon
+              sx={{
+                fontSize: 28,
+                color: "#ff9800"
+              }}
+            />
+          }
+          primaryButtonText="Accept"
+          primaryButtonIcon={<CheckCircleOutlineIcon />}
+          onPrimaryAction={handleAccept}
+          secondaryButtonText="Reject"
+          secondaryButtonSx={{
+            color: "#EF4444",
+            border: "1px solid #EF4444",
+            "&:hover": {
+              backgroundColor: "#FEE2E2",
+              borderColor: "#DC2626",
+            }
+          }}
+          isSubmitting={isSubmitting}
+          snackbar={snackbar}
+          onSnackbarClose={() => setSnackbar({ ...snackbar, open: false })}
           maxWidth="sm"
-          fullWidth
         >
-          <DialogTitle sx={{ fontWeight: 700, textAlign: "center" }}>
-            Report Details
-          </DialogTitle>
-
-          <DialogContent dividers>
-            {selectedReport.img && (
-              <img
-                src={getImageUrl(selectedReport.img)}
-                alt="report"
-                style={{
-                  width: "100%",
-                  borderRadius: 10,
-                  marginBottom: 16,
-                }}
-              />
-            )}
-
-            <Stack spacing={1.5}>
-              <Typography fontWeight={600}>Reason:</Typography>
-              <Typography color="text.secondary">
-                {selectedReport.reason}
-              </Typography>
-
-              <Divider />
-
-              <Typography variant="body2">
-                Status:{" "}
-                <strong style={{ color: "#ff9800" }}>
-                  {selectedReport.status}
-                </strong>
-              </Typography>
-            </Stack>
-          </DialogContent>
-
-          <DialogActions sx={{ p: 2 }}>
-            <Button
-              onClick={() => handleReview(false)}
-              sx={{
-                borderRadius: 8,
-                textTransform: "none",
-                fontSize: 16,
-                padding: "10px 20px",
-                border: "2px solid #ff4d4d",
-                color: "#ff4d4d",
-                background: "transparent",
-                transition: "0.2s",
-                "&:hover": {
-                  background: "#ff4d4d",
-                  color: "white",
-                },
+          {selectedReport.img && (
+            <img
+              src={getImageUrl(selectedReport.img)}
+              alt="report"
+              style={{
+                width: "100%",
+                borderRadius: 10,
+                marginBottom: 16,
               }}
-            >
-              Reject
-            </Button>
+            />
+          )}
 
-            <Button
-              onClick={() => handleReview(true)}
-              sx={{
-                borderRadius: 8,
-                textTransform: "none",
-                fontSize: 16,
-                padding: "10px 20px",
-                border: "2px solid #00C8FF",
-                color: "#00C8FF",
-                background: "transparent",
-                transition: "0.25s",
-                "&:hover": {
-                  background: "linear-gradient(to right,#00C8FF,#8B5FF6)",
-                  color: "white",
-                  borderColor: "transparent",
-                },
-              }}
-            >
-              Accept
-            </Button>
-          </DialogActions>
-        </Dialog>
+          <Stack spacing={1.5}>
+            <Typography fontWeight={600}>Reason:</Typography>
+            <Typography color="text.secondary">
+              {selectedReport.reason}
+            </Typography>
+
+            <Divider />
+
+            <Typography variant="body2">
+              Status:{" "}
+              <strong style={{ color: "#ff9800" }}>
+                {selectedReport.status}
+              </strong>
+            </Typography>
+          </Stack>
+        </GenericModal>
       )}
     </Box>
   );

@@ -28,6 +28,7 @@ const GenericModal = ({
   isPrimaryDisabled = false,
   isSubmitting = false,
   secondaryButtonText = "Cancel",
+  secondaryButtonSx, // ← إضافة prop جديد للـ secondary button styling
   snackbar,
   onSnackbarClose,
   maxWidth = "sm",
@@ -88,6 +89,7 @@ const GenericModal = ({
               background: "white",
               color: "#3b82f6",
               border: "1px solid #3b82f6",
+              ...secondaryButtonSx, // ← تطبيق الـ custom styling
             }}
           >
             {secondaryButtonText}
@@ -105,10 +107,9 @@ const GenericModal = ({
               onClick={onPrimaryAction}
               disabled={isSubmitting}
               sx={{ minWidth: "150px" }}
-              startIcon={!isSubmitting ? primaryButtonIcon : null} // ← نشيل الأيقونة أثناء الـ submit
-
+              startIcon={!isSubmitting ? primaryButtonIcon : null}
             >
-              {isSubmitting ?  <CircularProgress size={24} color="inherit" /> : primaryButtonText}
+              {isSubmitting ? <CircularProgress size={24} color="inherit" /> : primaryButtonText}
             </CustomButton>
           )}
         </DialogActions>

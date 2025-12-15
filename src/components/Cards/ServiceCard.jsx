@@ -19,9 +19,11 @@ const ServiceCard = ({
   adminMode,
   onEdit,
   onDelete,
-  image
+  image,
+  cardWidth = "368px", 
+  cardHeight = "270px",
 }) => {
-  const theme = useTheme(); 
+  const theme = useTheme();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [showFullTitle, setShowFullTitle] = useState(false);
@@ -37,8 +39,9 @@ const ServiceCard = ({
   return (
     <Card
       sx={{
-        height: "100%",
-        maxWidth: "368px",
+        height: cardHeight,
+        width: cardWidth,
+        maxWidth: "100%",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -81,13 +84,15 @@ const ServiceCard = ({
           flexGrow: 1,
           display: "flex",
           flexDirection: "column",
+          p: 2, // Remove default padding since Card already has padding
+          height: "100%",
         }}
       >
         <Box
           sx={{
             display: "flex",
             gap: 1,
-            mb: 1,
+            mb: 2,
             flexDirection: verticalHeader ? "column" : "row",
             alignItems: verticalHeader ? "flex-start" : "center",
           }}
@@ -112,16 +117,16 @@ const ServiceCard = ({
               }}
             />
           ) : (
-            <Box sx={{ color: "primary.main" }}>{icon}</Box>
+            <Box sx={{ color: "primary.main", flexShrink: 0 }}>{icon}</Box>
           )}
 
           {image && (
-            <Box sx={{ color: "primary.main", display: 'none' }}>{icon}</Box>
+            <Box sx={{ color: "primary.main", display: 'none', flexShrink: 0 }}>{icon}</Box>
           )}
 
           <Typography
             variant="h6"
-            onClick={() => setShowFullTitle(!showFullTitle)} //  يبدل بين مختصر وكامل
+            onClick={() => setShowFullTitle(!showFullTitle)}
             sx={{
               fontWeight: "bold",
               fontSize: "1rem",
@@ -129,15 +134,11 @@ const ServiceCard = ({
               overflowWrap: "break-word",
               cursor: "pointer",
               transition: "color 0.2s",
-
-              //  لو showFullTitle = false، اعرض سطرين بس
-              ...(!showFullTitle && {
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical"
-              })
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "-webkit-box",
+              WebkitLineClamp: 2, // Always limit to 2 lines
+              WebkitBoxOrient: "vertical",
             }}
           >
             {title}
@@ -149,8 +150,12 @@ const ServiceCard = ({
           color="text.secondary"
           sx={{
             flexGrow: 1,
-            my: 1,
-            minHeight: "60px",
+            mb: 2,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 4, // Show max 4 lines
+            WebkitBoxOrient: "vertical",
           }}
         >
           {description}
@@ -167,7 +172,6 @@ const ServiceCard = ({
           {count && (
             <Box
               sx={{
-                //  backgroundColor: "#F1F5F9",
                 backgroundColor: theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9',
                 borderRadius: "12px",
                 py: 0.5,

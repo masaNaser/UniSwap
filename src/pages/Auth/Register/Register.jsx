@@ -415,7 +415,7 @@ export default function Register() {
                 fullWidth
                 margin="normal"
                 label="Email"
-                placeholder="johndoe@gmail.com"
+                placeholder="john.doe@gmail.com"
                 variant="outlined"
                 required
                 InputProps={{

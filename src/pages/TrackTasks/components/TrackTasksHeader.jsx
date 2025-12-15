@@ -159,10 +159,10 @@ export default function TrackTasksHeader({
 
   const handlePublishSuccess = (publishedData) => {
     console.log("✅ Project published:", publishedData);
-    
+
     if (onProjectClosed) {
-    onProjectClosed(true);
-  }
+      onProjectClosed(true);
+    }
   };
 
   //const minSelectableDate = (() => {
@@ -763,6 +763,7 @@ export default function TrackTasksHeader({
                 if (cardData.projectStatus === "Completed") return "#DBEAFE";
                 if (cardData.projectStatus === "SubmittedForFinalReview")
                   return "#F3E8FF";
+                if (cardData.projectStatus === "Cancelled") return "#F3F4F6";
                 return "#EFF6FF";
               })(),
               color: (() => {
@@ -771,6 +772,7 @@ export default function TrackTasksHeader({
                 if (cardData.projectStatus === "Completed") return "#0284C7";
                 if (cardData.projectStatus === "SubmittedForFinalReview")
                   return "#A855F7";
+                if (cardData.projectStatus === "Cancelled") return "#6B7280";
                 return "#0284C7";
               })(),
             }}

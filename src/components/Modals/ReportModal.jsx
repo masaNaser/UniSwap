@@ -74,11 +74,6 @@ const ReportModal = ({ open, onClose, userId, userName }) => {
       onClose={onClose}
       title="Report User"
       icon={<FlagIcon sx={{ color: "#EF4444" }} />}
-      headerInfo={
-        <span style={{ fontWeight: 500, color: "#DC2626" }}>
-          You are reporting {userName}
-        </span>
-      }
       primaryButtonText="Submit Report"
       primaryButtonIcon={<FlagIcon />}
       onPrimaryAction={handleSubmit}
