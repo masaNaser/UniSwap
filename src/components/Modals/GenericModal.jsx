@@ -28,7 +28,9 @@ const GenericModal = ({
   isPrimaryDisabled = false,
   isSubmitting = false,
   secondaryButtonText = "Cancel",
-  secondaryButtonSx, // ← إضافة prop جديد للـ secondary button styling
+  secondaryButtonIcon,  // ✅ أضيفي
+  onSecondaryAction,    // ✅ أضيفي
+  secondaryButtonSx,
   snackbar,
   onSnackbarClose,
   maxWidth = "sm",
@@ -82,14 +84,15 @@ const GenericModal = ({
         <DialogActions sx={{ px: 3, pb: 3, gap: 2 }}>
           <CustomButton
             variant="outlined"
-            onClick={onClose}
+            onClick={onSecondaryAction || onClose}  // ✅ استخدمي onSecondaryAction لو موجود
             disabled={isSubmitting}
+            startIcon={secondaryButtonIcon}  // ✅ أضيفي الأيقونة
             sx={{
               minWidth: "100px",
               background: "white",
               color: "#3b82f6",
               border: "1px solid #3b82f6",
-              ...secondaryButtonSx, // ← تطبيق الـ custom styling
+              ...secondaryButtonSx,
             }}
           >
             {secondaryButtonText}

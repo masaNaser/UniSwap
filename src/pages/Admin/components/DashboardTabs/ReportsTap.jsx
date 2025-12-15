@@ -26,7 +26,7 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { getImageUrl } from "../../../../utils/imageHelper";
 import GenericModal from "../../../../components/Modals/GenericModal";
 
-export default function ReportsTab({ onReportReviewed }) {
+export default function ReportsTab({ onReportReviewed,highlightedReportId  }) {
   const token = localStorage.getItem("accessToken");
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +35,16 @@ export default function ReportsTab({ onReportReviewed }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
+ const [hasOpenedHighlightedReport, setHasOpenedHighlightedReport] = useState(false);
+
+useEffect(() => {
+  if (highlightedReportId && reports.length > 0 && !hasOpenedHighlightedReport) {
+    fetchReportById(highlightedReportId);
+    setHasOpenedHighlightedReport(true); // ✅ علّم إنك فتحت الـ modal
+  }
+}, [highlightedReportId, reports, hasOpenedHighlightedReport]);
+
+  // جلب التقارير المعلقة
   const fetchPendingReports = async () => {
     try {
       const { data } = await GetPendingReports(token);
@@ -47,6 +57,7 @@ export default function ReportsTab({ onReportReviewed }) {
     }
   };
 
+// جلب تقرير واحد بالتفصيل
   const fetchReportById = async (id) => {
     try {
       const { data } = await GetOneReports(token, id);
@@ -56,7 +67,7 @@ export default function ReportsTab({ onReportReviewed }) {
       console.error(err);
     }
   };
-
+// قبول التقرير
   const handleAccept = async () => {
     setIsSubmitting(true);
     try {
@@ -87,7 +98,7 @@ export default function ReportsTab({ onReportReviewed }) {
       setIsSubmitting(false);
     }
   };
-
+// رفض التقرير
   const handleReject = async () => {
     setIsSubmitting(true);
     try {
@@ -119,22 +130,24 @@ export default function ReportsTab({ onReportReviewed }) {
     }
   };
 
+// جلب التقارير المعلقة عند التحميل
   useEffect(() => {
     fetchPendingReports();
   }, []);
 
+// عرض حالة التحميل أو عدم وجود تقارير
   if (loading)
     return (
       <Box display="flex" justifyContent="center" alignItems="center" mt={8}>
         <CircularProgress size={45} />
       </Box>
     );
-
+// لا توجد تقارير معلقة
   if (reports.length === 0)
     return (
       <Box textAlign="center" mt={5}>
         <Typography variant="h6" color="text.secondary">
-          no pending Reports
+          No pending Reports
         </Typography>
       </Box>
     );
@@ -167,7 +180,13 @@ export default function ReportsTab({ onReportReviewed }) {
                 transform: "translateY(-4px)",
                 boxShadow: "0px 8px 24px rgba(0,0,0,0.12)"
               },
+                // 🔥 highlight للـ report المحدد
+                // border: highlightedReportId === report.id 
+                //   ? "3px solid #00C8FF" 
+                //   : "none",
+                // ":hover": { transform: "scale(1.02)", boxShadow: 4 },
               cursor: "pointer",
+              
             }}
             onClick={() => fetchReportById(report.id)}
           >
@@ -248,7 +267,8 @@ export default function ReportsTab({ onReportReviewed }) {
           primaryButtonText="Accept"
           primaryButtonIcon={<CheckCircleOutlineIcon />}
           onPrimaryAction={handleAccept}
-          secondaryButtonText="Reject"
+            onSecondaryAction={handleReject}
+    secondaryButtonText="Reject"
           secondaryButtonSx={{
             color: "#EF4444",
             border: "1px solid #EF4444",

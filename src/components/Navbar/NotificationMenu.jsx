@@ -20,7 +20,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import UpdateIcon from "@mui/icons-material/Update";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import CancelIcon from "@mui/icons-material/Cancel";
-import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import ReportIcon from "@mui/icons-material/Report";
@@ -29,7 +29,9 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import NotificationIcon from "../../assets/images/NotificationIcon.svg";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../utils/imageHelper";
-
+import {
+  GetOneReports,
+} from "../../services/adminService";
 const NotificationMenu = ({
   notifications,
   unreadNotificationCount,
@@ -51,15 +53,17 @@ const NotificationMenu = ({
   // 🔥 تحويل الوقت لـ timestamp للترتيب
   const parseTimeAgo = (timeAgo) => {
     if (!timeAgo) return Date.now();
-    
+
     const now = Date.now();
-    const match = timeAgo.match(/(\d+)\s*(second|minute|hour|day|week|month|year)s?\s*ago/i);
-    
+    const match = timeAgo.match(
+      /(\d+)\s*(second|minute|hour|day|week|month|year)s?\s*ago/i
+    );
+
     if (!match) return now;
-    
+
     const value = parseInt(match[1]);
     const unit = match[2].toLowerCase();
-    
+
     const multipliers = {
       second: 1000,
       minute: 60 * 1000,
@@ -69,8 +73,8 @@ const NotificationMenu = ({
       month: 30 * 24 * 60 * 60 * 1000,
       year: 365 * 24 * 60 * 60 * 1000,
     };
-    
-    return now - (value * (multipliers[unit] || 0));
+
+    return now - value * (multipliers[unit] || 0);
   };
 
   // 🔥 ترتيب الإشعارات حسب الوقت (الأحدث أولاً)
@@ -138,7 +142,7 @@ const NotificationMenu = ({
       case "Comment":
       case "Commented":
       case "Shared":
-      // case "Mentioned":
+        // case "Mentioned":
         targetRoute = `/app/feed?postId=${notification.refId}`;
         break;
 
@@ -170,14 +174,30 @@ const NotificationMenu = ({
         break;
 
       // ✅ Reports (للإدارة أو للمستخدم)
-      case "Report":
-        // إذا عندك صفحة reports للإدارة
-  targetRoute = `/admin?tab=reports&reportId=${notification.refId}`;
-        break;
+      // في NotificationMenu.jsx
+
+case "Report":
+  // ✅ تحقق من حالة الـ report قبل التوجيه
+  try {
+    const token = localStorage.getItem("accessToken");
+    const { data } = await GetOneReports(token, notification.refId);
+    
+    // إذا الـ report لسه pending، روح عليه
+    if (data.status === "Pending") {
+      targetRoute = `/admin?tab=reports&reportId=${notification.refId}`;
+    } else {
+      // إذا خلص الـ report، روح على dashboard بدون reportId
+      targetRoute = `/admin?tab=reports`;
+    }
+  } catch (err) {
+    // إذا الـ report محذوف أو في error، روح على dashboard
+    targetRoute = `/admin?tab=reports`;
+  }
+  break;
 
       // ✅ Collaboration
       case "Collaboration":
-        targetRoute ="/app/project";
+        targetRoute = "/app/project";
         break;
 
       // ✅ Messages
@@ -215,61 +235,103 @@ const NotificationMenu = ({
       Commented: <CommentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
       Shared: <ShareIcon sx={{ ...iconStyle, color: "#10B981" }} />,
       Mentioned: <CampaignIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
-      
+
       // Users
       Followed: <PersonAddIcon sx={{ ...iconStyle, color: "#8B5CF6" }} />,
-      
+
       // Reviews & Ratings
       Rated: <StarIcon sx={{ ...iconStyle, color: "#FBBF24" }} />,
-      
+
       // Projects
       Completed: <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
       Assigned: <AssignmentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
-      
+
       // Requests
-      "Request Accepted": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
-      "Request Rejected": <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
-      
+      "Request Accepted": (
+        <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />
+      ),
+      "Request Rejected": (
+        <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />
+      ),
+
       // Tasks
       Updated: <UpdateIcon sx={{ ...iconStyle, color: "#6366F1" }} />,
       Approved: <ThumbUpIcon sx={{ ...iconStyle, color: "#10B981" }} />,
       Rejected: <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
-      Deleted: <DeleteOutlineOutlinedIcon sx={{ ...iconStyle, color: "#9CA3AF" }} />,
-      "Task Created": <AssignmentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
-      "Task Completed": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
-      "Task Submitted": <AssignmentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
-      "Task Accepted": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
+      Deleted: (
+        <DeleteOutlineOutlinedIcon sx={{ ...iconStyle, color: "#9CA3AF" }} />
+      ),
+      "Task Created": (
+        <AssignmentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />
+      ),
+      "Task Completed": (
+        <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />
+      ),
+      "Task Submitted": (
+        <AssignmentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />
+      ),
+      "Task Accepted": (
+        <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />
+      ),
       "Task Rejected": <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
-      "Task Auto-Accepted": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
-      
+      "Task Auto-Accepted": (
+        <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />
+      ),
+
       // Course
       "New Course Task": <SchoolIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
-      "Course Task Submitted": <SchoolIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
-      "Course Task Accepted": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
-      "Course Task Rejected": <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
-      "Course Completed": <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />,
-      
+      "Course Task Submitted": (
+        <SchoolIcon sx={{ ...iconStyle, color: "#F59E0B" }} />
+      ),
+      "Course Task Accepted": (
+        <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />
+      ),
+      "Course Task Rejected": (
+        <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />
+      ),
+      "Course Completed": (
+        <CheckCircleIcon sx={{ ...iconStyle, color: "#10B981" }} />
+      ),
+
       // Reports
       "New Report": <ReportIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
       "Report Accepted": <ReportIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
-      
+
       // Project Deadlines
       "Project Overdue": <UpdateIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
-      "Project Deadline Soon": <UpdateIcon sx={{ ...iconStyle, color: "#F59E0B" }} />,
-      "Project Overdue – Action Required": <UpdateIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
-      "Project Cancelled Due to Deadline": <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />,
-      "Project Deadline Extended": <UpdateIcon sx={{ ...iconStyle, color: "#10B981" }} />,
-      
+      "Project Deadline Soon": (
+        <UpdateIcon sx={{ ...iconStyle, color: "#F59E0B" }} />
+      ),
+      "Project Overdue – Action Required": (
+        <UpdateIcon sx={{ ...iconStyle, color: "#EF4444" }} />
+      ),
+      "Project Cancelled Due to Deadline": (
+        <CancelIcon sx={{ ...iconStyle, color: "#EF4444" }} />
+      ),
+      "Project Deadline Extended": (
+        <UpdateIcon sx={{ ...iconStyle, color: "#10B981" }} />
+      ),
+
       // System
-      "Monthly Bonus Points": <EmojiEventsIcon sx={{ ...iconStyle, color: "#10B981" }} />,
-      "Project Completion Points": <EmojiEventsIcon sx={{ ...iconStyle, color: "#10B981" }} />,
-      
+      "Monthly Bonus Points": (
+        <EmojiEventsIcon sx={{ ...iconStyle, color: "#10B981" }} />
+      ),
+      "Project Completion Points": (
+        <EmojiEventsIcon sx={{ ...iconStyle, color: "#10B981" }} />
+      ),
+
       // Default
-      Notification: <NotificationsNoneIcon sx={{ ...iconStyle, color: "#6366F1" }} />,
+      Notification: (
+        <NotificationsNoneIcon sx={{ ...iconStyle, color: "#6366F1" }} />
+      ),
       "New Message": <CommentIcon sx={{ ...iconStyle, color: "#3B82F6" }} />,
     };
 
-    return icons[titleOrVerb] || <NotificationsNoneIcon sx={{ ...iconStyle, color: "#6B7280" }} />;
+    return (
+      icons[titleOrVerb] || (
+        <NotificationsNoneIcon sx={{ ...iconStyle, color: "#6B7280" }} />
+      )
+    );
   };
 
   return (
@@ -455,31 +517,39 @@ const NotificationMenu = ({
 
         {/* 🔥 Sorted Notifications */}
         {sortedNotifications.length > 0 && (
-          <Box sx={{ maxHeight: 400, overflowY: "auto", bgcolor: "white", p: 2 }}>
+          <Box
+            sx={{ maxHeight: 400, overflowY: "auto", bgcolor: "white", p: 2 }}
+          >
             {sortedNotifications.map((notif, index) => {
               const groupName = notif.group || "Other";
               const groupLabel = groupLabels[groupName] || groupName;
               const colors = groupColors[groupName] || groupColors.Other;
 
-              const prevGroupName = index > 0 ? (sortedNotifications[index - 1].group || "Other") : null;
+              const prevGroupName =
+                index > 0
+                  ? sortedNotifications[index - 1].group || "Other"
+                  : null;
               const showGroupBadge = groupName !== prevGroupName;
 
               return (
                 <Box key={notif.id}>
                   {showGroupBadge && (
-                    <Box 
-                      sx={{ 
-                        mb: 1.5, 
+                    <Box
+                      sx={{
+                        mb: 1.5,
                         mt: index > 0 ? 2.5 : 0,
                         display: "flex",
                         alignItems: "center",
                         gap: 1,
                       }}
                     >
-                      {React.cloneElement(groupIcons[groupName] || <CommentIcon />, {
-                        sx: { fontSize: 20, color: colors.text }
-                      })}
-                      
+                      {React.cloneElement(
+                        groupIcons[groupName] || <CommentIcon />,
+                        {
+                          sx: { fontSize: 20, color: colors.text },
+                        }
+                      )}
+
                       <Typography
                         sx={{
                           fontSize: "0.9375rem",
@@ -489,7 +559,7 @@ const NotificationMenu = ({
                       >
                         {groupLabel}
                       </Typography>
-                      
+
                       <Box
                         sx={{
                           flex: 1,

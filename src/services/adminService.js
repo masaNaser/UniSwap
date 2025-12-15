@@ -16,6 +16,16 @@ export const GetUsers = async (token) => {
   });
 };
 
+export const CreateReport = async (token,data) => {
+  return await api.post('/reports', data,
+    {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+
 export const GetOneReports = async (token, reportId) => {
   return await api.get(`/AdminDashboard/${reportId}/getReport`, {
     headers: {
@@ -23,6 +33,7 @@ export const GetOneReports = async (token, reportId) => {
     },
   });
 };
+
 export const GetPendingReports = async (token) => {
   return await api.get(`/AdminDashboard/pendingReport`, {
     headers: {

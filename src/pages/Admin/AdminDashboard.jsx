@@ -33,7 +33,7 @@ import UsersTap from "./components/DashboardTabs/UsersTap";
 import ReportsTap from "./components/DashboardTabs/ReportsTap";
 import AnalyticsTap from "./components/DashboardTabs/AnalyticsTap";
 import { logout } from "../../services/authService";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomButton from "../../components/CustomButton/CustomButton";
 
 const AdminDashboard = () => {
@@ -41,10 +41,24 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userName = localStorage.getItem("userName");
-  const [currentTab, setCurrentTab] = useState(0);
+  // 🔥 استخدم searchParams لقراءة الـ URL
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const reportIdParam = searchParams.get('reportId');
+    const navigate = useNavigate();
 
-  const navigate = useNavigate();
+  // 🔥 حدد التاب بناءً على الـ URL
+  const getInitialTab = () => {
+    if (tabParam === 'reports') return 2;
+    if (tabParam === 'analytics') return 0;
+    return 1; // default: Users tab
+  };
+    const [currentTab, setCurrentTab] = useState(getInitialTab);
 
+  // 🔥 تحديث التاب إذا تغير الـ URL
+  useEffect(() => {
+    setCurrentTab(getInitialTab());
+  }, [tabParam]);
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -70,9 +84,7 @@ const AdminDashboard = () => {
     setCurrentTab(newValue);
   };
 
-  // -----------------------
-  // Responsive (⋮) Menu Logic
-  // -----------------------
+  // Responsive 
   const isMobile = useMediaQuery("(max-width:618px)");
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -227,7 +239,7 @@ const AdminDashboard = () => {
           {/* TAB CONTENT */}
           {currentTab === 0 && <AnalyticsTap/>}
           {currentTab === 1 && <UsersTap/>}
-          {currentTab === 2 && <ReportsTap onReportReviewed={fetchStats}  />}
+          {currentTab === 2 && <ReportsTap onReportReviewed={fetchStats}  highlightedReportId={reportIdParam} />}
         </Box>
       </Container>
     </Box>

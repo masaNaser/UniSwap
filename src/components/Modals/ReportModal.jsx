@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { TextField, MenuItem, Stack, Button, Box } from "@mui/material";
 import FlagIcon from "@mui/icons-material/Flag";
 import GenericModal from "./GenericModal";
-import { CreateReport } from "../../services/report";
+import { CreateReport } from "../../services/adminService";
 
 const ReportModal = ({ open, onClose, userId, userName }) => {
   const token = localStorage.getItem("accessToken");
@@ -77,6 +77,8 @@ const ReportModal = ({ open, onClose, userId, userName }) => {
       primaryButtonText="Submit Report"
       primaryButtonIcon={<FlagIcon />}
       onPrimaryAction={handleSubmit}
+      onSecondaryAction={onClose}
+      secondaryButtonText="Cancel"
       isPrimaryDisabled={!isFormValid}
       isSubmitting={isSubmitting}
       snackbar={snackbar}
