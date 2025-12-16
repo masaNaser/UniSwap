@@ -487,6 +487,9 @@ export default function PrimarySearchAppBar() {
     }
     return currentPath === path;
   };
+useEffect(() => {
+    console.log("🔍 Navbar re-rendered with points:", currentUser?.totalPoints);
+  }, [currentUser?.totalPoints]); // ✅ هاد مهم - يعيد render لما النقاط تتغير
 
 return (
   <>
@@ -675,7 +678,8 @@ return (
                     <path d="m16.71 13.88.7.71-2.82 2.82"></path>
                   </svg>
                 </Box>
-                <Typography sx={{ fontWeight: "bold", color: "#3B82F6", fontSize: { xs: "16px", sm: "20px" } }}>
+                <Typography   key={currentUser?.totalPoints} // 🔥 أضيفي هاد
+ sx={{ fontWeight: "bold", color: "#3B82F6", fontSize: { xs: "16px", sm: "20px" } }}>
                   {currentUser?.totalPoints || 0} <Typography component="span">pts</Typography>
                 </Typography>
               </Box>
@@ -932,7 +936,8 @@ return (
                     <path d="m16.71 13.88.7.71-2.82 2.82"></path>
                   </svg>
                 </Box>
-                <Typography sx={{ fontWeight: "bold", color: "#3B82F6", fontSize: "20px" }}>
+                <Typography   key={currentUser?.totalPoints} // 🔥 أضيفي هاد
+ sx={{ fontWeight: "bold", color: "#3B82F6", fontSize: "20px" }}>
                   {currentUser?.totalPoints || 0} <Typography component="span">pts</Typography>
                 </Typography>
               </Box>

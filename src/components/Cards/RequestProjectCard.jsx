@@ -47,10 +47,8 @@ export default function RequestProjectCard({
   onEditRequest,
   clientAcceptPublished,
 }) {
-
   const theme = useTheme(); // 🔥 ضيفي هاد السطر
-  const { updateCurrentUser } = useCurrentUser(); // ✅ أضيفي هاد السطر
-
+  const { updateCurrentUser, startTemporaryPolling } = useCurrentUser(); // ✅ أضيفي هاد السطر
 
   const [loading, setLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -71,8 +69,8 @@ export default function RequestProjectCard({
   const displayedDescription = showFullDescription
     ? description
     : isLongDescription
-      ? description.substring(0, 100) + "..."
-      : description;
+    ? description.substring(0, 100) + "..."
+    : description;
 
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -115,48 +113,43 @@ export default function RequestProjectCard({
       switch (confirmDialog.type) {
         case "approve":
           await approveCollaborationRequest(token, id);
-          setSnackbar({
-            open: true,
-            message: "Request approved successfully! ✅",
-            severity: "success",
-          });
           break;
 
         case "reject":
           await rejectCollaborationRequest(token, id);
-          // 🔥 حدّث النقاط بعد الرفض
-          await updateCurrentUser();
-          console.log("✅ Points updated after rejection");
-          setSnackbar({
-            open: true,
-            message: "Request rejected ❌",
-            severity: "info",
-          });
           break;
 
         case "cancel":
           await cancelCollaborationRequest(token, id);
-
-          // 🔥 حدّث النقاط بعد الإلغاء
-          await updateCurrentUser();
-          console.log("✅ Points updated after cancellation");
-
-          setSnackbar({
-            open: true,
-            message: "Request cancelled successfully ",
-            severity: "info",
-          });
           break;
 
         default:
           break;
       }
 
-      onRequestHandled?.();
+      // 🔥 فعّل الـ polling لمدة 10 ثواني
+      startTemporaryPolling(2000);
+
+      // Show success message
+      const messages = {
+        approve: "Request approved successfully! ✅",
+        reject: "Request rejected ❌",
+        cancel: "Request cancelled successfully",
+      };
+
+      setSnackbar({
+        open: true,
+        message: messages[confirmDialog.type],
+        severity: confirmDialog.type === "approve" ? "success" : "info",
+      });
+
+      // ✅ refresh الـ list
+      if (onRequestHandled) {
+        onRequestHandled();
+      }
     } catch (error) {
       console.error(`Error ${confirmDialog.type}ing request:`, error);
 
-      // ✅ معالجة أفضل للـ error
       const errorMessage =
         error.response?.data?.detail ||
         error.response?.data?.message ||
@@ -206,8 +199,7 @@ export default function RequestProjectCard({
             boxShadow: "0 8px 16px rgba(0,0,0,0.12)",
           },
           bgcolor: "#FFFFFF",
-          bgcolor: theme.palette.mode === 'dark' ? '#474646ff ' : '#FFFFFF',
-
+          bgcolor: theme.palette.mode === "dark" ? "#474646ff " : "#FFFFFF",
         }}
       >
         <CardContent
@@ -262,7 +254,7 @@ export default function RequestProjectCard({
               <Typography
                 variant="body2"
                 // color="#6B7280"
-                color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
+                color={theme.palette.mode === "dark" ? "#fff" : "#6B7280"}
                 fontSize="13px"
                 lineHeight={1.5}
                 sx={{
@@ -365,7 +357,7 @@ export default function RequestProjectCard({
               <Typography
                 variant="caption"
                 // color="#6B7280"
-                color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
+                color={theme.palette.mode === "dark" ? "#fff" : "#6B7280"}
                 fontSize="12px"
                 fontWeight="400"
                 sx={{
@@ -375,7 +367,6 @@ export default function RequestProjectCard({
                 }}
               >
                 {isProvider ? "Requesting Project" : "Providing Project"}
-
               </Typography>
             </Box>
           </Box>
@@ -430,11 +421,16 @@ export default function RequestProjectCard({
             {deadline && new Date(deadline).getFullYear() > 1970 && (
               <Box display="flex" alignItems="center" gap={0.5}>
                 {/* <CalendarMonthIcon sx={{ fontSize: 17, color: "#9CA3AF"}} /> */}
-                <CalendarMonthIcon sx={{ fontSize: 17, color: theme.palette.mode === 'dark' ? '#fff' : '#6B7280' }} />
+                <CalendarMonthIcon
+                  sx={{
+                    fontSize: 17,
+                    color: theme.palette.mode === "dark" ? "#fff" : "#6B7280",
+                  }}
+                />
                 <Typography
                   variant="caption"
                   // color="#6B7280"
-                  color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}
+                  color={theme.palette.mode === "dark" ? "#fff" : "#6B7280"}
                   fontSize="12px"
                   fontWeight="500"
                 >
@@ -642,8 +638,8 @@ export default function RequestProjectCard({
               snackbar.severity === "success"
                 ? "#3b82f6"
                 : snackbar.severity === "info"
-                  ? "#3b82f6"
-                  : "#EF4444",
+                ? "#3b82f6"
+                : "#EF4444",
             color: "white",
             "& .MuiAlert-icon": {
               color: "white",

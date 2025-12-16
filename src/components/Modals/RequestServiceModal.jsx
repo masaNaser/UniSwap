@@ -33,7 +33,7 @@ const RequestServiceModal = ({
   isEditMode = false,
   editData = null,
 }) => {
-  const { updateCurrentUser } = useCurrentUser();
+const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
 
   const [serviceTitle, setServiceTitle] = useState(projectTitle || "");
   const [serviceDescription, setServiceDescription] = useState("");
@@ -253,6 +253,7 @@ const RequestServiceModal = ({
 
   // ✅ Get minimum date/time values
   const minDateTime = getMinDateTime();
+
   return (
     <>
       <GenericModal
@@ -299,11 +300,9 @@ const RequestServiceModal = ({
             required
           />
 
-<<<<<<< HEAD
+{/* <<<<<<< HEAD
           {/* Points Budget - بدون Request Type */}
-=======
           {/* Points Budget */}
->>>>>>> c6d76cc2374ffcbda14d796f5a1c0b7b6fdf3527
           <TextField
             fullWidth
             label="Points Budget"
@@ -374,33 +373,14 @@ const RequestServiceModal = ({
           <TextField
             fullWidth
             label="Deadline"
-<<<<<<< HEAD
-            type="date"
-=======
+
             type="datetime-local"
->>>>>>> c6d76cc2374ffcbda14d796f5a1c0b7b6fdf3527
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
             disabled={isSubmitting}
             required
             inputProps={{
-<<<<<<< HEAD
-              min: new Date(new Date().setDate(new Date().getDate() + 1))
-                .toISOString()
-                .split("T")[0],
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <CalendarTodayIcon
-                    sx={{ color: "text.secondary", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
-            }}
-            InputLabelProps={{
-              shrink: true, // ✅ عشان الـ label ما يتداخل مع التاريخ
-=======
+
               min: getMinDateTime(),
             }}
             InputLabelProps={{
@@ -413,7 +393,6 @@ const RequestServiceModal = ({
                   borderColor: '#3B82F6',
                 },
               },
->>>>>>> c6d76cc2374ffcbda14d796f5a1c0b7b6fdf3527
             }}
           />
 

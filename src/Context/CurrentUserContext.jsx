@@ -1,46 +1,4 @@
-
-// // بستخدمه في الـ Navbar (وأي مكان بدك فيه بيانات اليوزر المسجل)
-// // بيعرض بيانات اليوزر المسجل دخول دائمًا
-// // ما بتتغير لما تدخل ع بروفايلات ثانية
-
-
-// // ✅ CurrentUserContext.js - ملف جديد اعمله
-// import { createContext, useContext, useState, useEffect } from "react";
-// import { GetFullProfile } from "../services/profileService";
-
-// export const CurrentUserContext = createContext(null);
-
-// export const CurrentUserProvider = ({ children }) => {
-//   const [currentUser, setCurrentUser] = useState(null);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchCurrentUser = async () => {
-//       const token = localStorage.getItem("accessToken");
-//       if (token) {
-//         try {
-//           const res = await GetFullProfile(token);
-//           setCurrentUser(res.data);
-//         } catch (error) {
-//           console.error("Error loading current user:", error);
-//         }
-//       }
-//       setLoading(false);
-//     };
-
-//     fetchCurrentUser();
-//   }, []);
-
-//   return (
-//     <CurrentUserContext.Provider value={{ currentUser, setCurrentUser, loading }}>
-//       {children}
-//     </CurrentUserContext.Provider>
-//   );
-// };
-
-// export const useCurrentUser = () => useContext(CurrentUserContext);
-
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { GetFullProfile } from "../services/profileService";
 
 export const CurrentUserContext = createContext(null);
@@ -48,25 +6,30 @@ export const CurrentUserContext = createContext(null);
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [enablePolling, setEnablePolling] = useState(false); // 🔥 جديد
+  const pollingIntervalRef = useRef(null);
 
-  // ✅ هاي الدالة الجديدة - بتحدّث بيانات اليوزر
+  // ✅ الدالة المحسّنة لتحديث بيانات المستخدم
  const updateCurrentUser = useCallback(async () => {
   const token = localStorage.getItem("accessToken");
   if (!token) {
-    console.log("⚠️ No token found");
+    console.log("⚠️ No token found, skipping update");
     return null;
   }
 
   try {
-    console.log("🔄 Fetching updated user data...");
+    console.log("🔄 Updating current user data...");
     const res = await GetFullProfile(token);
-    console.log("📦 Received data:", res.data);
     
-    // ✅ حدّث الـ state بطريقة تضمن re-render
-    setCurrentUser(prev => {
-      console.log("🔄 Old points:", prev?.totalPoints);
-      console.log("✅ New points:", res.data.totalPoints);
-      return { ...res.data }; // ← هون المهم
+    console.log("📊 New points from API:", res.data.totalPoints);
+    
+    // 🔥 الحل الأقوى: استخدمي functional update
+    setCurrentUser(prevUser => {
+      console.log("🔄 Previous points:", prevUser?.totalPoints);
+      console.log("🆕 New points:", res.data.totalPoints);
+      
+      // ✅ هاد بيضمن إنه الـ state يتحدث
+      return { ...res.data };
     });
     
     return res.data;
@@ -76,6 +39,19 @@ export const CurrentUserProvider = ({ children }) => {
   }
 }, []);
 
+  // 🔥 دالة لتفعيل الـ Polling المؤقت
+  const startTemporaryPolling = useCallback((duration = 2000) => {
+    console.log("🚀 Starting temporary polling for", duration, "ms");
+    setEnablePolling(true);
+
+    // أوقف الـ polling بعد المدة المحددة
+    setTimeout(() => {
+      console.log("⏹️ Stopping temporary polling");
+      setEnablePolling(false);
+    }, duration);
+  }, []);
+
+  // ✅ تحميل بيانات المستخدم عند بدء التطبيق
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const token = localStorage.getItem("accessToken");
@@ -83,8 +59,9 @@ export const CurrentUserProvider = ({ children }) => {
         try {
           const res = await GetFullProfile(token);
           setCurrentUser(res.data);
+          console.log("✅ Initial user data loaded");
         } catch (error) {
-          console.error("Error loading current user:", error);
+          console.error("❌ Error loading current user:", error);
         }
       }
       setLoading(false);
@@ -93,11 +70,30 @@ export const CurrentUserProvider = ({ children }) => {
     fetchCurrentUser();
   }, []);
 
+  // 🔥 Polling Effect - بس لما يكون مفعّل
+  useEffect(() => {
+    if (enablePolling) {
+      console.log("📡 Polling enabled - checking every 2 seconds");
+      
+      pollingIntervalRef.current = setInterval(() => {
+        updateCurrentUser();
+      }, 2000); // كل ثانيتين
+
+      return () => {
+        if (pollingIntervalRef.current) {
+          console.log("🛑 Clearing polling interval");
+          clearInterval(pollingIntervalRef.current);
+        }
+      };
+    }
+  }, [enablePolling, updateCurrentUser]);
+
   return (
     <CurrentUserContext.Provider value={{ 
       currentUser, 
       setCurrentUser, 
-      updateCurrentUser, // ← الإضافة الوحيدة هون
+      updateCurrentUser,
+      startTemporaryPolling, // 🔥 جديد
       loading 
     }}>
       {children}
@@ -105,4 +101,10 @@ export const CurrentUserProvider = ({ children }) => {
   );
 };
 
-export const useCurrentUser = () => useContext(CurrentUserContext);
+export const useCurrentUser = () => {
+  const context = useContext(CurrentUserContext);
+  if (!context) {
+    throw new Error('useCurrentUser must be used within CurrentUserProvider');
+  }
+  return context;
+};

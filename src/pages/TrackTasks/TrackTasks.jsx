@@ -74,7 +74,6 @@ export default function TrackTasks() {
 
   const { projectType } = useLocation().state ?? {};
 
-  console.log("نوع الريكوست:", projectType || "مش واصل");
 
   // Fetch project status from dashboard
   const fetchProjectStatus = async () => {
@@ -149,102 +148,92 @@ export default function TrackTasks() {
   };
 
   // Fetch project data
-  const fetchProjectData = async () => {
+ const fetchProjectData = async () => {
     const projectId = cardData?.id || taskId;
     if (!projectId || !token) {
-      console.log("⚠️ Cannot fetch - missing project ID or token");
-      setLoading(false);
-      return;
+        console.log("⚠️ Cannot fetch - missing project ID or token");
+        setLoading(false);
+        return;
     }
 
     try {
-      setLoading(true);
-      console.log("🔄 Fetching project data for ID:", cardData.id);
+        setLoading(true);
+        console.log("🔄 Fetching project data for ID:", projectId);
 
-      const detailsRes = await taskService.getProjectTaskDetails(
-        cardData.id,
-        token
-      );
-      console.log("✅ Fetched project details:", detailsRes);
-        setCardData({
+        const detailsRes = await taskService.getProjectTaskDetails(projectId, token);
+        console.log("✅ Fetched project details:", detailsRes);
+        
+        // ✅ اعملي cardData كامل مرة واحدة
+        const apiData = detailsRes.data;
+        
+        const newCardData = {
             id: projectId,
-            title: detailsRes.data.projectName || 'Project',
-            description: detailsRes.data.description || '',
-            clientName: detailsRes.data.clientName || '',
-            clientAvatar: detailsRes.data.clientAvatar || '',
-            clientInitials: detailsRes.data.clientName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
-            providerName: detailsRes.data.providerName || '',
-            providerAvatar: detailsRes.data.providerAvatar || '',
-            isProvider: detailsRes.data.isProvider ?? (cardData?.isProvider || false),
-            projectStatus: detailsRes.data.status || 'Active',
-            deadline: detailsRes.data.deadline,
-            progressPercentage: detailsRes.data.progressPercentage || 0,
-            rejectionReason: detailsRes.data.rejectionReason || '',
-            projectType: detailsRes.data.type || 'RequestProject'
-        });
-      setProjectDetails(detailsRes.data);
-
-      console.log("🔍 Fetching current status from dashboard...");
-      const dashboardStatus = await fetchProjectStatus();
-
-      console.log("📊 Dashboard Status Result:", dashboardStatus);
-
-      setCardData((prev) => {
-        const finalStatus = dashboardStatus
-          ? mapProjectStatus(dashboardStatus)
-          : prev.projectStatus || "Active";
-
-        console.log("🎯 Final Status:", finalStatus, "from Dashboard");
-
-        return {
-          ...prev,
-          projectStatus: finalStatus,
-          status: finalStatus,
-          deadline: detailsRes.data.deadline,
-          progressPercentage:
-            detailsRes.data.progressPercentage || prev.progressPercentage || 0,
-          rejectionReason:
-            detailsRes.data.rejectionReason || prev.rejectionReason,
-          projectType:
-            detailsRes.data.type || prev.projectType || "RequestProject",
+            title: apiData.title || apiData.projectName || 'Project', // ✅ من الـ API
+            description: apiData.description || '',
+            clientName: apiData.clientName || '',
+            clientAvatar: apiData.clientAvatar || '',
+            clientInitials: apiData.clientName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
+            providerName: apiData.providerName || '',
+            providerAvatar: apiData.providerAvatar || '',
+            isProvider: apiData.isProvider ?? (cardData?.isProvider ?? false),
+            projectStatus: apiData.status || 'Active',
+            deadline: apiData.deadline,
+            progressPercentage: apiData.progressPercentage || 0,
+            rejectionReason: apiData.rejectionReason || '',
+            projectType: apiData.type || 'RequestProject',
         };
-      });
+        
+        setCardData(newCardData);
+        setProjectDetails(apiData);
 
-      const tasksRes = await taskService.getTasksByStatus(
-        cardData.id,
-        null,
-        token
-      );
-      console.log("All Tasks:", tasksRes.data);
+        console.log("🔍 Fetching current status from dashboard...");
+        const dashboardStatus = await fetchProjectStatus();
 
-      const allTasks = tasksRes.data;
+        console.log("📊 Dashboard Status Result:", dashboardStatus);
 
-      const tasksByStatus = {
-        ToDo: [],
-        InProgress: [],
-        InReview: [],
-        Done: [],
-      };
-
-      allTasks.forEach((task) => {
-        const status = task.status;
-        if (tasksByStatus[status]) {
-          tasksByStatus[status].push(task);
+        // ✅ حدّث الـ status بس من الـ dashboard
+        if (dashboardStatus) {
+            const finalStatus = mapProjectStatus(dashboardStatus);
+            console.log("🎯 Final Status:", finalStatus, "from Dashboard");
+            
+            setCardData(prev => ({
+                ...prev,
+                projectStatus: finalStatus,
+                status: finalStatus,
+            }));
         }
-      });
 
-      setTasks(tasksByStatus);
+        // ✅ جلب المهام
+        const tasksRes = await taskService.getTasksByStatus(projectId, null, token);
+        console.log("All Tasks:", tasksRes.data);
+
+        const allTasks = tasksRes.data;
+        const tasksByStatus = {
+            ToDo: [],
+            InProgress: [],
+            InReview: [],
+            Done: [],
+        };
+
+        allTasks.forEach((task) => {
+            const status = task.status;
+            if (tasksByStatus[status]) {
+                tasksByStatus[status].push(task);
+            }
+        });
+
+        setTasks(tasksByStatus);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to load tasks",
-        severity: "error",
-      });
+        console.error("Error fetching tasks:", error);
+        setSnackbar({
+            open: true,
+            message: "Failed to load tasks",
+            severity: "error",
+        });
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   useEffect(() => {
     console.log("📍 useEffect triggered - cardData.id:", cardData?.id);

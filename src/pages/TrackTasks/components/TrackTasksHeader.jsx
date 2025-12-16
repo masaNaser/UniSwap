@@ -41,6 +41,7 @@ import {
 import { getReviewByProject } from "../../../services/reviewService";
 import { formatDateTime } from "../../../utils/timeHelper";
 
+import { useCurrentUser } from "../../../Context/CurrentUserContext";
 
 export default function TrackTasksHeader({
   cardData,
@@ -338,8 +339,11 @@ export default function TrackTasksHeader({
 
       console.log("✅ Project review submitted successfully");
 
-    await updateCurrentUser();
-    console.log("✅ Points updated after client review")
+    
+// ✅ حدّث النقاط مباشرة بعد قبول/رفض المشروع
+const { updateCurrentUser } = useCurrentUser();
+await updateCurrentUser();
+console.log("✅ Points updated after project review");
 
       if (reviewData.isAccepted) {
         console.log("✅ Project accepted - rating and review saved");
