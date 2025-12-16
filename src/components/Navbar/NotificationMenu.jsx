@@ -804,17 +804,15 @@ const NotificationMenu = ({
                           {notif.title}
                         </Typography>
 
-                        <Typography
+                     <Typography
                           sx={{
                             color: "#6B7280",
                             fontSize: "0.875rem",
                             mb: 0.5,
-                            overflow: "hidden",
-                            lineHeight: 1.4,
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
+                            lineHeight: 1.5,
+                            wordBreak: "break-word",
+                            overflowWrap: "break-word",
+                            whiteSpace: "normal",
                           }}
                         >
                           {notif.message}

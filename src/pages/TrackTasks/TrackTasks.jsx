@@ -148,98 +148,175 @@ export default function TrackTasks() {
   };
 
   // Fetch project data
- const fetchProjectData = async () => {
-    const projectId = cardData?.id || taskId;
-    if (!projectId || !token) {
-        console.log("⚠️ Cannot fetch - missing project ID or token");
-        setLoading(false);
-        return;
-    }
+//  const fetchProjectData = async () => {
+//     const projectId = cardData?.id || taskId;
+//     if (!projectId || !token) {
+//         console.log("⚠️ Cannot fetch - missing project ID or token");
+//         setLoading(false);
+//         return;
+//     }
 
-    try {
-        setLoading(true);
+//     try {
+//         setLoading(true);
 
-        const detailsRes = await taskService.getProjectTaskDetails(projectId, token);
-        console.log("✅ Fetched project details:", detailsRes);
+//         const detailsRes = await taskService.getProjectTaskDetails(projectId, token);
+//         console.log("✅ Fetched project details:", detailsRes);
         
-        // ✅ اعملي cardData كامل مرة واحدة
+//         // ✅ اعملي cardData كامل مرة واحدة
 
-        const apiData = detailsRes.data;
+//         const apiData = detailsRes.data;
         
-        const newCardData = {
-            id: projectId,
-            title: apiData.title || apiData.projectName || 'Project', // ✅ من الـ API
-            description: apiData.description || '',
-             clientName: apiData.providerName || '',
-             clientAvatar: apiData.providerAvatar || '',
-            clientInitials: apiData.providerName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
-            providerInitials: apiData.providerName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
-            providerName: apiData.providerName || '',
-            providerAvatar: apiData.providerAvatar || '',
-            isProvider: apiData.isProvider ?? (cardData?.isProvider ?? false),
-            projectStatus: apiData.status || 'Active',
-            deadline: apiData.deadline,
-            progressPercentage: apiData.progressPercentage || 0,
-            rejectionReason: apiData.rejectionReason || '',
-            projectType: apiData.type || 'RequestProject',
-        };
+//         const newCardData = {
+//             id: projectId,
+//             title: apiData.title || apiData.projectName || 'Project', // ✅ من الـ API
+//             description: apiData.description || '',
+//              clientName: apiData.providerName || '',
+//              clientAvatar: apiData.providerAvatar || '',
+//             clientInitials: apiData.providerName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
+//             clientInitials: apiData.providerName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
+//             providerName: apiData.providerName || '',
+//             providerAvatar: apiData.providerAvatar || '',
+//             isProvider: apiData.isProvider ?? (cardData?.isProvider ?? false),
+//             projectStatus: apiData.status || 'Active',
+//             deadline: apiData.deadline,
+//             progressPercentage: apiData.progressPercentage || 0,
+//             rejectionReason: apiData.rejectionReason || '',
+//             projectType: apiData.type || 'RequestProject',
+//         };
         
-        setCardData(newCardData);
-        setProjectDetails(apiData);
+//         setCardData(newCardData);
+//         setProjectDetails(apiData);
 
-        console.log("🔍 Fetching current status from dashboard...");
-        const dashboardStatus = await fetchProjectStatus();
+//         console.log("🔍 Fetching current status from dashboard...");
+//         const dashboardStatus = await fetchProjectStatus();
 
-        console.log("📊 Dashboard Status Result:", dashboardStatus);
+//         console.log("📊 Dashboard Status Result:", dashboardStatus);
 
-        // ✅ حدّث الـ status بس من الـ dashboard
-        if (dashboardStatus) {
-            const finalStatus = mapProjectStatus(dashboardStatus);
-            console.log("🎯 Final Status:", finalStatus, "from Dashboard");
+//         // ✅ حدّث الـ status بس من الـ dashboard
+//         if (dashboardStatus) {
+//             const finalStatus = mapProjectStatus(dashboardStatus);
+//             console.log("🎯 Final Status:", finalStatus, "from Dashboard");
             
-            setCardData(prev => ({
-                ...prev,
-                projectStatus: finalStatus,
-                status: finalStatus,
-            }));
+//             setCardData(prev => ({
+//                 ...prev,
+//                 projectStatus: finalStatus,
+//                 status: finalStatus,
+//             }));
+//         }
+
+//         // ✅ جلب المهام
+//         const tasksRes = await taskService.getTasksByStatus(projectId, null, token);
+//         console.log("All Tasks:", tasksRes.data);
+
+//         const allTasks = tasksRes.data;
+//         const tasksByStatus = {
+//             ToDo: [],
+//             InProgress: [],
+//             InReview: [],
+//             Done: [],
+//         };
+
+//         allTasks.forEach((task) => {
+//             const status = task.status;
+//             if (tasksByStatus[status]) {
+//                 tasksByStatus[status].push(task);
+//             }
+//         });
+
+//         setTasks(tasksByStatus);
+//     } catch (error) {
+//         console.error("Error fetching tasks:", error);
+//         setSnackbar({
+//             open: true,
+//             message: "Failed to load tasks",
+//             severity: "error",
+//         });
+//     } finally {
+//         setLoading(false);
+//     }
+// };
+
+//   useEffect(() => {
+//     console.log("📍 useEffect triggered - cardData.id:", cardData?.id);
+//     fetchProjectData();
+//   }, [taskId]);
+  const fetchProjectData = async () => {
+        if (!cardData?.id || !token) {
+            console.log('⚠️ Cannot fetch - missing cardData.id or token', { cardData, token: !!token });
+            setLoading(false);
+            return;
         }
 
-        // ✅ جلب المهام
-        const tasksRes = await taskService.getTasksByStatus(projectId, null, token);
-        console.log("All Tasks:", tasksRes.data);
+        try {
+            setLoading(true);
+            console.log('🔄 Fetching project data for ID:', cardData.id);
 
-        const allTasks = tasksRes.data;
-        const tasksByStatus = {
-            ToDo: [],
-            InProgress: [],
-            InReview: [],
-            Done: [],
-        };
+            const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
+            console.log('✅ Fetched project details:', detailsRes);
+            setProjectDetails(detailsRes.data);
 
-        allTasks.forEach((task) => {
-            const status = task.status;
-            if (tasksByStatus[status]) {
-                tasksByStatus[status].push(task);
-            }
-        });
+            console.log('🔍 Fetching current status from dashboard...');
+            const dashboardStatus = await fetchProjectStatus();
 
-        setTasks(tasksByStatus);
-    } catch (error) {
-        console.error("Error fetching tasks:", error);
-        setSnackbar({
-            open: true,
-            message: "Failed to load tasks",
-            severity: "error",
-        });
-    } finally {
-        setLoading(false);
-    }
-};
+            console.log('📊 Dashboard Status Result:', dashboardStatus);
 
-  useEffect(() => {
-    console.log("📍 useEffect triggered - cardData.id:", cardData?.id);
-    fetchProjectData();
-  }, [taskId]);
+            setCardData(prev => {
+                const finalStatus = dashboardStatus
+                    ? mapProjectStatus(dashboardStatus)
+                    : (prev.projectStatus || 'Active');
+
+                console.log('🎯 Final Status:', finalStatus, 'from Dashboard');
+
+                return {
+                    ...prev,
+                    title: detailsRes.data.title || detailsRes.data.projectName || 'Project',
+                    //             description: apiData.description || '',
+                    description: detailsRes.data.description || '',
+                    projectStatus: finalStatus,
+                    status: finalStatus,
+                    deadline: detailsRes.data.deadline,
+                    progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0,
+                    rejectionReason: detailsRes.data.rejectionReason || prev.rejectionReason,
+                    projectType: detailsRes.data.type || prev.projectType || 'RequestProject'
+                };
+            });
+
+            const tasksRes = await taskService.getTasksByStatus(cardData.id, null, token);
+            console.log('All Tasks:', tasksRes.data);
+
+            const allTasks = tasksRes.data;
+
+            const tasksByStatus = {
+                ToDo: [],
+                InProgress: [],
+                InReview: [],
+                Done: [],
+            };
+
+            allTasks.forEach(task => {
+                const status = task.status;
+                if (tasksByStatus[status]) {
+                    tasksByStatus[status].push(task);
+                }
+            });
+
+            setTasks(tasksByStatus);
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+            setSnackbar({
+                open: true,
+                message: 'Failed to load tasks',
+                severity: 'error',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        console.log('📍 useEffect triggered - cardData.id:', cardData?.id);
+        fetchProjectData();
+    }, [taskId]);
 
 // تحديث الموعد النهائي في الحالة المحلية
   const handleDeadlineUpdate = (newDeadline) => {
