@@ -34,9 +34,8 @@ export default function OverdueDecisionDialog({
 
   const getMinDateTime = () => {
     const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
+    const minDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    return minDate.toISOString().slice(0, 16);
   };
 
   const handleSubmit = async () => {
@@ -59,13 +58,14 @@ export default function OverdueDecisionDialog({
     }
 
     if (decision === 'extend') {
-      const selectedDate = new Date(newDeadline);
-      const minDate = new Date(getMinDateTime());
+      const newDeadlineDateTime = new Date(newDeadline);
+      const now = new Date();
+      const minDeadline = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-      if (selectedDate < minDate) {
+      if (newDeadlineDateTime <= minDeadline) {
         setSnackbar({
           open: true,
-          message: 'New deadline must be at least tomorrow',
+          message: 'New deadline must be at least 24 hours from now',
           severity: 'error',
         });
         return;
@@ -124,7 +124,9 @@ export default function OverdueDecisionDialog({
           Original Deadline: {new Date(currentDeadline).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
-            day: 'numeric'
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
           })}
         </Typography>
       </Box>
@@ -150,7 +152,7 @@ export default function OverdueDecisionDialog({
       onSnackbarClose={handleSnackbarClose}
       maxWidth="sm"
     >
-      
+
       {/* Decision Options */}
       <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
         Choose Your Action *
@@ -203,7 +205,7 @@ export default function OverdueDecisionDialog({
         />
       </RadioGroup>
 
-      {/* New Deadline Field - Show only if Extend is selected */}
+      {/* New Deadline - Show only if Extend is selected */}
       {decision === 'extend' && (
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
@@ -211,7 +213,7 @@ export default function OverdueDecisionDialog({
           </Typography>
           <TextField
             fullWidth
-            type="date"
+            type="datetime-local"
             value={newDeadline}
             onChange={(e) => setNewDeadline(e.target.value)}
             inputProps={{
@@ -220,8 +222,8 @@ export default function OverdueDecisionDialog({
             error={decision === 'extend' && !newDeadline}
             helperText={
               decision === 'extend' && !newDeadline
-                ? 'Please select a new deadline date'
-                : 'Select a date at least one day from today'
+                ? 'Please select a new deadline'
+                : 'Must be at least 24 hours from now'
             }
             InputLabelProps={{
               shrink: true,
@@ -256,11 +258,11 @@ export default function OverdueDecisionDialog({
           >
             {decision === 'extend' ? (
               <>
-                <strong>What happens next:</strong> The project deadline will be updated to the new date you selected, and the project status will return to <strong>Active</strong>. The service provider will be notified of the extension.
+                <strong>What happens next:</strong> The project deadline will be updated to the new date and time you selected, and the project status will return to <strong>Active</strong>. The service provider will be notified of the extension.
               </>
             ) : (
               <>
-                <strong>What happens next:</strong> The project will be cancelled permanently. All frozen points  will be immediately refunded to your account. This action cannot be undone.
+                <strong>What happens next:</strong> The project will be cancelled permanently. All frozen points will be immediately refunded to your account. This action cannot be undone.
               </>
             )}
           </Typography>

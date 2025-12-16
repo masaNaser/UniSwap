@@ -29,7 +29,7 @@ import {
   cancelCollaborationRequest,
 } from "../../services/collaborationService";
 import { getImageUrl } from "../../utils/imageHelper";
-import { formatDate } from "../../utils/timeHelper";
+import { formatDateTime } from "../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ أضيفي هاد
 export default function RequestProjectCard({
@@ -438,7 +438,7 @@ export default function RequestProjectCard({
                   fontSize="12px"
                   fontWeight="500"
                 >
-                  Due: {formatDate(deadline)}
+                  Due: {formatDateTime(deadline)}
                 </Typography>
               </Box>
             )}

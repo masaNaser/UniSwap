@@ -40,7 +40,6 @@ const RequestServiceModal = ({
   const [serviceCategory, setServiceCategory] = useState("Project");
   const [pointsBudget, setPointsBudget] = useState(initialPoints || "");
   const [deadline, setDeadline] = useState("");
-  const [deadlineTime, setDeadlineTime] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const token = localStorage.getItem("accessToken");
   const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
@@ -57,8 +56,14 @@ const RequestServiceModal = ({
     serviceTitle.trim() !== "" &&
     serviceDescription.trim() !== "" &&
     pointsBudget !== "" &&
-    deadline !== "" &&
-    deadlineTime !== "";
+    deadline !== "";
+
+  // ✅ Helper to get minimum allowed datetime (24 hours from now)
+  const getMinDateTime = () => {
+    const now = new Date();
+    const minDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    return minDate.toISOString().slice(0, 16);
+  };
 
   useEffect(() => {
     if (open) {
@@ -72,13 +77,10 @@ const RequestServiceModal = ({
 
         if (editData.deadline) {
           const date = new Date(editData.deadline);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          const hours = String(date.getHours()).padStart(2, "0");
-          const minutes = String(date.getMinutes()).padStart(2, "0");
-          setDeadline(`${year}-${month}-${day}`);
-          setDeadlineTime(`${hours}:${minutes}`);
+          const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16);
+          setDeadline(localDateTime);
         }
 
         setServiceCategory("Project");
@@ -88,7 +90,6 @@ const RequestServiceModal = ({
         setServiceCategory("Project");
         setPointsBudget(initialPoints || "");
         setDeadline("");
-        setDeadlineTime("");
         setClientAcceptPublished(false);
       }
     }
@@ -116,12 +117,12 @@ const RequestServiceModal = ({
       return;
     }
 
-    // Validate deadline is at least 24 hours from now
-    const deadlineDateTime = new Date(`${deadline}T${deadlineTime}`);
+    // ✅ Validate deadline is at least 24 hours from now
+    const deadlineDateTime = new Date(deadline);
     const now = new Date();
-    const minDeadline = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
+    const minDeadline = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-    if (deadlineDateTime < minDeadline) {
+    if (deadlineDateTime <= minDeadline) {
       setSnackbar({
         open: true,
         message: "Deadline must be at least 24 hours from now.",
@@ -223,8 +224,7 @@ const RequestServiceModal = ({
         error.response?.data?.detail ||
         error.response?.data ||
         error.message ||
-        `Failed to ${isEditMode ? "update" : "send"
-        } request. Please try again.`;
+        `Failed to ${isEditMode ? "update" : "send"} request. Please try again.`;
 
       setSnackbar({
         open: true,
@@ -243,7 +243,6 @@ const RequestServiceModal = ({
     setServiceCategory("Project");
     setPointsBudget(initialPoints || "");
     setDeadline("");
-    setDeadlineTime("");
     setIsSubmitting(false);
     onClose();
   };
@@ -251,6 +250,9 @@ const RequestServiceModal = ({
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
+
+  // ✅ Get minimum date/time values
+  const minDateTime = getMinDateTime();
 
   return (
     <>
@@ -365,51 +367,30 @@ const RequestServiceModal = ({
             }}
           />
 
-          {/* Deadline Date and Time */}
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Deadline Date"
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                disabled={isSubmitting}
-                required
-                inputProps={{
-                  min: new Date(new Date().setDate(new Date().getDate() + 1))
-                    .toISOString()
-                    .split("T")[0],
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CalendarTodayIcon
-                        sx={{ color: "text.secondary", fontSize: 20 }}
-                      />
-                    </InputAdornment>
-                  ),
-                }}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Deadline Time"
-                type="time"
-                value={deadlineTime}
-                onChange={(e) => setDeadlineTime(e.target.value)}
-                disabled={isSubmitting}
-                required
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </Grid>
-          </Grid>
+          {/* Deadline */}
+          <TextField
+            fullWidth
+            label="Deadline"
+            type="datetime-local"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            disabled={isSubmitting}
+            required
+            inputProps={{
+              min: getMinDateTime(),
+            }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            helperText="Must be at least 24 hours from now"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&.Mui-focused fieldset': {
+                  borderColor: '#3B82F6',
+                },
+              },
+            }}
+          />
 
           {/* Checkbox للـ Published */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>

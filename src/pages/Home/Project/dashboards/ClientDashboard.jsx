@@ -1,5 +1,5 @@
 import { Box, Typography, Grid, CircularProgress } from "@mui/material";
-import { useState, useEffect,useRef  } from "react";
+import { useState, useEffect, useRef } from "react";
 import ProjectHeader from "../ProjectHeader";
 import StatCard from "../StatsSection";
 import FilterSection from "../../../../components/Filter/FilterSection";
@@ -7,7 +7,7 @@ import AllStatusProjectCard from "../../../../components/Cards/AllStatusProjectC
 import RequestProjectCard from "../../../../components/Cards/RequestProjectCard";
 import RequestServiceModal from "../../../../components/Modals/RequestServiceModal";
 import { getPendingRequests } from "../../../../services/collaborationService";
-import { formatDate } from "../../../../utils/timeHelper";
+import { formatDateTime } from "../../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 export default function ClientDashboard({
@@ -15,10 +15,10 @@ export default function ClientDashboard({
   statusFilter,
   onStatusFilterChange,
   onRefresh,
-    highlightedRequestId,
-    initialShowRequests,
+  highlightedRequestId,
+  initialShowRequests,
 }) {
-    const [showRequests, setShowRequests] = useState(() => {
+  const [showRequests, setShowRequests] = useState(() => {
     // ✅ إذا في initialShowRequests، استخدميه
     if (initialShowRequests !== undefined) return initialShowRequests;
     const saved = localStorage.getItem("providerShowRequests");
@@ -35,10 +35,10 @@ export default function ClientDashboard({
         const element = requestRefs.current[highlightedRequestId];
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          
+
           // ✅ أضيفي highlight animation
           element.style.animation = 'highlight 2s ease-in-out';
-          
+
           setTimeout(() => {
             element.style.animation = '';
           }, 2000);
@@ -296,27 +296,27 @@ export default function ClientDashboard({
           pendingRequests.length > 0 ? (
             <Grid container spacing={3}>
               {pendingRequests.map((request) => (
-                <Grid  item 
-                  xs={12} 
-                  sm={6} 
-                  lg={4} 
+                <Grid item
+                  xs={12}
+                  sm={6}
+                  lg={4}
                   key={request.id}
                   ref={(el) => (requestRefs.current[request.id] = el)} // ✅ حفظ الـ ref
                   sx={{
                     // ✅ Highlight animation
                     ...(highlightedRequestId === request.id && {
                       '@keyframes highlight': {
-                        '0%': { 
+                        '0%': {
                           boxShadow: '0 0 0 0 rgba(59, 130, 246, 0.7)',
-                          transform: 'scale(1)' 
+                          transform: 'scale(1)'
                         },
-                        '50%': { 
+                        '50%': {
                           boxShadow: '0 0 20px 10px rgba(59, 130, 246, 0.4)',
-                          transform: 'scale(1.02)' 
+                          transform: 'scale(1.02)'
                         },
-                        '100%': { 
+                        '100%': {
                           boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)',
-                          transform: 'scale(1)' 
+                          transform: 'scale(1)'
                         },
                       },
                     }),
@@ -331,7 +331,7 @@ export default function ClientDashboard({
                       ?.substring(0, 2)
                       .toUpperCase()}
                     pointsOffered={request.pointsOffered}
-                    deadline={formatDate(request.deadline)}
+                    deadline={formatDateTime(request.deadline)}
                     category={request.type}
                     clientAcceptPublished={request.clientAcceptPublished}
                     isProvider={false}
