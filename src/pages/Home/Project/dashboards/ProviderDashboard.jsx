@@ -7,7 +7,7 @@ import AllStatusProjectCard from "../../../../components/Cards/AllStatusProjectC
 import RequestProjectCard from "../../../../components/Cards/RequestProjectCard";
 import RequestServiceModal from "../../../../components/Modals/RequestServiceModal";
 import { getPendingRequests } from "../../../../services/collaborationService";
-import { formatDate } from "../../../../utils/timeHelper";
+import { formatDateTime } from "../../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 export default function ProviderDashboard({
@@ -336,7 +336,7 @@ useEffect(() => {
                       ?.substring(0, 2)
                       .toUpperCase()}
                     pointsOffered={request.pointsOffered}
-                    deadline={formatDate(request.deadline)}
+                    deadline={formatDateTime(request.deadline)}
                     category={request.type}
                     isProvider={true}
                     onRequestHandled={handleRequestHandled}

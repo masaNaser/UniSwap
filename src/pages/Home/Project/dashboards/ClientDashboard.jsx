@@ -7,7 +7,7 @@ import AllStatusProjectCard from "../../../../components/Cards/AllStatusProjectC
 import RequestProjectCard from "../../../../components/Cards/RequestProjectCard";
 import RequestServiceModal from "../../../../components/Modals/RequestServiceModal";
 import { getPendingRequests } from "../../../../services/collaborationService";
-import { formatDate } from "../../../../utils/timeHelper";
+import { formatDateTime } from "../../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 export default function ClientDashboard({
@@ -53,6 +53,7 @@ useEffect(() => {
     }, 500);
   }
 }, [highlightedRequestId, pendingRequests, filteredProjects, showRequests]);
+
 
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
@@ -330,6 +331,7 @@ useEffect(() => {
                         "100%": {
                           boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
                           transform: "scale(1)",
+
                         },
                       },
                     }),
@@ -345,8 +347,9 @@ useEffect(() => {
                       ?.substring(0, 2)
                       .toUpperCase()}
                     pointsOffered={request.pointsOffered}
-                    deadline={formatDate(request.deadline)}
+                    deadline={formatDateTime(request.deadline)}
                     category={request.type}
+                    clientAcceptPublished={request.clientAcceptPublished}
                     isProvider={false}
                     onRequestHandled={handleRequestHandled}
                     onEditRequest={handleEditRequest}

@@ -3,6 +3,7 @@ import {
   Typography,
   Avatar,
   Chip,
+  Grid,
   Button,
   IconButton,
   TextField,
@@ -38,7 +39,7 @@ import {
   handleOverdueDecision,
 } from "../../../services/taskService";
 import { getReviewByProject } from "../../../services/reviewService";
-import { formatDate } from "../../../utils/timeHelper";
+import { formatDateTime } from "../../../utils/timeHelper";
 
 
 export default function TrackTasksHeader({
@@ -57,18 +58,7 @@ export default function TrackTasksHeader({
   if (!cardData) return <div>Loading...</div>;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [newDeadline, setNewDeadline] = useState(() => {
-    if (!cardData.deadline) return "";
-    try {
-      const date = new Date(cardData.deadline);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    } catch {
-      return "";
-    }
-  });
+  const [newDeadline, setNewDeadline] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
@@ -165,33 +155,30 @@ export default function TrackTasksHeader({
     }
   };
 
-  //const minSelectableDate = (() => {
-  //const d = new Date(cardData.deadline);
-  //d.setDate(d.getDate() + 1);
-  //return d.toISOString().split("T")[0];
-  //})();
-
-  // للاوفر و الاكتيف مع بعض
-  const minSelectableDate = (() => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const currentDeadlinePlusOne = new Date(cardData.deadline);
-    currentDeadlinePlusOne.setDate(currentDeadlinePlusOne.getDate() + 1);
-
-    const minDate = tomorrow > currentDeadlinePlusOne ? tomorrow : currentDeadlinePlusOne;
-    return minDate.toISOString().split("T")[0];
-  })();
+  const getMinDateTime = () => {
+    const now = new Date();
+    const minDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    return minDate.toISOString().slice(0, 16);
+  };
 
   const handleSaveDeadline = async () => {
-    const chosen = new Date(newDeadline);
-    const current = new Date(cardData.deadline);
-    if (chosen <= current) {
-      console.warn("⚠️ Invalid deadline - must be after current");
+    if (!newDeadline) {
       setSnackbar({
         open: true,
-        message: "New deadline must be at least 1 day AFTER current deadline.",
+        message: "Please select a deadline.",
+        severity: "error",
+      });
+      return;
+    }
+
+    const newDeadlineDateTime = new Date(newDeadline);
+    const now = new Date();
+    const minDeadline = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    if (newDeadlineDateTime <= minDeadline) {
+      setSnackbar({
+        open: true,
+        message: "New deadline must be at least 24 hours from now.",
         severity: "error",
       });
       return;
@@ -205,8 +192,8 @@ export default function TrackTasksHeader({
         throw new Error("Collaboration Request ID is missing.");
       }
 
-      console.log("🔄 Updating deadline via API:", { collaborationId, newDeadline });
-      const deadlineISO = new Date(newDeadline).toISOString();
+      const deadlineISO = newDeadlineDateTime.toISOString();
+      console.log("🔄 Updating deadline via API:", { collaborationId, deadlineISO });
       await editCollaborationRequest(token, collaborationId, {
         deadline: deadlineISO,
       });
@@ -240,9 +227,11 @@ export default function TrackTasksHeader({
 
   const handleOpenEdit = () => {
     if (cardData.deadline) {
-      const d = new Date(cardData.deadline);
-      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-      setNewDeadline(local.toISOString().split("T")[0]);
+      const date = new Date(cardData.deadline);
+      const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+      setNewDeadline(localDateTime);
     } else {
       setNewDeadline("");
     }
@@ -527,14 +516,22 @@ export default function TrackTasksHeader({
 
           <TextField
             label="New Deadline"
-            type="date"
+            type="datetime-local"
             fullWidth
             value={newDeadline}
             onChange={(e) => setNewDeadline(e.target.value)}
             InputLabelProps={{ shrink: true }}
-            inputProps={{ min: minSelectableDate }}
-            sx={{ mb: 2 }}
+            inputProps={{ min: getMinDateTime() }}
             size={isMobile ? "small" : "medium"}
+            helperText="Must be at least 24 hours from now"
+            sx={{
+              mb: 2,
+              '& .MuiOutlinedInput-root': {
+                '&.Mui-focused fieldset': {
+                  borderColor: '#3B82F6',
+                },
+              },
+            }}
           />
 
           <Button
@@ -747,7 +744,7 @@ export default function TrackTasksHeader({
             }}
           >
             {isOverdue ? "Was due: " : "Due: "}
-            {formatDate(cardData.deadline)}
+            {formatDateTime(cardData.deadline)}
           </Typography>
         </Box>
 
@@ -826,7 +823,7 @@ export default function TrackTasksHeader({
               sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
             >
               This project passed its deadline on{" "}
-              {formatDate(cardData.deadline)}.
+              {formatDateTime(cardData.deadline)}.
               {!isProvider &&
                 " Please use the 'Handle Overdue' button above to extend the deadline or cancel the project."}
             </Typography>

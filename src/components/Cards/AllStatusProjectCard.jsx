@@ -13,7 +13,7 @@ import {
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../utils/imageHelper";
-import { formatDate } from "../../utils/timeHelper";
+import { formatDateTime } from "../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 export default function AllStatusProjectCard({
@@ -379,7 +379,7 @@ export default function AllStatusProjectCard({
                 fontSize="12px"
                 fontWeight="500"
               >
-                Due: {formatDate(deadline)}
+                Due: {formatDateTime(deadline)}
               </Typography>
             </Box>
           </Box>

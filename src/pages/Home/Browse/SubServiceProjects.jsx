@@ -13,21 +13,36 @@ import {
   Avatar,
   Pagination,
   IconButton,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import StarIcon from "@mui/icons-material/Star";
 import EditIcon from "@mui/icons-material/Edit";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DeleteIcon from "@mui/icons-material/Delete";
 import FilterSection from "../../../components/Filter/FilterSection";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import PublishProjectModal from "../../../components/Modals/PublishProjectModal";
 import api from "../../../services/api";
 
-const ProjectCard = ({ project, onEditClick,adminMode,onDeleteClick }) => {
+const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
   const currentUserId = localStorage.getItem("userId");
   const isOwner = currentUserId === project.userId;
-  const canEdit = isOwner || adminMode; // 🔥 صاحب المشروع أو الأدمن
+  const canEdit = isOwner || adminMode;
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Card
@@ -40,7 +55,7 @@ const ProjectCard = ({ project, onEditClick,adminMode,onDeleteClick }) => {
         position: "relative",
       }}
     >
-        {/*  Menu للتعديل والحذف */}
+      {/*  Menu للتعديل والحذف */}
       {canEdit && (
         <>
           <IconButton

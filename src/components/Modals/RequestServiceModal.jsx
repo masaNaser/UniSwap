@@ -37,7 +37,7 @@ const RequestServiceModal = ({
 
   const [serviceTitle, setServiceTitle] = useState(projectTitle || "");
   const [serviceDescription, setServiceDescription] = useState("");
-  const [serviceCategory, setServiceCategory] = useState("Project"); // ✅ دايماً Project
+  const [serviceCategory, setServiceCategory] = useState("Project");
   const [pointsBudget, setPointsBudget] = useState(initialPoints || "");
   const [deadline, setDeadline] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,7 +56,14 @@ const RequestServiceModal = ({
     serviceTitle.trim() !== "" &&
     serviceDescription.trim() !== "" &&
     pointsBudget !== "" &&
-    deadline !== ""; // ✅ الـ deadline دايماً مطلوب
+    deadline !== "";
+
+  // ✅ Helper to get minimum allowed datetime (24 hours from now)
+  const getMinDateTime = () => {
+    const now = new Date();
+    const minDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    return minDate.toISOString().slice(0, 16);
+  };
 
   useEffect(() => {
     if (open) {
@@ -66,21 +73,21 @@ const RequestServiceModal = ({
         setServiceTitle(editData.title || "");
         setServiceDescription(editData.description || "");
         setPointsBudget(editData.pointsOffered || "");
-        setClientAcceptPublished(editData.clientAcceptPublished || false);
+        setClientAcceptPublished(editData.clientAcceptPublished ?? false);
 
         if (editData.deadline) {
           const date = new Date(editData.deadline);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          setDeadline(`${year}-${month}-${day}`);
+          const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16);
+          setDeadline(localDateTime);
         }
 
-        setServiceCategory("Project"); // ✅ دايماً Project
+        setServiceCategory("Project");
       } else {
         setServiceTitle(projectTitle || "");
         setServiceDescription("");
-        setServiceCategory("Project"); // ✅ دايماً Project
+        setServiceCategory("Project");
         setPointsBudget(initialPoints || "");
         setDeadline("");
         setClientAcceptPublished(false);
@@ -110,6 +117,20 @@ const RequestServiceModal = ({
       return;
     }
 
+    // ✅ Validate deadline is at least 24 hours from now
+    const deadlineDateTime = new Date(deadline);
+    const now = new Date();
+    const minDeadline = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    if (deadlineDateTime <= minDeadline) {
+      setSnackbar({
+        open: true,
+        message: "Deadline must be at least 24 hours from now.",
+        severity: "error",
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -120,28 +141,25 @@ const RequestServiceModal = ({
       };
 
       if (!isEditMode) {
-        requestData.type = "Project"; // ✅ دايماً Project
+        requestData.type = "Project";
         requestData.providerId = providerId;
-        requestData.deadline = deadline;
+        requestData.deadline = deadlineDateTime.toISOString();
         requestData.clientAcceptPublished = clientAcceptPublished;
       } else {
-        if (deadline) {
+        if (deadline && deadlineTime) {
           let originalDeadline = null;
 
           if (editData.deadline) {
             try {
-              const date = new Date(editData.deadline);
-              const year = date.getFullYear();
-              const month = String(date.getMonth() + 1).padStart(2, "0");
-              const day = String(date.getDate()).padStart(2, "0");
-              originalDeadline = `${year}-${month}-${day}`;
+              originalDeadline = new Date(editData.deadline).toISOString();
             } catch {
               originalDeadline = "";
             }
           }
 
-          if (deadline !== originalDeadline) {
-            requestData.deadline = deadline;
+          const newDeadline = deadlineDateTime.toISOString();
+          if (newDeadline !== originalDeadline) {
+            requestData.deadline = newDeadline;
           }
         }
 
@@ -206,9 +224,7 @@ const RequestServiceModal = ({
         error.response?.data?.detail ||
         error.response?.data ||
         error.message ||
-        `Failed to ${
-          isEditMode ? "update" : "send"
-        } request. Please try again.`;
+        `Failed to ${isEditMode ? "update" : "send"} request. Please try again.`;
 
       setSnackbar({
         open: true,
@@ -235,6 +251,8 @@ const RequestServiceModal = ({
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // ✅ Get minimum date/time values
+  const minDateTime = getMinDateTime();
   return (
     <>
       <GenericModal
@@ -281,7 +299,11 @@ const RequestServiceModal = ({
             required
           />
 
+<<<<<<< HEAD
           {/* Points Budget - بدون Request Type */}
+=======
+          {/* Points Budget */}
+>>>>>>> c6d76cc2374ffcbda14d796f5a1c0b7b6fdf3527
           <TextField
             fullWidth
             label="Points Budget"
@@ -352,12 +374,17 @@ const RequestServiceModal = ({
           <TextField
             fullWidth
             label="Deadline"
+<<<<<<< HEAD
             type="date"
+=======
+            type="datetime-local"
+>>>>>>> c6d76cc2374ffcbda14d796f5a1c0b7b6fdf3527
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
             disabled={isSubmitting}
             required
             inputProps={{
+<<<<<<< HEAD
               min: new Date(new Date().setDate(new Date().getDate() + 1))
                 .toISOString()
                 .split("T")[0],
@@ -373,6 +400,20 @@ const RequestServiceModal = ({
             }}
             InputLabelProps={{
               shrink: true, // ✅ عشان الـ label ما يتداخل مع التاريخ
+=======
+              min: getMinDateTime(),
+            }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            helperText="Must be at least 24 hours from now"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&.Mui-focused fieldset': {
+                  borderColor: '#3B82F6',
+                },
+              },
+>>>>>>> c6d76cc2374ffcbda14d796f5a1c0b7b6fdf3527
             }}
           />
 
