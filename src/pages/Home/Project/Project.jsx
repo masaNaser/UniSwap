@@ -16,34 +16,44 @@ import {
   getClientdashboard,
   getServiceProviderDashboard,
 } from "../../../services/projectService";
-import { mapProjectsWithStatus } from "../../../utils/projectStatusMapper"; // ✅ Import mapper
+import { mapProjectsWithStatus } from "../../../utils/projectStatusMapper";
 import { useLocation } from 'react-router-dom';
 
 export default function Project() {
-  // Access location to check for state
-    const location = useLocation();
-    // ✅ استقبلي البيانات من الإشعار
+  const location = useLocation();
   const notificationData = location.state;
 
   // Initialize from localStorage to persist across page refreshes
-   const [value, setValue] = useState(() => {
-    //  إذا في بيانات من إشعار، استخدميها
+  const [value, setValue] = useState(() => {
     if (notificationData?.isProvider !== undefined) {
-      return notificationData.isProvider ? 0 : 1;  // 0 = Provider, 1 = Client
+      return notificationData.isProvider ? 0 : 1;
     }
-    //  وإلا استخدمي localStorage
     const saved = localStorage.getItem("projectTabIndex");
     return saved ? parseInt(saved) : 0;
   });
 
-   //   state جديد للريكوست المطلوب
   const [highlightedRequestId, setHighlightedRequestId] = useState(
     notificationData?.requestId || null
   );
-//   state جديد لتحديد إذا نعرض الريكوستات من الإشعار
-  const [showRequestsFromNotif, setShowRequestsFromNotif] = useState(
-    notificationData?.showRequests || false
-  );
+
+  const [showRequestsFromNotif, setShowRequestsFromNotif] = useState(() => {
+    if (notificationData?.showRequests !== undefined) {
+      return notificationData.showRequests;
+    }
+    const providerRequests = localStorage.getItem("providerShowRequests");
+    const clientRequests = localStorage.getItem("clientShowRequests");
+    
+    const currentTab = notificationData?.isProvider !== undefined 
+      ? (notificationData.isProvider ? 0 : 1)
+      : (localStorage.getItem("projectTabIndex") ? parseInt(localStorage.getItem("projectTabIndex")) : 0);
+    
+    if (currentTab === 0) {
+      return providerRequests ? JSON.parse(providerRequests) : false;
+    } else {
+      return clientRequests ? JSON.parse(clientRequests) : false;
+    }
+  });
+
   const [providerData, setProviderData] = useState(null);
   const [clientData, setClientData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -54,17 +64,14 @@ export default function Project() {
 
   const token = localStorage.getItem("accessToken");
 
-  // Save tab index to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("projectTabIndex", value.toString());
   }, [value]);
 
-  // Save status filter to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("statusFilter", statusFilter);
   }, [statusFilter]);
 
-  // ✅ FIXED: Fetch data when statusFilter changes
   useEffect(() => {
     fetchAllDashboardData();
   }, [token, statusFilter]);
@@ -74,7 +81,6 @@ export default function Project() {
       setLoading(true);
       setError(null);
 
-      // ✅ FIXED: Pass statusFilter to API calls
       const [providerResponse, clientResponse] = await Promise.all([
         getServiceProviderDashboard(token, "Provider", statusFilter),
         getClientdashboard(token, "client", statusFilter),
@@ -83,7 +89,6 @@ export default function Project() {
       console.log("Provider Response:", providerResponse);
       console.log("Client Response:", clientResponse);
 
-      // ✅ Map status numbers to strings
       const mappedProviderData = {
         ...providerResponse.data,
         items: mapProjectsWithStatus(providerResponse.data.items),
@@ -106,9 +111,26 @@ export default function Project() {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+    const providerRequests = localStorage.getItem("providerShowRequests");
+    const clientRequests = localStorage.getItem("clientShowRequests");
+    
+    if (newValue === 0) {
+      setShowRequestsFromNotif(providerRequests ? JSON.parse(providerRequests) : false);
+    } else {
+      setShowRequestsFromNotif(clientRequests ? JSON.parse(clientRequests) : false);
+    }
   };
 
   const handleRefresh = async () => {
+    const providerRequests = localStorage.getItem("providerShowRequests");
+    const clientRequests = localStorage.getItem("clientShowRequests");
+    
+    if (value === 0) {
+      setShowRequestsFromNotif(providerRequests ? JSON.parse(providerRequests) : false);
+    } else {
+      setShowRequestsFromNotif(clientRequests ? JSON.parse(clientRequests) : false);
+    }
+    
     await fetchAllDashboardData();
   };
 
@@ -153,7 +175,6 @@ export default function Project() {
           Manage your services and requests in one place
         </Typography>
 
-        {/* Tabs */}
         <Box
           sx={{
             mt: 5,
@@ -171,7 +192,7 @@ export default function Project() {
             sx={{
               width: "100%",
               "& .MuiTabs-flexContainer": {
-                flexDirection: { xs: "column", md: "row" }, // ✅ عمودي بس على الموبايل
+                flexDirection: { xs: "column", md: "row" },
                 gap: { xs: 1, md: 0 },
               },
               "& .MuiTab-root": {
@@ -183,7 +204,7 @@ export default function Project() {
                 maxWidth: "none",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center", // ✅ center للشاشات الكبيرة
+                justifyContent: "center",
                 bgcolor: "#FFFFFFCC",
                 color: "#686f78ff",
                 width: { xs: "100%", md: "auto" },
@@ -201,8 +222,8 @@ export default function Project() {
                 <Box
                   display="flex"
                   alignItems="center"
-                  justifyContent={{ xs: "space-between", md: "center" }} // ✅ space-between بس على الموبايل
-                  gap={{ xs: 1, md: 8 }} // ✅ gap زي الأول على الشاشات الكبيرة
+                  justifyContent={{ xs: "space-between", md: "center" }}
+                  gap={{ xs: 1, md: 8 }}
                   width="100%"
                 >
                   <Box
@@ -214,7 +235,6 @@ export default function Project() {
                     <VolunteerActivismOutlinedIcon
                       sx={{
                         color: value === 0 ? "#FFF" : "#686f78ff",
-                        // fontSize: { xs: "1.25rem", md: "default" },
                       }}
                     />
                     <Box
@@ -233,7 +253,7 @@ export default function Project() {
                         variant="body2"
                         color={value === 0 ? "#FFF" : "#686f78ff"}
                         fontSize={{ xs: "0.65rem", md: "0.875rem" }}
-                        sx={{ display: { xs: "none", sm: "block" } }} // ✅ إخفاء على الموبايل الصغير فقط
+                        sx={{ display: { xs: "none", sm: "block" } }}
                       >
                         Providing services to others
                       </Typography>
@@ -252,7 +272,6 @@ export default function Project() {
                       borderRadius: "8px",
                       px: 1,
                       height: { xs: "24px", md: "auto" },
-                      // fontSize: { xs: "0.7rem", md: "inherit" },
                     }}
                   />
                 </Box>
@@ -278,7 +297,6 @@ export default function Project() {
                     <WorkOutlineIcon
                       sx={{
                         color: value === 1 ? "#FFF" : "#686f78ff",
-                        // fontSize: { xs: "1.25rem", md: "default" },
                       }}
                     />
                     <Box
@@ -316,7 +334,6 @@ export default function Project() {
                       borderRadius: "10px",
                       px: 1,
                       height: { xs: "24px", md: "auto" },
-                      // fontSize: { xs: "0.7rem", md: "inherit" },
                     }}
                   />
                 </Box>
@@ -325,27 +342,25 @@ export default function Project() {
           </Tabs>
         </Box>
 
-        {/* Provider Dashboard */}
         {value === 0 && (
           <ProviderDashboard
             data={providerData}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
             onRefresh={handleRefresh}
-             highlightedRequestId={highlightedRequestId} // ✅ مرّري
-            initialShowRequests={showRequestsFromNotif} // ✅ مرّري
+            highlightedRequestId={highlightedRequestId}
+            initialShowRequests={showRequestsFromNotif}
           />
         )}
 
-        {/* Client Dashboard */}
         {value === 1 && (
           <ClientDashboard
             data={clientData}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
             onRefresh={handleRefresh}
-             highlightedRequestId={highlightedRequestId} // ✅ مرّري
-            initialShowRequests={showRequestsFromNotif} // ✅ مرّري
+            highlightedRequestId={highlightedRequestId}
+            initialShowRequests={showRequestsFromNotif}
           />
         )}
       </Container>

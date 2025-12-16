@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -26,7 +25,7 @@ export default function LandingPage() {
   const theme = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-    
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 0) setScrolled(true);
@@ -130,7 +129,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <>
+    <Box sx={{ overflowX: "hidden", width: "100%" }}>
       {/* Navbar */}
       <Box
         sx={{
@@ -142,24 +141,26 @@ export default function LandingPage() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          // backgroundColor: "rgba(255,255,255,0.9)",
           backgroundColor: theme.palette.mode === "dark" ? "#2d2d2d" : "rgba(255,255,255,0.9)",
           backdropFilter: "blur(8px)",
           transition: "background-color 0.3s ease",
-          flexWrap: "wrap", // يسمح بإضافة صف ثاني عند الحاجة
         }}
       >
         {/* Logo + Name */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <img
+          <Box
+            component="img"
             src={Logo}
             alt="UniSwap logo"
-            style={{ height: "34px", width: "34px" }}
+            sx={{
+              height: { xs: "40px", sm: "68px" },
+              width: { xs: "48px", sm: "80px" },
+            }}
           />
           <Typography
             sx={{
               fontWeight: 600,
-              fontSize: { xs: 16, sm: 18 },
+              fontSize: { xs: 25, sm: 41 },
               color: "#74767a",
             }}
           >
@@ -167,14 +168,14 @@ export default function LandingPage() {
           </Typography>
         </Box>
 
-        {/* أزرار الديسكتوب */}
+        {/* Desktop Buttons */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             gap: 3,
             "@media (max-width:433px)": {
-              display: "none", // تخفي الأزرار عند الشاشات الصغيرة
+              display: "none",
             },
           }}
         >
@@ -183,11 +184,10 @@ export default function LandingPage() {
             to="/login"
             variant="outlined"
             sx={{
-              // borderColor: "#004aad",
-              // color: "#004aad",
               color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              fontWeight: 600,
+              borderWidth: "2px",
+              fontWeight: 700,
               borderRadius: "25px",
               px: 3,
               py: 1,
@@ -201,11 +201,10 @@ export default function LandingPage() {
             to="/register"
             variant="outlined"
             sx={{
-              // borderColor: "#004aad",
-              // color: "#004aad",
               color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              fontWeight: 600,
+              borderWidth: "2px",
+              fontWeight: 700,
               borderRadius: "25px",
               px: 3,
               py: 1,
@@ -216,7 +215,7 @@ export default function LandingPage() {
           </Button>
         </Box>
 
-        {/* أيقونة المنيو للجوال */}
+        {/* Mobile Menu Icon */}
         <Box
           sx={{
             display: "none",
@@ -231,19 +230,18 @@ export default function LandingPage() {
         </Box>
       </Box>
 
-      {/* القائمة التي تظهر تحت الناف */}
+      {/* Mobile Menu Collapse */}
       <Collapse in={menuOpen}>
         <Box
           sx={{
-            // backgroundColor: "rgba(255,255,255,0.95)",
-          backgroundColor: theme.palette.mode === "dark" ? "#363636ff" : "rgba(255,255,255,0.95)",
+            backgroundColor: theme.palette.mode === "dark" ? "#363636ff" : "rgba(255,255,255,0.95)",
             backdropFilter: "blur(8px)",
             display: "flex",
             justifyContent: "center",
             gap: 2,
             py: 2,
             "@media (min-width:434px)": {
-              display: "none", // تظهر فقط في الشاشات الصغيرة
+              display: "none",
             },
           }}
         >
@@ -252,7 +250,7 @@ export default function LandingPage() {
             to="/login"
             variant="outlined"
             sx={{
-                color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+              color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderRadius: "25px",
               px: 3,
@@ -266,7 +264,7 @@ export default function LandingPage() {
             to="/register"
             variant="outlined"
             sx={{
-               color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+              color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderRadius: "25px",
               px: 3,
@@ -278,17 +276,11 @@ export default function LandingPage() {
         </Box>
       </Collapse>
 
-
-
       {/* Hero Section */}
       <Box
         sx={{
           position: "relative",
-          width: "100vw",
-          left: "50%",
-          right: "50%",
-          marginLeft: "-50vw",
-          marginRight: "-50vw",
+          width: "100%",
           height: { xs: "auto", sm: "90vh", md: "100vh" },
           minHeight: "600px",
           display: "flex",
@@ -299,7 +291,6 @@ export default function LandingPage() {
         }}
       >
         <Box
-
           sx={{
             position: "absolute",
             inset: 0,
@@ -462,6 +453,6 @@ export default function LandingPage() {
           </Box>
         </Container>
       </Box>
-    </>
+    </Box>
   );
 }
