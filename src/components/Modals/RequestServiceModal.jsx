@@ -146,7 +146,7 @@ const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
         requestData.deadline = deadlineDateTime.toISOString();
         requestData.clientAcceptPublished = clientAcceptPublished;
       } else {
-        if (deadline && deadlineTime) {
+        if (deadline) {
           let originalDeadline = null;
 
           if (editData.deadline) {

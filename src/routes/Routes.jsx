@@ -9,10 +9,10 @@ import SubServiceProjects from "../pages/Home/Browse/SubServiceProjects";
 import ForgetPassword from "../pages/Auth/ForgetPassword";
 import ResetPassword from "../pages/Auth/ResetPassword";
 import LandingPage from "../pages/LandingPage/LandingPage";
-import ProjectDetails from "../pages/Home/Browse/ProjectDetails"; 
+import ProjectDetails from "../pages/Home/Browse/ProjectDetails";
 import Project from "../pages/Home/Project/Project";
 import Profile from "../pages/Profile/Profile";
-import ChatPage from '../components/Chat/ChatPage'
+import ChatPage from "../components/Chat/ChatPage";
 import TrackTasks from "../pages/TrackTasks/TrackTasks";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import ChangePassword from "../pages/Auth/ChangePassword";
@@ -22,7 +22,7 @@ import ParentSubServices from "../pages/Home/Browse/ParentSubServices";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />, 
+    element: <LandingPage />,
   },
   {
     path: "/login",
@@ -40,13 +40,13 @@ const router = createBrowserRouter([
     path: "/resetPassword",
     element: <ResetPassword />,
   },
-    {
+  {
     path: "/changePassword",
     element: <ChangePassword />,
   },
   {
-      path:"/admin",
-      element: <AdminDashboard/>
+    path: "/admin",
+    element: <AdminDashboard />,
   },
   {
     path: "/app",
@@ -64,43 +64,43 @@ const router = createBrowserRouter([
         path: "browse/:id",
         element: <SubServices />,
       },
-       // 🔥 مسار جديد للـ ParentSubServices (المواد)
+      // 🔥 مسار جديد للـ ParentSubServices (المواد)
       {
         path: "browse/:serviceId/:subServiceId/subjects",
-        element:<ParentSubServices/>
+        element: <ParentSubServices />,
       },
       {
-        path:"browse/:serviceId/:subServiceId/:parentSubServiceId/projects",
-        element:<ParentSubServiceProjects />
+        path: "browse/:serviceId/:subServiceId/:parentSubServiceId/projects",
+        element: <ParentSubServiceProjects />,
       },
       {
         path: "services/:id/projects",
         element: <SubServiceProjects />,
       },
       {
-        path: "project/:id", 
+        path: "project/:id",
         element: <ProjectDetails />,
       },
       {
-        path: "project", 
-        element: <Project />, 
+        path: "project",
+        element: <Project />,
       },
       {
-        path: "profile", 
-        element: <Profile/>, 
+        path: "profile",
+        element: <Profile />,
       },
-        {
-        path: "profile/:userId", 
-        element: <Profile/>, 
+      {
+        path: "profile/:userId",
+        element: <Profile />,
       },
-       {
-        path: "TrackTasks/:taskId", 
-        element: <TrackTasks/>, 
+      {
+        path: "TrackTasks/:taskId",
+        element: <TrackTasks />,
       },
-         {
-    path: "Chat",
-    element:<ChatPage/>,
-  },
+      {
+        path: "Chat",
+        element: <ChatPage />,
+      },
     ],
   },
 ]);

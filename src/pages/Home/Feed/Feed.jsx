@@ -22,9 +22,9 @@ import {
   AttachFile,
   Image as ImageIcon,
 } from "@mui/icons-material";
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import SelectActionCard from "../../../components/Cards/Cards";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import GroupIcon from "@mui/icons-material/Group";
 import CloseIcon from "@mui/icons-material/Close";
@@ -252,8 +252,6 @@ const addPost = (newPost) => {
   // ✅ استخدمي timestamp بدل boolean
   setPostsUpdated(Date.now()); // ✅ هيك بيضمن إنه في تغيير حقيقي
 };
-
-
 
   const openDeleteDialog = (postId) => {
     setDeleteDialog({ open: true, postId });
@@ -725,9 +723,9 @@ const addPost = (newPost) => {
         {!admin && (
           <div className="cards-section">
             <SelectActionCard
-              title="Active Services"
-              // value="12"
-              icon={<AccessTimeIcon />}
+              title="Posts Number"
+              value={currentUser?.postsCount}
+              icon={<ArticleOutlinedIcon/>}
               iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
             />
             <SelectActionCard

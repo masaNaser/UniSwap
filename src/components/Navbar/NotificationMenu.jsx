@@ -158,32 +158,34 @@ const NotificationMenu = ({
         // 🔍 Provider Messages (الشخص اللي عم يشتغل على المشروع)
         if (
           // Provider completed the project
-          projectMessage.includes("has marked the project as complete") ||
-          // Client accepted provider's work
+          projectMessage.includes("has marked the project as complete")
+        ) {
+          isProvider = false;
+        }
+        // Provider gets alert about actions from client
+        else if (
           projectMessage.includes("has accepted the project") ||
-          // Client rejected provider's work
           projectMessage.includes(
             "final work you submitted has been rejected"
           ) ||
-          // Provider gets alert about overdue
           projectMessage.includes("project you are working on is now overdue")
         ) {
           isProvider = true; // ✅ Provider Tab
         }
         // 🔍 Client Messages (الشخص اللي طالب المشروع)
         else if (
-          // Provider submitted final work
           projectMessage.includes("please review the final work") ||
-          // Project overdue - client action required
-          projectMessage.includes("please choose to extend the deadline") ||
-          // Project cancelled
-          projectMessage.includes("project has been cancelled") ||
-          // Deadline extended
-          projectMessage.includes("deadline has been extended") ||
-          // Deadline approaching
-          projectMessage.includes("deadline is approaching")
+          projectMessage.includes("please choose to extend the deadline")
         ) {
           isProvider = false; // ✅ Client Tab
+        }
+        // Project general notifications
+        else if (
+          projectMessage.includes("project has been cancelled") ||
+          projectMessage.includes("deadline has been extended") ||
+          projectMessage.includes("deadline is approaching")
+        ) {
+          isProvider = false; // ✅ Client Tab (عادةً الـ client بيتلقى هاي الإشعارات)
         }
         // 🔍 Default: إذا ما قدرنا نحدد، نستخدم logic
         else {
@@ -199,9 +201,9 @@ const NotificationMenu = ({
 
         navigate("/app/project", {
           state: {
-            requestId: notification.refId, // Project ID
-            isProvider, // ✅ true → Provider Tab, false → Client Tab
-            showRequests: false, // ✅ مش Requests، بل Projects
+            requestId: notification.refId,
+            isProvider,
+            showRequests: false,
           },
         });
         handleNotifClose();
@@ -209,44 +211,103 @@ const NotificationMenu = ({
       }
 
       // ✅ RequestProject Tasks - مع إرسال state
+
+      // ✅ RequestProject Tasks (Based on Backend Messages)
+
       case "RequestProject":
+
       case "Task":
+
       case "Updated":
         if (notification.parentRefId) {
-          // ✅ بدل navigate فقط، ابعتي state
-          navigate(`/app/TrackTasks/${notification.parentRefId}`, {
-            state: {
-              id: notification.parentRefId,
-              // ✅ بيانات إضافية من الإشعار
-              projectTitle: notification.message || "Project",
-              isProvider: notification.isProvider || false,
-            },
+          const taskMessage = notification.message?.toLowerCase() || "";
+          let isProvider = false;
+          console.log("🔍 Analyzing task notification:", notification.message);
+
+          // ✅ PROVIDER Messages (Backend → Provider)
+
+          // 1. "accepted your submitted task ."
+
+          if (taskMessage.includes("accepted your submitted task")) {
+            isProvider = true;
+
+            console.log("   ✅ Provider (task accepted)");
+          }
+
+          // 2. "rejected your submitted task ."
+          else if (taskMessage.includes("rejected your submitted task")) {
+            isProvider = true;
+
+            console.log("   ✅ Provider (task rejected)");
+          }
+
+          // 3. "Your task has been auto-accepted..."
+          else if (taskMessage.includes("your task has been auto-accepted")) {
+            isProvider = true;
+
+            console.log(" ✅ Provider (task auto-accepted)");
+          }
+
+          // ✅ CLIENT Messages (Backend → Client)
+
+          // 4. "submitted a task for your review"
+          else if (taskMessage.includes("submitted a task for your review")) {
+            isProvider = false;
+
+            console.log("✅ Client (review task)");
+          }
+
+          // 5. "created a new project task"
+          else if (taskMessage.includes("created a new project task")) {
+            isProvider = false;
+
+            console.log("✅ Client (new task)");
+          }
+
+          // Default
+          else {
+            console.warn("⚠️ Unknown task message");
+
+            isProvider = false;
+          }
+
+          console.log("🚀 Task Navigation:", {
+            projectId: notification.parentRefId,
+            isProvider,
           });
+
+          navigate(`/app/TrackTasks/${notification.parentRefId}`,
+            {
+              state: {
+                id: notification.parentRefId,
+                projectTitle: notification.message || "Project",
+                isProvider,
+              },
+            }
+          );
+
           handleNotifClose();
-          return; // ✅ مهم عشان ما يكمل للـ navigate تحت
+
+          return;
         }
+
         targetRoute = "/app/project";
+
         break;
 
       // ✅ Reviews
       case "Review": {
-        const reviewMessage = notification.message?.toLowerCase() || "";
-        let isReviewProvider = false;
+        // const reviewMessage = notification.message?.toLowerCase() || "";
 
-        // إذا شخص كتب review على شغلك → أنت Provider
-        if (
-          reviewMessage.includes("write a review on your published project")
-        ) {
-          isReviewProvider = true;
-        }
-
-        navigate("/app/project", {
-          state: {
-            requestId: notification.refId,
-            isProvider: isReviewProvider,
-            showRequests: false,
-          },
+        // Review notification بيكون على Published Project
+        // فلازم نروح على صفحة ProjectDetails
+        console.log("🔔 Review Notification:", {
+          projectId: notification.refId,
+          message: notification.message,
         });
+
+        // ✅ التوجه لصفحة تفاصيل المشروع المنشور
+        navigate(`/app/project/${notification.parentRefId}`);
         handleNotifClose();
         return;
       }

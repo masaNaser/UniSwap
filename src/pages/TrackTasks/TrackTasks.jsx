@@ -158,21 +158,22 @@ export default function TrackTasks() {
 
     try {
         setLoading(true);
-        console.log("🔄 Fetching project data for ID:", projectId);
 
         const detailsRes = await taskService.getProjectTaskDetails(projectId, token);
         console.log("✅ Fetched project details:", detailsRes);
         
         // ✅ اعملي cardData كامل مرة واحدة
+
         const apiData = detailsRes.data;
         
         const newCardData = {
             id: projectId,
             title: apiData.title || apiData.projectName || 'Project', // ✅ من الـ API
             description: apiData.description || '',
-            clientName: apiData.clientName || '',
-            clientAvatar: apiData.clientAvatar || '',
-            clientInitials: apiData.clientName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
+             clientName: apiData.providerName || '',
+             clientAvatar: apiData.providerAvatar || '',
+            clientInitials: apiData.providerName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
+            providerInitials: apiData.providerName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
             providerName: apiData.providerName || '',
             providerAvatar: apiData.providerAvatar || '',
             isProvider: apiData.isProvider ?? (cardData?.isProvider ?? false),
