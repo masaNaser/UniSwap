@@ -52,6 +52,8 @@ export default function TrackTasksHeader({
   onDeadlineUpdate,
   onProjectClosed,
 }) {
+  const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
@@ -78,24 +80,37 @@ export default function TrackTasksHeader({
   const displayRole = isProvider ? "Client" : "Service Provider";
 
   const displayName = isProvider
-    ? (projectDetails?.clientName || cardData.clientName)
-    : (projectDetails?.providerName || "Service Provider");
+    ? projectDetails?.clientName || cardData.clientName
+    : projectDetails?.providerName || "Service Provider";
 
   const displayRoleWithName = `${displayRole} : ${displayName}`;
 
   const displayAvatar = isProvider
-    ? (projectDetails?.clientAvatar || cardData.clientAvatar)
+    ? projectDetails?.clientAvatar || cardData.clientAvatar
     : projectDetails?.providerAvatar;
 
   const displayInitials = isProvider
-    ? (projectDetails?.clientInitials || cardData.clientInitials || displayName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase())
-    : displayName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    ? projectDetails?.clientInitials ||
+      cardData.clientInitials ||
+      displayName
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase()
+    : displayName
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase();
 
   const token = localStorage.getItem("accessToken");
 
-  const isOverdue = cardData.projectStatus === 'Overdue';
+  const isOverdue = cardData.projectStatus === "Overdue";
 
-  const hasRejection = projectDetails?.rejectionReason && cardData.projectStatus === "Active";
+  const hasRejection =
+    projectDetails?.rejectionReason && cardData.projectStatus === "Active";
 
   useEffect(() => {
     const fetchReview = async () => {
@@ -106,18 +121,18 @@ export default function TrackTasksHeader({
 
       console.log("🔍 Checking if should fetch review:", {
         projectStatus: cardData.projectStatus,
-        isCompleted: cardData.projectStatus === 'Completed',
+        isCompleted: cardData.projectStatus === "Completed",
         hasRejection: !!projectDetails?.rejectionReason,
       });
 
-      if (cardData.projectStatus === 'Completed') {
+      if (cardData.projectStatus === "Completed") {
         try {
           console.log("📡 Fetching review for project:", cardData.id);
           const response = await getReviewByProject(cardData.id, token);
           console.log("✅ Review fetch response:", response.data);
           setReviewData(response.data);
         } catch (error) {
-          console.error('❌ Error fetching review:', error);
+          console.error("❌ Error fetching review:", error);
           console.log("📋 Error details:", {
             status: error.response?.status,
             data: error.response?.data,
@@ -129,14 +144,21 @@ export default function TrackTasksHeader({
     };
 
     fetchReview();
-  }, [cardData.id, cardData.projectStatus, isProvider, token, projectDetails?.rejectionReason]);
+  }, [
+    cardData.id,
+    cardData.projectStatus,
+    isProvider,
+    token,
+    projectDetails?.rejectionReason,
+  ]);
 
   const canPublishProject = () => {
     if (!isProvider) return false;
 
-    const isCompleted = cardData.projectStatus === 'Completed';
+    const isCompleted = cardData.projectStatus === "Completed";
     const isPublished = projectDetails?.isPublished || false;
-    const clientAcceptedPublishing = projectDetails?.clientAcceptPublished || false;
+    const clientAcceptedPublishing =
+      projectDetails?.clientAcceptPublished || false;
 
     console.log("📢 Can publish check:", {
       isProvider,
@@ -194,7 +216,10 @@ export default function TrackTasksHeader({
       }
 
       const deadlineISO = newDeadlineDateTime.toISOString();
-      console.log("🔄 Updating deadline via API:", { collaborationId, deadlineISO });
+      console.log("🔄 Updating deadline via API:", {
+        collaborationId,
+        deadlineISO,
+      });
       await editCollaborationRequest(token, collaborationId, {
         deadline: deadlineISO,
       });
@@ -229,7 +254,9 @@ export default function TrackTasksHeader({
   const handleOpenEdit = () => {
     if (cardData.deadline) {
       const date = new Date(cardData.deadline);
-      const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+      const localDateTime = new Date(
+        date.getTime() - date.getTimezoneOffset() * 60000
+      )
         .toISOString()
         .slice(0, 16);
       setNewDeadline(localDateTime);
@@ -258,8 +285,8 @@ export default function TrackTasksHeader({
   const canViewReview = () => {
     if (!isProvider) return false;
 
-    const isCompleted = cardData.projectStatus === 'Completed';
-    const isActive = cardData.projectStatus === 'Active';
+    const isCompleted = cardData.projectStatus === "Completed";
+    const isActive = cardData.projectStatus === "Active";
     const hasRejection = projectDetails?.rejectionReason;
 
     const result = isCompleted || (isActive && hasRejection);
@@ -327,29 +354,33 @@ export default function TrackTasksHeader({
 
       const closeRequestData = {
         isAccepted: reviewData.isAccepted,
-        rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
+        rejectionReason: reviewData.isAccepted
+          ? undefined
+          : reviewData.rejectionReason,
         rating: reviewData.isAccepted ? reviewData.rating : undefined,
         comment: reviewData.isAccepted ? reviewData.comment : undefined,
       };
 
-      console.log('📤 Sending close request to backend:', closeRequestData);
-      console.log('🔗 API endpoint:', `/api/Projects/${cardData.id}/close-by-client`);
+      console.log("📤 Sending close request to backend:", closeRequestData);
+      console.log(
+        "🔗 API endpoint:",
+        `/api/Projects/${cardData.id}/close-by-client`
+      );
 
       await closeProjectByClient(cardData.id, token, closeRequestData);
 
       console.log("✅ Project review submitted successfully");
 
-    
-// ✅ حدّث النقاط مباشرة بعد قبول/رفض المشروع
-const { updateCurrentUser } = useCurrentUser();
-await updateCurrentUser();
-console.log("✅ Points updated after project review");
+      // 🔥 فعّل الـ polling لمدة 10 ثواني
+      startTemporaryPolling(2000);
+      console.log("🚀 Polling started for points update");
 
       if (reviewData.isAccepted) {
         console.log("✅ Project accepted - rating and review saved");
         setSnackbar({
           open: true,
-          message: "Project completed successfully! Rating and review submitted. Points transferred. ✅",
+          message:
+            "Project completed successfully! Rating and review submitted. Points transferred. ✅",
           severity: "success",
         });
       } else {
@@ -399,17 +430,20 @@ console.log("✅ Points updated after project review");
 
   const handleOverdueSubmit = async (decisionData) => {
     try {
-      console.log('📤 Submitting overdue decision:', decisionData);
+      console.log("📤 Submitting overdue decision:", decisionData);
 
-      const response = await handleOverdueDecision(cardData.id, token, decisionData);
+      const response = await handleOverdueDecision(
+        cardData.id,
+        token,
+        decisionData
+      );
 
-      console.log('✅ Overdue decision submitted successfully');
-      console.log('📊 Server response:', response.data);
-       // 🔥 حدّث النقاط بعد إلغاء المشروع (إذا كان cancel)
+      console.log("✅ Overdue decision submitted successfully");
+      console.log("📊 Server response:", response.data);
+     // 🔥 إذا كان cancel (reject extend) - فعّل الـ polling
     if (!decisionData.acceptExtend) {
-      await updateCurrentUser();
-      console.log("✅ Points updated after project cancellation");
-    }
+      startTemporaryPolling(2000);
+      console.log("🚀 Polling started for points refund");
 
       // رسالة النجاح تختلف حسب القرار المتخذ
       const successMessage = decisionData.acceptExtend
@@ -429,8 +463,8 @@ console.log("✅ Points updated after project review");
         await onProjectClosed();
       }
     } catch (err) {
-      console.error('❌ Error handling overdue decision:', err);
-      console.log('📋 Error details:', {
+      console.error("❌ Error handling overdue decision:", err);
+      console.log("📋 Error details:", {
         status: err.response?.status,
         data: err.response?.data,
       });
@@ -466,7 +500,8 @@ console.log("✅ Points updated after project review");
         mb: 3,
         p: { xs: 2, sm: 3 },
         pb: 0,
-        border: (isOverdue || hasRejection) ? "2px solid #DC2626" : "1px solid #E5E7EB",
+        border:
+          isOverdue || hasRejection ? "2px solid #DC2626" : "1px solid #E5E7EB",
         position: "relative",
       }}
     >
@@ -478,7 +513,7 @@ console.log("✅ Points updated after project review");
             position: "absolute",
             top: { xs: 8, sm: 16 },
             right: { xs: 8, sm: 16 },
-            zIndex: 10
+            zIndex: 10,
           }}
         >
           <EditIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
@@ -510,7 +545,10 @@ console.log("✅ Points updated after project review");
             alignItems="center"
             mb={1}
           >
-            <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+            <Typography
+              fontWeight="bold"
+              sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+            >
               Edit Deadline
             </Typography>
             <IconButton size="small" onClick={() => setIsEditing(false)}>
@@ -530,9 +568,9 @@ console.log("✅ Points updated after project review");
             helperText="Must be at least 24 hours from now"
             sx={{
               mb: 2,
-              '& .MuiOutlinedInput-root': {
-                '&.Mui-focused fieldset': {
-                  borderColor: '#3B82F6',
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-focused fieldset": {
+                  borderColor: "#3B82F6",
                 },
               },
             }}
@@ -578,7 +616,14 @@ console.log("✅ Points updated after project review");
           <ArrowBackIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
         </IconButton>
 
-        <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 1 }, flexWrap: "wrap", justifyContent: "flex-end" }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: { xs: 0.5, sm: 1 },
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
+          }}
+        >
           {canPublishProject() && (
             <CustomButton
               startIcon={<PublishIcon />}
@@ -589,7 +634,7 @@ console.log("✅ Points updated after project review");
                 py: { xs: 0.5, sm: 0.75 },
                 px: { xs: 1, sm: 2 },
                 whiteSpace: "nowrap",
-                background: 'linear-gradient(to right, #00C8FF, #8B5FF6)',
+                background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
               }}
             >
               {isMobile ? "Publish" : "Publish Project"}
@@ -598,14 +643,16 @@ console.log("✅ Points updated after project review");
 
           {canHandleOverdue() && (
             <CustomButton
-              startIcon={<WarningAmberIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
+              startIcon={
+                <WarningAmberIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+              }
               onClick={() => setOpenOverdueDialog(true)}
               sx={{
                 textTransform: "none",
                 fontSize: { xs: "11px", sm: "14px" },
                 py: { xs: 0.5, sm: 0.75 },
                 px: { xs: 1, sm: 2 },
-                background: 'linear-gradient(to right, #DC2626, #EF4444)',
+                background: "linear-gradient(to right, #DC2626, #EF4444)",
                 whiteSpace: "nowrap",
               }}
             >
@@ -615,16 +662,19 @@ console.log("✅ Points updated after project review");
 
           {canViewReview() && (
             <CustomButton
-              startIcon={<RateReviewIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
+              startIcon={
+                <RateReviewIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+              }
               onClick={handleViewReview}
               sx={{
                 textTransform: "none",
                 fontSize: { xs: "11px", sm: "14px" },
                 py: { xs: 0.5, sm: 0.75 },
                 px: { xs: 1, sm: 2 },
-                background: cardData.projectStatus === 'Completed'
-                  ? 'linear-gradient(to right, #00C8FF, #8B5FF6)'
-                  : 'linear-gradient(to right, #DC2626, #EF4444)',
+                background:
+                  cardData.projectStatus === "Completed"
+                    ? "linear-gradient(to right, #00C8FF, #8B5FF6)"
+                    : "linear-gradient(to right, #DC2626, #EF4444)",
                 whiteSpace: "nowrap",
               }}
             >
@@ -634,7 +684,9 @@ console.log("✅ Points updated after project review");
 
           {canCloseProject() && (
             <CustomButton
-              startIcon={<CheckCircleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
+              startIcon={
+                <CheckCircleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+              }
               onClick={handleCloseProjectClick}
               sx={{
                 textTransform: "none",
@@ -645,9 +697,12 @@ console.log("✅ Points updated after project review");
               }}
             >
               {isMobile
-                ? (isProvider ? "Submit" : "Review")
-                : (isProvider ? "Submit Final Work" : "Review & Close Project")
-              }
+                ? isProvider
+                  ? "Submit"
+                  : "Review"
+                : isProvider
+                ? "Submit Final Work"
+                : "Review & Close Project"}
             </CustomButton>
           )}
         </Box>
@@ -662,17 +717,14 @@ console.log("✅ Points updated after project review");
           mb: 2,
         }}
       >
-        <Box
-          flex={1}
-          sx={{ pr: { xs: 0, md: "320px" } }}
-        >
+        <Box flex={1} sx={{ pr: { xs: 0, md: "320px" } }}>
           <Typography
             variant="h5"
             fontWeight="bold"
             sx={{
               mb: 2,
               fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" },
-              pr: { xs: 0, md: 2 }
+              pr: { xs: 0, md: 2 },
             }}
           >
             {cardData.title}
@@ -692,7 +744,10 @@ console.log("✅ Points updated after project review");
             position: { xs: "static", md: "absolute" },
             top: { md: 80 },
             right: {
-              md: !isProvider && cardData.projectStatus === "Active" && !isOverdue ? 56 : 16
+              md:
+                !isProvider && cardData.projectStatus === "Active" && !isOverdue
+                  ? 56
+                  : 16,
             },
             width: { xs: "100%", sm: "100%", md: "280px" },
           }}
@@ -809,7 +864,7 @@ console.log("✅ Points updated after project review");
             sx={{
               color: "#DC2626",
               fontSize: { xs: 24, sm: 28 },
-              mt: { xs: 0, sm: 0 }
+              mt: { xs: 0, sm: 0 },
             }}
           />
           <Box>
@@ -855,7 +910,7 @@ console.log("✅ Points updated after project review");
             sx={{
               color: "#DC2626",
               fontSize: { xs: 24, sm: 28 },
-              mt: { xs: 0, sm: 0 }
+              mt: { xs: 0, sm: 0 },
             }}
           />
           <Box>
@@ -889,11 +944,17 @@ console.log("✅ Points updated after project review");
             borderRadius: "16px",
             p: { xs: 0.5, sm: 1 },
             m: { xs: 2, sm: 3 },
-            maxWidth: { xs: "calc(100% - 32px)", sm: "600px" }
+            maxWidth: { xs: "calc(100% - 32px)", sm: "600px" },
           },
         }}
       >
-        <DialogTitle sx={{ fontWeight: "bold", pb: 1, fontSize: { xs: "1rem", sm: "1.25rem" } }}>
+        <DialogTitle
+          sx={{
+            fontWeight: "bold",
+            pb: 1,
+            fontSize: { xs: "1rem", sm: "1.25rem" },
+          }}
+        >
           Submit Final Work
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
@@ -902,11 +963,21 @@ console.log("✅ Points updated after project review");
             tasks must be completed before submission.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 3 }, flexWrap: "wrap", gap: 1 }}>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            flexWrap: "wrap",
+            gap: 1,
+          }}
+        >
           <Button
             onClick={() => setOpenCloseDialog(false)}
             disabled={closingProject}
-            sx={{ textTransform: "none", fontSize: { xs: "0.875rem", sm: "1rem" } }}
+            sx={{
+              textTransform: "none",
+              fontSize: { xs: "0.875rem", sm: "1rem" },
+            }}
           >
             Cancel
           </Button>
@@ -983,8 +1054,8 @@ console.log("✅ Points updated after project review");
               snackbar.severity === "success"
                 ? "#3b82f6"
                 : snackbar.severity === "info"
-                  ? "#3b82f6"
-                  : "#EF4444",
+                ? "#3b82f6"
+                : "#EF4444",
             color: "white",
             "& .MuiAlert-icon": {
               color: "white",
