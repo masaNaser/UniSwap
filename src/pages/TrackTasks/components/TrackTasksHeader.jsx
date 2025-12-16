@@ -462,7 +462,7 @@ export default function TrackTasksHeader({
         console.log("🔄 Calling onProjectClosed callback");
         await onProjectClosed();
       }
-    } catch (err) {
+    }} catch (err) {
       console.error("❌ Error handling overdue decision:", err);
       console.log("📋 Error details:", {
         status: err.response?.status,
@@ -482,7 +482,8 @@ export default function TrackTasksHeader({
         severity: "error",
       });
     }
-  };
+  }
+
 
   const handleSnackbarClose = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
