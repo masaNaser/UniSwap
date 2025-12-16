@@ -8,6 +8,7 @@ import { ProfileContext } from "../Context/ProfileContext";
 import { CurrentUserProvider } from "../Context/CurrentUserContext";
 import { GetFullProfile, GetProfileById } from "../services/profileService";
  import { useCurrentUser } from "../Context/CurrentUserContext";
+import { Box } from '@mui/material'; // ⬅️ استوردي Box
 
 export default function MainLayout() {
   const [userData, setUserData] = useState(null);
@@ -58,10 +59,25 @@ export default function MainLayout() {
           fetchUserData,
           // refreshProfile
         }}>
-          <Navbar/>
-          <Outlet/>
-        </ProfileContext.Provider>
-        <Footer/>
+          {/* ⬇️⬇️⬇️ الحل هون ⬇️⬇️⬇️ */}
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Navbar />
+          
+          {/* Main Content */}
+          <Box sx={{ flex: 1 }}>
+            <Outlet />
+          </Box>
+
+          <Footer />
+        </Box>      
+         </ProfileContext.Provider>
+
       </CurrentUserProvider>
     </>
   );
