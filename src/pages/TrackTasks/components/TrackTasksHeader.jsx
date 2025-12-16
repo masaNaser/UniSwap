@@ -52,6 +52,7 @@ export default function TrackTasksHeader({
   onDeadlineUpdate,
   onProjectClosed,
 }) {
+  console.log("📊 TrackTasksHeader rendered with props:",cardData)
   const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
 
   const theme = useTheme();
