@@ -44,7 +44,7 @@ export default function Message({ text, filePath, content, sender }) {
             <a
               key={i}
               href={part}
-              target="_blank"
+              // target="_blank"
               rel="noopener noreferrer"
               style={{
                 color: sender === "me" ? "white" : "black",

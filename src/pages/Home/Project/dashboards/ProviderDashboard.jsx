@@ -1,5 +1,5 @@
 import { Box, Typography, Grid, CircularProgress } from "@mui/material";
-import { useState, useEffect,useRef  } from "react";
+import { useState, useEffect, useRef } from "react";
 import ProjectHeader from "../ProjectHeader";
 import StatCard from "../StatsSection";
 import FilterSection from "../../../../components/Filter/FilterSection";
@@ -15,8 +15,8 @@ export default function ProviderDashboard({
   statusFilter,
   onStatusFilterChange,
   onRefresh,
-   highlightedRequestId,
-    initialShowRequests,
+  highlightedRequestId,
+  initialShowRequests,
 }) {
   const [showRequests, setShowRequests] = useState(() => {
     // ✅ إذا في initialShowRequests، استخدميه
@@ -27,25 +27,33 @@ export default function ProviderDashboard({
 
   const [pendingRequests, setPendingRequests] = useState([]);
   const requestRefs = useRef({}); // ✅ refs للريكوستات
+  const projectRefs = useRef({}); // 🔥 جديد: للـ Projects
+   const [filteredProjects, setFilteredProjects] = useState([]);
 
   // ✅ useEffect للـ scroll
-  useEffect(() => {
-    if (highlightedRequestId && pendingRequests.length > 0) {
-      setTimeout(() => {
-        const element = requestRefs.current[highlightedRequestId];
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          
-          // ✅ أضيفي highlight animation
-          element.style.animation = 'highlight 2s ease-in-out';
-          
-          setTimeout(() => {
-            element.style.animation = '';
-          }, 2000);
-        }
-      }, 500);
-    }
-  }, [highlightedRequestId, pendingRequests]);
+useEffect(() => {
+  if (highlightedRequestId) {
+    setTimeout(() => {
+      let element = null;
+
+      // 🔍 إذا عم نعرض Requests
+      if (showRequests && pendingRequests.length > 0) {
+        element = requestRefs.current[highlightedRequestId];
+      }
+      // 🔍 إذا عم نعرض Projects
+      else if (!showRequests && filteredProjects.length > 0) {
+        element = projectRefs.current[highlightedRequestId];
+      }
+
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.style.animation = 'highlight 2s ease-in-out';
+        setTimeout(() => { element.style.animation = ''; }, 2000);
+      }
+    }, 500);
+  }
+}, [highlightedRequestId, pendingRequests, filteredProjects, showRequests]);
+
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,19 +70,15 @@ export default function ProviderDashboard({
   const token = localStorage.getItem("accessToken");
 
   const handleImageUpdate = (userId, newAvatarUrl) => {
-    setPendingRequests(prev =>
-      prev.map(req =>
-        req.clientId === userId
-          ? { ...req, clientImage: newAvatarUrl }
-          : req
+    setPendingRequests((prev) =>
+      prev.map((req) =>
+        req.clientId === userId ? { ...req, clientImage: newAvatarUrl } : req
       )
     );
 
-    setFilteredProjects(prev =>
-      prev.map(proj =>
-        proj.clientId === userId
-          ? { ...proj, clientImage: newAvatarUrl }
-          : proj
+    setFilteredProjects((prev) =>
+      prev.map((proj) =>
+        proj.clientId === userId ? { ...proj, clientImage: newAvatarUrl } : proj
       )
     );
   };
@@ -94,10 +98,10 @@ export default function ProviderDashboard({
       const requests = response.data || [];
       console.log("res pro", requests);
       setRequestType(requests.type);
-      const updatedRequests = requests.map(req => ({
+      const updatedRequests = requests.map((req) => ({
         ...req,
         clientImage: req.clientImage || null,
-        projectType: req.type
+        projectType: req.type,
       }));
 
       setPendingRequests(updatedRequests);
@@ -117,7 +121,7 @@ export default function ProviderDashboard({
     setPendingRequests([]);
   };
 
-  const handleRequestsClick = () => setShowRequests(prev => !prev);
+  const handleRequestsClick = () => setShowRequests((prev) => !prev);
 
   const handleRequestHandled = () => {
     setPendingRequests([]);
@@ -128,7 +132,9 @@ export default function ProviderDashboard({
 
   const handleEditRequest = (requestData) => {
     console.log("Opening edit modal with data:", requestData);
-    let category = requestData.category || (requestData.type ? requestData.type.replace("Request", "") : "");
+    let category =
+      requestData.category ||
+      (requestData.type ? requestData.type.replace("Request", "") : "");
     setEditingRequest({ ...requestData, category });
     setEditModalOpen(true);
   };
@@ -146,7 +152,7 @@ export default function ProviderDashboard({
   const filterProjects = (projects) => {
     if (!projects) return [];
 
-    return projects.filter(project => {
+    return projects.filter((project) => {
       // Search filter
       const matchesSearch =
         searchQuery === "" ||
@@ -160,12 +166,10 @@ export default function ProviderDashboard({
         matchesStatus = true;
       } else if (statusFilter === "Overdue") {
         matchesStatus =
-          project.projectStatus === "Overdue" ||
-          project.status === "Overdue";
+          project.projectStatus === "Overdue" || project.status === "Overdue";
       } else if (statusFilter === "Active") {
         matchesStatus =
-          project.projectStatus === "Active" ||
-          project.status === "Active";
+          project.projectStatus === "Active" || project.status === "Active";
       } else {
         matchesStatus =
           project.projectStatus === statusFilter ||
@@ -177,7 +181,6 @@ export default function ProviderDashboard({
   };
 
   const currentProjects = data?.items || [];
-  const [filteredProjects, setFilteredProjects] = useState([]);
   const stats = data?.summary || {};
 
   const inReviewCount = stats.submittedForFinalReview || 0;
@@ -185,7 +188,8 @@ export default function ProviderDashboard({
   const filterItems = [
     {
       type: "menu",
-      label: statusFilter === "SubmittedForFinalReview" ? "In Review" : statusFilter,
+      label:
+        statusFilter === "SubmittedForFinalReview" ? "In Review" : statusFilter,
       items: [
         { label: "All Status", value: "All Status" },
         { label: "Active", value: "Active" },
@@ -210,7 +214,14 @@ export default function ProviderDashboard({
 
   if (loading)
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "400px",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -223,13 +234,55 @@ export default function ProviderDashboard({
         description="Projects where you're helping other students with your skills and expertise, building your reputation and earning points."
       />
 
-      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 5, justifyContent: { xs: "center", md: "flex-start"} }}>
-        <StatCard value={stats.total || 0} label="Total Projects" color="#00c853" progress={stats.total > 0 ? 100 : 0} />
-        <StatCard value={stats.pendingRequests || 0} label="Pending" color="#F59E0B" progress={calculateProgress(stats.pendingRequests, stats.total)} />
-        <StatCard value={stats.active || 0} label="Active" color="#059669" progress={calculateProgress(stats.active, stats.total)} />
-        <StatCard value={inReviewCount} label="In Review" color="#A855F7" progress={calculateProgress(inReviewCount, stats.total)} />
-        <StatCard value={stats.completed || 0} label="Completed" color="#0284C7" progress={calculateProgress(stats.completed, stats.total)} />
-        <StatCard value={stats.overdue || 0} label="Overdue" color="#DC2626" progress={stats.overdue > 0 ? Math.min((stats.overdue / stats.total) * 100, 100) : 0} />
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          flexWrap: "wrap",
+          mt: 5,
+          justifyContent: { xs: "center", md: "flex-start" },
+        }}
+      >
+        <StatCard
+          value={stats.total || 0}
+          label="Total Projects"
+          color="#00c853"
+          progress={stats.total > 0 ? 100 : 0}
+        />
+        <StatCard
+          value={stats.pendingRequests || 0}
+          label="Pending"
+          color="#F59E0B"
+          progress={calculateProgress(stats.pendingRequests, stats.total)}
+        />
+        <StatCard
+          value={stats.active || 0}
+          label="Active"
+          color="#059669"
+          progress={calculateProgress(stats.active, stats.total)}
+        />
+        <StatCard
+          value={inReviewCount}
+          label="In Review"
+          color="#A855F7"
+          progress={calculateProgress(inReviewCount, stats.total)}
+        />
+        <StatCard
+          value={stats.completed || 0}
+          label="Completed"
+          color="#0284C7"
+          progress={calculateProgress(stats.completed, stats.total)}
+        />
+        <StatCard
+          value={stats.overdue || 0}
+          label="Overdue"
+          color="#DC2626"
+          progress={
+            stats.overdue > 0
+              ? Math.min((stats.overdue / stats.total) * 100, 100)
+              : 0
+          }
+        />
       </Box>
 
       <Box sx={{ mt: 5 }}>
@@ -245,39 +298,43 @@ export default function ProviderDashboard({
         {showRequests ? (
           pendingRequests.length > 0 ? (
             <Grid container spacing={3}>
-              {pendingRequests.map(request => (
-                <Grid  item 
-                  xs={12} 
-                  sm={6} 
-                  lg={4} 
+              {pendingRequests.map((request) => (
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  lg={4}
                   key={request.id}
                   ref={(el) => (requestRefs.current[request.id] = el)} // ✅ حفظ الـ ref
                   sx={{
                     // ✅ Highlight animation
                     ...(highlightedRequestId === request.id && {
-                      '@keyframes highlight': {
-                        '0%': { 
-                          boxShadow: '0 0 0 0 rgba(59, 130, 246, 0.7)',
-                          transform: 'scale(1)' 
+                      "@keyframes highlight": {
+                        "0%": {
+                          boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.7)",
+                          transform: "scale(1)",
                         },
-                        '50%': { 
-                          boxShadow: '0 0 20px 10px rgba(59, 130, 246, 0.4)',
-                          transform: 'scale(1.02)' 
+                        "50%": {
+                          boxShadow: "0 0 20px 10px rgba(59, 130, 246, 0.4)",
+                          transform: "scale(1.02)",
                         },
-                        '100%': { 
-                          boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)',
-                          transform: 'scale(1)' 
+                        "100%": {
+                          boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
+                          transform: "scale(1)",
                         },
                       },
                     }),
-                  }}>
+                  }}
+                >
                   <RequestProjectCard
                     id={request.id}
                     title={request.title}
                     description={request.description}
                     clientName={request.clientName}
                     clientImage={request.clientPicture}
-                    clientInitials={request.clientName?.substring(0, 2).toUpperCase()}
+                    clientInitials={request.clientName
+                      ?.substring(0, 2)
+                      .toUpperCase()}
                     pointsOffered={request.pointsOffered}
                     deadline={formatDate(request.deadline)}
                     category={request.type}
@@ -298,29 +355,55 @@ export default function ProviderDashboard({
               </Typography>
             </Box>
           )
+        ) : filteredProjects.length > 0 ? (
+          <Grid container spacing={3}>
+            {filteredProjects.map((project) => (
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                lg={4}
+                key={project.id}
+                ref={(el) => (projectRefs.current[project.id] = el)} // 🔥 حفظ الـ ref
+                sx={{
+                  ...(highlightedRequestId === project.id && {
+                    "@keyframes highlight": {
+                      "0%": {
+                        boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.7)",
+                        transform: "scale(1)",
+                      },
+                      "50%": {
+                        boxShadow: "0 0 20px 10px rgba(59, 130, 246, 0.4)",
+                        transform: "scale(1.02)",
+                      },
+                      "100%": {
+                        boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
+                        transform: "scale(1)",
+                      },
+                    },
+                  }),
+                }}
+              >
+                {console.log("type in pro dash", project.type)}
+                {console.log("project in pro", project)}
+                <AllStatusProjectCard
+                  {...project}
+                  projectStatus={project.projectStatus || project.status}
+                  isProvider={true}
+                  projectType={project.type}
+                />
+              </Grid>
+            ))}
+          </Grid>
         ) : (
-          filteredProjects.length > 0 ? (
-            <Grid container spacing={3}>
-              {filteredProjects.map(project => (
-                <Grid item xs={12} sm={6} lg={4} key={project.id}>
-                  {console.log("type in pro dash", project.type)}
-                  {console.log("project in pro", project)}
-                  <AllStatusProjectCard
-                    {...project}
-                    projectStatus={project.projectStatus || project.status}
-                    isProvider={true}
-                    projectType={project.type}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Box textAlign="center" py={8} borderRadius={2}>
-              <Typography variant="h6" color={theme.palette.mode === 'dark' ? '#fff' : '#6B7280'}>
-                No projects found
-              </Typography>
-            </Box>
-          )
+          <Box textAlign="center" py={8} borderRadius={2}>
+            <Typography
+              variant="h6"
+              color={theme.palette.mode === "dark" ? "#fff" : "#6B7280"}
+            >
+              No projects found
+            </Typography>
+          </Box>
         )}
       </Box>
 

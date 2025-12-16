@@ -145,28 +145,68 @@ const NotificationMenu = ({
         break;
 
       // ✅ Projects
-      case "project":
+      case "Project":
       case "Rating":
       case "Rated":
       case "Completed":
       case "Assigned":
       case "Approved":
-      case "Rejected":
-      //       if (notification.parentRefId) {
-      //   navigate("/app/project", {
-      //     state: {
-      //       requestId: notification.parentRefId,
-      //       isProvider: notification.isProvider || false,
-      //       showRequests: true,
-      //     }
-      //   });
-      //   handleNotifClose();
-      //   return;
-      // }
-      // إذا مافي، روحي عادي على صفحة التفاصيل
-      targetRoute = `/app/project/${notification.refId}`;
-      break;
+      case "Rejected": {
+        const projectMessage = notification.message?.toLowerCase() || "";
+        let isProvider = false;
 
+        // 🔍 Provider Messages (الشخص اللي عم يشتغل على المشروع)
+        if (
+          // Provider completed the project
+          projectMessage.includes("has marked the project as complete") ||
+          // Client accepted provider's work
+          projectMessage.includes("has accepted the project") ||
+          // Client rejected provider's work
+          projectMessage.includes(
+            "final work you submitted has been rejected"
+          ) ||
+          // Provider gets alert about overdue
+          projectMessage.includes("project you are working on is now overdue")
+        ) {
+          isProvider = true; // ✅ Provider Tab
+        }
+        // 🔍 Client Messages (الشخص اللي طالب المشروع)
+        else if (
+          // Provider submitted final work
+          projectMessage.includes("please review the final work") ||
+          // Project overdue - client action required
+          projectMessage.includes("please choose to extend the deadline") ||
+          // Project cancelled
+          projectMessage.includes("project has been cancelled") ||
+          // Deadline extended
+          projectMessage.includes("deadline has been extended") ||
+          // Deadline approaching
+          projectMessage.includes("deadline is approaching")
+        ) {
+          isProvider = false; // ✅ Client Tab
+        }
+        // 🔍 Default: إذا ما قدرنا نحدد، نستخدم logic
+        else {
+          // إذا في parentRefId، غالبًا Task notification
+          isProvider = notification.parentRefId ? true : false;
+        }
+
+        console.log("🚀 Project Navigation:", {
+          projectId: notification.refId,
+          isProvider,
+          message: notification.message,
+        });
+
+        navigate("/app/project", {
+          state: {
+            requestId: notification.refId, // Project ID
+            isProvider, // ✅ true → Provider Tab, false → Client Tab
+            showRequests: false, // ✅ مش Requests، بل Projects
+          },
+        });
+        handleNotifClose();
+        return;
+      }
 
       // ✅ RequestProject Tasks - مع إرسال state
       case "RequestProject":
@@ -189,11 +229,27 @@ const NotificationMenu = ({
         break;
 
       // ✅ Reviews
-      case "Review":
-        targetRoute = notification.refId
-          ? `/app/project/${notification.refId}`
-          : "/app/browse";
-        break;
+      case "Review": {
+        const reviewMessage = notification.message?.toLowerCase() || "";
+        let isReviewProvider = false;
+
+        // إذا شخص كتب review على شغلك → أنت Provider
+        if (
+          reviewMessage.includes("write a review on your published project")
+        ) {
+          isReviewProvider = true;
+        }
+
+        navigate("/app/project", {
+          state: {
+            requestId: notification.refId,
+            isProvider: isReviewProvider,
+            showRequests: false,
+          },
+        });
+        handleNotifClose();
+        return;
+      }
 
       // ✅ Reports (للإدارة أو للمستخدم)
       case "Report":
@@ -202,45 +258,45 @@ const NotificationMenu = ({
         break;
 
       // ✅ Collaboration
-    // ✅ في NotificationMenu.jsx
-case "Collaboration":
-  const collaborationMessage = notification.message?.toLowerCase() || "";
-  
-  // ✅ تحليل صحيح
-  let isProvider;
-  
-  if (collaborationMessage.includes("sent you")) {
-    // "AyaMusamih sent you a collaboration request"
-    // معناها: شخص بعتلك ريكوست → أنتِ Provider
-    isProvider = true; // ✅ أنتِ Provider
-  } else if (collaborationMessage.includes("accepted your")) {
-    // "accepted your collaboration request"
-    // معناها: قبلوا ريكوستك → أنتِ Client
-    isProvider = false; // ✅ أنتِ Client
-  } else if (collaborationMessage.includes("rejected your")) {
-    // "rejected your collaboration request"
-    // معناها: رفضوا ريكوستك → أنتِ Client
-    isProvider = false; // ✅ أنتِ Client
-  } else {
-    // Default: ما بنعرف
-    isProvider = false;
-  }
-  
-  console.log("🚀 Collaboration Navigation:", {
-    requestId: notification.refId,
-    isProvider, // ✅ true عشان أنتِ Provider
-    message: notification.message,
-  });
-  
-  navigate("/app/project", {
-    state: {
-      requestId: notification.refId,
-      isProvider, // ✅ true
-      showRequests: true,
-    }
-  });
-  handleNotifClose();
-  return;
+      // ✅ في NotificationMenu.jsx
+      case "Collaboration":
+        const collaborationMessage = notification.message?.toLowerCase() || "";
+
+        // ✅ تحليل صحيح
+        let isProvider;
+
+        if (collaborationMessage.includes("sent you")) {
+          // "AyaMusamih sent you a collaboration request"
+          // معناها: شخص بعتلك ريكوست → أنتِ Provider
+          isProvider = true; // ✅ أنتِ Provider
+        } else if (collaborationMessage.includes("accepted your")) {
+          // "accepted your collaboration request"
+          // معناها: قبلوا ريكوستك → أنتِ Client
+          isProvider = false; // ✅ أنتِ Client
+        } else if (collaborationMessage.includes("rejected your")) {
+          // "rejected your collaboration request"
+          // معناها: رفضوا ريكوستك → أنتِ Client
+          isProvider = false; // ✅ أنتِ Client
+        } else {
+          // Default: ما بنعرف
+          isProvider = false;
+        }
+
+        console.log("🚀 Collaboration Navigation:", {
+          requestId: notification.refId,
+          isProvider, // ✅ true عشان أنتِ Provider
+          message: notification.message,
+        });
+
+        navigate("/app/project", {
+          state: {
+            requestId: notification.refId,
+            isProvider, // ✅ true
+            showRequests: true,
+          },
+        });
+        handleNotifClose();
+        return;
 
       // ✅ Messages
       // case "Message":

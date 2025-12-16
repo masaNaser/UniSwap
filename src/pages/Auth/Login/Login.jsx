@@ -65,7 +65,7 @@ export default function Login() {
     //هاي الخطوة عشان نحكي للمكتبة الرياكت هوك فورم انه ما تعمل الفالديشن منها وانما الفالديشن اللي حطيناه باستخدام ال yup
     resolver: yupResolver(validationSchema),
     shouldUseNativeValidation: false, // ✅ أضيفي هاد
-    mode: 'onSubmit', // ✅ وهاد
+    mode: "onSubmit", // ✅ وهاد
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -96,11 +96,11 @@ export default function Login() {
           decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
         const userId =
           decoded[
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
           ];
         const userRole =
           decoded[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
           ];
         console.log("userRole:", userRole);
         // حفظ معلومات المستخدم
@@ -329,10 +329,9 @@ export default function Login() {
                   color: "#0F172A",
                   borderRadius: "50px",
                   minHeight: "40px",
-                   minWidth: { xs: "100px", sm: "120px" }, // ✅ غيّرت هون
-      fontSize: { xs: "13px", sm: "14px" }, // ✅ وزدت هاي
+                  minWidth: { xs: "100px", sm: "120px" }, // ✅ غيّرت هون
+                  fontSize: { xs: "13px", sm: "14px" }, // ✅ وزدت هاي
                   margin: "4px",
-                  
                 },
                 "& .Mui-selected": {
                   background: "#FFFFFF",
@@ -448,7 +447,7 @@ export default function Login() {
                 variant="body2"
                 sx={{
                   fontSize: { xs: "11px", sm: "14px" },
-                  whiteSpace: "nowrap"
+                  whiteSpace: "nowrap",
                 }}
               >
                 Forgot password?

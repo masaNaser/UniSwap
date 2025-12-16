@@ -29,7 +29,7 @@ export default function Project() {
    const [value, setValue] = useState(() => {
     //  إذا في بيانات من إشعار، استخدميها
     if (notificationData?.isProvider !== undefined) {
-      return notificationData.isProvider ? 0 : 1;
+      return notificationData.isProvider ? 0 : 1;  // 0 = Provider, 1 = Client
     }
     //  وإلا استخدمي localStorage
     const saved = localStorage.getItem("projectTabIndex");

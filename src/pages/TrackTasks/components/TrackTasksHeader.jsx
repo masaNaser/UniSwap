@@ -349,6 +349,9 @@ export default function TrackTasksHeader({
 
       console.log("✅ Project review submitted successfully");
 
+    await updateCurrentUser();
+    console.log("✅ Points updated after client review")
+
       if (reviewData.isAccepted) {
         console.log("✅ Project accepted - rating and review saved");
         setSnackbar({
@@ -409,6 +412,11 @@ export default function TrackTasksHeader({
 
       console.log('✅ Overdue decision submitted successfully');
       console.log('📊 Server response:', response.data);
+       // 🔥 حدّث النقاط بعد إلغاء المشروع (إذا كان cancel)
+    if (!decisionData.acceptExtend) {
+      await updateCurrentUser();
+      console.log("✅ Points updated after project cancellation");
+    }
 
       // رسالة النجاح تختلف حسب القرار المتخذ
       const successMessage = decisionData.acceptExtend

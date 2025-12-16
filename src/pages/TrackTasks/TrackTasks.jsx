@@ -16,6 +16,7 @@ import {
   getServiceProviderDashboard,
   getClientdashboard,
 } from "../../services/projectService";
+import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ أضيفي هاد
 
 const statuses = ["ToDo", "InProgress", "InReview", "Done"];
 const statusLabels = {
@@ -29,8 +30,9 @@ export default function TrackTasks() {
   const navigate = useNavigate();
   const location = useLocation();
   const initialCardData = location.state;
-  const { taskId } = useParams(); // ✅ اجلبي الـ ID من الـ URL
-
+  const { taskId } = useParams(); //  اجلبي الـ ID من الـ URL
+   const { updateCurrentUser } = useCurrentUser();
+ 
   const [cardData, setCardData] = useState(initialCardData);
   const isProvider = cardData?.isProvider || false;
   const token = localStorage.getItem("accessToken");
@@ -249,11 +251,13 @@ export default function TrackTasks() {
     fetchProjectData();
   }, [taskId]);
 
+// تحديث الموعد النهائي في الحالة المحلية
   const handleDeadlineUpdate = (newDeadline) => {
     setCardData((prev) => ({ ...prev, deadline: newDeadline }));
     setProjectDetails((prev) => ({ ...prev, deadline: newDeadline }));
   };
 
+  // تحديث حالة المشروع عند الإغلاق
   const handleProjectClosed = async (skipSuccessMessage = false) => {
     try {
       console.log("🔄 handleProjectClosed called - refreshing project data...");
@@ -278,7 +282,7 @@ export default function TrackTasks() {
       });
     }
   };
-
+//  Handle task review submission
   const handleSubmitReview = async (taskId, decision, comment) => {
     try {
       if (decision === "accept") {
@@ -329,7 +333,7 @@ export default function TrackTasks() {
       });
     }
   };
-
+//  Handle review button click
   const handleReviewClick = (task) => {
     setReviewingTask(task);
     setOpenReviewDialog(true);

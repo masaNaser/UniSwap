@@ -1,5 +1,5 @@
 import { Box, Typography, Grid, CircularProgress } from "@mui/material";
-import { useState, useEffect,useRef  } from "react";
+import { useState, useEffect, useRef } from "react";
 import ProjectHeader from "../ProjectHeader";
 import StatCard from "../StatsSection";
 import FilterSection from "../../../../components/Filter/FilterSection";
@@ -15,10 +15,10 @@ export default function ClientDashboard({
   statusFilter,
   onStatusFilterChange,
   onRefresh,
-    highlightedRequestId,
-    initialShowRequests,
+  highlightedRequestId,
+  initialShowRequests,
 }) {
-    const [showRequests, setShowRequests] = useState(() => {
+  const [showRequests, setShowRequests] = useState(() => {
     // ✅ إذا في initialShowRequests، استخدميه
     if (initialShowRequests !== undefined) return initialShowRequests;
     const saved = localStorage.getItem("providerShowRequests");
@@ -27,25 +27,32 @@ export default function ClientDashboard({
 
   const [pendingRequests, setPendingRequests] = useState([]);
   const requestRefs = useRef({}); // ✅ refs للريكوستات
+  const projectRefs = useRef({}); // 🔥 جديد: للـ Projects
+  const [filteredProjects, setFilteredProjects] = useState([]);
 
   // ✅ useEffect للـ scroll
-  useEffect(() => {
-    if (highlightedRequestId && pendingRequests.length > 0) {
-      setTimeout(() => {
-        const element = requestRefs.current[highlightedRequestId];
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          
-          // ✅ أضيفي highlight animation
-          element.style.animation = 'highlight 2s ease-in-out';
-          
-          setTimeout(() => {
-            element.style.animation = '';
-          }, 2000);
-        }
-      }, 500);
-    }
-  }, [highlightedRequestId, pendingRequests]);
+useEffect(() => {
+  if (highlightedRequestId) {
+    setTimeout(() => {
+      let element = null;
+
+      // 🔍 إذا عم نعرض Requests
+      if (showRequests && pendingRequests.length > 0) {
+        element = requestRefs.current[highlightedRequestId];
+      }
+      // 🔍 إذا عم نعرض Projects
+      else if (!showRequests && filteredProjects.length > 0) {
+        element = projectRefs.current[highlightedRequestId];
+      }
+
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.style.animation = 'highlight 2s ease-in-out';
+        setTimeout(() => { element.style.animation = ''; }, 2000);
+      }
+    }, 500);
+  }
+}, [highlightedRequestId, pendingRequests, filteredProjects, showRequests]);
 
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
@@ -57,7 +64,6 @@ export default function ClientDashboard({
   // });
 
   // const [pendingRequests, setPendingRequests] = useState([]);
-  const [filteredProjects, setFilteredProjects] = useState([]);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingRequest, setEditingRequest] = useState(null);
@@ -170,12 +176,10 @@ export default function ClientDashboard({
         matchesStatus = true;
       } else if (statusFilter === "Overdue") {
         matchesStatus =
-          project.projectStatus === "Overdue" ||
-          project.status === "Overdue";
+          project.projectStatus === "Overdue" || project.status === "Overdue";
       } else if (statusFilter === "Active") {
         matchesStatus =
-          project.projectStatus === "Active" ||
-          project.status === "Active";
+          project.projectStatus === "Active" || project.status === "Active";
       } else {
         matchesStatus =
           project.projectStatus === statusFilter ||
@@ -239,7 +243,15 @@ export default function ClientDashboard({
         description="Projects where you're asking for help from others to learn, collaborate, or get tasks done."
       />
 
-      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 5, justifyContent: { xs: "center", md: "flex-start" } }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          flexWrap: "wrap",
+          mt: 5,
+          justifyContent: { xs: "center", md: "flex-start" },
+        }}
+      >
         <StatCard
           value={stats.total || 0}
           label="Total Requests"
@@ -296,31 +308,33 @@ export default function ClientDashboard({
           pendingRequests.length > 0 ? (
             <Grid container spacing={3}>
               {pendingRequests.map((request) => (
-                <Grid  item 
-                  xs={12} 
-                  sm={6} 
-                  lg={4} 
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  lg={4}
                   key={request.id}
                   ref={(el) => (requestRefs.current[request.id] = el)} // ✅ حفظ الـ ref
                   sx={{
                     // ✅ Highlight animation
                     ...(highlightedRequestId === request.id && {
-                      '@keyframes highlight': {
-                        '0%': { 
-                          boxShadow: '0 0 0 0 rgba(59, 130, 246, 0.7)',
-                          transform: 'scale(1)' 
+                      "@keyframes highlight": {
+                        "0%": {
+                          boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.7)",
+                          transform: "scale(1)",
                         },
-                        '50%': { 
-                          boxShadow: '0 0 20px 10px rgba(59, 130, 246, 0.4)',
-                          transform: 'scale(1.02)' 
+                        "50%": {
+                          boxShadow: "0 0 20px 10px rgba(59, 130, 246, 0.4)",
+                          transform: "scale(1.02)",
                         },
-                        '100%': { 
-                          boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)',
-                          transform: 'scale(1)' 
+                        "100%": {
+                          boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
+                          transform: "scale(1)",
                         },
                       },
                     }),
-                  }}>
+                  }}
+                >
                   <RequestProjectCard
                     id={request.id}
                     title={request.title}
@@ -353,7 +367,32 @@ export default function ClientDashboard({
         ) : filteredProjects.length > 0 ? (
           <Grid container spacing={3}>
             {filteredProjects.map((project) => (
-              <Grid item xs={12} sm={6} lg={4} key={project.id}>
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                lg={4}
+                key={project.id}
+                ref={(el) => (projectRefs.current[project.id] = el)} // 🔥 حفظ الـ ref
+                sx={{
+                  ...(highlightedRequestId === project.id && {
+                    "@keyframes highlight": {
+                      "0%": {
+                        boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.7)",
+                        transform: "scale(1)",
+                      },
+                      "50%": {
+                        boxShadow: "0 0 20px 10px rgba(59, 130, 246, 0.4)",
+                        transform: "scale(1.02)",
+                      },
+                      "100%": {
+                        boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
+                        transform: "scale(1)",
+                      },
+                    },
+                  }),
+                }}
+              >
                 {console.log("type in client dash", project.type)}
                 <AllStatusProjectCard
                   {...project}

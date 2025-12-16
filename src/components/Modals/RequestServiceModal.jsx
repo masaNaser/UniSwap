@@ -234,218 +234,217 @@ const RequestServiceModal = ({
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
-  
 
-return (
-  <>
-    <GenericModal
-      open={open}
-      onClose={handleClose}
-      title={isEditMode ? "Edit Request" : "Request Service"}
-      icon={
-        isEditMode ? (
-          <EditIcon sx={{ color: "#3b82f6" }} />
-        ) : (
-          <DescriptionIcon sx={{ color: "#3b82f6" }} />
-        )
-      }
-      primaryButtonText={isEditMode ? "Update Request" : "Send Request"}
-      primaryButtonIcon={isEditMode ? <EditIcon /> : <SendIcon />}
-      onPrimaryAction={handlePreSubmit}
-      isPrimaryDisabled={!isRequestFormValid || isSubmitting}
-      isSubmitting={isSubmitting}
-      snackbar={snackbar}
-      onSnackbarClose={handleSnackbarClose}
-    >
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-        {/* Service Title */}
-        <TextField
-          fullWidth
-          label="Service Title"
-          placeholder="What service do you need?"
-          value={serviceTitle}
-          onChange={(e) => setServiceTitle(e.target.value)}
-          disabled={isSubmitting}
-          required
-        />
-
-        {/* Description */}
-        <TextField
-          fullWidth
-          label="Description"
-          multiline
-          rows={3}
-          placeholder="Describe your project in detail..."
-          value={serviceDescription}
-          onChange={(e) => setServiceDescription(e.target.value)}
-          disabled={isSubmitting}
-          required
-        />
-
-        {/* Points Budget - بدون Request Type */}
-        <TextField
-          fullWidth
-          label="Points Budget"
-          type="number"
-          placeholder="e.g., 150"
-          value={pointsBudget}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === "" || parseInt(value) > 0) {
-              setPointsBudget(value);
-            }
-          }}
-          disabled={isSubmitting}
-          required
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Box
-                  sx={{
-                    width: 20,
-                    height: 20,
-                    backgroundColor: "#3B82F6",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="10"
-                    height="10"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="rgba(255, 255, 255, 1)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="8" cy="8" r="6"></circle>
-                    <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-                    <path d="M7 6h1v4"></path>
-                    <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-                  </svg>
-                </Box>
-              </InputAdornment>
-            ),
-            inputProps: {
-              min: 1,
-            },
-          }}
-          sx={{
-            "& input[type=number]": {
-              MozAppearance: "textfield",
-            },
-            "& input[type=number]::-webkit-outer-spin-button": {
-              WebkitAppearance: "none",
-              margin: 0,
-            },
-            "& input[type=number]::-webkit-inner-spin-button": {
-              WebkitAppearance: "none",
-              margin: 0,
-            },
-          }}
-        />
-
-        {/* Deadline */}
-        <TextField
-          fullWidth
-          label="Deadline"
-          type="date"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-          disabled={isSubmitting}
-          required
-                inputProps={{
-  min: new Date(new Date().setDate(new Date().getDate() + 1))
-    .toISOString()
-    .split("T")[0],
-}}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <CalendarTodayIcon
-                  sx={{ color: "text.secondary", fontSize: 20 }}
-                />
-              </InputAdornment>
-            ),
-          }}
-          InputLabelProps={{
-            shrink: true, // ✅ عشان الـ label ما يتداخل مع التاريخ
-          }}
-        />
-
-        {/* Checkbox للـ Published */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <input
-            type="checkbox"
-            checked={clientAcceptPublished}
-            onChange={(e) => setClientAcceptPublished(e.target.checked)}
-            disabled={isSubmitting}
-          />
-          <Typography
-            variant="body2"
-            sx={{ fontWeight: "medium", color: "text.primary" }}
-          >
-            Do you agree to allow this project to be published on the Browse
-            page?
-          </Typography>
-        </Box>
-      </Box>
-    </GenericModal>
-
-    {/* Dialog التأكيد */}
-    {!isEditMode && (
-      <Dialog
-        open={isConfirmDialogOpen}
-        onClose={() => setIsConfirmDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: { borderRadius: "16px", p: 1 },
-        }}
+  return (
+    <>
+      <GenericModal
+        open={open}
+        onClose={handleClose}
+        title={isEditMode ? "Edit Request" : "Request Service"}
+        icon={
+          isEditMode ? (
+            <EditIcon sx={{ color: "#3b82f6" }} />
+          ) : (
+            <DescriptionIcon sx={{ color: "#3b82f6" }} />
+          )
+        }
+        primaryButtonText={isEditMode ? "Update Request" : "Send Request"}
+        primaryButtonIcon={isEditMode ? <EditIcon /> : <SendIcon />}
+        onPrimaryAction={handlePreSubmit}
+        isPrimaryDisabled={!isRequestFormValid || isSubmitting}
+        isSubmitting={isSubmitting}
+        snackbar={snackbar}
+        onSnackbarClose={handleSnackbarClose}
       >
-        <DialogTitle sx={{ fontWeight: "bold", pb: 1 }}>
-          Confirm Project Request
-        </DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
-          <Typography>
-            Your points will be temporarily frozen and transferred to{" "}
-            <Typography component="span" sx={{ fontWeight: "bold" }}>
-              {providerName}
-            </Typography>{" "}
-            once the collaboration is completed. Do you agree?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button
-            onClick={() => setIsConfirmDialogOpen(false)}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+          {/* Service Title */}
+          <TextField
+            fullWidth
+            label="Service Title"
+            placeholder="What service do you need?"
+            value={serviceTitle}
+            onChange={(e) => setServiceTitle(e.target.value)}
             disabled={isSubmitting}
-            sx={{ textTransform: "none" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
+            required
+          />
+
+          {/* Description */}
+          <TextField
+            fullWidth
+            label="Description"
+            multiline
+            rows={3}
+            placeholder="Describe your project in detail..."
+            value={serviceDescription}
+            onChange={(e) => setServiceDescription(e.target.value)}
             disabled={isSubmitting}
-            sx={{
-              textTransform: "none",
-              background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
-              "&:hover": {
-                background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
+            required
+          />
+
+          {/* Points Budget - بدون Request Type */}
+          <TextField
+            fullWidth
+            label="Points Budget"
+            type="number"
+            placeholder="e.g., 150"
+            value={pointsBudget}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "" || parseInt(value) > 0) {
+                setPointsBudget(value);
+              }
+            }}
+            disabled={isSubmitting}
+            required
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Box
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      backgroundColor: "#3B82F6",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="rgba(255, 255, 255, 1)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="8" cy="8" r="6"></circle>
+                      <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                      <path d="M7 6h1v4"></path>
+                      <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                    </svg>
+                  </Box>
+                </InputAdornment>
+              ),
+              inputProps: {
+                min: 1,
               },
             }}
-          >
-            {isSubmitting ? "Processing..." : "I Agree"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    )}
-  </>
-);
+            sx={{
+              "& input[type=number]": {
+                MozAppearance: "textfield",
+              },
+              "& input[type=number]::-webkit-outer-spin-button": {
+                WebkitAppearance: "none",
+                margin: 0,
+              },
+              "& input[type=number]::-webkit-inner-spin-button": {
+                WebkitAppearance: "none",
+                margin: 0,
+              },
+            }}
+          />
+
+          {/* Deadline */}
+          <TextField
+            fullWidth
+            label="Deadline"
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            disabled={isSubmitting}
+            required
+            inputProps={{
+              min: new Date(new Date().setDate(new Date().getDate() + 1))
+                .toISOString()
+                .split("T")[0],
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <CalendarTodayIcon
+                    sx={{ color: "text.secondary", fontSize: 20 }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+            InputLabelProps={{
+              shrink: true, // ✅ عشان الـ label ما يتداخل مع التاريخ
+            }}
+          />
+
+          {/* Checkbox للـ Published */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <input
+              type="checkbox"
+              checked={clientAcceptPublished}
+              onChange={(e) => setClientAcceptPublished(e.target.checked)}
+              disabled={isSubmitting}
+            />
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: "medium", color: "text.primary" }}
+            >
+              Do you agree to allow this project to be published on the Browse
+              page?
+            </Typography>
+          </Box>
+        </Box>
+      </GenericModal>
+
+      {/* Dialog التأكيد */}
+      {!isEditMode && (
+        <Dialog
+          open={isConfirmDialogOpen}
+          onClose={() => setIsConfirmDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: "16px", p: 1 },
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: "bold", pb: 1 }}>
+            Confirm Project Request
+          </DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Typography>
+              Your points will be temporarily frozen and transferred to{" "}
+              <Typography component="span" sx={{ fontWeight: "bold" }}>
+                {providerName}
+              </Typography>{" "}
+              once the collaboration is completed. Do you agree?
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button
+              onClick={() => setIsConfirmDialogOpen(false)}
+              disabled={isSubmitting}
+              sx={{ textTransform: "none" }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              variant="contained"
+              disabled={isSubmitting}
+              sx={{
+                textTransform: "none",
+                background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
+                "&:hover": {
+                  background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
+                },
+              }}
+            >
+              {isSubmitting ? "Processing..." : "I Agree"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+    </>
+  );
 };
 
 export default RequestServiceModal;

@@ -50,20 +50,31 @@ export const CurrentUserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // ✅ هاي الدالة الجديدة - بتحدّث بيانات اليوزر
-  const updateCurrentUser = useCallback(async () => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      try {
-        const res = await GetFullProfile(token);
-        setCurrentUser(res.data);
-        console.log("✅ النقاط اتحدثت:", res.data.totalPoints);
-        return res.data;
-      } catch (error) {
-        console.error("Error updating current user:", error);
-        return null;
-      }
-    }
-  }, []);
+ const updateCurrentUser = useCallback(async () => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) {
+    console.log("⚠️ No token found");
+    return null;
+  }
+
+  try {
+    console.log("🔄 Fetching updated user data...");
+    const res = await GetFullProfile(token);
+    console.log("📦 Received data:", res.data);
+    
+    // ✅ حدّث الـ state بطريقة تضمن re-render
+    setCurrentUser(prev => {
+      console.log("🔄 Old points:", prev?.totalPoints);
+      console.log("✅ New points:", res.data.totalPoints);
+      return { ...res.data }; // ← هون المهم
+    });
+    
+    return res.data;
+  } catch (error) {
+    console.error("❌ Error updating current user:", error);
+    return null;
+  }
+}, []);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
