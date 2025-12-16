@@ -31,7 +31,7 @@ import EqualizerIcon from "@mui/icons-material/Equalizer";
 import Brightness2Icon from "@mui/icons-material/Brightness2";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import PersonIcon from "@mui/icons-material/Person";
-import LockResetIcon from '@mui/icons-material/LockReset';
+import LockResetIcon from "@mui/icons-material/LockReset";
 
 import { useLocation } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
@@ -96,13 +96,13 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 // نتائج موجودة → يعرض قسم Users (إن وُجدت) ثم Posts (إن وُجدت).
 
-const SearchResultsDropdown = ({ 
-  searchResults, 
-  isSearching, 
+const SearchResultsDropdown = ({
+  searchResults,
+  isSearching,
   searchQuery,
-  onPostClick, 
-  onUserClick, 
-  theme 
+  onPostClick,
+  onUserClick,
+  theme,
 }) => {
   if (!searchQuery) return null;
 
@@ -143,17 +143,32 @@ const SearchResultsDropdown = ({
       {isSearching ? (
         <Box sx={{ p: 4, textAlign: "center" }}>
           <CircularProgress size={32} thickness={4} />
-          <Typography sx={{ mt: 2, color: theme.palette.text.secondary, fontSize: "0.9rem" }}>
+          <Typography
+            sx={{
+              mt: 2,
+              color: theme.palette.text.secondary,
+              fontSize: "0.9rem",
+            }}
+          >
             Searching...
           </Typography>
         </Box>
-      ) : searchResults.users?.length === 0 && searchResults.posts?.length === 0 ? (
+      ) : searchResults.users?.length === 0 &&
+        searchResults.posts?.length === 0 ? (
         <Box sx={{ p: 4, textAlign: "center" }}>
-          <SearchIcon sx={{ fontSize: 48, color: theme.palette.text.disabled, mb: 1 }} />
-          <Typography variant="h6" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
+          <SearchIcon
+            sx={{ fontSize: 48, color: theme.palette.text.disabled, mb: 1 }}
+          />
+          <Typography
+            variant="h6"
+            sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}
+          >
             No results found
           </Typography>
-          <Typography variant="body2" sx={{ color: theme.palette.text.disabled, mt: 0.5 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: theme.palette.text.disabled, mt: 0.5 }}
+          >
             Try different keywords
           </Typography>
         </Box>
@@ -190,7 +205,10 @@ const SearchResultsDropdown = ({
                     transition: "all 0.2s ease",
                     borderLeft: "3px solid transparent",
                     "&:hover": {
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(59, 130, 246, 0.1)" : "rgba(59, 130, 246, 0.08)",
+                      bgcolor:
+                        theme.palette.mode === "dark"
+                          ? "rgba(59, 130, 246, 0.1)"
+                          : "rgba(59, 130, 246, 0.08)",
                       borderLeftColor: "#3B82F6",
                       pl: 2.8,
                     },
@@ -199,7 +217,7 @@ const SearchResultsDropdown = ({
                   {/* User Avatar */}
                   <Avatar
                     // src={getUserAvatar(user.userName)}
-                    src={getImageUrl(user.profilePicture) }
+                    src={getImageUrl(user.profilePicture)}
                     alt={user.userName}
                     sx={{
                       width: 40,
@@ -208,7 +226,7 @@ const SearchResultsDropdown = ({
                       boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                     }}
                   />
-                  
+
                   {/* User Info */}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography
@@ -223,7 +241,14 @@ const SearchResultsDropdown = ({
                     >
                       {user.userName}
                     </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.3 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        mt: 0.3,
+                      }}
+                    >
                       <StarIcon sx={{ fontSize: 14, color: "#FFA500" }} />
                       <Typography
                         sx={{
@@ -246,12 +271,22 @@ const SearchResultsDropdown = ({
                       alignItems: "center",
                       justifyContent: "center",
                       borderRadius: "50%",
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+                      bgcolor:
+                        theme.palette.mode === "dark"
+                          ? "rgba(255,255,255,0.05)"
+                          : "rgba(0,0,0,0.04)",
                       transition: "all 0.2s ease",
                     }}
                     className="arrow-icon"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M9 18l6-6-6-6" />
                     </svg>
                   </Box>
@@ -292,7 +327,10 @@ const SearchResultsDropdown = ({
                     transition: "all 0.2s ease",
                     borderLeft: "3px solid transparent",
                     "&:hover": {
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(34, 197, 94, 0.1)" : "rgba(34, 197, 94, 0.08)",
+                      bgcolor:
+                        theme.palette.mode === "dark"
+                          ? "rgba(34, 197, 94, 0.1)"
+                          : "rgba(34, 197, 94, 0.08)",
                       borderLeftColor: "#22C55E",
                       pl: 2.8,
                       "& .arrow-icon": {
@@ -317,22 +355,21 @@ const SearchResultsDropdown = ({
                     }}
                   >
                     {/* <ArticleIcon sx={{ color: "#22C55E", fontSize: 20 }} /> */}
-                        <Avatar
-                    // src={getUserAvatar(user.userName)}
-                    src={getImageUrl(post.authorPicture) }
-                    alt={post.author}
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      border: `2px solid ${theme.palette.divider}`,
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    }}
-                  />
+                    <Avatar
+                      // src={getUserAvatar(user.userName)}
+                      src={getImageUrl(post.authorPicture)}
+                      alt={post.author}
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        border: `2px solid ${theme.palette.divider}`,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                      }}
+                    />
                   </Box>
 
                   {/* Post Content */}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-
                     <Typography
                       sx={{
                         fontSize: "0.9rem",
@@ -372,14 +409,24 @@ const SearchResultsDropdown = ({
                       alignItems: "center",
                       justifyContent: "center",
                       borderRadius: "50%",
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+                      bgcolor:
+                        theme.palette.mode === "dark"
+                          ? "rgba(255,255,255,0.05)"
+                          : "rgba(0,0,0,0.04)",
                       transition: "all 0.2s ease",
                       flexShrink: 0,
                       mt: 0.5,
                     }}
                     className="arrow-icon"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M9 18l6-6-6-6" />
                     </svg>
                   </Box>
@@ -395,7 +442,13 @@ const SearchResultsDropdown = ({
 
 export default function PrimarySearchAppBar() {
   const theme = useTheme();
-  const { notifications, unreadNotificationCount, markAsRead, markAllAsRead, clearAll } = useNotifications();
+  const {
+    notifications,
+    unreadNotificationCount,
+    markAsRead,
+    markAllAsRead,
+    clearAll,
+  } = useNotifications();
   const { mode, toggleMode } = useContext(ThemeModeContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -476,476 +529,635 @@ export default function PrimarySearchAppBar() {
   };
 
   const toggleMobileMenu = () => setMobileOpen((p) => !p);
-
-  const isActive = (path) => {
+  
+   
+ const isActive = (path) => {
     const currentPath = location.pathname;
     if (path === "/app/browse") {
-      return currentPath.startsWith("/app/browse") || currentPath.startsWith("/app/services");
+      return currentPath.startsWith("/app/browse") || 
+             currentPath.startsWith("/app/services") ||
+             currentPath.match(/^\/app\/project\/[^/]+$/);
     }
     if (path === "/app/project") {
-      return currentPath.startsWith("/app/project") || currentPath.startsWith("/app/TrackTasks");
+      return currentPath === "/app/project" || 
+             currentPath.startsWith("/app/TrackTasks");
     }
     return currentPath === path;
   };
-useEffect(() => {
+  useEffect(() => {
     console.log("🔍 Navbar re-rendered with points:", currentUser?.totalPoints);
   }, [currentUser?.totalPoints]); // ✅ هاد مهم - يعيد render لما النقاط تتغير
 
-return (
-  <>
-    <AppBar
-      position="sticky"
-      sx={{
-        backgroundColor: theme.palette.background.paper,
-        color: theme.palette.text.primary,
-      }}
-      elevation={1}
-    >
-      <Container maxWidth="xl">
-        <Toolbar
-          sx={{
-            justifyContent: "space-between",
-            width: "100%",
-            // backgroundColor: theme.palette.background.paper,
-            gap: { xs: 1, sm: 2 },
-            minHeight: { xs: "56px", sm: "64px" },
-          }}
-        >
-          {/* LOGO */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
+  return (
+    <>
+      <AppBar
+        position="sticky"
+        sx={{
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+        }}
+        elevation={1}
+      >
+        <Container maxWidth="xl">
+          <Toolbar
+            sx={{
+              justifyContent: "space-between",
+              width: "100%",
+              // backgroundColor: theme.palette.background.paper,
+              gap: { xs: 1, sm: 2 },
+              minHeight: { xs: "56px", sm: "64px" },
+            }}
+          >
+            {/* LOGO */}
             <Box
-              component="img"
-              src={Logo}
-              alt="logo"
-              sx={{ width: 37, height: 37, cursor: "pointer" }}
-              onClick={() => navigate("/")}
-            />
-            <Typography
-              variant="h6"
-              onClick={() => navigate("/")}
               sx={{
-                fontWeight: "bold",
-                color: "#74767a",
-                display: { xs: "none", sm: "block" },
-                cursor: "pointer",
-                fontSize: { sm: "1rem", md: "1.25rem" },
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                flexShrink: 0,
               }}
             >
-              UniSwap
-            </Typography>
-          </Box>
-
-          {/* DESKTOP LINKS */}
-          {windowWidth >= 1029 && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Button
-                component={Link}
-                to="/app/feed"
+              <Box
+                component="img"
+                src={Logo}
+                alt="logo"
+                sx={{ width: 37, height: 37, cursor: "pointer" }}
+                onClick={() => navigate("/")}
+              />
+              <Typography
+                variant="h6"
+                onClick={() => navigate("/")}
                 sx={{
-                  textTransform: "none",
-                  fontSize: "18px",
-                  color: isActive("/app/feed") ? "#3B82F6" : "rgba(71,85,105,1)",
-                  backgroundColor: isActive("/app/feed") ? "#E0EEFF" : "transparent",
-                  borderRadius: "8px",
-                  px: 2,
-                  py: 1,
-                  fontWeight: isActive("/app/feed") ? "600" : "500",
+                  fontWeight: "bold",
+                  color: "#74767a",
+                  display: { xs: "none", sm: "block" },
+                  cursor: "pointer",
+                  fontSize: { sm: "1rem", md: "1.25rem" },
                 }}
               >
-                Feed
-              </Button>
+                UniSwap
+              </Typography>
+            </Box>
 
-              <Button
-                component={Link}
-                to="/app/browse"
-                sx={{
-                  textTransform: "none",
-                  fontSize: "18px",
-                  color: isActive("/app/browse") ? "#3B82F6" : "rgba(71,85,105,1)",
-                  backgroundColor: isActive("/app/browse") ? "#E0EEFF" : "transparent",
-                  borderRadius: "8px",
-                  px: 2,
-                  py: 1,
-                  fontWeight: isActive("/app/browse") ? "600" : "500",
-                }}
-              >
-                Browse
-              </Button>
-
-              {!userIsAdmin && (
+            {/* DESKTOP LINKS */}
+            {windowWidth >= 1029 && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Button
                   component={Link}
-                  to="/app/project"
+                  to="/app/feed"
                   sx={{
                     textTransform: "none",
                     fontSize: "18px",
-                    color: isActive("/app/project") ? "#3B82F6" : "rgba(71,85,105,1)",
-                    backgroundColor: isActive("/app/project") ? "#E0EEFF" : "transparent",
+                    color: isActive("/app/feed")
+                      ? "#3B82F6"
+                      : "rgba(71,85,105,1)",
+                    backgroundColor: isActive("/app/feed")
+                      ? "#E0EEFF"
+                      : "transparent",
                     borderRadius: "8px",
                     px: 2,
                     py: 1,
-                    fontWeight: isActive("/app/project") ? "600" : "500",
+                    fontWeight: isActive("/app/feed") ? "600" : "500",
                   }}
                 >
-                  Projects
+                  Feed
                 </Button>
-              )}
-            </Box>
-          )}
 
-          {/* ✅ DESKTOP SEARCH - تختفي من 656px وتحت */}
-          <ClickAwayListener onClickAway={handleSearchClose}>
-            <Box
-              sx={{
-                display: { xs: "none", sm: windowWidth >= 656 ? "flex" : "none" },
-                ml: 2,
-                flex: 1,
-                justifyContent: "center",
-                position: "relative",
-                maxWidth: { sm: "250px", md: "300px", lg: "400px" },
-              }}
-            >
-              <SearchBox
-                sx={{
-                  bgcolor: theme.palette.mode === "dark" ? "#474646ff" : "#F8FAFC",
-                  width: "100%",
-                  maxWidth: windowWidth >= 1029 ? 300 : 250,
-                }}
-              >
-                <SearchIconWrapper>
-                  {isSearching ? <CircularProgress size={20} /> : <SearchIcon />}
-                </SearchIconWrapper>
-                <StyledInputBase
-                  placeholder="Search users, posts.."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onFocus={() => searchQuery && setShowSearchResults(true)}
-                />
-              </SearchBox>
+                <Button
+                  component={Link}
+                  to="/app/browse"
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "18px",
+                    color: isActive("/app/browse")
+                      ? "#3B82F6"
+                      : "rgba(71,85,105,1)",
+                    backgroundColor: isActive("/app/browse")
+                      ? "#E0EEFF"
+                      : "transparent",
+                    borderRadius: "8px",
+                    px: 2,
+                    py: 1,
+                    fontWeight: isActive("/app/browse") ? "600" : "500",
+                  }}
+                >
+                  Browse
+                </Button>
 
-              {showSearchResults && (
-                <SearchResultsDropdown
-                  searchResults={searchResults}
-                  isSearching={isSearching}
-                  searchQuery={searchQuery}
-                  onPostClick={handlePostClick}
-                  onUserClick={handleUserClick}
-                  theme={theme}
-                />
-              )}
-            </Box>
-          </ClickAwayListener>
+                {!userIsAdmin && (
+                  <Button
+                    component={Link}
+                    to="/app/project"
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "18px",
+                      color: isActive("/app/project")
+                        ? "#3B82F6"
+                        : "rgba(71,85,105,1)",
+                      backgroundColor: isActive("/app/project")
+                        ? "#E0EEFF"
+                        : "transparent",
+                      borderRadius: "8px",
+                      px: 2,
+                      py: 1,
+                      fontWeight: isActive("/app/project") ? "600" : "500",
+                    }}
+                  >
+                    Projects
+                  </Button>
+                )}
+              </Box>
+            )}
 
-          {/* RIGHT SIDE ICONS */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1 }, flexShrink: 0 }}>
-            {!userIsAdmin && windowWidth >= 1029 && (
+            {/* ✅ DESKTOP SEARCH - تختفي من 656px وتحت */}
+            <ClickAwayListener onClickAway={handleSearchClose}>
               <Box
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  bgcolor: "#3b82f638",
-                  borderRadius: 5,
-                  p: { xs: 0.5, sm: 1 },
-                  mr: 1,
+                  display: {
+                    xs: "none",
+                    sm: windowWidth >= 656 ? "flex" : "none",
+                  },
+                  ml: 2,
+                  flex: 1,
+                  justifyContent: "center",
+                  position: "relative",
+                  maxWidth: { sm: "250px", md: "300px", lg: "400px" },
+                }}
+              >
+                <SearchBox
+                  sx={{
+                    bgcolor:
+                      theme.palette.mode === "dark" ? "#474646ff" : "#F8FAFC",
+                    width: "100%",
+                    maxWidth: windowWidth >= 1029 ? 300 : 250,
+                  }}
+                >
+                  <SearchIconWrapper>
+                    {isSearching ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <SearchIcon />
+                    )}
+                  </SearchIconWrapper>
+                  <StyledInputBase
+                    placeholder="Search users, posts.."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onFocus={() => searchQuery && setShowSearchResults(true)}
+                  />
+                </SearchBox>
+
+                {showSearchResults && (
+                  <SearchResultsDropdown
+                    searchResults={searchResults}
+                    isSearching={isSearching}
+                    searchQuery={searchQuery}
+                    onPostClick={handlePostClick}
+                    onUserClick={handleUserClick}
+                    theme={theme}
+                  />
+                )}
+              </Box>
+            </ClickAwayListener>
+
+            {/* RIGHT SIDE ICONS */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 0.5, sm: 1 },
+                flexShrink: 0,
+              }}
+            >
+              {!userIsAdmin && windowWidth >= 1029 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    bgcolor: "#3b82f638",
+                    borderRadius: 5,
+                    p: { xs: 0.5, sm: 1 },
+                    mr: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: { xs: 30, sm: 35 },
+                      height: { xs: 30, sm: 35 },
+                      backgroundColor: "#3B82F6",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="8" cy="8" r="6"></circle>
+                      <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                      <path d="M7 6h1v4"></path>
+                      <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                    </svg>
+                  </Box>
+                  <Typography
+                    key={currentUser?.totalPoints} // 🔥 أضيفي هاد
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#3B82F6",
+                      fontSize: { xs: "16px", sm: "20px" },
+                    }}
+                  >
+                    {currentUser?.totalPoints || 0}{" "}
+                    <Typography component="span">pts</Typography>
+                  </Typography>
+                </Box>
+              )}
+
+              {!userIsAdmin && (
+                <IconButton
+                  size="large"
+                  color="inherit"
+                  onClick={() => navigate("/app/chat")}
+                  sx={{ p: { xs: 0.5, sm: 1 } }}
+                >
+                  <Badge badgeContent={unreadCount} color="error" max={99}>
+                    <img
+                      src={MessegeIcon}
+                      alt="Messege Icon"
+                      style={{
+                        height: "20px",
+                        width: "20px",
+                        display: "block",
+                      }}
+                    />
+                  </Badge>
+                </IconButton>
+              )}
+
+              <NotificationMenu
+                notifications={notifications}
+                unreadNotificationCount={unreadNotificationCount}
+                markAsRead={markAsRead}
+                markAllAsRead={markAllAsRead}
+                clearAll={clearAll}
+              />
+
+              <IconButton
+                size="large"
+                edge="end"
+                onClick={handleProfileMenuOpen}
+                color="inherit"
+                sx={{ p: 0 }}
+              >
+                <Avatar
+                  alt={currentUser?.userName}
+                  src={getImageUrl(
+                    currentUser?.profilePicture,
+                    currentUser?.userName
+                  )}
+                  sx={{ width: 30, height: 30 }}
+                />
+              </IconButton>
+
+              {/* ✅ PROFILE MENU - ما تغير أبداً */}
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                PaperProps={{
+                  elevation: 3,
+                  sx: {
+                    mt: 1.5,
+                    overflow: "visible",
+                    borderRadius: "12px",
+                    minWidth: 230,
+                  },
                 }}
               >
                 <Box
                   sx={{
-                    width: { xs: 30, sm: 35 },
-                    height: { xs: 30, sm: 35 },
-                    backgroundColor: "#3B82F6",
-                    borderRadius: "50%",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
+                    px: 2,
+                    py: 1,
+                    gap: 1,
                   }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="8" cy="8" r="6"></circle>
-                    <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-                    <path d="M7 6h1v4"></path>
-                    <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-                  </svg>
+                  <Avatar
+                    alt={currentUser?.userName}
+                    src={getImageUrl(
+                      currentUser?.profilePicture,
+                      currentUser?.userName
+                    )}
+                    sx={{ width: 30, height: 30 }}
+                  />
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {userName}
+                  </Typography>
                 </Box>
-                <Typography   key={currentUser?.totalPoints} // 🔥 أضيفي هاد
- sx={{ fontWeight: "bold", color: "#3B82F6", fontSize: { xs: "16px", sm: "20px" } }}>
-                  {currentUser?.totalPoints || 0} <Typography component="span">pts</Typography>
-                </Typography>
+                <Divider />
+
+                {userIsAdmin && (
+                  <>
+                    <MenuItem onClick={() => navigate("/admin")}>
+                      <ListItemIcon>
+                        <EqualizerIcon fontSize="small" />
+                      </ListItemIcon>
+                      Dashboard
+                    </MenuItem>
+
+                    <MenuItem onClick={toggleMode}>
+                      <ListItemIcon>
+                        {mode === "light" ? (
+                          <WbSunnyIcon fontSize="small" />
+                        ) : (
+                          <Brightness2Icon fontSize="small" />
+                        )}
+                      </ListItemIcon>
+                      {mode === "light" ? "Light Mode" : "Dark Mode"}
+                    </MenuItem>
+
+                    <MenuItem
+                      onClick={() => {
+                        logout();
+                        navigate("/");
+                      }}
+                      sx={{ color: "red" }}
+                    >
+                      <ListItemIcon>
+                        <Logout fontSize="small" sx={{ color: "red" }} />
+                      </ListItemIcon>
+                      Sign Out
+                    </MenuItem>
+                  </>
+                )}
+
+                {!userIsAdmin && (
+                  <>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        px: 2,
+                        pb: 1,
+                      }}
+                    >
+                      <StarIcon
+                        sx={{ color: "orange", fontSize: 18, mr: 0.5 }}
+                      />
+                      <Typography
+                        sx={{
+                          fontSize: "0.9rem",
+                          fontWeight: "500",
+                          color: "#555",
+                        }}
+                      >
+                        {currentUser?.averageRating || "0"}
+                      </Typography>
+
+                      <Box sx={{ flex: 1 }} />
+
+                      <Typography
+                        sx={{
+                          color: "#3b82f6",
+                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="rgba(0,75,173,0.84)"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="8" cy="8" r="6"></circle>
+                          <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                          <path d="M7 6h1v4"></path>
+                          <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                        </svg>
+                        {currentUser?.totalPoints || 0}
+                      </Typography>
+                    </Box>
+                    <MenuItem onClick={() => navigate("/app/profile")}>
+                      <ListItemIcon>
+                        <PersonOutlineOutlinedIcon fontSize="small" />
+                      </ListItemIcon>
+                      Profile
+                    </MenuItem>
+
+                    <MenuItem onClick={() => navigate("/changePassword")}>
+                      <ListItemIcon>
+                        <LockResetIcon fontSize="small" />
+                      </ListItemIcon>
+                      Change Password
+                    </MenuItem>
+
+                    <MenuItem onClick={toggleMode}>
+                      <ListItemIcon>
+                        {mode === "light" ? (
+                          <WbSunnyIcon fontSize="small" />
+                        ) : (
+                          <Brightness2Icon fontSize="small" />
+                        )}
+                      </ListItemIcon>
+                      {mode === "light" ? "Light Mode" : "Dark Mode"}
+                    </MenuItem>
+
+                    <Divider />
+
+                    <MenuItem
+                      onClick={() => {
+                        logout();
+                        navigate("/");
+                      }}
+                      sx={{ color: "red" }}
+                    >
+                      <ListItemIcon>
+                        <Logout fontSize="small" sx={{ color: "red" }} />
+                      </ListItemIcon>
+                      Sign Out
+                    </MenuItem>
+                  </>
+                )}
+              </Menu>
+
+              {windowWidth < 1029 && (
+                <Box>
+                  <IconButton
+                    size="large"
+                    onClick={toggleMobileMenu}
+                    color="inherit"
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                </Box>
+              )}
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+      {/* MOBILE MENU */}
+      {mobileOpen && windowWidth < 1029 && (
+        <Box
+          sx={{
+            width: "100%",
+            bgcolor: theme.palette.background.paper,
+            borderBottom: 1,
+          }}
+        >
+          <Container maxWidth="xl" sx={{ py: 1 }}>
+            <Button
+              component={Link}
+              to="/app/feed"
+              fullWidth
+              sx={{ textTransform: "none" }}
+            >
+              Feed
+            </Button>
+
+            <Button
+              component={Link}
+              to="/app/browse"
+              fullWidth
+              sx={{ textTransform: "none" }}
+            >
+              Browse
+            </Button>
+
+            {!userIsAdmin && (
+              <Button
+                component={Link}
+                to="/app/project"
+                fullWidth
+                sx={{ textTransform: "none" }}
+              >
+                Projects
+              </Button>
+            )}
+
+            {/* ✅ MOBILE SEARCH - تظهر من 656px وتحت */}
+            {windowWidth < 656 && (
+              <Box sx={{ mt: 1 }}>
+                <ClickAwayListener onClickAway={handleSearchClose}>
+                  <Box sx={{ position: "relative" }}>
+                    <SearchBox
+                      sx={{
+                        bgcolor:
+                          theme.palette.mode === "dark"
+                            ? "#474646ff"
+                            : "#F8FAFC",
+                        width: "100%",
+                      }}
+                    >
+                      <SearchIconWrapper>
+                        {isSearching ? (
+                          <CircularProgress size={20} />
+                        ) : (
+                          <SearchIcon />
+                        )}
+                      </SearchIconWrapper>
+                      <StyledInputBase
+                        placeholder="Search users, posts.."
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        onFocus={() =>
+                          searchQuery && setShowSearchResults(true)
+                        }
+                      />
+                    </SearchBox>
+
+                    {showSearchResults && (
+                      <SearchResultsDropdown
+                        searchResults={searchResults}
+                        isSearching={isSearching}
+                        searchQuery={searchQuery}
+                        onPostClick={handlePostClick}
+                        onUserClick={handleUserClick}
+                        theme={theme}
+                      />
+                    )}
+                  </Box>
+                </ClickAwayListener>
               </Box>
             )}
 
             {!userIsAdmin && (
-              <IconButton size="large" color="inherit" onClick={() => navigate("/app/chat")} sx={{ p: { xs: 0.5, sm: 1 } }}>
-                <Badge badgeContent={unreadCount} color="error" max={99}>
-                  <img src={MessegeIcon} alt="Messege Icon" style={{ height: "20px", width: "20px", display: "block" }} />
-                </Badge>
-              </IconButton>
-            )}
-
-            <NotificationMenu
-              notifications={notifications}
-              unreadNotificationCount={unreadNotificationCount}
-              markAsRead={markAsRead}
-              markAllAsRead={markAllAsRead}
-              clearAll={clearAll}
-            />
-
-            <IconButton size="large" edge="end" onClick={handleProfileMenuOpen} color="inherit" sx={{ p: 0 }}>
-              <Avatar
-                alt={currentUser?.userName}
-                src={getImageUrl(currentUser?.profilePicture, currentUser?.userName)}
-                sx={{ width: 30, height: 30 }}
-              />
-            </IconButton>
-
-            {/* ✅ PROFILE MENU - ما تغير أبداً */}
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              PaperProps={{
-                elevation: 3,
-                sx: { mt: 1.5, overflow: "visible", borderRadius: "12px", minWidth: 230 },
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", px: 2, py: 1, gap: 1 }}>
-                <Avatar
-                  alt={currentUser?.userName}
-                  src={getImageUrl(currentUser?.profilePicture, currentUser?.userName)}
-                  sx={{ width: 30, height: 30 }}
-                />
-                <Typography sx={{ fontWeight: "bold" }}>{userName}</Typography>
-              </Box>
-              <Divider />
-
-              {userIsAdmin && (
-                <>
-                  <MenuItem onClick={() => navigate("/admin")}>
-                    <ListItemIcon>
-                      <EqualizerIcon fontSize="small" />
-                    </ListItemIcon>
-                    Dashboard
-                  </MenuItem>
-
-                  <MenuItem onClick={toggleMode}>
-                    <ListItemIcon>
-                      {mode === "light" ? <WbSunnyIcon fontSize="small" /> : <Brightness2Icon fontSize="small" />}
-                    </ListItemIcon>
-                    {mode === "light" ? "Light Mode" : "Dark Mode"}
-                  </MenuItem>
-
-                  <MenuItem onClick={() => { logout(); navigate("/"); }} sx={{ color: "red" }}>
-                    <ListItemIcon>
-                      <Logout fontSize="small" sx={{ color: "red" }} />
-                    </ListItemIcon>
-                    Sign Out
-                  </MenuItem>
-                </>
-              )}
-
-              {!userIsAdmin && (
-                <>
-                  <Box sx={{ display: "flex", alignItems: "center", px: 2, pb: 1 }}>
-                    <StarIcon sx={{ color: "orange", fontSize: 18, mr: 0.5 }} />
-                    <Typography sx={{ fontSize: "0.9rem", fontWeight: "500", color: "#555" }}>
-                      {currentUser?.averageRating || "0"}
-                    </Typography>
-
-                    <Box sx={{ flex: 1 }} />
-
-                    <Typography sx={{ color: "#3b82f6", fontWeight: "bold", display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="rgba(0,75,173,0.84)"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="8" cy="8" r="6"></circle>
-                        <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-                        <path d="M7 6h1v4"></path>
-                        <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-                      </svg>
-                      {currentUser?.totalPoints || 0}
-                    </Typography>
-                  </Box>
-                  <MenuItem onClick={() => navigate("/app/profile")}>
-                    <ListItemIcon>
-                      <PersonOutlineOutlinedIcon fontSize="small" />
-                    </ListItemIcon>
-                    Profile
-                  </MenuItem>
-                  
-                  <MenuItem onClick={() => navigate("/changePassword")}>
-                    <ListItemIcon>
-                      <LockResetIcon  fontSize="small" />
-                    </ListItemIcon>
-                    Change Password
-                  </MenuItem>
-
-                  <MenuItem onClick={toggleMode}>
-                    <ListItemIcon>
-                      {mode === "light" ? <WbSunnyIcon fontSize="small" /> : <Brightness2Icon fontSize="small" />}
-                    </ListItemIcon>
-                    {mode === "light" ? "Light Mode" : "Dark Mode"}
-                  </MenuItem>
-
-                  <Divider />
-
-                  <MenuItem onClick={() => { logout(); navigate("/"); }} sx={{ color: "red" }}>
-                    <ListItemIcon>
-                      <Logout fontSize="small" sx={{ color: "red" }} />
-                    </ListItemIcon>
-                    Sign Out
-                  </MenuItem>
-                </>
-              )}
-            </Menu>
-
-            {windowWidth < 1029 && (
-              <Box>
-                <IconButton size="large" onClick={toggleMobileMenu} color="inherit">
-                  <MenuIcon />
-                </IconButton>
-              </Box>
-            )}
-          </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
-
-    {/* MOBILE MENU */}
-    {mobileOpen && windowWidth < 1029 && (
-      <Box sx={{ width: "100%", bgcolor: theme.palette.background.paper, borderBottom: 1 }}>
-        <Container maxWidth="xl" sx={{ py: 1 }}>
-          <Button 
-            component={Link} 
-            to="/app/feed" 
-            fullWidth
-            sx={{ textTransform: "none" }}
-          >
-            Feed
-          </Button>
-          
-          <Button 
-            component={Link} 
-            to="/app/browse" 
-            fullWidth
-            sx={{ textTransform: "none" }}
-          >
-            Browse
-          </Button>
-          
-          {!userIsAdmin && (
-            <Button 
-              component={Link} 
-              to="/app/project" 
-              fullWidth
-              sx={{ textTransform: "none" }}
-            >
-              Projects
-            </Button>
-          )}
-
-          {/* ✅ MOBILE SEARCH - تظهر من 656px وتحت */}
-          {windowWidth < 656 && (
-            <Box sx={{ mt: 1 }}>
-              <ClickAwayListener onClickAway={handleSearchClose}>
-                <Box sx={{ position: "relative" }}>
-                  <SearchBox sx={{ bgcolor: theme.palette.mode === "dark" ? "#474646ff" : "#F8FAFC", width: "100%" }}>
-                    <SearchIconWrapper>
-                      {isSearching ? <CircularProgress size={20} /> : <SearchIcon />}
-                    </SearchIconWrapper>
-                    <StyledInputBase
-                      placeholder="Search users, posts.."
-                      value={searchQuery}
-                      onChange={handleSearchChange}
-                      onFocus={() => searchQuery && setShowSearchResults(true)}
-                    />
-                  </SearchBox>
-
-                  {showSearchResults && (
-                    <SearchResultsDropdown
-                      searchResults={searchResults}
-                      isSearching={isSearching}
-                      searchQuery={searchQuery}
-                      onPostClick={handlePostClick}
-                      onUserClick={handleUserClick}
-                      theme={theme}
-                    />
-                  )}
-                </Box>
-              </ClickAwayListener>
-            </Box>
-          )}
-
-          {!userIsAdmin && (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  bgcolor: "#3b82f638",
-                  borderRadius: 5,
-                  p: 1,
-                  width: "80%",
-                  justifyContent: "center",
-                }}
-              >
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
                 <Box
                   sx={{
-                    width: 35,
-                    height: 35,
-                    backgroundColor: "#3B82F6",
-                    borderRadius: "50%",
                     display: "flex",
                     alignItems: "center",
+                    gap: 1,
+                    bgcolor: "#3b82f638",
+                    borderRadius: 5,
+                    p: 1,
+                    width: "80%",
                     justifyContent: "center",
                   }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <Box
+                    sx={{
+                      width: 35,
+                      height: 35,
+                      backgroundColor: "#3B82F6",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
-                    <circle cx="8" cy="8" r="6"></circle>
-                    <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-                    <path d="M7 6h1v4"></path>
-                    <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-                  </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="8" cy="8" r="6"></circle>
+                      <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                      <path d="M7 6h1v4"></path>
+                      <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                    </svg>
+                  </Box>
+                  <Typography
+                    key={currentUser?.totalPoints} // 🔥 أضيفي هاد
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#3B82F6",
+                      fontSize: "20px",
+                    }}
+                  >
+                    {currentUser?.totalPoints || 0}{" "}
+                    <Typography component="span">pts</Typography>
+                  </Typography>
                 </Box>
-                <Typography   key={currentUser?.totalPoints} // 🔥 أضيفي هاد
- sx={{ fontWeight: "bold", color: "#3B82F6", fontSize: "20px" }}>
-                  {currentUser?.totalPoints || 0} <Typography component="span">pts</Typography>
-                </Typography>
               </Box>
-            </Box>
-          )}
-        </Container>
-      </Box>
-    )}
-  </>
-);
+            )}
+          </Container>
+        </Box>
+      )}
+    </>
+  );
 }

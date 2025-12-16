@@ -50,7 +50,7 @@ export default function ProfileHeader() {
 
   const handleMessageClick = () => {
     if (!userData?.id) return;
-    navigate("/chat", {
+    navigate("/app/Chat", {
       state: {
         convId: null,
         receiverId: userData.id,
