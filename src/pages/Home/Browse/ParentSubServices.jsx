@@ -58,62 +58,62 @@ const ParentSubServices = () => {
     }
   }, [serviceId, subServiceId]);
 
-// Create Subject (ParentSubService)
-const handleCreate = async () => {
-  setIsSubmitting(true);
-  try {
+  // Create Subject (ParentSubService)
+  const handleCreate = async () => {
+    setIsSubmitting(true);
+    try {
       console.log("🔍 Creating with:", {
-      serviceId: serviceId,
-      name: formData.name,
-      parentSubServiceId: subServiceId // 🔥 تأكدي إنه موجود
-    });
-    // 🔥 استخدام CreateSubServices مع parentSubServiceId
-    const response = await CreateSubServices(token, serviceId, formData, subServiceId);
-        console.log("✅ Created:", response.data);
+        serviceId: serviceId,
+        name: formData.name,
+        parentSubServiceId: subServiceId // 🔥 تأكدي إنه موجود
+      });
+      // 🔥 استخدام CreateSubServices مع parentSubServiceId
+      const response = await CreateSubServices(token, serviceId, formData, subServiceId);
+      console.log("✅ Created:", response.data);
 
-    setOpenCreateModal(false);
-    setFormData({ name: "" });
-    fetchParentSubServices();
-  } catch (error) {
-    console.error("Error creating subject:", error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      setOpenCreateModal(false);
+      setFormData({ name: "" });
+      fetchParentSubServices();
+    } catch (error) {
+      console.error("Error creating subject:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
- // Update Subject
-const handleUpdate = async () => {
-  setIsSubmitting(true);
-  try {
-    // 🔥 استخدام EditSubServices
-    await EditSubServices(token, serviceId, selectedSubject.id, formData);
-    
-    setOpenEditModal(false);
-    setFormData({ name: "" });
-    fetchParentSubServices();
-  } catch (error) {
-    console.error("Error updating subject:", error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  // Update Subject
+  const handleUpdate = async () => {
+    setIsSubmitting(true);
+    try {
+      // 🔥 استخدام EditSubServices
+      await EditSubServices(token, serviceId, selectedSubject.id, formData);
 
-// Delete Subject
-const handleDelete = async () => {
-  setIsSubmitting(true);
-  try {
-    // 🔥 استخدام DeleteSubServices
-    await DeleteSubServices(token, serviceId, selectedSubject.id);
-    
-    setOpenDeleteModal(false);
-    setSelectedSubject(null);
-    fetchParentSubServices();
-  } catch (error) {
-    console.error("Error deleting subject:", error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      setOpenEditModal(false);
+      setFormData({ name: "" });
+      fetchParentSubServices();
+    } catch (error) {
+      console.error("Error updating subject:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Delete Subject
+  const handleDelete = async () => {
+    setIsSubmitting(true);
+    try {
+      // 🔥 استخدام DeleteSubServices
+      await DeleteSubServices(token, serviceId, selectedSubject.id);
+
+      setOpenDeleteModal(false);
+      setSelectedSubject(null);
+      fetchParentSubServices();
+    } catch (error) {
+      console.error("Error deleting subject:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!serviceId || !subServiceId) {
     return (
@@ -199,6 +199,8 @@ const handleDelete = async () => {
               <ServiceCard
                 title={subject.name}
                 description={subject.description || ""}
+                cardWidth="368px"
+                cardHeight="160px"
                 url={`/app/browse/${serviceId}/${subServiceId}/${subject.id}/projects?serviceName=${encodeURIComponent(
                   serviceName
                 )}&subServiceName=${encodeURIComponent(

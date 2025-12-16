@@ -1004,7 +1004,7 @@ export default function PrimarySearchAppBar() {
                     </svg>
                   </Box>
                   <Typography
-                    key={currentUser?.totalPoints} 
+                    key={currentUser?.totalPoints}
                     sx={{
                       fontWeight: "bold",
                       color: "#3B82F6",
