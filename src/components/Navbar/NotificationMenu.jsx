@@ -29,7 +29,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import NotificationIcon from "../../assets/images/NotificationIcon.svg";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../utils/imageHelper";
-import { GetOneReports } from "../../services/adminService";
+import { useTheme } from "@mui/material/styles";
 const NotificationMenu = ({
   notifications,
   unreadNotificationCount,
@@ -39,6 +39,7 @@ const NotificationMenu = ({
 }) => {
   const navigate = useNavigate();
   const [notifAnchor, setNotifAnchor] = useState(null);
+  const theme = useTheme(); // 🔥 استخدام theme
 
   const handleNotifClick = (event) => {
     setNotifAnchor(event.currentTarget);
@@ -493,7 +494,7 @@ const NotificationMenu = ({
     );
   };
 
-  return (
+return (
     <>
       <IconButton
         size="large"
@@ -505,11 +506,7 @@ const NotificationMenu = ({
           <img
             src={NotificationIcon}
             alt="Notification Icon"
-            style={{
-              height: "20px",
-              width: "20px",
-              display: "block",
-            }}
+            style={{ height: "25px", width: "25px", display: "block" }}
           />
         </Badge>
       </IconButton>
@@ -526,29 +523,31 @@ const NotificationMenu = ({
             width: 420,
             borderRadius: "16px",
             overflow: "hidden",
+            bgcolor: theme.palette.background.paper, // 🔥 Dark Mode
           },
         }}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        {/* Header */}
+        {/* Header - 🔥 Dark Mode Support */}
         <Box
           sx={{
             px: 2.5,
             py: 2,
-            bgcolor: "white",
+            bgcolor: theme.palette.background.paper, // 🔥
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            borderBottom: `1px solid ${theme.palette.divider}`, // 🔥
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <NotificationsNoneIcon sx={{ color: "#374151", fontSize: 22 }} />
+            <NotificationsNoneIcon sx={{ color: theme.palette.text.primary, fontSize: 22 }} />
             <Typography
               sx={{
                 fontWeight: 600,
                 fontSize: "1.125rem",
-                color: "#111827",
+                color: theme.palette.text.primary, // 🔥
               }}
             >
               Notifications
@@ -576,23 +575,26 @@ const NotificationMenu = ({
             size="small"
             onClick={handleNotifClose}
             sx={{
-              color: "#6B7280",
-              "&:hover": { bgcolor: "#F3F4F6" },
+              color: theme.palette.text.secondary, // 🔥
+              "&:hover": { 
+                bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#F3F4F6" // 🔥
+              },
             }}
           >
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - 🔥 Dark Mode Support */}
         {notifications.length > 0 && (
           <Box
             sx={{
               px: 2.5,
               py: 1.5,
-              bgcolor: "white",
+              bgcolor: theme.palette.background.paper, // 🔥
               display: "flex",
               gap: 1,
+              borderBottom: `1px solid ${theme.palette.divider}`, // 🔥
             }}
           >
             <Button
@@ -611,10 +613,10 @@ const NotificationMenu = ({
                 py: 0.5,
                 borderRadius: "8px",
                 "&:hover": {
-                  bgcolor: "#EFF6FF",
+                  bgcolor: theme.palette.mode === "dark" ? "rgba(59, 130, 246, 0.15)" : "#EFF6FF", // 🔥
                 },
                 "&.Mui-disabled": {
-                  color: "#9CA3AF",
+                  color: theme.palette.text.disabled, // 🔥
                   opacity: 0.6,
                 },
               }}
@@ -638,7 +640,7 @@ const NotificationMenu = ({
                   py: 0.5,
                   borderRadius: "8px",
                   "&:hover": {
-                    bgcolor: "#FEF2F2",
+                    bgcolor: theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.15)" : "#FEF2F2", // 🔥
                   },
                 }}
               >
@@ -648,36 +650,41 @@ const NotificationMenu = ({
           </Box>
         )}
 
-        {/* Empty State */}
+        {/* Empty State - 🔥 Dark Mode Support */}
         {notifications.length === 0 && (
-          <Box sx={{ p: 6, textAlign: "center", bgcolor: "white" }}>
+          <Box sx={{ p: 6, textAlign: "center", bgcolor: theme.palette.background.paper }}> {/* 🔥 */}
             <Box
               sx={{
                 width: 80,
                 height: 80,
                 borderRadius: "50%",
-                bgcolor: "#F3F4F6",
+                bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "#F3F4F6", // 🔥
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 margin: "0 auto 16px",
               }}
             >
-              <NotificationsNoneIcon sx={{ fontSize: 40, color: "#9CA3AF" }} />
+              <NotificationsNoneIcon sx={{ fontSize: 40, color: theme.palette.text.disabled }} /> {/* 🔥 */}
             </Box>
             <Typography
               variant="h6"
-              sx={{ color: "#374151", fontWeight: 600, mb: 0.5 }}
+              sx={{ color: theme.palette.text.primary, fontWeight: 600, mb: 0.5 }} // 🔥
             >
-              No notifications yet !
+              No notifications yet!
             </Typography>
           </Box>
         )}
 
-        {/* 🔥 Sorted Notifications */}
+        {/* Notifications List - 🔥 Dark Mode Support */}
         {sortedNotifications.length > 0 && (
           <Box
-            sx={{ maxHeight: 400, overflowY: "auto", bgcolor: "white", p: 2 }}
+            sx={{ 
+              maxHeight: 400, 
+              overflowY: "auto", 
+              bgcolor: theme.palette.background.paper, // 🔥
+              p: 2 
+            }}
           >
             {sortedNotifications.map((notif, index) => {
               const groupName = notif.group || "Other";
@@ -685,9 +692,7 @@ const NotificationMenu = ({
               const colors = groupColors[groupName] || groupColors.Other;
 
               const prevGroupName =
-                index > 0
-                  ? sortedNotifications[index - 1].group || "Other"
-                  : null;
+                index > 0 ? sortedNotifications[index - 1].group || "Other" : null;
               const showGroupBadge = groupName !== prevGroupName;
 
               return (
@@ -702,18 +707,15 @@ const NotificationMenu = ({
                         gap: 1,
                       }}
                     >
-                      {React.cloneElement(
-                        groupIcons[groupName] || <CommentIcon />,
-                        {
-                          sx: { fontSize: 20, color: colors.text },
-                        }
-                      )}
+                      {React.cloneElement(groupIcons[groupName] || <CommentIcon />, {
+                        sx: { fontSize: 20, color: colors.text },
+                      })}
 
                       <Typography
                         sx={{
                           fontSize: "0.9375rem",
                           fontWeight: 600,
-                          color: "#374151",
+                          color: theme.palette.text.primary, // 🔥
                         }}
                       >
                         {groupLabel}
@@ -723,13 +725,14 @@ const NotificationMenu = ({
                         sx={{
                           flex: 1,
                           height: "1px",
-                          bgcolor: "#E5E7EB",
+                          bgcolor: theme.palette.divider, // 🔥
                           ml: 1,
                         }}
                       />
                     </Box>
                   )}
 
+                  {/* Notification Item - 🔥 Dark Mode Support */}
                   <Box
                     onClick={() => handleNotifItemClick(notif)}
                     sx={{
@@ -737,16 +740,32 @@ const NotificationMenu = ({
                       mb: 1.5,
                       cursor: "pointer",
                       borderRadius: "16px",
-                      bgcolor: notif.isRead ? "#FFFFFF" : "#F0F7FF",
-                      border: "1px solid #E5E7EB",
+                      bgcolor: notif.isRead 
+                        ? theme.palette.background.paper // 🔥
+                        : theme.palette.mode === "dark" 
+                          ? "rgba(59, 130, 246, 0.15)" // 🔥 Dark mode unread
+                          : "#F0F7FF", // Light mode unread
+                      border: `1px solid ${theme.palette.divider}`, // 🔥
                       transition: "0.2s ease",
                       boxShadow: notif.isRead
-                        ? "0 1px 3px rgba(0,0,0,0.05)"
-                        : "0 2px 6px rgba(63,131,248,0.15)",
+                        ? theme.palette.mode === "dark" 
+                          ? "0 1px 3px rgba(0,0,0,0.3)" // 🔥
+                          : "0 1px 3px rgba(0,0,0,0.05)"
+                        : theme.palette.mode === "dark"
+                          ? "0 2px 6px rgba(59, 130, 246, 0.3)" // 🔥
+                          : "0 2px 6px rgba(63,131,248,0.15)",
                       "&:hover": {
-                        boxShadow: "0 3px 8px rgba(0,0,0,0.12)",
+                        boxShadow: theme.palette.mode === "dark" 
+                          ? "0 3px 8px rgba(0,0,0,0.4)" // 🔥
+                          : "0 3px 8px rgba(0,0,0,0.12)",
                         transform: "translateY(-2px)",
-                        bgcolor: notif.isRead ? "#F9FAFB" : "#E0EEFF",
+                        bgcolor: notif.isRead 
+                          ? theme.palette.mode === "dark" 
+                            ? "rgba(255,255,255,0.05)" // 🔥
+                            : "#F9FAFB"
+                          : theme.palette.mode === "dark"
+                            ? "rgba(59, 130, 246, 0.2)" // 🔥
+                            : "#E0EEFF",
                       },
                     }}
                   >
@@ -765,7 +784,13 @@ const NotificationMenu = ({
                               width: 40,
                               height: 40,
                               borderRadius: "50%",
-                              bgcolor: notif.isRead ? "#F3F4F6" : "#DBEAFE",
+                              bgcolor: notif.isRead 
+                                ? theme.palette.mode === "dark" 
+                                  ? "rgba(255,255,255,0.1)" // 🔥
+                                  : "#F3F4F6"
+                                : theme.palette.mode === "dark"
+                                  ? "rgba(59, 130, 246, 0.2)" // 🔥
+                                  : "#DBEAFE",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -786,7 +811,7 @@ const NotificationMenu = ({
                               height: 10,
                               borderRadius: "50%",
                               bgcolor: "#3B82F6",
-                              border: "2px solid white",
+                              border: `2px solid ${theme.palette.background.paper}`, // 🔥
                             }}
                           />
                         )}
@@ -796,7 +821,7 @@ const NotificationMenu = ({
                         <Typography
                           sx={{
                             fontWeight: 600,
-                            color: "#111827",
+                            color: theme.palette.text.primary, // 🔥
                             fontSize: "0.9375rem",
                             mb: 0.5,
                           }}
@@ -804,9 +829,9 @@ const NotificationMenu = ({
                           {notif.title}
                         </Typography>
 
-                     <Typography
+                        <Typography
                           sx={{
-                            color: "#6B7280",
+                            color: theme.palette.text.secondary, // 🔥
                             fontSize: "0.875rem",
                             mb: 0.5,
                             lineHeight: 1.5,
@@ -820,7 +845,7 @@ const NotificationMenu = ({
 
                         <Typography
                           sx={{
-                            color: "#9CA3AF",
+                            color: theme.palette.text.disabled, // 🔥
                             fontSize: "0.8125rem",
                           }}
                         >

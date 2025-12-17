@@ -253,7 +253,7 @@ const SearchResultsDropdown = ({
                       <Typography
                         sx={{
                           fontSize: "0.8rem",
-                          color: theme.palette.text.secondary,
+                            color: theme.palette.text.primary, // 🔥
                           fontWeight: 500,
                         }}
                       >
@@ -529,18 +529,18 @@ export default function PrimarySearchAppBar() {
   };
 
   const toggleMobileMenu = () => setMobileOpen((p) => !p);
-
-
-  const isActive = (path) => {
+  
+   
+ const isActive = (path) => {
     const currentPath = location.pathname;
     if (path === "/app/browse") {
-      return currentPath.startsWith("/app/browse") ||
-        currentPath.startsWith("/app/services") ||
-        currentPath.match(/^\/app\/project\/[^/]+$/);
+      return currentPath.startsWith("/app/browse") || 
+             currentPath.startsWith("/app/services") ||
+             currentPath.match(/^\/app\/project\/[^/]+$/);
     }
     if (path === "/app/project") {
-      return currentPath === "/app/project" ||
-        currentPath.startsWith("/app/TrackTasks");
+      return currentPath === "/app/project" || 
+             currentPath.startsWith("/app/TrackTasks");
     }
     return currentPath === path;
   };
@@ -563,6 +563,7 @@ export default function PrimarySearchAppBar() {
             sx={{
               justifyContent: "space-between",
               width: "100%",
+              // backgroundColor: theme.palette.background.paper,
               gap: { xs: 1, sm: 2 },
               minHeight: { xs: "56px", sm: "64px" },
             }}
@@ -591,7 +592,8 @@ export default function PrimarySearchAppBar() {
                   color: "#74767a",
                   display: { xs: "none", sm: "block" },
                   cursor: "pointer",
-                  fontSize: 26,
+                   fontSize: { sm: "1rem", md: "1.5rem" },
+    
                 }}
               >
                 UniSwap
@@ -600,7 +602,7 @@ export default function PrimarySearchAppBar() {
 
             {/* DESKTOP LINKS */}
             {windowWidth >= 1029 && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2, ml: 3 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2,ml:3 }}>
                 <Button
                   component={Link}
                   to="/app/feed"
@@ -668,7 +670,7 @@ export default function PrimarySearchAppBar() {
               </Box>
             )}
 
-            {/* DESKTOP SEARCH - Extended */}
+            {/* ✅ DESKTOP SEARCH - تختفي من 656px وتحت */}
             <ClickAwayListener onClickAway={handleSearchClose}>
               <Box
                 sx={{
@@ -676,11 +678,11 @@ export default function PrimarySearchAppBar() {
                     xs: "none",
                     sm: windowWidth >= 656 ? "flex" : "none",
                   },
+                  ml: 2,
                   flex: 1,
                   justifyContent: "center",
                   position: "relative",
-                  maxWidth: { sm: "400px", md: "500px", lg: "600px" },
-                  mx: 3,
+                  maxWidth: { sm: "250px", md: "300px", lg: "400px" },
                 }}
               >
                 <SearchBox
@@ -688,7 +690,8 @@ export default function PrimarySearchAppBar() {
                     bgcolor:
                       theme.palette.mode === "dark" ? "#474646ff" : "#F8FAFC",
                     width: "100%",
-                    border: `1px solid ${theme.palette.mode === "dark"
+                    maxWidth: windowWidth >= 1029 ? 300 : 250,
+                        border: `1px solid ${theme.palette.mode === "dark"
                       ? "rgba(255,255,255,0.1)"
                       : "rgba(0,0,0,0.08)"
                       }`,
@@ -709,7 +712,7 @@ export default function PrimarySearchAppBar() {
                     {isSearching ? (
                       <CircularProgress size={20} />
                     ) : (
-                      <SearchIcon sx={{ color: theme.palette.text.secondary }} />
+                      <SearchIcon sx={{ color: theme.palette.text.secondary }}/>
                     )}
                   </SearchIconWrapper>
                   <StyledInputBase
@@ -749,6 +752,7 @@ export default function PrimarySearchAppBar() {
                     alignItems: "center",
                     gap: 1,
                     bgcolor: "#3b82f638",
+
                     borderRadius: 5,
                     p: { xs: 0.5, sm: 1 },
                     mr: 1,
@@ -783,7 +787,7 @@ export default function PrimarySearchAppBar() {
                     </svg>
                   </Box>
                   <Typography
-                    key={currentUser?.totalPoints}
+                    key={currentUser?.totalPoints} // 🔥 أضيفي هاد
                     sx={{
                       fontWeight: "bold",
                       color: "#3B82F6",
@@ -808,8 +812,8 @@ export default function PrimarySearchAppBar() {
                       src={MessegeIcon}
                       alt="Messege Icon"
                       style={{
-                        height: "20px",
-                        width: "20px",
+                        height: "25px",
+                        width: "25px",
                         display: "block",
                       }}
                     />
@@ -817,7 +821,7 @@ export default function PrimarySearchAppBar() {
                 </IconButton>
               )}
 
-              <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
+                <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
                 <NotificationMenu
                   notifications={notifications}
                   unreadNotificationCount={unreadNotificationCount}
@@ -840,11 +844,11 @@ export default function PrimarySearchAppBar() {
                     currentUser?.profilePicture,
                     currentUser?.userName
                   )}
-                  sx={{ width: 30, height: 30 }}
+                  sx={{ width: 30, height: 29 }}
                 />
               </IconButton>
 
-              {/* Profile Menu remains unchanged */}
+              {/* ✅ PROFILE MENU - ما تغير أبداً */}
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -859,17 +863,169 @@ export default function PrimarySearchAppBar() {
                   },
                 }}
               >
-                {/* Keep your existing menu items here */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    px: 2,
+                    py: 1,
+                    gap: 1,
+                  }}
+                >
+                  <Avatar
+                    alt={currentUser?.userName}
+                    src={getImageUrl(
+                      currentUser?.profilePicture,
+                      currentUser?.userName
+                    )}
+                    sx={{ width: 30, height: 29 }}
+                  />
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {userName}
+                  </Typography>
+                </Box>
+                <Divider />
+
+                {userIsAdmin && (
+                  <>
+                    <MenuItem onClick={() => navigate("/admin")}>
+                      <ListItemIcon>
+                        <EqualizerIcon fontSize="small" />
+                      </ListItemIcon>
+                      Dashboard
+                    </MenuItem>
+
+                    <MenuItem onClick={toggleMode}>
+                      <ListItemIcon>
+                        {mode === "light" ? (
+                          <WbSunnyIcon fontSize="small" />
+                        ) : (
+                          <Brightness2Icon fontSize="small" />
+                        )}
+                      </ListItemIcon>
+                      {mode === "light" ? "Light Mode" : "Dark Mode"}
+                    </MenuItem>
+
+                    <MenuItem
+                      onClick={() => {
+                        logout();
+                        navigate("/");
+                      }}
+                      sx={{ color: "red" }}
+                    >
+                      <ListItemIcon>
+                        <Logout fontSize="small" sx={{ color: "red" }} />
+                      </ListItemIcon>
+                      Sign Out
+                    </MenuItem>
+                  </>
+                )}
+
+                {!userIsAdmin && (
+                  <>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        px: 2,
+                        pb: 1,
+                        mt: 1,
+                      }}
+                    >
+                      <StarIcon
+                        sx={{ color: "orange", fontSize: 18, mr: 0.5 }}
+                      />
+                      <Typography
+                        sx={{
+                          fontSize: "0.9rem",
+                          fontWeight: "500",
+                            color: theme.palette.text.secondary, // 🔥
+                        }}
+                      >
+                        {currentUser?.averageRating || "0"}
+                      </Typography>
+
+                      <Box sx={{ flex: 1 }} />
+
+                      <Typography
+                        sx={{
+                          color: "#3b82f6",
+                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="rgba(0,75,173,0.84)"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="8" cy="8" r="6"></circle>
+                          <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
+                          <path d="M7 6h1v4"></path>
+                          <path d="m16.71 13.88.7.71-2.82 2.82"></path>
+                        </svg>
+                        {currentUser?.totalPoints || 0}
+                      </Typography>
+                    </Box>
+                    <MenuItem onClick={() => navigate("/app/profile")}>
+                      <ListItemIcon>
+                        <PersonOutlineOutlinedIcon fontSize="small" />
+                      </ListItemIcon>
+                      Profile
+                    </MenuItem>
+
+                    <MenuItem onClick={() => navigate("/changePassword")}>
+                      <ListItemIcon>
+                        <LockResetIcon fontSize="small" />
+                      </ListItemIcon>
+                      Change Password
+                    </MenuItem>
+
+                    <MenuItem onClick={toggleMode}>
+                      <ListItemIcon>
+                        {mode === "light" ? (
+                          <WbSunnyIcon fontSize="small" />
+                        ) : (
+                          <Brightness2Icon fontSize="small" />
+                        )}
+                      </ListItemIcon>
+                      {mode === "light" ? "Light Mode" : "Dark Mode"}
+                    </MenuItem>
+
+                    <Divider />
+
+                    <MenuItem
+                      onClick={() => {
+                        logout();
+                        navigate("/");
+                      }}
+                      sx={{ color: "red" }}
+                    >
+                      <ListItemIcon>
+                        <Logout fontSize="small" sx={{ color: "red" }} />
+                      </ListItemIcon>
+                      Sign Out
+                    </MenuItem>
+                  </>
+                )}
               </Menu>
 
               {windowWidth < 1029 && (
-                <IconButton
-                  size="large"
-                  onClick={toggleMobileMenu}
-                  color="inherit"
-                >
-                  <MenuIcon />
-                </IconButton>
+                  <IconButton
+                    size="large"
+                    onClick={toggleMobileMenu}
+                    color="inherit"
+                  >
+                    <MenuIcon />
+                  </IconButton>
               )}
             </Box>
           </Toolbar>
@@ -1004,7 +1160,7 @@ export default function PrimarySearchAppBar() {
                     </svg>
                   </Box>
                   <Typography
-                    key={currentUser?.totalPoints}
+                    key={currentUser?.totalPoints} // 🔥 أضيفي هاد
                     sx={{
                       fontWeight: "bold",
                       color: "#3B82F6",

@@ -130,20 +130,25 @@ export default function LandingPage() {
 
   return (
     <Box sx={{ overflowX: "hidden", width: "100%" }}>
-      {/* Navbar */}
+      {/* Navbar - Fixed */}
       <Box
         sx={{
-          position: "sticky",
+          position: "fixed", // 🔥 fixed بدل sticky
           top: 0,
-          zIndex: 10,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
           height: "70px",
           px: { xs: 3, md: 8 },
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          backgroundColor: theme.palette.mode === "dark" ? "#2d2d2d" : "rgba(255,255,255,0.9)",
-          backdropFilter: "blur(8px)",
-          transition: "background-color 0.3s ease",
+        backgroundColor: scrolled 
+  ? (theme.palette.mode === "dark" ? "rgba(45, 45, 45, 0.7)" : "rgba(255, 255, 255, 0.85)")
+  : (theme.palette.mode === "dark" ? "rgba(45, 45, 45, 0.4)" : "rgba(255, 255, 255, 0.84)"),
+backdropFilter: "blur(15px)", // 🔥 blur أقوى
+          boxShadow: scrolled ? "0 2px 12px rgba(0,0,0,0.08)" : "none",
+          transition: "all 0.3s ease",
         }}
       >
         {/* Logo + Name */}
@@ -152,15 +157,12 @@ export default function LandingPage() {
             component="img"
             src={Logo}
             alt="UniSwap logo"
-            sx={{
-              height: { xs: "40px", sm: "68px" },
-              width: { xs: "48px", sm: "80px" },
-            }}
+            sx={{ width: 56, height: 50}}
           />
           <Typography
             sx={{
               fontWeight: 600,
-              fontSize: { xs: 25, sm: 41 },
+              fontSize: { sm: "1rem", md: "1.8rem" },
               color: "#74767a",
             }}
           >
@@ -192,6 +194,10 @@ export default function LandingPage() {
               px: 3,
               py: 1,
               textTransform: "none",
+              ":hover":{
+                backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                color:theme.palette.mode === "dark" ? "black" : "#fff",
+              }
             }}
           >
             Login
@@ -209,6 +215,10 @@ export default function LandingPage() {
               px: 3,
               py: 1,
               textTransform: "none",
+              ":hover":{
+                backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                color:theme.palette.mode === "dark" ? "black" : "#fff",
+              }
             }}
           >
             Sign Up
@@ -225,21 +235,27 @@ export default function LandingPage() {
           }}
         >
           <IconButton onClick={() => setMenuOpen(!menuOpen)}>
-            <MenuIcon sx={{ color: "#004aad" }} />
+            <MenuIcon sx={{ color: theme.palette.mode === "dark" ? "#fff" : "#004aad" }} />
           </IconButton>
         </Box>
       </Box>
 
-      {/* Mobile Menu Collapse */}
+      {/* Mobile Menu Collapse - Fixed */}
       <Collapse in={menuOpen}>
         <Box
           sx={{
-            backgroundColor: theme.palette.mode === "dark" ? "#363636ff" : "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(8px)",
+            position: "fixed", // 🔥 fixed
+            top: 70,
+            left: 0,
+            right: 0,
+            zIndex: 999,
+            backgroundColor: theme.palette.mode === "dark" ? "#363636ffF5" : "rgba(255,255,255,0.98)",
+            backdropFilter: "blur(10px)",
             display: "flex",
             justifyContent: "center",
             gap: 2,
             py: 2,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
             "@media (min-width:434px)": {
               display: "none",
             },
@@ -255,6 +271,10 @@ export default function LandingPage() {
               borderRadius: "25px",
               px: 3,
               textTransform: "none",
+              ":hover":{
+                backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                color:theme.palette.mode === "dark" ? "black" : "#fff",
+              }
             }}
           >
             Login
@@ -263,12 +283,16 @@ export default function LandingPage() {
             component={Link}
             to="/register"
             variant="outlined"
-            sx={{
+           sx={{
               color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
               borderRadius: "25px",
               px: 3,
               textTransform: "none",
+              ":hover":{
+                backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                color:theme.palette.mode === "dark" ? "black" : "#fff",
+              }
             }}
           >
             Sign Up
@@ -276,182 +300,186 @@ export default function LandingPage() {
         </Box>
       </Collapse>
 
-      {/* Hero Section */}
-      <Box
-        sx={{
-          position: "relative",
-          width: "100%",
-          height: { xs: "auto", sm: "90vh", md: "100vh" },
-          minHeight: "600px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          color: "white",
-          overflow: "hidden",
-        }}
-      >
+      {/* Content Container - with paddingTop */}
+      <Box sx={{ paddingTop: "70px" }}> {/* 🔥 هون المهم! */}
+        
+        {/* Hero Section */}
         <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `url(${heroImg})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            zIndex: 1,
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to right, rgba(0,75,173,0.84) 35%, rgba(0,75,173,0.38) 100%)",
-            zIndex: 2,
-          }}
-        />
-        <Container
           sx={{
             position: "relative",
-            zIndex: 3,
-            textAlign: { xs: "center", md: "left" },
-            flex: 1,
+            width: "100%",
+            height: { xs: "auto", sm: "90vh", md: "100vh" },
+            minHeight: "600px",
             display: "flex",
-            alignItems: "center",
-            justifyContent: { xs: "center", md: "flex-start" },
-            py: { xs: 8, sm: 10 },
-            px: { xs: 3, sm: 6, md: 8 },
+            flexDirection: "column",
+            justifyContent: "center",
+            color: "white",
+            overflow: "hidden",
           }}
         >
-          <Box sx={{ maxWidth: "600px", mx: { xs: "auto", md: 0 } }}>
-            <Typography
-              component="h1"
-              sx={{
-                fontSize: { xs: "30px", sm: "36px", md: "48px" },
-                fontWeight: 800,
-                lineHeight: 1.2,
-                mb: 2,
-              }}
-            >
-              Exchange Skills, <br />
-              <span style={{ color: "#00C8FF" }}>Build Future</span>
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: { xs: "14px", sm: "16px", md: "18px" },
-                color: "rgba(255,255,255,0.9)",
-                mb: 4,
-                px: { xs: 1, sm: 0 },
-              }}
-            >
-              Join thousands of students transforming their university
-              experience through skill sharing, collaboration, and peer support.
-            </Typography>
-            <Button
-              component={Link}
-              to="/register"
-              variant="outlined"
-              sx={{
-                borderColor: "#fff",
-                color: "#fff",
-                fontWeight: 600,
-                px: { xs: 3, sm: 4 },
-                py: { xs: 1, sm: 1.5 },
-                borderRadius: "30px",
-                textTransform: "none",
-                fontSize: { xs: "14px", sm: "16px" },
-                "&:hover": {
-                  backgroundColor: "rgba(255,255,255,0.15)",
-                  borderColor: "#fff",
-                },
-              }}
-            >
-              Get Started Free
-            </Button>
-          </Box>
-        </Container>
-      </Box>
-
-      {/* Features Section */}
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: "center", mt: 3 }}>
-          <Typography
-            component={"h3"}
-            sx={{
-              fontSize: "28px",
-              fontWeight: "700",
-              mt: 6,
-              mb: 2,
-              color: "#004aad",
-            }}
-          >
-            Everything you need to succeed
-          </Typography>
-          <Typography sx={{ fontSize: "16px", color: "#74767a", mb: 4 }}>
-            From skill sharing to project collaboration, UniSwap provides all
-            the tools you need for <br /> academic excellence.
-          </Typography>
-        </Box>
-        <Grid container spacing={3} sx={{ mb: "55px" }}>
-          {FeatureCard.map((Feature) => (
-            <Grid item xs={12} sm={6} md={4} key={Feature.title}>
-              <ServiceCard
-                icon={Feature.icon}
-                title={Feature.title}
-                description={Feature.description}
-                verticalHeader
-              />
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-
-      {/* Footer */}
-      <Box
-        sx={{
-          background: "rgba(0, 75, 173, 0.84)",
-          color: "white",
-          py: 3,
-          borderTopLeftRadius: "20px",
-          borderTopRightRadius: "20px",
-        }}
-      >
-        <Container maxWidth="lg">
           <Box
             sx={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url(${heroImg})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              zIndex: 1,
+            }}
+          />
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to right, rgba(0,75,173,0.84) 35%, rgba(0,75,173,0.38) 100%)",
+              zIndex: 2,
+            }}
+          />
+          <Container
+            sx={{
+              position: "relative",
+              zIndex: 3,
+              textAlign: { xs: "center", md: "left" },
+              flex: 1,
               display: "flex",
               alignItems: "center",
-              gap: 2,
-              justifyContent: "space-between",
-              flexDirection: { xs: "column", md: "row" },
-              textAlign: { xs: "center", md: "left" },
+              justifyContent: { xs: "center", md: "flex-start" },
+              py: { xs: 8, sm: 10 },
+              px: { xs: 3, sm: 6, md: 8 },
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <img
-                src={Logo}
-                alt="UniSwap logo"
-                style={{ height: "36px", width: "36px" }}
-              />
-              <Typography sx={{ fontWeight: 600, fontSize: 18, color: "#fff" }}>
-                UniSwap
+            <Box sx={{ maxWidth: "600px", mx: { xs: "auto", md: 0 } }}>
+              <Typography
+                component="h1"
+                sx={{
+                  fontSize: { xs: "30px", sm: "36px", md: "48px" },
+                  fontWeight: 800,
+                  lineHeight: 1.2,
+                  mb: 2,
+                }}
+              >
+                Exchange Skills, <br />
+                <span style={{ color: "#52a1d9" }}>Build Future</span>
               </Typography>
+              <Typography
+                sx={{
+                  fontSize: { xs: "14px", sm: "16px", md: "18px" },
+                  color: "rgba(255,255,255,0.9)",
+                  mb: 4,
+                  px: { xs: 1, sm: 0 },
+                }}
+              >
+                Join thousands of students transforming their university
+                experience through skill sharing, collaboration, and peer support.
+              </Typography>
+              <Button
+                component={Link}
+                to="/register"
+                variant="outlined"
+                sx={{
+                  borderColor: "#fff",
+                  color: "#fff",
+                  fontWeight: 600,
+                  px: { xs: 3, sm: 4 },
+                  py: { xs: 1, sm: 1.5 },
+                  borderRadius: "30px",
+                  textTransform: "none",
+                  fontSize: { xs: "14px", sm: "16px" },
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.15)",
+                    borderColor: "#fff",
+                  },
+                }}
+              >
+                Get Started Free
+              </Button>
             </Box>
+          </Container>
+        </Box>
+
+        {/* Features Section */}
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: "center", mt: 3 }}>
             <Typography
-              sx={{ fontSize: 14, color: "rgba(255, 255, 255, 0.84)" }}
-            >
-              Empowering students to learn, share, and grow together.
-            </Typography>
-            <Typography
+              component={"h3"}
               sx={{
-                mt: 1.5,
-                fontSize: 12,
-                color: "rgba(255, 255, 255, 0.84)",
+                fontSize: "28px",
+                fontWeight: "700",
+                mt: 6,
+                mb: 2,
+                color: "#52a1d9",
               }}
             >
-              © {new Date().getFullYear()} UniSwap. All rights reserved.
+              Everything you need to succeed
+            </Typography>
+            <Typography sx={{ fontSize: "16px", color: "#74767a", mb: 4 }}>
+              From skill sharing to project collaboration, UniSwap provides all
+              the tools you need for <br /> academic excellence.
             </Typography>
           </Box>
+          <Grid container spacing={3} sx={{ mb: "55px" }}>
+            {FeatureCard.map((Feature) => (
+              <Grid item xs={12} sm={6} md={4} key={Feature.title}>
+                <ServiceCard
+                  icon={Feature.icon}
+                  title={Feature.title}
+                  description={Feature.description}
+                  verticalHeader
+                />
+              </Grid>
+            ))}
+          </Grid>
         </Container>
+
+        {/* Footer */}
+        <Box
+          sx={{
+            background: "rgba(0, 75, 173, 0.84)",
+            color: "white",
+            py: 3,
+            borderTopLeftRadius: "20px",
+            borderTopRightRadius: "20px",
+          }}
+        >
+          <Container maxWidth="lg">
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                justifyContent: "space-between",
+                flexDirection: { xs: "column", md: "row" },
+                textAlign: { xs: "center", md: "left" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <img
+                  src={Logo}
+                  alt="UniSwap logo"
+                  style={{ height: "36px", width: "36px" }}
+                />
+                <Typography sx={{ fontWeight: 600, fontSize: 18, color: "#fff" }}>
+                  UniSwap
+                </Typography>
+              </Box>
+              <Typography
+                sx={{ fontSize: 14, color: "rgba(255, 255, 255, 0.84)" }}
+              >
+                Empowering students to learn, share, and grow together.
+              </Typography>
+              <Typography
+                sx={{
+                  mt: 1.5,
+                  fontSize: 12,
+                  color: "rgba(255, 255, 255, 0.84)",
+                }}
+              >
+                © {new Date().getFullYear()} UniSwap. All rights reserved.
+              </Typography>
+            </Box>
+          </Container>
+        </Box>
       </Box>
     </Box>
   );
