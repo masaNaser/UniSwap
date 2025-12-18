@@ -105,7 +105,7 @@ const SearchResultsDropdown = ({
   theme,
 }) => {
   if (!searchQuery) return null;
-
+ console.log("Rendering SearchResultsDropdown with:",searchResults.users.id );
   // Helper function to get user avatar
   // const getUserAvatar = (userName) => {
   //   return `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=3B82F6&color=fff&bold=true&size=40`;
@@ -193,8 +193,8 @@ const SearchResultsDropdown = ({
               </Typography>
               {searchResults.users.map((user) => (
                 <Box
-                  key={user.id}
-                  onClick={() => onUserClick(user.id)}
+                  key={user.userId}
+                  onClick={() => onUserClick(user.userId)}
                   sx={{
                     px: 2.5,
                     py: 1.5,
@@ -260,6 +260,50 @@ const SearchResultsDropdown = ({
                         {user.averageRating?.toFixed(1) || "0.0"}
                       </Typography>
                     </Box>
+                    {/* 🔥 Skills Display */}
+                    {user.skills && user.skills.length > 0 && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          mt: 0.8,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {user.skills.slice(0, 3).map((skill, idx) => (
+                          <Chip
+                            key={idx}
+                            label={skill}
+                            size="small"
+                            sx={{
+                              height: "20px",
+                              fontSize: "0.7rem",
+                              fontWeight: 600,
+                              bgcolor:
+                                theme.palette.mode === "dark"
+                                  ? "rgba(59, 130, 246, 0.2)"
+                                  : "rgba(59, 130, 246, 0.15)",
+                              color: "#3B82F6",
+                              "& .MuiChip-label": {
+                                px: 1,
+                              },
+                            }}
+                          />
+                        ))}
+                        {user.skills.length > 3 && (
+                          <Typography
+                            sx={{
+                              fontSize: "0.7rem",
+                              color: theme.palette.text.secondary,
+                              alignSelf: "center",
+                              fontWeight: 500,
+                            }}
+                          >
+                            +{user.skills.length - 3} more
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
                   </Box>
 
                   {/* Arrow Icon */}
@@ -523,6 +567,7 @@ export default function PrimarySearchAppBar() {
   };
 
   const handleUserClick = (userId) => {
+    console.log("Navigating to user profile:", userId);
     navigate(`/app/profile/${userId}`);
     setShowSearchResults(false);
     setSearchQuery("");
@@ -716,7 +761,7 @@ export default function PrimarySearchAppBar() {
                     )}
                   </SearchIconWrapper>
                   <StyledInputBase
-                    placeholder="Search users, posts.."
+                    placeholder="Search users,skills,posts.."
                     value={searchQuery}
                     onChange={handleSearchChange}
                     onFocus={() => searchQuery && setShowSearchResults(true)}

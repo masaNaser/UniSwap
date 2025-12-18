@@ -51,14 +51,21 @@ export default function UsersTap() {
   }, []);
 
   // ✅ فلترة المستخدمين - بسيطة وواضحة بدون useMemo
-  const filteredUsers = searchQuery
-    ? users.filter(
-        (user) =>
-          user.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.major?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : users;
+ const nonAdminUsers = users.filter(
+  (user) =>
+    user.userName?.toLowerCase() !== "admin" &&
+    user.email?.toLowerCase() !== "admin@uni.com"
+);
+
+const filteredUsers = searchQuery
+  ? nonAdminUsers.filter(
+      (user) =>
+        user.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.major?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  : users;
+
 
   // دالة لاختيار لون Status
   const getStatusColor = (status) => {

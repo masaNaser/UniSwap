@@ -239,7 +239,7 @@ export default function UserProjectModal({
       snackbar={snackbar}
       onSnackbarClose={() => setSnackbar(null)}
     >
-      <Stack spacing={2.5}>
+      <Stack spacing={2.5} sx={{ mt: 1 }}>
         <TextField
           label="Title"
           name="title"
@@ -247,7 +247,6 @@ export default function UserProjectModal({
           required
           value={formData.title}
           onChange={handleChange}
-          helperText="Required field"
         />
         <TextField
           label="Description"
@@ -258,7 +257,6 @@ export default function UserProjectModal({
           required
           value={formData.description}
           onChange={handleChange}
-          helperText="Required field"
         />
         <TextField
           label="Duration"
@@ -268,7 +266,6 @@ export default function UserProjectModal({
           value={formData.duration}
           onChange={handleChange}
           placeholder="e.g., 3 months, 2 weeks"
-          helperText="Required field"
         />
 
         {/* Cover Image Section */}
@@ -403,7 +400,7 @@ export default function UserProjectModal({
               fullWidth
             />
             <IconButton color="primary" onClick={handleAddTag}>
-              <AddIcon />
+              {/* <AddIcon /> */}
             </IconButton>
           </Box>
           <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 1 }}>

@@ -233,7 +233,7 @@ const Services = () => {
               description={service.description}
               image={service.image}
               icon={iconMap[service.name] || <DesignServicesIcon fontSize="large" />}
-              count={`${service.subServices.length} services`}
+              count={`${service.subServicesCount} services`}
               url={`/app/browse/${service.id}?name=${encodeURIComponent(service.name)}`}
               adminMode={adminMode}
               onEdit={() => {

@@ -143,7 +143,7 @@ export default function PortfolioTab() {
           <CircularProgress />
         </Box>
       ) : projects.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 5 }}>
           No projects yet.
         </Typography>
       ) : (

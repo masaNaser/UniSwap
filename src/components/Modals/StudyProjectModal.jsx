@@ -270,7 +270,6 @@ export default function StudyProjectModal({
           required
           value={formData.title}
           onChange={handleChange}
-          helperText="Required field"
           disabled={isSubmitting}
         />
 
@@ -284,7 +283,6 @@ export default function StudyProjectModal({
           required
           value={formData.description}
           onChange={handleChange}
-          helperText="Required field"
           disabled={isSubmitting}
         />
 
