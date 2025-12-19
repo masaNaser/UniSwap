@@ -65,3 +65,11 @@ export const Analytics = async (token) => {
     },
   });
 };
+
+export const ActiveProjects = async (token) => {
+  return await api.get(`/AdminDashboard/active-projects`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}

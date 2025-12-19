@@ -42,7 +42,7 @@ export const EditProject = async (token, data,projectId) => {
 };
 
 export const DeleteProject = async (token, projectId) => {
-  return await api.delete(`/Profile/project/${projectId}`,{
+  return await api.delete(`/Profile/projectDelete/${projectId}`,{
     headers: {
       Authorization: `Bearer ${token}`,
     },

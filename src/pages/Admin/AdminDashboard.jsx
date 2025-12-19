@@ -1,247 +1,152 @@
-// src/pages/admin/Dashboard.jsx
-
 import { useEffect, useState } from "react";
 import {
   Box,
-  Container,
   Typography,
   CircularProgress,
-  Alert,
   Tabs,
   Tab,
-  Paper,
-  Button,
   IconButton,
-  Menu,
-  MenuItem,
-  useMediaQuery
+  useMediaQuery,
+  Divider,
+  Paper,
 } from "@mui/material";
-
 import {
-  People as PeopleIcon,
-  BusinessCenter as BusinessCenterIcon,
-  Warning as WarningIcon,
+  Dashboard as DashboardIcon,
+  Person as PersonIcon,
+  Assessment as AssessmentIcon,
+  Explore as ExploreIcon,
 } from "@mui/icons-material";
-
-import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import Logo from "../../assets/images/logo.png";
 import LogoutIcon from "@mui/icons-material/Logout";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-
-import { GetDashboard } from "../../services/adminService";
-import SelectActionCard from "../../components/Cards/Cards";
 import UsersTap from "./components/DashboardTabs/UsersTap";
 import ReportsTap from "./components/DashboardTabs/ReportsTap";
-import AnalyticsTap from "./components/DashboardTabs/AnalyticsTap";
+import AnalyticsTap from "./components/DashboardTabs/Analytics/AnalyticsTap";
 import { logout } from "../../services/authService";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import CustomButton from "../../components/CustomButton/CustomButton";
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const userName = localStorage.getItem("userName");
-  // 🔥 استخدم searchParams لقراءة الـ URL
   const [searchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const reportIdParam = searchParams.get('reportId');
-    const navigate = useNavigate();
+  const tabParam = searchParams.get("tab");
+  const reportIdParam = searchParams.get("reportId");
+  const navigate = useNavigate();
 
-  // 🔥 حدد التاب بناءً على الـ URL
+  const isMobile = useMediaQuery("(max-width:768px)");
+
+  // دالة تحديد التاب الابتدائي
   const getInitialTab = () => {
-    if (tabParam === 'reports') return 2;
-    if (tabParam === 'analytics') return 0;
-    return 1; // default: Users tab
+    if (tabParam === "reports") return 2;
+    if (tabParam === "users") return 1;
+    return 0;
   };
-    const [currentTab, setCurrentTab] = useState(getInitialTab);
 
-  // 🔥 تحديث التاب إذا تغير الـ URL
+  const [currentTab, setCurrentTab] = useState(getInitialTab);
+
+  // تحديث التاب عند تغيير الـ URL
   useEffect(() => {
     setCurrentTab(getInitialTab());
   }, [tabParam]);
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await GetDashboard(token);
-      setStats(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError("فشل تحميل البيانات");
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
 
   const handleTabChange = (event, newValue) => {
     setCurrentTab(newValue);
   };
 
-  // Responsive 
-  const isMobile = useMediaQuery("(max-width:618px)");
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const openMenu = (e) => setAnchorEl(e.currentTarget);
-  const closeMenu = () => setAnchorEl(null);
-
-  // -----------------------
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container sx={{ mt: 4 }}>
-        <Alert severity="error">{error}</Alert>
-      </Container>
-    );
-  }
+  // مصفوفة التابس
+  const menuItems = [
+    { label: "Dashboard", icon: <DashboardIcon />, index: 0 },
+    { label: "Users", icon: <PersonIcon />, index: 1 },
+    { label: "Reports", icon: <AssessmentIcon />, index: 2 },
+  ];
 
   return (
-    <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh", py: 4 }}>
-      <Container maxWidth="lg">
-        
-        {/* HEADER */}
-        <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
-          <Box>
-            <Typography variant="h4" fontWeight="bold">Admin Dashboard</Typography>
-            <Typography variant="body1" color="text.secondary">Welcome back, {userName}</Typography>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f8fafc" }}>
+      
+      {/* SIDEBAR */}
+      <Paper
+        elevation={0}
+        sx={{
+          width: isMobile ? 80 : 260,
+          bgcolor: "white",
+          borderRight: "1px solid #e2e8f0",
+          display: "flex",
+          flexDirection: "column",
+          position: "fixed",
+          height: "100vh",
+          transition: "width 0.3s ease",
+          zIndex: 1200,
+        }}
+      >
+        {/* LOGO SECTION */}
+        <Box sx={{ p: isMobile ? 2 : 3, display: "flex", alignItems: "center", justifyContent: isMobile ? "center" : "flex-start", gap: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Box component="img" src={Logo} alt="Logo" sx={{ width: isMobile ? 40 : 35, height: "auto", objectFit: "contain" }} />
           </Box>
-
-          {/* -------------------------
-              Responsive Actions Here
-          -------------------------- */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            
-            {/* Desktop Buttons */}
-            {!isMobile && (
-              <Box sx={{ display: "flex", gap: 3 }}>
-                <CustomButton variant="outlined" onClick={handleLogout}>
-                  <LogoutIcon sx={{ marginRight: 2 }} />
-                  Sign out
-                </CustomButton>
-
-                <CustomButton
-                  variant="contained"
-                  onClick={() => navigate("/app/browse")}
-                >
-                  Go to Browse
-                </CustomButton>
-              </Box>
-            )}
-
-            {/* Mobile menu */}
-            {isMobile && (
-              <>
-                <IconButton onClick={openMenu}>
-                  <MoreVertIcon />
-                </IconButton>
-
-                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
-                  <MenuItem
-                    onClick={() => {
-                      closeMenu();
-                      navigate("/app/browse");
-                    }}
-                  >
-                    Go to Browse
-                  </MenuItem>
-
-                  <MenuItem
-                    onClick={() => {
-                      closeMenu();
-                      handleLogout();
-                    }}
-                  >
-                    Logout
-                  </MenuItem>
-                </Menu>
-              </>
-            )}
-          </Box>
+          {!isMobile && (
+            <Typography variant="h6" fontWeight="bold" sx={{ color: "#1e293b", whiteSpace: "nowrap", letterSpacing: "-0.5px" }}>
+              UniSwap
+            </Typography>
+          )}
         </Box>
 
-        {/* STATS CARDS */}
-        <div className="cards-section">
-          <SelectActionCard
-            title="Total Users"
-            value={stats.totalUsers}
-            icon={<PeopleIcon sx={{ fontSize: 28, color: "#1976d2" }} />}
-            iconBgColor="#e3f2fd"
-          />
+        <Divider sx={{ mx: 2, mb: 2 }} />
 
-          <SelectActionCard
-            title="Active Services"
-            value={stats.services}
-            icon={<BusinessCenterIcon sx={{ fontSize: 28, color: "#2e7d32" }} />}
-            iconBgColor="#e8f5e9"
-          />
+        {/* NAVIGATION TABS */}
+        <Tabs
+          orientation="vertical"
+          value={currentTab}
+          onChange={handleTabChange}
+          TabIndicatorProps={{ style: { display: "none" } }}
+          sx={{ flexGrow: 1, px: 1, "& .MuiTabs-flexContainer": { alignItems: "stretch" } }}
+        >
+          {menuItems.map((item) => (
+            <Tab
+              key={item.label}
+              icon={item.icon}
+              iconPosition={isMobile ? "top" : "start"}
+              label={isMobile ? "" : item.label}
+              sx={{
+                textTransform: "none",
+                justifyContent: isMobile ? "center" : "flex-start",
+                minHeight: 50,
+                borderRadius: 2,
+                mb: 1,
+                color: "#64748b",
+                "&.Mui-selected": { bgcolor: "#f0f9ff", color: "#0284c7", fontWeight: "bold" },
+                "& .MuiSvgIcon-root": { marginRight: isMobile ? 0 : "12px !important", fontSize: 24 }
+              }}
+            />
+          ))}
 
-          <SelectActionCard
-            title="Total Points Awarded"
-            value={stats.totalPointsAwarded}
-            icon={<WorkspacePremiumOutlinedIcon sx={{ fontSize: 28, color: "#ed6c02" }} />}
-            iconBgColor="#fff3e0"
-          />
+          <Box sx={{ px: 1, mt: 1 }}>
+            <IconButton onClick={() => navigate("/app/browse")} sx={{ width: "100%", borderRadius: 2, p: 1.5, justifyContent: isMobile ? "center" : "flex-start", color: "#0f172a", "&:hover": { bgcolor: "#f1f5f9" } }}>
+              <ExploreIcon sx={{ mr: isMobile ? 0 : 1.5 }} />
+              {!isMobile && <Typography variant="body2" fontWeight="medium">Go to Browse</Typography>}
+            </IconButton>
+          </Box>
+        </Tabs>
 
-          <SelectActionCard
-            title="Reports Pending"
-            value={stats.pendingReports}
-            icon={<WarningIcon sx={{ fontSize: 28, color: "#d32f2f" }} />}
-            iconBgColor="#ffebee"
-          />
-        </div>
-
-        {/* TABS */}
-        <Box sx={{ mt: 3 }}>
-          <Paper sx={{ borderRadius: 3, m: 4, width: "fit-content", maxWidth: "100%", overflowX: "auto", whiteSpace: "nowrap", mx: "auto" }}>
-            <Tabs
-              value={currentTab}
-              onChange={handleTabChange}
-              TabIndicatorProps={{ style: { display: "none" } }}
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{ minHeight: 48, px: 10 }}
-            >
-              {["Analytics", "Users", "Reports"].map((label, index) => (
-                <Tab
-                  key={label}
-                  label={label}
-                  sx={{
-                    textTransform: "none",
-                    minWidth: "auto",
-                    marginRight: 40,
-                    fontWeight: currentTab === index ? "bold" : "normal",
-                    fontSize: "16px",
-                    background: currentTab === index
-                      ? "linear-gradient(to right, rgba(2, 132, 199, 0.8), rgba(152, 16, 250, 0.8))"
-                      : "none",
-                    WebkitBackgroundClip: currentTab === index ? "text" : "none",
-                    WebkitTextFillColor: currentTab === index ? "transparent" : "black",
-                  }}
-                />
-              ))}
-            </Tabs>
-          </Paper>
-
-          {/* TAB CONTENT */}
-          {currentTab === 0 && <AnalyticsTap/>}
-          {currentTab === 1 && <UsersTap/>}
-          {currentTab === 2 && <ReportsTap onReportReviewed={fetchStats}  highlightedReportId={reportIdParam} />}
+        {/* LOGOUT */}
+        <Box sx={{ p: 2, mt: "auto" }}>
+          <IconButton onClick={() => { logout(); navigate("/login"); }} sx={{ width: "100%", borderRadius: 2, color: "#ef4444", justifyContent: isMobile ? "center" : "flex-start", "&:hover": { bgcolor: "#fef2f2" } }}>
+            <LogoutIcon sx={{ mr: isMobile ? 0 : 1.5 }} />
+            {!isMobile && <Typography variant="body2" fontWeight="medium">Sign Out</Typography>}
+          </IconButton>
         </Box>
-      </Container>
+      </Paper>
+
+      {/* MAIN CONTENT Area */}
+      <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, ml: isMobile ? "80px" : "260px", width: isMobile ? "calc(100% - 80px)" : `calc(100% - 260px)`, transition: "margin 0.3s ease" }}>
+        <Box mb={4}>
+          <Typography variant="h4" fontWeight="bold" sx={{ color: "#1e293b" }}>Admin Dashboard</Typography>
+          <Typography variant="body1" color="text.secondary">Welcome back, {userName}</Typography>
+        </Box>
+
+        <Box>
+          {currentTab === 0 && <AnalyticsTap />}
+          {currentTab === 1 && <UsersTap />}
+          {currentTab === 2 && <ReportsTap highlightedReportId={reportIdParam} />}
+        </Box>
+      </Box>
     </Box>
   );
 };
