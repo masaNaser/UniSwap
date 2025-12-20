@@ -1,8 +1,9 @@
 import { Button } from "@mui/material";
 
-export default function CustomButton({ children, type = "button", sx, ...props }) {
+export default function CustomButton({ children, type = "button", sx,disabled, ...props }) {
   return (
     <Button
+    // disabled={disabled || loading} // اجعله يعتمد على القيمة الممررة أو حالة التحميل
       type={type}
       {...props}
       sx={{

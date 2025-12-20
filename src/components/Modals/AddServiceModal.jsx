@@ -23,6 +23,13 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
     avgPoints: "",
     avgDurationDays: "",
   });
+  const isFormInvalid = 
+    !formData.serviceId || 
+    !formData.subServiceId || 
+    !formData.description.trim() || 
+    !formData.avgPoints || 
+    !formData.avgDurationDays;
+
   const [loading, setLoading] = useState(false);
   const [loadingSub, setLoadingSub] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
@@ -99,7 +106,7 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
         });
       } else {
         // إضافة خدمة جديدة
-        await CreateService(token, formData);
+      await CreateService(token, formData);
         setSnackbar({
           open: true,
           message: "Service added successfully!",
@@ -112,7 +119,7 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
       console.error(err);
       setSnackbar({
         open: true,
-        message: "Operation failed.",
+        message: err.response?.data?.title || "An error occurred. Please try again.",
         severity: "error",
       });
     }
@@ -128,6 +135,7 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
       onPrimaryAction={handleSubmit}
       primaryButtonText={editingService ? "Update" : "Add"}
       primaryButtonIcon={<AddIcon />}
+      isPrimaryDisabled={isFormInvalid}
       isSubmitting={loading}
       snackbar={snackbar}
       onSnackbarClose={() => setSnackbar(null)}
