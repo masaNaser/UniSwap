@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef,useCallback  } from "react";
 import {
   sendMessage,
   getOneConversation,
@@ -14,6 +14,8 @@ import { getImageUrl } from "../../utils/imageHelper";
 import { useNavigateToProfile } from "../../hooks/useNavigateToProfile";
 import { useUnreadCount } from "../../Context/unreadCountContext";
 import { useTheme } from "@mui/material/styles";
+// import { useUnreadCount } from "../../Context/unreadCountContext";
+
 export default function ChatWindow({
   conversationId,
   receiverId,
@@ -25,7 +27,8 @@ export default function ChatWindow({
   const theme = useTheme();
   const navigateToProfile = useNavigateToProfile();
   const { decreaseUnreadCount,refreshUnreadCount } = useUnreadCount();
-
+   const {connection}= useUnreadCount();
+  
   const [messages, setMessages] = useState([]);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const messagesEndRef = useRef(null);
@@ -45,109 +48,60 @@ export default function ChatWindow({
   }, [messages, initialScrollDone]);
 
   // 🔥 جلب المحادثة عند الفتح
-useEffect(() => {
-  const initChat = async () => {
-    try {
-      const convId =
-        conversationId === "null" || !conversationId ? null : conversationId;
-      
-      const response = await getOneConversation(
-        convId,
-        receiverId,
-        6,
-        token
-      );
+// ... (داخل المكون ChatWindow)
 
-      if (response.data) {
-        let loadedMessages = [];
-        
-        if (Array.isArray(response.data)) {
-          loadedMessages = response.data;
-          setMessages(response.data);
-        } else if (response.data.messages) {
-          loadedMessages = response.data.messages;
-          setMessages(response.data.messages);
-        } else {
-          setMessages([]);
-        }
+// 1. تعريف دالة جلب البيانات بـ useCallback لحمايتها من التكرار
+const initChat = useCallback(async () => {
+  if (!receiverId) return;
+  try {
+    const convId = (!conversationId || conversationId === "null") ? null : conversationId;
+    const response = await getOneConversation(convId, receiverId, 10, token);
 
-        const unreadMessagesCount = loadedMessages.filter(
-          m => m.receiverId === currentUserId && m.status === "Delivered"
-        ).length;
+    if (response.data) {
+      const loadedMessages = Array.isArray(response.data) ? response.data : (response.data.messages || []);
+      setMessages(loadedMessages);
 
-        console.log(`📬 Found ${unreadMessagesCount} unread messages in conversation`);
+      const unreadCount = loadedMessages.filter(
+        m => m.receiverId === currentUserId && m.status === "Delivered"
+      ).length;
 
-        // ✅ الشرط المهم: استدعي mark as seen بس إذا في conversationId حقيقي
-        if (convId && convId !== "null" && unreadMessagesCount > 0) {
-          setTimeout(async () => {
-            try {
-              await markMessageAsSeen(convId,token);
-              console.log("✅ Marked conversation as seen:", convId);
-              
-              setConversations((prev) =>
-                prev.map((c) =>
-                  c.id === convId ? { ...c, unreadCount: 0 } : c
-                )
-              );
-
-              decreaseUnreadCount(unreadMessagesCount);
-
-            } catch (error) {
-              console.error("❌ Failed to mark as seen:", error);
-            }
-          }, 300);
-        } else {
-          console.log("⚠️ Skipping mark as seen - no valid conversationId or no unread messages");
-        }
+      if (convId && unreadCount > 0) {
+        await markMessageAsSeen(convId, token);
+        setConversations(prev => prev.map(c => c.id === convId ? { ...c, unreadCount: 0 } : c));
+        decreaseUnreadCount(unreadCount);
       }
-    } catch (err) {
-      console.error("فشل جلب المحادثة:", err);
-      setMessages([]);
     }
-  };
-
-  if (receiverId) {
-    initChat();
-    setInitialScrollDone(false);
-    hasMoreRef.current = true;
+  } catch (err) {
+    console.error("فشل جلب المحادثة:", err);
   }
-}, [conversationId, receiverId, token, setConversations, decreaseUnreadCount, currentUserId]);
+}, [conversationId, receiverId, token]); // التبعيات الصحيحة
+
+// 2. تشغيل الدالة عند تغيير المحادثة فقط
+useEffect(() => {
+  initChat();
+}, [initChat]);
 
   // جلب الرسائل الجديدة دوريًا
-  useEffect(() => {
-    const fetchNewMessages = async () => {
-      if (messages.length === 0) return;
-      const lastRealMessage = [...messages]
-        .reverse()
-        .find((m) => !m.id.startsWith("temp-"));
-      if (!lastRealMessage) return;
+// داخل ChatWindow
+const fetchNewMessageRealTime = useCallback((message) => {
+  if (message.conversationId === conversationId) {
+    setMessages((prev) => {
+      if (prev.some(m => m.id === message.id)) return prev;
+      return [...prev, message];
+    });
+    // إذا كانت المحادثة مفتوحة، أخبر الباك إند أنها قُرئت
+    markMessageAsSeen(conversationId, token);
+  }
+}, [conversationId, token]);
 
-      const afterId = lastRealMessage.id;
-      try {
-        const response = await getNewMessages(
-          conversationId,
-          afterId,
-          10,
-          token
-        );
-        const newMsgs = response.data || [];
-        if (newMsgs.length > 0) {
-          setMessages((prev) => [
-            ...prev,
-            ...newMsgs.filter((n) => !prev.some((m) => m.id === n.id)),
-          ]);
-        }
-         // ✅ حدّث عداد الرسائل غير المقروءة في الـ Navbar
-          refreshUnreadCount();
-          console.log("✅ New messages received, refreshing unread count");
-      } catch (err) {
-        console.error("فشل جلب الرسائل الجديدة:", err);
-      }
-    };
-
-    const interval = setInterval(fetchNewMessages, 5000);
-    return () => clearInterval(interval);
-  }, [conversationId, messages, token, refreshUnreadCount]);
+useEffect(() => {
+  if (connection) {
+    connection.on("ReceiveMessage", fetchNewMessageRealTime);
+  }
+  return () => {
+    if (connection) connection.off("ReceiveMessage");
+  };
+}, [connection, fetchNewMessageRealTime]);
 
   // تحميل الرسائل القديمة عند السحب للأعلى
   const fetchOlderMessages = async () => {

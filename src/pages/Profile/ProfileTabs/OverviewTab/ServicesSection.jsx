@@ -151,7 +151,7 @@ export default function ServicesSection() {
                   borderRadius: 1,
                   position: "relative",
                   mb: 1,
-                  backgroundColor: "rgba(248, 250, 252, 1)",
+                  // backgroundColor: "rgba(248, 250, 252, 1)",
                   backgroundColor:theme.palette.mode === 'dark' ? '#323232ff' : 'rgba(248, 250, 252, 1)',
 
                 }}

@@ -27,7 +27,7 @@ export default function SkillsSection() {
               sx={{
                 fontWeight: 400,
                 fontSize: "16px",
-                color: "rgba(15, 23, 42, 1)",
+                // color: "rgba(15, 23, 42, 1)",
                 color: theme.palette.mode === 'dark' ? '#fff' : 'rgba(15, 23, 42, 1)',
               }}
             >

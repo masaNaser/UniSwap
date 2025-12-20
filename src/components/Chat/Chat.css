@@ -20,9 +20,13 @@
 }
 
 .chat-list-header {
-  padding: 27px;
+  padding: 0 20px;
   font-size: 18px;
   color: #fff;
+  height: 70px;            /* نفس الارتفاع تماماً */
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
   background: linear-gradient(to right, rgba(14, 165, 233, 1), rgba(152, 16, 250, 1));
   font-weight: bold;
     letter-spacing: 0.3px;
@@ -176,9 +180,10 @@
 
 .chat-header {
   display: flex;
+  height: 70px;            /* نفس الارتفاع تماماً */
   align-items: center;
   justify-content: space-between;
-  padding: 15px;
+  padding:0 20px;
  background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(152, 16, 250, 0.05));
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10px);
@@ -198,15 +203,21 @@
 
 .message {
   margin-bottom: 10px;
-  max-width: 50%;
   padding: 10px;
   border-radius: 12px;
   font-size: 15px;
   line-height: 1.4;
-  word-wrap: break-word;
   animation: messageSlide 0.3s ease;
   position: relative;
+
+  /* --- الإضافات والتعديلات الأساسية --- */
+  max-width: 50%;           /* حدد عرض أقصى للمسج (مثلاً 70% من عرض الشاشة) */
+  width: fit-content;        /* بتكبر حسب النص بس بتوقف عند الـ 70% */
+  word-wrap: break-word;     /* كسر الكلمات الطويلة جداً */
+  overflow-wrap: break-word; /* لضمان كسر النص في المتصفحات الحديثة */
+  white-space: pre-wrap;     /* عشان يحافظ على الفراغات وينزل سطر لو كبست Enter */
 }
+
 @keyframes messageSlide {
   from {
     opacity: 0;
@@ -378,7 +389,7 @@
   }
   
   .message {
-    max-width: 75%;
+    max-width: 65%;
   }
 }
 

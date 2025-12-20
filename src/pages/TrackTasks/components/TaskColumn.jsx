@@ -85,7 +85,7 @@ export default function TaskColumn({
         onDragOver={isProvider ? onDragOver : null}
         onDrop={isProvider ? (e) => onDrop(e, status) : null}
         sx={{
-          backgroundColor: '#F9FAFB',
+          // backgroundColor: '#F9FAFB',
           backgroundColor: theme.palette.mode === "dark" ? "#1e1e1e" : "#F9FAFB",
           borderRadius: '12px',
           border: '2px solid #E5E7EB',

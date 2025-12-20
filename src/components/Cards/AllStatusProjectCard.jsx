@@ -147,7 +147,7 @@ export default function AllStatusProjectCard({
             boxShadow: "0 8px 16px rgba(0,0,0,0.12)",
           },
           cursor: "pointer",
-          bgcolor: "#FFFFFF",
+          // bgcolor: "#FFFFFF",
           bgcolor: theme.palette.mode === 'dark' ? '#474646ff' : '#FFFFFF',
         }}
       >

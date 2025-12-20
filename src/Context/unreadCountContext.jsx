@@ -1,23 +1,14 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { getUnreadCount } from '../services/chatService';
-import { createChatHubConnection } from '../services/chatService'; // ✅ استورد الـ Hub
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { getUnreadCount, createChatHubConnection } from '../services/chatService';
 
-const UnreadCountContext = createContext();
-
-export const useUnreadCount = () => {
-  const context = useContext(UnreadCountContext);
-  if (!context) {
-    throw new Error('useUnreadCount must be used within UnreadCountProvider');
-  }
-  return context;
-};
+export const UnreadCountContext = createContext();
 
 export const UnreadCountProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const token = localStorage.getItem('accessToken');
-  const connectionRef = useRef(null); // ✅ حفظ الاتصال
+  const connectionRef = useRef(null); // نستخدم useRef للحفاظ على استقرار الاتصال
 
-  // ✅ دالة لتحديث العداد من الباك إند
+  // 1. دالة جلب العداد من الباك اند
   const refreshUnreadCount = useCallback(async () => {
     if (!token) return;
     try {
@@ -29,71 +20,72 @@ export const UnreadCountProvider = ({ children }) => {
     }
   }, [token]);
 
-  // ✅ دالة لتقليل العداد مباشرة
-  const decreaseUnreadCount = useCallback((amount = 0) => {
-    setUnreadCount((prev) => {
-      const newCount = Math.max(0, prev - amount);
-      console.log(`📉 Decreased unread count by ${amount}: ${prev} → ${newCount}`);
-      return newCount;
-    });
+  // 2. دالة تقليل العداد (مهمة جداً إذا كانت تُستدعى عند قراءة الرسائل)
+  const decreaseUnreadCount = useCallback((amount = 1) => {
+    setUnreadCount((prev) => Math.max(0, prev - amount));
   }, []);
 
-  // ✅ اتصال SignalR لاستقبال الرسائل الجديدة
+  // 3. إدارة اتصال SignalR
   useEffect(() => {
     if (!token) return;
 
-    const startConnection = async () => {
+    const connection = createChatHubConnection(token);
+    connectionRef.current = connection;
+
+    const start = async () => {
       try {
-        const connection = createChatHubConnection(token);
-        connectionRef.current = connection;
-
-        // ✅ استقبال رسالة جديدة
-        connection.on("ReceiveMessage", (message) => {
-          console.log("📬 New message received in UnreadCountContext:", message);
-          
-          // ✅ زيادة العداد مباشرة
-          setUnreadCount((prev) => prev + 1);
-          console.log("🔔 Unread count increased");
-        });
-
         await connection.start();
-        console.log("✅ SignalR Chat Hub connected in UnreadCountContext");
+        console.log("✅ SignalR Connected (Global)");
+        
+        // جلب العداد فور نجاح الاتصال
+        refreshUnreadCount();
 
-        // جلب العداد الأولي
-        await refreshUnreadCount();
-      } catch (error) {
-        console.error("❌ SignalR connection failed:", error);
+        // الاستماع للرسائل الجديدة
+        connection.on("ReceiveMessage", () => {
+          setUnreadCount(prev => prev + 1);
+          console.log("🔔 New message: Count increased");
+        });
+      } catch (err) {
+        console.error("❌ SignalR Connection Error:", err);
       }
     };
 
-    startConnection();
+    start();
 
-    // ✅ تنظيف الاتصال عند الخروج
     return () => {
       if (connectionRef.current) {
         connectionRef.current.stop();
-        console.log("🔌 SignalR disconnected from UnreadCountContext");
+        console.log("🔌 SignalR Stopped");
       }
     };
-  }, [token, refreshUnreadCount]);
+  }, [token]); // لا نضع refreshUnreadCount هنا لتجنب إعادة الاتصال بلا داعي
 
-  // ✅ جلب العداد كل 30 ثانية (كنسخة احتياطية)
+  // 4. تحديث احتياطي كل دقيقة
   useEffect(() => {
     if (!token) return;
-    
-    const interval = setInterval(refreshUnreadCount, 30000);
+    const interval = setInterval(refreshUnreadCount, 60000);
     return () => clearInterval(interval);
-  }, [refreshUnreadCount, token]);
+  }, [token, refreshUnreadCount]);
 
   return (
-    <UnreadCountContext.Provider
-      value={{
-        unreadCount,
-        refreshUnreadCount,
-        decreaseUnreadCount,
+    <UnreadCountContext.Provider 
+      value={{ 
+        unreadCount, 
+        refreshUnreadCount, 
+        decreaseUnreadCount, // أعدنا الدالة المفقودة
+        setUnreadCount,
+        connection: connectionRef.current 
       }}
     >
       {children}
     </UnreadCountContext.Provider>
   );
+};
+
+export const useUnreadCount = () => {
+  const context = useContext(UnreadCountContext);
+  if (!context) {
+    throw new Error("useUnreadCount must be used within an UnreadCountProvider");
+  }
+  return context;
 };
