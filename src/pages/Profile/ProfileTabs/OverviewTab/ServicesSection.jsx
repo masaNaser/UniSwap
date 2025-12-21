@@ -1,4 +1,3 @@
-// ServicesSection.jsx
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -151,8 +150,8 @@ export default function ServicesSection() {
                   borderRadius: 1,
                   position: "relative",
                   mb: 1,
-                  backgroundColor: "rgba(248, 250, 252, 1)",
-                  backgroundColor: theme.palette.mode === 'dark' ? '#323232ff' : 'rgba(248, 250, 252, 1)',
+                  // backgroundColor: "rgba(248, 250, 252, 1)",
+                  backgroundColor:theme.palette.mode === 'dark' ? '#323232ff' : 'rgba(248, 250, 252, 1)',
 
                 }}
               >
@@ -194,10 +193,10 @@ export default function ServicesSection() {
                     }}
                   >
                     <Typography variant="body2" color="textSecondary">
-                      {s.avgPoints} points
+                      {s.avgPoints}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                      {s.avgDurationDays} days
+                      {s.avgDurationDays}
                     </Typography>
                   </Box>
                 </Box>

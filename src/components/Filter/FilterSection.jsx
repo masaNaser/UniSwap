@@ -155,7 +155,7 @@ export default function FilterSection({
               sx={{
                 borderRadius: "6px",
                 textTransform: "none",
-                color: item.color || "#334155",
+                // color: item.color || "#334155",
                 color: theme.palette.mode === 'dark' ? '#fff' : '#334155',
                   backgroundColor: theme.palette.mode === 'dark' ? '#474646ff' : '#FAFBFC',
                 // backgroundColor: item.backgroundColor || "#FAFBFC",
