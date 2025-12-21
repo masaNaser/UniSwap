@@ -16,7 +16,7 @@ import {
   Assessment as AssessmentIcon,
   Explore as ExploreIcon,
 } from "@mui/icons-material";
-import Logo from "../../assets/images/logo.png";
+import Logo from "/logo.png";
 import LogoutIcon from "@mui/icons-material/Logout";
 import UsersTap from "./components/DashboardTabs/UsersTap";
 import ReportsTap from "./components/DashboardTabs/ReportsTap";

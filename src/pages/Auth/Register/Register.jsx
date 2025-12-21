@@ -31,7 +31,7 @@ import { useTheme } from "@mui/material/styles";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
-import Logo from "../../../assets/images/logo.png";
+import Logo from "/logo.png";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import { register as registerApi } from "../../../services/authService";
 import * as yup from "yup";

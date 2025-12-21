@@ -22,7 +22,7 @@ import {
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
-import Logo from "../../../assets/images/logo.png";
+import Logo from "/logo.png";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -82,27 +82,22 @@ export default function Login() {
       const response = await loginApi(data);
 
       if (response.status === 200) {
-        const { accessToken, refreshToken, refreshTokenExpiration } =
-          response.data;
+        const { accessToken, refreshToken, refreshTokenExpiration } = response.data;
+                const decoded = jwtDecode(accessToken);
 
+        const accessExp = decoded.exp;
         // حفظ في localStorage
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("refreshTokenExpiration", refreshTokenExpiration);
-
+// 3. تخزين وقت انتهاء الـ Access Token (مهم جداً للـ Interceptor)
+      // نضرب بـ 1000 لأن exp تكون بالثواني و JavaScript يتعامل بالملي ثانية
+      localStorage.setItem("refreshTokenExpiration", decoded.exp);
+      localStorage.setItem("accessTokenExpiration", accessExp); // من داخل التوكن (exp)
         // فك Token
-        const decoded = jwtDecode(accessToken);
-        const userName =
-          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-        const userId =
-          decoded[
-            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-          ];
-        const userRole =
-          decoded[
-            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-          ];
-        console.log("userRole:", userRole);
+        const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+        const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+        const userRole  = decoded[ "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
         // حفظ معلومات المستخدم
         localStorage.setItem("userName", userName);
         localStorage.setItem("userId", userId);
@@ -142,6 +137,7 @@ export default function Login() {
       setLoading(false);
     }
   };
+
   return (
     <>
       {/* Navbar */}
