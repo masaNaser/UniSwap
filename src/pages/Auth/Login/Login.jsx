@@ -22,7 +22,7 @@ import {
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
-import Logo from "../../../assets/images/logo.png";
+import Logo from "/logo.png";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";

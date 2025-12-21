@@ -17,7 +17,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
-import Logo from "../../assets/images/logo.png";
+import Logo from "/logo.png";
 
 export default function ForgetPassword() {
   const [loading, setLoading] = useState(false);

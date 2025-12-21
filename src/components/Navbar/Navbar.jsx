@@ -34,7 +34,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import LockResetIcon from "@mui/icons-material/LockReset";
 
 import { useLocation } from "react-router-dom";
-import Logo from "../../assets/images/logo.png";
+import Logo from "/logo.png";
 import MessegeIcon from "../../assets/images/MessegeIcon.svg";
 
 import { Link, useNavigate } from "react-router-dom";
