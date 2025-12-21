@@ -154,7 +154,7 @@ export default function TaskCard({
                   color="text.secondary"
                   sx={{
                     wordBreak: "break-word",
-                    fontSize: "12px",
+                    fontSize: "14px",
                     lineHeight: 1.4,
                   }}
                 >
