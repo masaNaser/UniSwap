@@ -9,6 +9,7 @@ import {
   alpha,
   styled,
   Chip,
+  Autocomplete,
   Snackbar,
   Alert,
 } from "@mui/material";
@@ -17,13 +18,12 @@ import CustomButton from "../../../components/CustomButton/CustomButton";
 import DisabledCustomButton from "../../../components/CustomButton/DisabledCustomButton";
 import { createPost as createPostApi } from "../../../services/postService";
 import { getImageUrl } from "../../../utils/imageHelper";
-import { useProfile } from "../../../Context/ProfileContext";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { formatDateTime } from "../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 
 const FormWrapper = styled(Box)(({ theme }) => ({
-  backgroundColor:theme.palette.background.paper,
+  backgroundColor: theme.palette.background.paper,
   padding: theme.spacing(3),
   borderRadius: "12px",
   boxShadow: "0px 0px 3px rgba(0, 0, 0, 0.2)",
@@ -40,15 +40,12 @@ const FormWrapper = styled(Box)(({ theme }) => ({
 }));
 
 const CreatePost = ({ addPost, token }) => {
-
-      const theme = useTheme(); // 🔥 ضيفي هاد السطر
-  
-  const { userData } = useProfile();
+  const theme = useTheme();
   const { currentUser } = useCurrentUser();
 
   const [content, setContent] = useState("");
-  const [tagInput, setTagInput] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
+  const [tagInputValue, setTagInputValue] = useState(""); // ✅ Added
   const [errors, setErrors] = useState({ content: "" });
   const [imagePreview, setImagePreview] = useState(null);
   const [file, setFile] = useState(null);
@@ -57,8 +54,8 @@ const CreatePost = ({ addPost, token }) => {
     message: "",
     severity: "success",
   });
-  const characterLimit = 500;
 
+  const characterLimit = 500;
   const isPostDisabled = content.trim().length === 0;
 
   const handleSnackbarClose = () => {
@@ -72,27 +69,9 @@ const CreatePost = ({ addPost, token }) => {
       setErrors({ content: "" });
   };
 
-  const handleTagInputChange = (event) => setTagInput(event.target.value);
-  
-  const handleTagKeyDown = (event) => {
-    if ((event.key === "Enter" || event.key === ",") && tagInput.trim()) {
-      event.preventDefault();
-      const newTag = tagInput.trim();
-      if (!selectedTags.includes(newTag) && selectedTags.length < 5) {
-        setSelectedTags([...selectedTags, newTag]);
-      }
-      setTagInput("");
-    }
-  };
-  
-  const handleTagDelete = (tagToDelete) => {
-    setSelectedTags(selectedTags.filter((tag) => tag !== tagToDelete));
-  };
-
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // Validate file size (10MB max)
       const maxSize = 10 * 1024 * 1024;
       if (selectedFile.size > maxSize) {
         setSnackbar({
@@ -104,8 +83,7 @@ const CreatePost = ({ addPost, token }) => {
       }
 
       setFile(selectedFile);
-      
-      // Create preview only for images
+
       if (selectedFile.type.startsWith('image/')) {
         setImagePreview(URL.createObjectURL(selectedFile));
       } else {
@@ -117,7 +95,6 @@ const CreatePost = ({ addPost, token }) => {
   const handleDocumentChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // Validate file size (10MB max)
       const maxSize = 10 * 1024 * 1024;
       if (selectedFile.size > maxSize) {
         setSnackbar({
@@ -129,7 +106,7 @@ const CreatePost = ({ addPost, token }) => {
       }
 
       setFile(selectedFile);
-      setImagePreview(null); // No preview for documents
+      setImagePreview(null);
     }
   };
 
@@ -142,66 +119,68 @@ const CreatePost = ({ addPost, token }) => {
     if (docInput) docInput.value = "";
   };
 
- const handleSubmit = async (event) => {
-  event.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-  if (isPostDisabled) return;
+    if (isPostDisabled) return;
 
-  const formData = new FormData();
-  formData.append("Content", content);
-  formData.append("Tags", selectedTags);
-  if (file) formData.append("File", file);
+    const formData = new FormData();
+    formData.append("Content", content);
 
-  try {
-    const response = await createPostApi(formData, token);
-    const postData = response.data;
-    console.log("postData:", postData);
-    
-    // ✅ استخدام currentUser بدل postData.author
-    const newPost = {
-      id: postData.id,
-      content: postData.content,
-      selectedTags: postData.tags?.[0]?.split(",") || [],
-      user: { 
-        name: currentUser?.userName, // ✅
-        avatar: getImageUrl(currentUser?.profilePicture, currentUser?.userName), // ✅
-        id: currentUser?.id, // ✅
-      },
-     time: formatDateTime(new Date().toISOString()), // ✅ استخدمي الوقت المحلي
-      likes: 0, // ✅ بوست جديد
-      comments: 0, // ✅ بوست جديد
-      fileUrl: postData.fileUrl
-        ? `https://uni1swap.runasp.net/${postData.fileUrl}`
-        : null,
-      isLiked: false,
-      recentComments: [],
-      isClosed: postData.postStatus === "Closed",
-    };
+    // ✅ Send tags as array - backend expects List<string>
+    selectedTags.forEach(tag => formData.append("Tags", tag));
 
-    addPost(newPost);
-    setContent("");
-    setSelectedTags([]);
-    setTagInput("");
-    setErrors({ content: "" });
-    setFile(null);
-    setImagePreview(null);
+    if (file) formData.append("File", file);
 
-    if (response.status === 201) {
+    try {
+      const response = await createPostApi(formData, token);
+      const postData = response.data;
+      console.log("postData:", postData);
+
+      const newPost = {
+        id: postData.id,
+        content: postData.content,
+        selectedTags: postData.tags || [],
+        user: {
+          name: currentUser?.userName,
+          avatar: getImageUrl(currentUser?.profilePicture, currentUser?.userName),
+          id: currentUser?.id,
+        },
+        time: formatDateTime(new Date().toISOString()),
+        likes: 0,
+        comments: 0,
+        fileUrl: postData.fileUrl
+          ? `https://uni1swap.runasp.net/${postData.fileUrl}`
+          : null,
+        isLiked: false,
+        recentComments: [],
+        isClosed: postData.postStatus === "Closed",
+      };
+
+      addPost(newPost);
+      setContent("");
+      setSelectedTags([]);
+      setTagInputValue(""); // ✅ Clear tag input
+      setErrors({ content: "" });
+      setFile(null);
+      setImagePreview(null);
+
+      if (response.status === 201) {
+        setSnackbar({
+          open: true,
+          message: "Post has been created successfully! 🎉",
+          severity: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Error creating post:", error);
       setSnackbar({
         open: true,
-        message: "Post has been created successfully! 🎉",
-        severity: "success",
+        message: "Failed to create post. Please try again.",
+        severity: "error",
       });
     }
-  } catch (error) {
-    console.error("Error creating post:", error);
-    setSnackbar({
-      open: true,
-      message: "Failed to create post. Please try again.",
-      severity: "error",
-    });
-  }
-};
+  };
 
   const iconHover = { "&:hover": { color: "primary.main" } };
 
@@ -249,26 +228,55 @@ const CreatePost = ({ addPost, token }) => {
             <Typography variant="body1" sx={{ fontWeight: "bold", mb: 1 }}>
               Tags (max 5)
             </Typography>
-            <TextField
-              placeholder="Enter tags and press Enter"
-              value={tagInput}
-              onChange={handleTagInputChange}
-              onKeyDown={handleTagKeyDown}
-              fullWidth
-              variant="outlined"
-              size="small"
-            />
-            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1 }}>
-              {selectedTags.map((tag) => (
-                <Chip
-                  key={tag}
-                  label={`#${tag}`}
-                  onDelete={() => handleTagDelete(tag)}
-                  color="primary"
-                  sx={{ fontWeight: "bold", bgcolor: alpha("#0b62f0ff", 0.5) }}
+            <Autocomplete
+              multiple
+              freeSolo
+              options={[]}
+              value={selectedTags}
+              inputValue={tagInputValue} // ✅ Added
+              onInputChange={(event, newInputValue) => {
+                setTagInputValue(newInputValue); // ✅ Added
+              }}
+              onChange={(event, newValue) => {
+                // ✅ Improved: Show warning if trying to exceed limit
+                if (newValue.length > 5) {
+                  setSnackbar({
+                    open: true,
+                    message: "Maximum 5 tags allowed",
+                    severity: "warning",
+                  });
+                  return;
+                }
+                setSelectedTags(newValue);
+                setTagInputValue(""); // ✅ Clear input after adding
+              }}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => {
+                  const { key, ...tagProps } = getTagProps({ index });
+                  return (
+                    <Chip
+                      key={key}
+                      label={`#${option}`}
+                      {...tagProps}
+                      color="primary"
+                      sx={{ fontWeight: "bold", bgcolor: alpha("#0b62f0ff", 0.5) }}
+                    />
+                  );
+                })
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder={selectedTags.length === 0 ? "Type a tag and press Enter" : ""}
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  InputProps={{
+                    ...params.InputProps,
+                  }}
                 />
-              ))}
-            </Stack>
+              )}
+            />
           </Box>
         </Stack>
 
@@ -276,7 +284,6 @@ const CreatePost = ({ addPost, token }) => {
         {file && (
           <Box sx={{ position: "relative", mt: 2 }}>
             {imagePreview ? (
-              // Image Preview
               <Box sx={{ display: "inline-block", position: "relative" }}>
                 <img
                   src={imagePreview}
@@ -304,7 +311,6 @@ const CreatePost = ({ addPost, token }) => {
                 </IconButton>
               </Box>
             ) : (
-              // Document Preview
               <Box
                 sx={{
                   display: "flex",
@@ -335,7 +341,6 @@ const CreatePost = ({ addPost, token }) => {
           flexWrap="wrap"
         >
           <Stack direction="row" spacing={1} sx={{ color: "text.secondary" }}>
-            {/* Image Upload */}
             <input
               accept="image/*"
               type="file"
@@ -349,7 +354,6 @@ const CreatePost = ({ addPost, token }) => {
               </IconButton>
             </label>
 
-            {/* Document Upload */}
             <input
               accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
               type="file"
@@ -400,7 +404,7 @@ const CreatePost = ({ addPost, token }) => {
           severity={snackbar.severity}
           sx={{
             width: "100%",
-            bgcolor: snackbar.severity === "success" ? "#3b82f6" : "#EF4444",
+            bgcolor: snackbar.severity === "success" ? "#3b82f6" : snackbar.severity === "warning" ? "#F59E0B" : "#EF4444",
             color: "white",
             "& .MuiAlert-icon": {
               color: "white",

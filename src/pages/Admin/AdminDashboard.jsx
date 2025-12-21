@@ -82,7 +82,7 @@ const AdminDashboard = () => {
             <Box component="img" src={Logo} alt="Logo" sx={{ width: isMobile ? 40 : 35, height: "auto", objectFit: "contain" }} />
           </Box>
           {!isMobile && (
-            <Typography variant="h6" fontWeight="bold" sx={{ color: "#1e293b", whiteSpace: "nowrap", letterSpacing: "-0.5px" }}>
+            <Typography variant="h6" fontWeight="bold" sx={{ color: "#74767a", whiteSpace: "nowrap", letterSpacing: "-0.5px" }}>
               UniSwap
             </Typography>
           )}

@@ -11,6 +11,10 @@ import {
   Autocomplete,
   Chip,
   IconButton,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import {
   Email,
@@ -24,10 +28,9 @@ import {
   VisibilityOff,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import Logo from "../../../assets/images/logo.png";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import { register as registerApi } from "../../../services/authService";
@@ -36,30 +39,18 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { LinearProgress } from "@mui/material";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
+
 export default function Register() {
-  // const validationSchema = yup.object({
-  //   userName: yup
-  //     .string()
-  //     .required("User Name is required")
-  //     .min(5, "User Name must be at least 5 characters"),
-  //   email: yup
-  //     .string()
-  //     .required("Email is required")
-  //     .email("Invalid email address"),
-  //   password: yup
-  //     .string()
-  //     .required("Password is required")
-  //     .min(8, "Password must be at least 8 characters")
-  //     .matches(
-  //       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-  //       "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-  //     ),
-  //   confirmPassword: yup
-  //     .string()
-  //     .required("Please confirm your password")
-  //     .oneOf([yup.ref("password")], "Passwords must match"),
-  // });
   const theme = useTheme();
+
+  const academicYearOptions = [
+    { value: 0, label: "First Year" },
+    { value: 1, label: "Second Year" },
+    { value: 2, label: "Third Year" },
+    { value: 3, label: "Fourth Year" },
+    { value: 4, label: "Other" },
+  ];
+
   const validationSchema = yup.object({
     userName: yup
       .string()
@@ -87,6 +78,11 @@ export default function Register() {
       .string()
       .required("Please confirm your password")
       .oneOf([yup.ref("password")], "Passwords must match"),
+
+    academicYear: yup
+      .number()
+      .required("Academic Year is required")
+      .typeError("Please select your academic year"),
   });
 
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -134,10 +130,14 @@ export default function Register() {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors },
   } = useForm({
     //هاي الخطوة عشان نحكي للمكتبة الرياكت هوك فورم انه ما تعمل الفالديشن منها وانما الفالديشن اللي حطيناه باستخدام ال yup
     resolver: yupResolver(validationSchema),
+    defaultValues: {
+      academicYear: "",
+    },
   });
 
   const registerHandle = async (data) => {
@@ -148,7 +148,7 @@ export default function Register() {
       confirmPassword: data.confirmPassword.trim(),
       skills: skills,
       universityMajor: data.universityMajor.toUpperCase(),
-      academicYear: data.academicYear.trim(),
+      academicYear: data.academicYear,
     };
 
     console.log("Final Data Sent:", JSON.stringify(finalData));
@@ -361,7 +361,7 @@ export default function Register() {
               textColor="inherit"
               sx={{
                 // bgcolor: "#F1F5F9",
-                bgcolor:theme.palette.mode === "dark" ? "#565555ff" : "#F1F5F9",
+                bgcolor: theme.palette.mode === "dark" ? "#565555ff" : "#F1F5F9",
                 borderRadius: "50px",
                 minHeight: "40px",
                 "& .MuiTab-root": {
@@ -626,7 +626,7 @@ export default function Register() {
                 fullWidth
                 margin="normal"
                 label="University Major"
-                placeholder="Computer Systems Engineering"
+                placeholder="Enter your major or field of study"
                 variant="outlined"
                 required
                 InputProps={{
@@ -638,22 +638,47 @@ export default function Register() {
                 }}
               />
 
-              <TextField
-                {...register("academicYear")}
+              <FormControl
                 fullWidth
                 margin="normal"
-                label="Academic Year"
-                placeholder="5"
-                variant="outlined"
-                required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CalendarMonth />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                error={!!errors.academicYear}
+              >
+                <InputLabel id="academic-year-label">Academic Year</InputLabel>
+                <Controller
+                  name="academicYear"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      labelId="academic-year-label"
+                      label="Academic Year"
+                      startAdornment={
+                        <InputAdornment position="start">
+                          <CalendarMonth />
+                        </InputAdornment>
+                      }
+                    >
+                      {academicYearOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                {errors.academicYear && (
+                  <Typography
+                    sx={{
+                      color: '#d32f2f',
+                      fontSize: '0.75rem',
+                      mt: 0.5,
+                      ml: 2
+                    }}
+                  >
+                    {errors.academicYear.message}
+                  </Typography>
+                )}
+              </FormControl>
 
               <CustomButton
                 type="submit"

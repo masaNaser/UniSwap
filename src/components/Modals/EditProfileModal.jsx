@@ -321,21 +321,42 @@
 // export default EditProfileModal;
 
 import React, { useState, useEffect } from "react";
-import { Box, TextField, Avatar, IconButton } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Avatar,
+  IconButton,
+  Chip,
+  InputAdornment,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Autocomplete
+} from "@mui/material";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import CalendarMonth from "@mui/icons-material/CalendarMonth";
+import ElectricBoltSharp from "@mui/icons-material/ElectricBoltSharp";
 import GenericModal from "./GenericModal";
 import { EditProfile } from "../../services/profileService";
 import { getImageUrl } from "../../utils/imageHelper";
 
 const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
-  
+
+  const academicYearOptions = [
+    { value: 0, label: "First Year" },
+    { value: 1, label: "Second Year" },
+    { value: 2, label: "Third Year" },
+    { value: 3, label: "Fourth Year" },
+    { value: 4, label: "Other" },
+  ];
+
   const [formData, setFormData] = useState({
     userName: "",
     Bio: "",
     UniversityMajor: "",
     AcademicYear: "",
     SocialLinks: "",
-    Skills: "",
     ProfilePicture: null,
     CoverImg: null,
   });
@@ -345,21 +366,32 @@ const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
     CoverImg: "",
   });
 
+  // Skills state for Autocomplete
+  const [skills, setSkills] = useState([]);
+  const [skillInputValue, setSkillInputValue] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
 
-  // تحميل الداتا لأول مرة
+  // Initialize data when modal opens
   useEffect(() => {
     if (userData && open) {
       console.log("📥 Loading userData into form:", userData);
-      
+
+      const yearMap = {
+        "Firstyear": 0,
+        "Secondyear": 1,
+        "Thirdyear": 2,
+        "Fourthyear": 3,
+        "another": 4
+      };
+
       setFormData({
         userName: userData.userName || "",
         Bio: userData.bio || "",
         UniversityMajor: userData.universityMajor || "",
-        AcademicYear: userData.academicYear || "",
+        AcademicYear: yearMap[userData.academicYear] ?? "",
         SocialLinks: userData.socialLinks || "",
-        Skills: userData.skills || "",
         ProfilePicture: null,
         CoverImg: null,
       });
@@ -368,6 +400,18 @@ const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
         ProfilePicture: getImageUrl(userData.profilePicture, userData.userName),
         CoverImg: getImageUrl(userData.coverImg, userData.userName),
       });
+
+      // Initialize skills array
+      if (userData.skills) {
+        const skillsArray = Array.isArray(userData.skills)
+          ? userData.skills
+          : typeof userData.skills === "string"
+            ? userData.skills.split(",").map(s => s.trim()).filter(Boolean)
+            : [];
+        setSkills(skillsArray);
+      } else {
+        setSkills([]);
+      }
     }
   }, [userData, open]);
 
@@ -383,88 +427,70 @@ const EditProfileModal = ({ open, onClose, userData, onProfileUpdated }) => {
     setPreview((p) => ({ ...p, [type]: URL.createObjectURL(file) }));
   };
 
-const handleSubmit = async () => {
+  const handleSubmit = async () => {
     const token = localStorage.getItem("accessToken");
-  if (!token) {
+    if (!token) {
       console.error("❌ No token found!");
-      setSnackbar({ 
-        open: true, 
-        message: "Please login again!", 
-        severity: "error" 
+      setSnackbar({
+        open: true,
+        message: "Please login again!",
+        severity: "error"
       });
       return;
     }
-  setIsSubmitting(true);
-  try {
-    const form = new FormData();
 
-    // الحقول النصية
-    if (formData.userName?.trim()) form.append("UserName", formData.userName.trim());
-    if (formData.Bio?.trim()) form.append("Bio", formData.Bio.trim());
-    if (formData.UniversityMajor?.trim()) form.append("UniversityMajor", formData.UniversityMajor.trim());
-// في handleSubmit، قبل ما ترسل:
-if (formData.AcademicYear) {
-  const yearMap = {
-    "1": "Firstyear",
-    "2": "Secondyear",
-    "3": "Thirdyear",
-    "4": "Fourthyear",
-    "5": "another"
+    setIsSubmitting(true);
+    try {
+      const form = new FormData();
+
+      // Text fields
+      if (formData.userName?.trim()) form.append("UserName", formData.userName.trim());
+      if (formData.Bio?.trim()) form.append("Bio", formData.Bio.trim());
+      if (formData.UniversityMajor?.trim()) form.append("UniversityMajor", formData.UniversityMajor.trim());
+      if (formData.AcademicYear !== "" && formData.AcademicYear !== null) {
+        form.append("AcademicYear", formData.AcademicYear.toString());
+      }
+
+      // Skills → from skills array
+      skills.forEach(skill => form.append("Skills", skill));
+
+      // SocialLinks
+      if (formData.SocialLinks) {
+        let linksArray = [];
+
+        if (Array.isArray(formData.SocialLinks)) {
+          linksArray = formData.SocialLinks;
+        } else if (typeof formData.SocialLinks === "string") {
+          linksArray = formData.SocialLinks.split(",").map(l => l.trim()).filter(Boolean);
+        }
+
+        linksArray.forEach(link => form.append("SocialLinks", link));
+      }
+
+      // Images
+      if (formData.ProfilePicture) form.append("ProfilePicture", formData.ProfilePicture);
+      if (formData.CoverImg) form.append("CoverImg", formData.CoverImg);
+
+      // Send to server
+      await EditProfile(token, form);
+      console.log("✅ Profile updated on server");
+
+      // Fetch updated data
+      if (onProfileUpdated) await onProfileUpdated();
+
+      // Show success message
+      setSnackbar({ open: true, message: "Profile updated successfully!", severity: "success" });
+
+      // Close modal after 1 second
+      setTimeout(() => onClose(), 1000);
+
+    } catch (err) {
+      console.error("❌ Profile update error:", err);
+      setSnackbar({ open: true, message: err.response?.data?.message || "Something went wrong!", severity: "error" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  
-  form.append("AcademicYear", yearMap[formData.AcademicYear] || formData.AcademicYear);
-}
-    // Skills → تحويل لمصفوفة
-  if (formData.Skills) {
-  let skillsArray = [];
-
-  if (Array.isArray(formData.Skills)) {
-    skillsArray = formData.Skills; // Already an array
-  } else if (typeof formData.Skills === "string") {
-    skillsArray = formData.Skills.split(",").map(s => s.trim()).filter(Boolean);
-  }
-
-  skillsArray.forEach(skill => form.append("Skills", skill));
-}
-
-    // SocialLinks → تحويل لمصفوفة
-  if (formData.SocialLinks) {
-  let linksArray = [];
-
-  if (Array.isArray(formData.SocialLinks)) {
-    linksArray = formData.SocialLinks; // Already an array
-  } else if (typeof formData.SocialLinks === "string") {
-    linksArray = formData.SocialLinks.split(",").map(l => l.trim()).filter(Boolean);
-  }
-
-  linksArray.forEach(link => form.append("SocialLinks", link));
-}
-
-
-    // الصور: نرسل فقط إذا اخترت جديد
-    if (formData.ProfilePicture) form.append("ProfilePicture", formData.ProfilePicture);
-    if (formData.CoverImg) form.append("CoverImg", formData.CoverImg);
-
-    // إرسال البيانات للسيرفر
-    await EditProfile(token, form);
-    console.log("✅ Profile updated on server");
-
-    // جلب البيانات الجديدة
-    if (onProfileUpdated) await onProfileUpdated();
-
-    // إظهار رسالة نجاح
-    setSnackbar({ open: true, message: "Profile updated successfully!", severity: "success" });
-
-    // إغلاق المودال بعد ثانية
-    setTimeout(() => onClose(), 1000);
-
-  } catch (err) {
-    console.error("❌ Profile update error:", err);
-    setSnackbar({ open: true, message: err.response?.data?.message || "Something went wrong!", severity: "error" });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
 
   return (
     <GenericModal
@@ -478,7 +504,7 @@ if (formData.AcademicYear) {
       onSnackbarClose={() => setSnackbar(null)}
     >
       <Box display="flex" flexDirection="column" gap={3}>
-        {/* صورة البروفايل */}
+        {/* Profile Picture */}
         <Box textAlign="center">
           <Avatar
             src={preview.ProfilePicture}
@@ -495,7 +521,7 @@ if (formData.AcademicYear) {
           </IconButton>
         </Box>
 
-        {/* الغلاف */}
+        {/* Cover Image */}
         <Box textAlign="center">
           <img
             src={preview.CoverImg}
@@ -518,7 +544,7 @@ if (formData.AcademicYear) {
           </IconButton>
         </Box>
 
-        {/* الحقول النصية */}
+        {/* Text Fields */}
         <TextField
           label="Username"
           name="userName"
@@ -545,13 +571,27 @@ if (formData.AcademicYear) {
           fullWidth
         />
 
-        <TextField
-          label="Academic Year"
-          name="AcademicYear"
-          value={formData.AcademicYear}
-          onChange={handleChange}
-          fullWidth
-        />
+        <FormControl fullWidth>
+          <InputLabel id="academic-year-label">Academic Year</InputLabel>
+          <Select
+            labelId="academic-year-label"
+            name="AcademicYear"
+            value={formData.AcademicYear}
+            onChange={handleChange}
+            label="Academic Year"
+            startAdornment={
+              <InputAdornment position="start">
+                <CalendarMonth />
+              </InputAdornment>
+            }
+          >
+            {academicYearOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
         <TextField
           label="Social Links (Comma separated)"
@@ -561,12 +601,52 @@ if (formData.AcademicYear) {
           fullWidth
         />
 
-        <TextField
-          label="Skills (Comma separated)"
-          name="Skills"
-          value={formData.Skills}
-          onChange={handleChange}
-          fullWidth
+        {/* Skills with Autocomplete */}
+        <Autocomplete
+          multiple
+          freeSolo
+          options={[]}
+          value={skills}
+          inputValue={skillInputValue}
+          onInputChange={(event, newInputValue) => {
+            setSkillInputValue(newInputValue);
+          }}
+          onChange={(event, newValue) => {
+            setSkills(newValue);
+            setSkillInputValue("");
+          }}
+          renderTags={(value, getTagProps) =>
+            value.map((option, index) => {
+              const { key, ...tagProps } = getTagProps({ index });
+              return (
+                <Chip
+                  key={key}
+                  variant="outlined"
+                  label={option}
+                  {...tagProps}
+                />
+              );
+            })
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Skills"
+              placeholder={skills.length === 0 ? "Type a skill and press Enter" : ""}
+              fullWidth
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <>
+                    <InputAdornment position="start">
+                      <ElectricBoltSharp />
+                    </InputAdornment>
+                    {params.InputProps.startAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
         />
       </Box>
     </GenericModal>

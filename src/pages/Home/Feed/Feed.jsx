@@ -6,16 +6,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Button,
   Snackbar,
   Alert,
   CircularProgress,
-  IconButton,
-  Chip,
   Typography,
 } from "@mui/material";
-
 // icons
 import {
   WavingHand,
@@ -27,8 +23,6 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import SelectActionCard from "../../../components/Cards/Cards";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import GroupIcon from "@mui/icons-material/Group";
-import CloseIcon from "@mui/icons-material/Close";
-
 import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 import Sidebar from "./Sidebar";
@@ -53,8 +47,8 @@ import PostCardSkeleton from "../../../components/Skeletons/PostCardSkeleton";
 import dayjs from "dayjs";
 import { isAdmin } from "../../../utils/authHelpers";
 import { formatDateTime } from "../../../utils/timeHelper";
-import useInfiniteScroll from "../../../hooks/useInfiniteScroll"; 
-import EditPostModal from "../../../components/Modals/EditPostModal"; 
+import useInfiniteScroll from "../../../hooks/useInfiniteScroll";
+import EditPostModal from "../../../components/Modals/EditPostModal";
 import { useTheme } from "@mui/material/styles";
 
 // normalize comment
@@ -80,7 +74,7 @@ const updatePost = (posts, postId, newData) =>
   posts.map((p) => (p.id === postId ? { ...p, ...newData } : p));
 
 export default function Feed() {
-  const theme = useTheme(); // 🔥 ضيفي هاد السطر
+  const theme = useTheme();
   const [postsUpdated, setPostsUpdated] = useState(false);
 
 
@@ -147,7 +141,11 @@ export default function Feed() {
       const postsData = response.data.map((p) => ({
         id: p.id,
         content: p.content,
-        selectedTags: p.tags?.[0]?.split(",") || [],
+        selectedTags: Array.isArray(p.tags) && p.tags.length > 0 && p.tags[0]
+          ? (typeof p.tags[0] === 'string' && p.tags[0].includes(',')
+            ? p.tags[0].split(",").map(t => t.trim())
+            : p.tags)
+          : [],
         user: {
           name: p.author.userName,
           avatar: getImageUrl(p.author.profilePictureUrl, p.author.userName),
@@ -167,7 +165,6 @@ export default function Feed() {
         // ✅ إضافة البوستات الجديدة
         setPosts((prev) => [...prev, ...postsData]);
       } else {
-        // ✅ استبدال البوستات (للتحميل الأول)
         setPosts(postsData);
       }
 
@@ -239,19 +236,18 @@ export default function Feed() {
   }, [posts.length, fetchRecentComments]);
 
 
-const addPost = (newPost) => {
-  const formattedPost = {
-    ...newPost,
-    selectedTags: newPost.tags?.[0]?.split(",") || [],
-    isLiked: false,
-    recentComments: [],
-  };
+  const addPost = (newPost) => {
+    const formattedPost = {
+      ...newPost,
+      selectedTags: newPost.selectedTags || [],
+      isLiked: false,
+      recentComments: [],
+    };
 
-  setPosts((prev) => [formattedPost, ...prev]);
-  
-  // ✅ استخدمي timestamp بدل boolean
-  setPostsUpdated(Date.now()); // ✅ هيك بيضمن إنه في تغيير حقيقي
-};
+    setPosts((prev) => [formattedPost, ...prev]);
+
+    setPostsUpdated(Date.now());
+  };
 
   const openDeleteDialog = (postId) => {
     setDeleteDialog({ open: true, postId });
@@ -451,10 +447,10 @@ const addPost = (newPost) => {
       prev.map((p) =>
         p.id === postId
           ? {
-              ...p,
-              comments: p.comments + 1,
-              recentComments: [newComment, ...p.recentComments].slice(0, 2),
-            }
+            ...p,
+            comments: p.comments + 1,
+            recentComments: [newComment, ...p.recentComments].slice(0, 2),
+          }
           : p
       )
     );
@@ -474,12 +470,12 @@ const addPost = (newPost) => {
           prev.map((p) =>
             p.id === postId
               ? {
-                  ...p,
-                  recentComments: [
-                    finalComment,
-                    ...p.recentComments.filter((c) => c.id !== tempCommentId),
-                  ].slice(0, 2),
-                }
+                ...p,
+                recentComments: [
+                  finalComment,
+                  ...p.recentComments.filter((c) => c.id !== tempCommentId),
+                ].slice(0, 2),
+              }
               : p
           )
         );
@@ -496,12 +492,12 @@ const addPost = (newPost) => {
         prev.map((p) =>
           p.id === postId
             ? {
-                ...p,
-                comments: p.comments - 1,
-                recentComments: p.recentComments.filter(
-                  (c) => c.id !== tempCommentId
-                ),
-              }
+              ...p,
+              comments: p.comments - 1,
+              recentComments: p.recentComments.filter(
+                (c) => c.id !== tempCommentId
+              ),
+            }
             : p
         )
       );
@@ -576,17 +572,17 @@ const addPost = (newPost) => {
       prev.map((p) =>
         p.id === postId
           ? {
-              ...p,
-              recentComments: p.recentComments.map((c) =>
-                c.id === commentId
-                  ? {
-                      ...c,
-                      content: newContent,
-                      createdAt: new Date().toISOString(),
-                    }
-                  : c
-              ),
-            }
+            ...p,
+            recentComments: p.recentComments.map((c) =>
+              c.id === commentId
+                ? {
+                  ...c,
+                  content: newContent,
+                  createdAt: new Date().toISOString(),
+                }
+                : c
+            ),
+          }
           : p
       )
     );
@@ -600,17 +596,17 @@ const addPost = (newPost) => {
         prev.map((p) =>
           p.id === postId
             ? {
-                ...p,
-                recentComments: p.recentComments.map((c) =>
-                  c.id === commentId
-                    ? {
-                        ...c,
-                        content: originalContent,
-                        createdAt: originalComment.createdAt,
-                      }
-                    : c
-                ),
-              }
+              ...p,
+              recentComments: p.recentComments.map((c) =>
+                c.id === commentId
+                  ? {
+                    ...c,
+                    content: originalContent,
+                    createdAt: originalComment.createdAt,
+                  }
+                  : c
+              ),
+            }
             : p
         )
       );
@@ -659,7 +655,7 @@ const addPost = (newPost) => {
     if (!postIdFromUrl || !posts.length || loadingPostFromNotif) return;
 
     const post = posts.find(p => p.id === postIdFromUrl);
-    
+
     if (post) {
       console.log("✅ Scrolling to post:", postIdFromUrl);
       setTimeout(() => {
@@ -678,7 +674,7 @@ const addPost = (newPost) => {
       setLoadingPostFromNotif(true);
       setPage(1);
       setHasMore(true);
-      
+
       fetchPosts(1, false).finally(() => {
         setTimeout(() => {
           const postElement = postRefs.current[postIdFromUrl];
@@ -725,14 +721,14 @@ const addPost = (newPost) => {
             <SelectActionCard
               title="Posts Number"
               value={currentUser?.postsCount}
-              icon={<ArticleOutlinedIcon/>}
+              icon={<ArticleOutlinedIcon />}
               iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
             />
             <SelectActionCard
               title="Completed Tasks"
               value={currentUser?.completedProjectsCount}
               icon={<WorkspacePremiumOutlinedIcon />}
-               iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
+              iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
             />
             <SelectActionCard
               title="Peer Rating"
@@ -838,7 +834,7 @@ const addPost = (newPost) => {
                       >
                         🎉 You've reached the end!
                       </Typography> */}
-                      {/* <Typography
+                  {/* <Typography
                         sx={{ color: "#D1D5DB", fontSize: "14px", mt: 0.5 }}
                       >
                         No more posts to show
@@ -867,7 +863,7 @@ const addPost = (newPost) => {
 
           {!admin && (
             <div className="feed-sidebar" style={{ flex: 1 }}>
-<Sidebar postsUpdated={postsUpdated} />
+              <Sidebar postsUpdated={postsUpdated} />
             </div>
           )}
         </div>
@@ -934,16 +930,16 @@ const addPost = (newPost) => {
         </DialogActions>
       </Dialog>
 
- <EditPostModal
-      open={editDialog.open}
-      onClose={closeEditDialog}
-      editDialog={editDialog}
-      setEditDialog={setEditDialog}
-      onSubmit={handleEditPost}
-      isUpdating={isUpdating}
-      snackbar={snackbar}
-      onSnackbarClose={handleSnackbarClose}
-    />
+      <EditPostModal
+        open={editDialog.open}
+        onClose={closeEditDialog}
+        editDialog={editDialog}
+        setEditDialog={setEditDialog}
+        onSubmit={handleEditPost}
+        isUpdating={isUpdating}
+        snackbar={snackbar}
+        onSnackbarClose={handleSnackbarClose}
+      />
       {/* <Dialog
         open={editDialog.open}
         onClose={closeEditDialog}
@@ -979,9 +975,9 @@ const addPost = (newPost) => {
           />
 
           {/* Upload Buttons */}
-          {/* <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+      {/* <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
             {/* Image Upload */}
-            {/* <Box>
+      {/* <Box>
               <input
                 type="file"
                 accept="image/*"
@@ -1010,8 +1006,8 @@ const addPost = (newPost) => {
               </label>
             </Box>  */}
 
-            {/* Document Upload */}
-            {/* <Box>
+      {/* Document Upload */}
+      {/* <Box>
               <input
                 type="file"
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
@@ -1041,8 +1037,8 @@ const addPost = (newPost) => {
             </Box>
           </Box> */}
 
-          {/* Preview Section - للملف الجديد أو الموجود */}
-          {/* {(editDialog.file || editDialog.existingFileUrl) && (
+      {/* Preview Section - للملف الجديد أو الموجود */}
+      {/* {(editDialog.file || editDialog.existingFileUrl) && (
             <Box sx={{ mt: 2, mb: 2 }}>
               {editDialog.previewUrl &&
               editDialog.previewUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) ? (
@@ -1151,7 +1147,7 @@ const addPost = (newPost) => {
             )}
           </Button>
         </DialogActions>
-      // </Dialog> */} 
+      // </Dialog> */}
 
       <Snackbar
         open={snackbar.open}

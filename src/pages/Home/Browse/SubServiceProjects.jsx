@@ -15,6 +15,7 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -403,9 +404,9 @@ export default function SubServiceProjects() {
   const mapRatingToBackend = (rating) => {
     const mapping = {
       "All Ratings": null,
-      "High (4+)": "high",
-      "Average (2.5-4)": "avg",
-      "Low (<2.5)": "low",
+      "High": "high",
+      "Average": "avg",
+      "Low": "low",
     };
     return mapping[rating];
   };
@@ -559,11 +560,9 @@ export default function SubServiceProjects() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Typography variant="h6" color="text.secondary">
-          Loading projects...
-        </Typography>
-      </Container>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
     );
   }
 

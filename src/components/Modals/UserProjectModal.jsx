@@ -9,15 +9,15 @@ import {
   Button,
   Card,
   CardMedia,
+  Autocomplete,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import FolderIcon from "@mui/icons-material/Folder";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import GenericModal from "../../components/Modals/GenericModal";
-import {CreateProject,EditProject} from "../../services/profileService";
+import { CreateProject, EditProject } from "../../services/profileService";
 
 export default function UserProjectModal({
   open,
@@ -30,13 +30,17 @@ export default function UserProjectModal({
     title: "",
     description: "",
     duration: "",
-    tags: [],
     coverImage: null,
     projectFile: null,
   });
+
   const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [projectFilePreview, setProjectFilePreview] = useState(null);
-  const [tagInput, setTagInput] = useState("");
+
+  // Autocomplete state for tags
+  const [tags, setTags] = useState([]);
+  const [tagInputValue, setTagInputValue] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
 
@@ -46,15 +50,17 @@ export default function UserProjectModal({
         title: editData.title || "",
         description: editData.description || "",
         duration: editData.duration || "",
-        tags: editData.tags || [],
         coverImage: null,
         projectFile: null,
       });
-      
+
+      // Initialize tags
+      setTags(editData.tags || []);
+
       if (editData.coverImage) {
         setCoverImagePreview(`https://uni1swap.runasp.net/${editData.coverImage}`);
       }
-      
+
       if (editData.projectFile) {
         setProjectFilePreview(editData.projectFile);
       }
@@ -63,14 +69,14 @@ export default function UserProjectModal({
         title: "",
         description: "",
         duration: "",
-        tags: [],
         coverImage: null,
         projectFile: null,
       });
+      setTags([]);
       setCoverImagePreview(null);
       setProjectFilePreview(null);
     }
-    setTagInput("");
+    setTagInputValue("");
   }, [editData, open]);
 
   const handleChange = (e) => {
@@ -81,7 +87,7 @@ export default function UserProjectModal({
     const { name, files } = e.target;
     if (files && files[0]) {
       setFormData((prev) => ({ ...prev, [name]: files[0] }));
-      
+
       if (name === "coverImage") {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -89,14 +95,13 @@ export default function UserProjectModal({
         };
         reader.readAsDataURL(files[0]);
       }
-      
+
       if (name === "projectFile") {
         setProjectFilePreview(files[0].name);
       }
     }
   };
 
-  // ✅ FIXED: Now removes image completely
   const handleRemoveCoverImage = () => {
     setFormData((prev) => ({ ...prev, coverImage: null }));
     setCoverImagePreview(null);
@@ -104,29 +109,11 @@ export default function UserProjectModal({
     if (input) input.value = "";
   };
 
-  // ✅ FIXED: Now removes file completely
   const handleRemoveProjectFile = () => {
     setFormData((prev) => ({ ...prev, projectFile: null }));
     setProjectFilePreview(null);
     const input = document.getElementById("projectFile-upload");
     if (input) input.value = "";
-  };
-
-  const handleAddTag = () => {
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()],
-      }));
-      setTagInput("");
-    }
-  };
-
-  const handleDeleteTag = (tagToDelete) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToDelete),
-    }));
   };
 
   const isFormValid = () => {
@@ -154,12 +141,15 @@ export default function UserProjectModal({
       data.append("Title", formData.title);
       data.append("Description", formData.description);
       data.append("Duration", formData.duration);
-      formData.tags.forEach((tag) => data.append("Tags", tag));
+
+      // Use tags from state
+      tags.forEach((tag) => data.append("Tags", tag));
+
       if (formData.coverImage) data.append("CoverImage", formData.coverImage);
       if (formData.projectFile) data.append("ProjectFile", formData.projectFile);
 
-      console.log("Submitting project with data:", formData);
-      
+      console.log("Submitting project with tags:", tags);
+
       if (editData) {
         const response = await EditProject(token, data, editData.id);
         console.log("Edit project response:", response);
@@ -182,18 +172,18 @@ export default function UserProjectModal({
       onClose();
     } catch (err) {
       console.error(err);
-      
+
       let errorMessage = "Failed to submit project. Try again!";
-      
+
       if (err.response?.data) {
         const errorData = err.response.data;
-        
+
         if (errorData.errors && typeof errorData.errors === 'object') {
           const errorMessages = Object.values(errorData.errors)
             .flat()
             .join(', ');
           errorMessage = errorMessages || errorMessage;
-        } 
+        }
         else if (typeof errorData === 'string') {
           errorMessage = errorData;
         }
@@ -203,11 +193,11 @@ export default function UserProjectModal({
         else if (errorData.title) {
           errorMessage = errorData.title;
         }
-      } 
+      }
       else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -380,41 +370,49 @@ export default function UserProjectModal({
           )}
         </Box>
 
-        {/* ✅ FIXED: Tags Section - Now works for both Create and Edit */}
+        {/* Tags Section with Autocomplete */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
             Tags
           </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <TextField
-              size="small"
-              placeholder="Add tag (e.g., React, Design)"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAddTag();
-                }
-              }}
-              fullWidth
-            />
-            <IconButton color="primary" onClick={handleAddTag}>
-              {/* <AddIcon /> */}
-            </IconButton>
-          </Box>
-          <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {formData.tags.map((tag, idx) => (
-              <Chip
-                key={idx}
-                label={tag}
-                onDelete={() => handleDeleteTag(tag)}
-                color="primary"
-                variant="outlined"
+          <Autocomplete
+            multiple
+            freeSolo
+            options={[]}
+            value={tags}
+            inputValue={tagInputValue}
+            onInputChange={(event, newInputValue) => {
+              setTagInputValue(newInputValue);
+            }}
+            onChange={(event, newValue) => {
+              setTags(newValue);
+              setTagInputValue("");
+            }}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => {
+                const { key, ...tagProps } = getTagProps({ index });
+                return (
+                  <Chip
+                    key={key}
+                    variant="outlined"
+                    label={option}
+                    size="small"
+                    {...tagProps}
+                  />
+                );
+              })
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder={tags.length === 0 ? "Type a tag and press Enter" : ""}
                 size="small"
+                InputProps={{
+                  ...params.InputProps,
+                }}
               />
-            ))}
-          </Box>
+            )}
+          />
         </Box>
       </Stack>
     </GenericModal>

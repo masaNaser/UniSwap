@@ -20,13 +20,11 @@ import {
   MoreVert as MoreVertIcon,
   Favorite as FavoriteIcon,
   FavoriteBorder as FavoriteBorderIcon,
-  ChatBubbleOutline as ChatBubbleOutlineIcon,
   Share as ShareIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
 import MessegeIcon from "../../../assets/images/MessegeIcon.svg";
-
 import CommentsDisabledIcon from "@mui/icons-material/CommentsDisabled";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 import ShareDialog from "../../../components/Modals/ShareDialog";
@@ -191,7 +189,7 @@ const CommentBubble = ({ comment, theme }) => (
         sx={{ display: "block", textAlign: "right", mt: 0.5, lineHeight: 1 }}
       >
         {formatDateTime(comment.createdAt)}
-        
+
       </Typography>
     </Box>
   </Box>
@@ -348,34 +346,41 @@ function PostCard({
         </Menu>
 
         <CardContent>
-          <Typography variant="body1" color="text.primary" paragraph>
+          <Typography
+            variant="body1"
+            color="text.primary"
+            paragraph
+            sx={{
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+            }}
+          >
             {post.content}
           </Typography>
           <Box sx={{ mb: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
             {post.selectedTags.map((tag, index) => (
               <Chip
                 key={index}
-                label={`#${tag}`} // ✅ أضف # قبل التاج
+                label={`#${tag}`} 
                 size="medium"
                 variant="outlined"
                 color="primary"
                 // cursor="pointer"
                 sx={{
-                  minWidth: "80px", // ✅ حجم ثابت على الأقل
-                  height: "32px", // ✅ ارتفاع ثابت
-                  fontSize: "15px", // ✅ حجم خط أكبر
-                  fontWeight: "600", // ✅ خط bold
-                  borderRadius: "16px", // ✅ زوايا مدورة أكثر
-                  px: 2, // ✅ مسافة أفقية
+                  minWidth: "80px", 
+                  height: "32px", 
+                  fontSize: "15px",
+                  fontWeight: "600", 
+                  borderRadius: "16px", 
+                  px: 2, 
                   "&:hover": {
-                    bgcolor: "rgba(59, 130, 246, 0.25)", // ✅ تأثير hover
+                    bgcolor: "rgba(59, 130, 246, 0.25)", 
                   },
-                  cursor: "pointer", // ✅ مؤشر الفأرة على شكل يد
+                  cursor: "pointer", 
                 }}
               />
             ))}
           </Box>
-          {/* ✅ استخدام FileDisplay بدل الكود القديم */}
           {post.fileUrl && <FileDisplay fileUrl={post.fileUrl} />}
         </CardContent>
 
@@ -498,7 +503,6 @@ function PostCard({
                 {isCommenting ? (
                   <CircularProgress size={20} />
                 ) : (
-                  // <ChatBubbleOutlineIcon fontSize="small" />
                   <img
                     src={MessegeIcon}
                     alt="Messege Icon"

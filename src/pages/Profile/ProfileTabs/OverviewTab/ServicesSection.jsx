@@ -152,7 +152,7 @@ export default function ServicesSection() {
                   position: "relative",
                   mb: 1,
                   backgroundColor: "rgba(248, 250, 252, 1)",
-                  backgroundColor:theme.palette.mode === 'dark' ? '#323232ff' : 'rgba(248, 250, 252, 1)',
+                  backgroundColor: theme.palette.mode === 'dark' ? '#323232ff' : 'rgba(248, 250, 252, 1)',
 
                 }}
               >
@@ -194,10 +194,10 @@ export default function ServicesSection() {
                     }}
                   >
                     <Typography variant="body2" color="textSecondary">
-                      {s.avgPoints}
+                      {s.avgPoints} points
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                      {s.avgDurationDays}
+                      {s.avgDurationDays} days
                     </Typography>
                   </Box>
                 </Box>
