@@ -376,7 +376,7 @@ export default function PortfolioTab() {
                       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                         <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                         <Typography variant="caption" color="text.secondary">
-                          {p.duration} days
+                          {p.duration} 
                         </Typography>
                       </Box>
                     )}
