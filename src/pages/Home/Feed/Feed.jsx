@@ -78,7 +78,7 @@ export default function Feed() {
   const [postsUpdated, setPostsUpdated] = useState(false);
 
 
-  const { currentUser, loading } = useCurrentUser();
+  const { currentUser, loading, updateCurrentUser } = useCurrentUser();
   const [posts, setPosts] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [highlightedPostId, setHighlightedPostId] = useState(null);
@@ -246,9 +246,25 @@ export default function Feed() {
 
     setPosts((prev) => [formattedPost, ...prev]);
 
+    if (updateCurrentUser) {
+      updateCurrentUser();
+    }
     setPostsUpdated(Date.now());
   };
+  useEffect(() => {
+    // Refresh user data when component becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden && updateCurrentUser) {
+        updateCurrentUser();
+      }
+    };
 
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [updateCurrentUser]);
   const openDeleteDialog = (postId) => {
     setDeleteDialog({ open: true, postId });
   };
@@ -719,19 +735,19 @@ export default function Feed() {
         {!admin && (
           <div className="cards-section">
             <SelectActionCard
-              title="Posts Number"
+              title="My Posts"
               value={currentUser?.postsCount}
               icon={<ArticleOutlinedIcon />}
               iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
             />
             <SelectActionCard
-              title="Completed Tasks"
+              title="Completed Projects"
               value={currentUser?.completedProjectsCount}
               icon={<WorkspacePremiumOutlinedIcon />}
               iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}
             />
             <SelectActionCard
-              title="Peer Rating"
+              title="Rating"
               value={currentUser?.averageRating}
               icon={<GroupIcon />}
               iconBgColor={theme.palette.mode === 'dark' ? '#474646ff' : '#F1F5F9'}

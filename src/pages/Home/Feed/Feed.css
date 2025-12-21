@@ -1,43 +1,70 @@
 .welcome-section {
   margin: 30px 0px;
 }
-.post-section{
-   display: flex;
-   gap: 39px;
-   align-items: flex-start;
-   margin-top:24px ;
-   flex-wrap: wrap;
-   
+
+.post-section {
+  display: flex;
+  gap: 39px;
+  align-items: flex-start;
+  margin-top: 24px;
+  flex-wrap: wrap;
 }
+
 .cards-section {
   display: flex;
   justify-content: center;
   gap: 20px;
-
 }
+
 .create-post-main,
 .feed-sidebar {
   flex: 1 1 480px; /* grow, shrink, min-size */
 }
-.feed-sidebar{
+
+/* Make sidebar sticky */
+.feed-sidebar {
   margin: 40px auto;
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
 
-
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
+
+.feed-sidebar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 .wave {
   animation: wave-animation 1.5s infinite;
   transform-origin: 70% 70%;
-  color:#eacc51bf;
+  color: #eacc51bf;
   transform: rotate(0deg) rotateY(180deg); /* عكس الاتجاه */
 }
 
 @keyframes wave-animation {
-  0%   { transform: rotate(0deg) rotateY(180deg); }
-  20%  { transform: rotate(20deg) rotateY(180deg); }
-  40%  { transform: rotate(-10deg) rotateY(180deg); }
-  60%  { transform: rotate(20deg) rotateY(180deg); }
-  80%  { transform: rotate(-5deg) rotateY(180deg); }
-  100% { transform: rotate(0deg) rotateY(180deg); }
+  0% {
+    transform: rotate(0deg) rotateY(180deg);
+  }
+  20% {
+    transform: rotate(20deg) rotateY(180deg);
+  }
+  40% {
+    transform: rotate(-10deg) rotateY(180deg);
+  }
+  60% {
+    transform: rotate(20deg) rotateY(180deg);
+  }
+  80% {
+    transform: rotate(-5deg) rotateY(180deg);
+  }
+  100% {
+    transform: rotate(0deg) rotateY(180deg);
+  }
 }
 
 .my-swal-popup {
@@ -49,9 +76,14 @@
 
 @media (max-width: 600px) {
   .cards-section {
-   /* width: 142%; */
-   flex-wrap: wrap; 
+    flex-wrap: wrap;
+  }
 
+  /* ✅ Disable sticky on mobile for better UX */
+  .feed-sidebar {
+    position: relative;
+    top: auto;
+    max-height: none;
+    overflow-y: visible;
   }
 }
-

@@ -17,6 +17,7 @@ import {
   getServiceProviderDashboard,
 } from "../../../services/projectService";
 import { mapProjectsWithStatus } from "../../../utils/projectStatusMapper";
+import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { useLocation } from 'react-router-dom';
 
 export default function Project() {
@@ -42,17 +43,19 @@ export default function Project() {
     }
     const providerRequests = localStorage.getItem("providerShowRequests");
     const clientRequests = localStorage.getItem("clientShowRequests");
-    
-    const currentTab = notificationData?.isProvider !== undefined 
+
+    const currentTab = notificationData?.isProvider !== undefined
       ? (notificationData.isProvider ? 0 : 1)
       : (localStorage.getItem("projectTabIndex") ? parseInt(localStorage.getItem("projectTabIndex")) : 0);
-    
+
     if (currentTab === 0) {
       return providerRequests ? JSON.parse(providerRequests) : false;
     } else {
       return clientRequests ? JSON.parse(clientRequests) : false;
     }
   });
+
+  const { updateCurrentUser } = useCurrentUser();
 
   const [providerData, setProviderData] = useState(null);
   const [clientData, setClientData] = useState(null);
@@ -113,7 +116,7 @@ export default function Project() {
     setValue(newValue);
     const providerRequests = localStorage.getItem("providerShowRequests");
     const clientRequests = localStorage.getItem("clientShowRequests");
-    
+
     if (newValue === 0) {
       setShowRequestsFromNotif(providerRequests ? JSON.parse(providerRequests) : false);
     } else {
@@ -124,14 +127,18 @@ export default function Project() {
   const handleRefresh = async () => {
     const providerRequests = localStorage.getItem("providerShowRequests");
     const clientRequests = localStorage.getItem("clientShowRequests");
-    
+
     if (value === 0) {
       setShowRequestsFromNotif(providerRequests ? JSON.parse(providerRequests) : false);
     } else {
       setShowRequestsFromNotif(clientRequests ? JSON.parse(clientRequests) : false);
     }
-    
+
     await fetchAllDashboardData();
+
+    if (updateCurrentUser) {
+      updateCurrentUser();
+    }
   };
 
   const providerStats = providerData?.summary || {};

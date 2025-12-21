@@ -162,15 +162,15 @@ const FileDisplay = ({ fileUrl }) => {
 };
 
 // Single Comment Bubble
-const CommentBubble = ({ comment, theme }) => (
+const CommentBubble = ({ comment, theme, onUserClick }) => (
   <Box sx={{ display: "flex", gap: 1, mb: 1, minWidth: 0 }}>
     <Avatar
       src={comment.author?.avatar}
-      sx={{ width: 24, height: 24, flexShrink: 0 }}
+      sx={{ width: 24, height: 24, flexShrink: 0, cursor: 'pointer' }}
+      onClick={() => onUserClick(comment.authorId)}
     />
     <Box
       sx={{
-        // bgcolor: "#eef1f3",
         bgcolor: theme.palette.mode === "dark" ? "#2c2c2c" : "#eef1f3",
         borderRadius: "12px",
         p: 1,
@@ -179,7 +179,18 @@ const CommentBubble = ({ comment, theme }) => (
         flexGrow: 1,
       }}
     >
-      <Typography variant="caption" fontWeight="bold">
+      <Typography
+        variant="caption"
+        fontWeight="bold"
+        onClick={() => onUserClick(comment.authorId)}
+        sx={{
+          cursor: 'pointer',
+          '&:hover': {
+            textDecoration: 'underline',
+            color: 'primary.main'
+          }
+        }}
+      >
         {comment.author.userName}
       </Typography>
       <Typography variant="body2">{comment.content}</Typography>
@@ -189,7 +200,6 @@ const CommentBubble = ({ comment, theme }) => (
         sx={{ display: "block", textAlign: "right", mt: 0.5, lineHeight: 1 }}
       >
         {formatDateTime(comment.createdAt)}
-
       </Typography>
     </Box>
   </Box>
@@ -361,22 +371,22 @@ function PostCard({
             {post.selectedTags.map((tag, index) => (
               <Chip
                 key={index}
-                label={`#${tag}`} 
+                label={`#${tag}`}
                 size="medium"
                 variant="outlined"
                 color="primary"
                 // cursor="pointer"
                 sx={{
-                  minWidth: "80px", 
-                  height: "32px", 
+                  minWidth: "80px",
+                  height: "32px",
                   fontSize: "15px",
-                  fontWeight: "600", 
-                  borderRadius: "16px", 
-                  px: 2, 
+                  fontWeight: "600",
+                  borderRadius: "16px",
+                  px: 2,
                   "&:hover": {
-                    bgcolor: "rgba(59, 130, 246, 0.25)", 
+                    bgcolor: "rgba(59, 130, 246, 0.25)",
                   },
-                  cursor: "pointer", 
+                  cursor: "pointer",
                 }}
               />
             ))}
@@ -453,6 +463,7 @@ function PostCard({
                 key={comment.id || index}
                 comment={comment}
                 theme={theme}
+                onUserClick={navigateToProfile}
               />
             ))}
 
