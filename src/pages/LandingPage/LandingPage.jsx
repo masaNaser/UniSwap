@@ -392,7 +392,7 @@ backdropFilter: "blur(15px)", // 🔥 blur أقوى
                   },
                 }}
               >
-                Get Started Free
+                Get Started
               </Button>
             </Box>
           </Container>
