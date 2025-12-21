@@ -235,7 +235,7 @@ export default function ServicesSection() {
                       sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
                     >
                       <AccessTimeIcon sx={{ fontSize: 18, color: "#6B7280" }} />
-                      {s.avgDurationDays} days
+                      {s.avgDurationDays}
                     </Typography>
                   </Box>
                 </Box>

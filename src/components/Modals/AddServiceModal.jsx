@@ -23,11 +23,11 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
     avgPoints: "",
     avgDurationDays: "",
   });
-  const isFormInvalid = 
-    !formData.serviceId || 
-    !formData.subServiceId || 
-    !formData.description.trim() || 
-    !formData.avgPoints || 
+  const isFormInvalid =
+    !formData.serviceId ||
+    !formData.subServiceId ||
+    !formData.description.trim() ||
+    !formData.avgPoints ||
     !formData.avgDurationDays;
 
   const [loading, setLoading] = useState(false);
@@ -106,7 +106,7 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
         });
       } else {
         // إضافة خدمة جديدة
-      await CreateService(token, formData);
+        await CreateService(token, formData);
         setSnackbar({
           open: true,
           message: "Service added successfully!",
@@ -191,7 +191,7 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
           fullWidth
         />
         <TextField
-          label="Average Duration (days)"
+          label="Average Duration"
           name="avgDurationDays"
           value={formData.avgDurationDays}
           onChange={handleChange}
