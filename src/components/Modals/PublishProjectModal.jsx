@@ -22,7 +22,7 @@ import AddIcon from "@mui/icons-material/Add";
 import GenericModal from "../Modals/GenericModal";
 import {
   publishFromCompletedProject,
-  editPublishProject
+  editPublishProject,
 } from "../../services/publishProjectServices";
 import { getServices } from "../../services/servicesService";
 import { getSubServices } from "../../services/subServiceServices";
@@ -76,7 +76,9 @@ const PublishProjectModal = ({
         setServiceId(existingProject.serviceId || "");
         setSubServiceId(existingProject.subServiceId || "");
         setPoints(existingProject.points?.toString() || "");
-        setDeliveryTimeInDays(existingProject.deliveryTimeInDays?.toString() || "");
+        setDeliveryTimeInDays(
+          existingProject.deliveryTimeInDays?.toString() || ""
+        );
         setTags(existingProject.tags || []);
 
         // Set existing image preview
@@ -95,7 +97,14 @@ const PublishProjectModal = ({
       }
       fetchServices();
     }
-  }, [open, isEditMode, existingProject, projectTitle, projectDescription, projectPoints]);
+  }, [
+    open,
+    isEditMode,
+    existingProject,
+    projectTitle,
+    projectDescription,
+    projectPoints,
+  ]);
 
   useEffect(() => {
     if (serviceId) {
@@ -210,17 +219,17 @@ const PublishProjectModal = ({
   // For edit mode, image is optional if already exists
   const isFormValid = isEditMode
     ? title.trim() !== "" &&
-    description.trim() !== "" &&
-    subServiceId !== "" &&
-    points !== "" &&
-    deliveryTimeInDays !== ""
+      description.trim() !== "" &&
+      subServiceId !== "" &&
+      points !== "" &&
+      deliveryTimeInDays !== ""
     : title.trim() !== "" &&
-    description.trim() !== "" &&
-    serviceId !== "" &&
-    subServiceId !== "" &&
-    points !== "" &&
-    deliveryTimeInDays !== "" &&
-    image !== null;
+      description.trim() !== "" &&
+      serviceId !== "" &&
+      subServiceId !== "" &&
+      points !== "" &&
+      deliveryTimeInDays !== "" &&
+      image !== null;
 
   const handleSubmit = async () => {
     if (!isFormValid) {
@@ -275,8 +284,16 @@ const PublishProjectModal = ({
           }
         }, 1500);
       } else {
-        console.log("📤 Publishing project:", { projectId, serviceId, subServiceId });
-        response = await publishFromCompletedProject(token, projectId, formData);
+        console.log("📤 Publishing project:", {
+          projectId,
+          serviceId,
+          subServiceId,
+        });
+        response = await publishFromCompletedProject(
+          token,
+          projectId,
+          formData
+        );
         console.log("✅ Project published successfully:", response);
 
         setSnackbar({
@@ -299,7 +316,9 @@ const PublishProjectModal = ({
         error.response?.data?.message ||
         error.response?.data?.title ||
         error.message ||
-        `Failed to ${isEditMode ? "update" : "publish"} project. Please try again.`;
+        `Failed to ${
+          isEditMode ? "update" : "publish"
+        } project. Please try again.`;
 
       setSnackbar({
         open: true,
@@ -336,8 +355,16 @@ const PublishProjectModal = ({
     <GenericModal
       open={open}
       onClose={handleClose}
-      title={isEditMode ? "Edit Published Project" : "Publish Project to Browse"}
-      icon={isEditMode ? <EditIcon sx={{ color: "#3b82f6" }} /> : <PublishIcon sx={{ color: "#3b82f6" }} />}
+      title={
+        isEditMode ? "Edit Published Project" : "Publish Project to Browse"
+      }
+      icon={
+        isEditMode ? (
+          <EditIcon sx={{ color: "#3b82f6" }} />
+        ) : (
+          <PublishIcon sx={{ color: "#3b82f6" }} />
+        )
+      }
       headerInfo={
         <Typography variant="body2" sx={{ color: "#6B7280", mt: 1 }}>
           {isEditMode
@@ -359,7 +386,7 @@ const PublishProjectModal = ({
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          Project Title 
+          Project Title
         </Typography>
         <TextField
           fullWidth
@@ -382,7 +409,7 @@ const PublishProjectModal = ({
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          Description 
+          Description
         </Typography>
         <TextField
           fullWidth
@@ -408,7 +435,7 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Service Category 
+            Service Category
           </Typography>
           <FormControl fullWidth>
             <Select
@@ -450,14 +477,16 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            SubService 
+            SubService
           </Typography>
           <FormControl fullWidth>
             <Select
               value={subServiceId}
               onChange={(e) => setSubServiceId(e.target.value)}
               displayEmpty
-              disabled={!serviceId || isSubmitting || loadingSubServices || isEditMode}
+              disabled={
+                !serviceId || isSubmitting || loadingSubServices || isEditMode
+              }
               sx={{
                 borderRadius: "8px",
                 height: "46px",
@@ -468,16 +497,16 @@ const PublishProjectModal = ({
               }}
             >
               <MenuItem value="" disabled>
-                {!serviceId
-                  ? "Select a service first"
-                  : loadingSubServices
-                    ? (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <CircularProgress size={16} />
-                        <span>Loading...</span>
-                      </Box>
-                    )
-                    : "Select SubService"}
+                {!serviceId ? (
+                  "Select a service first"
+                ) : loadingSubServices ? (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <CircularProgress size={16} />
+                    <span>Loading...</span>
+                  </Box>
+                ) : (
+                  "Select SubService"
+                )}
               </MenuItem>
               {subServices.map((subService) => (
                 <MenuItem key={subService.id} value={subService.id}>
@@ -496,7 +525,7 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Price (Points) 
+            Price (Points)
           </Typography>
           <TextField
             fullWidth
@@ -552,24 +581,29 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Delivery Time (Days) 
+            Delivery Time (Days)
           </Typography>
-         <TextField
-  fullWidth
-  type="number"
-  placeholder="e.g., 7"
-  value={deliveryTimeInDays}
-  onChange={(e) => setDeliveryTimeInDays(e.target.value)}
-  disabled={isSubmitting}
-  inputProps={{ min: 1 }}
-  sx={{
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "8px",
-      height: "46px",
-    },
-  }}
-/>
+          <TextField
+            fullWidth
+            type="number"
+            placeholder="e.g., 7"
+            value={deliveryTimeInDays}
+            onChange={(e) => {
+              const value = Number(e.target.value);
 
+              if (value < 1) return;
+
+              setDeliveryTimeInDays(value);
+            }}
+            disabled={isSubmitting}
+            inputProps={{ min: 1 }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                height: "46px",
+              },
+            }}
+          />
         </Grid>
       </Grid>
 
@@ -593,7 +627,8 @@ const PublishProjectModal = ({
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          Project Image {isEditMode ? "(Optional - leave blank to keep current)" : "*"}
+          Project Image{" "}
+          {isEditMode ? "(Optional - leave blank to keep current)" : "*"}
         </Typography>
         {!imagePreview ? (
           <Box
