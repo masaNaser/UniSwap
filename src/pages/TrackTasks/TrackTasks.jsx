@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, CircularProgress, Box, Typography } from "@mui/material";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import TrackTasksHeader from "./components/TrackTasksHeader";
@@ -16,7 +16,7 @@ import {
   getServiceProviderDashboard,
   getClientdashboard,
 } from "../../services/projectService";
-import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ أضيفي هاد
+import { useCurrentUser } from "../../Context/CurrentUserContext";
 
 const statuses = ["ToDo", "InProgress", "InReview", "Done"];
 const statusLabels = {
@@ -26,16 +26,24 @@ const statusLabels = {
   Done: "Done",
 };
 
+// ✅ Polling interval (5 seconds)
+const POLLING_INTERVAL = 5000;
+
 export default function TrackTasks() {
   const navigate = useNavigate();
   const location = useLocation();
   const initialCardData = location.state;
-  const { taskId } = useParams(); //  اجلبي الـ ID من الـ URL
-   const { updateCurrentUser } = useCurrentUser();
- 
+  const { taskId } = useParams();
+  const { updateCurrentUser } = useCurrentUser();
+
   const [cardData, setCardData] = useState(initialCardData);
   const isProvider = cardData?.isProvider || false;
   const token = localStorage.getItem("accessToken");
+
+  // ✅ Ref for polling interval
+  const pollingIntervalRef = useRef(null);
+  
+  const isFetchingRef = useRef(false);
 
   // State management
   const [tasks, setTasks] = useState({
@@ -67,12 +75,8 @@ export default function TrackTasks() {
   const [reviewingTask, setReviewingTask] = useState(null);
   const [openViewReviewDialog, setOpenViewReviewDialog] = useState(false);
   const [viewingReviewTask, setViewingReviewTask] = useState(null);
-
-  // ✅ Review Due Date Dialog State
   const [openReviewDueDateDialog, setOpenReviewDueDateDialog] = useState(false);
   const [taskForReview, setTaskForReview] = useState(null);
-
-
 
   // Fetch project status from dashboard
   const fetchProjectStatus = async () => {
@@ -86,7 +90,6 @@ export default function TrackTasks() {
         "🔄 Fetching project status from dashboard for ID:",
         cardData.id
       );
-      console.log("👤 User role:", isProvider ? "Provider" : "Client");
 
       const filters = [
         "All Status",
@@ -97,18 +100,10 @@ export default function TrackTasks() {
       ];
 
       for (const filter of filters) {
-        console.log(`🔍 Checking "${filter}" filter...`);
-
         try {
           const dashboardRes = isProvider
             ? await getServiceProviderDashboard(token, "Provider", filter)
             : await getClientdashboard(token, "client", filter);
-
-          console.log(
-            `📦 Response from "${filter}":`,
-            dashboardRes?.data?.items?.length || 0,
-            "items"
-          );
 
           if (dashboardRes?.data?.items) {
             const currentProject = dashboardRes.data.items.find(
@@ -122,15 +117,8 @@ export default function TrackTasks() {
             if (currentProject) {
               const status =
                 currentProject.projectStatus || currentProject.status;
-              console.log("✅ FOUND PROJECT!");
-              console.log("   - Filter:", filter);
-              console.log("   - Status Field:", status);
-              console.log("   - Full Project:", currentProject);
+              console.log("✅ FOUND PROJECT! Status:", status);
               return status;
-            } else {
-              console.log(
-                `   ❌ Project ID ${cardData.id} not found in this filter`
-              );
             }
           }
         } catch (filterError) {
@@ -146,111 +134,24 @@ export default function TrackTasks() {
     }
   };
 
-  // Fetch project data
-//  const fetchProjectData = async () => {
-//     const projectId = cardData?.id || taskId;
-//     if (!projectId || !token) {
-//         console.log("⚠️ Cannot fetch - missing project ID or token");
-//         setLoading(false);
-//         return;
-//     }
-
-//     try {
-//         setLoading(true);
-
-//         const detailsRes = await taskService.getProjectTaskDetails(projectId, token);
-//         console.log("✅ Fetched project details:", detailsRes);
-        
-//         // ✅ اعملي cardData كامل مرة واحدة
-
-//         const apiData = detailsRes.data;
-        
-//         const newCardData = {
-//             id: projectId,
-//             title: apiData.title || apiData.projectName || 'Project', // ✅ من الـ API
-//             description: apiData.description || '',
-//              clientName: apiData.providerName || '',
-//              clientAvatar: apiData.providerAvatar || '',
-//             clientInitials: apiData.providerName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
-//             clientInitials: apiData.providerName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CL',
-//             providerName: apiData.providerName || '',
-//             providerAvatar: apiData.providerAvatar || '',
-//             isProvider: apiData.isProvider ?? (cardData?.isProvider ?? false),
-//             projectStatus: apiData.status || 'Active',
-//             deadline: apiData.deadline,
-//             progressPercentage: apiData.progressPercentage || 0,
-//             rejectionReason: apiData.rejectionReason || '',
-//             projectType: apiData.type || 'RequestProject',
-//         };
-        
-//         setCardData(newCardData);
-//         setProjectDetails(apiData);
-
-//         console.log("🔍 Fetching current status from dashboard...");
-//         const dashboardStatus = await fetchProjectStatus();
-
-//         console.log("📊 Dashboard Status Result:", dashboardStatus);
-
-//         // ✅ حدّث الـ status بس من الـ dashboard
-//         if (dashboardStatus) {
-//             const finalStatus = mapProjectStatus(dashboardStatus);
-//             console.log("🎯 Final Status:", finalStatus, "from Dashboard");
-            
-//             setCardData(prev => ({
-//                 ...prev,
-//                 projectStatus: finalStatus,
-//                 status: finalStatus,
-//             }));
-//         }
-
-//         // ✅ جلب المهام
-//         const tasksRes = await taskService.getTasksByStatus(projectId, null, token);
-//         console.log("All Tasks:", tasksRes.data);
-
-//         const allTasks = tasksRes.data;
-//         const tasksByStatus = {
-//             ToDo: [],
-//             InProgress: [],
-//             InReview: [],
-//             Done: [],
-//         };
-
-//         allTasks.forEach((task) => {
-//             const status = task.status;
-//             if (tasksByStatus[status]) {
-//                 tasksByStatus[status].push(task);
-//             }
-//         });
-
-//         setTasks(tasksByStatus);
-//     } catch (error) {
-//         console.error("Error fetching tasks:", error);
-//         setSnackbar({
-//             open: true,
-//             message: "Failed to load tasks",
-//             severity: "error",
-//         });
-//     } finally {
-//         setLoading(false);
-//     }
-// };
-
-//   useEffect(() => {
-//     console.log("📍 useEffect triggered - cardData.id:", cardData?.id);
-//     fetchProjectData();
-//   }, [taskId]);
-  const fetchProjectData = async () => {
-        if (!cardData?.id || !token) {
+  // ✅ Main fetch function - can be called silently
+  const fetchProjectData = async (silent = false) => {
+       if (!cardData?.id || !token) {
             console.log('⚠️ Cannot fetch - missing cardData.id or token', { cardData, token: !!token });
             setLoading(false);
             return;
         }
+    if (isFetchingRef.current) {
+      console.log("⏸️ جلب البيانات قيد التنفيذ، تخطي...");
+      return;
+    }
 
-        try {
-            setLoading(true);
-            console.log('🔄 Fetching project data for ID:', cardData.id);
+    try {
+      setLoading(true);
+      isFetchingRef.current = true;
+      if (!silent) setLoading(true);
 
-            const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
+                 const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
             console.log('✅ Fetched project details:', detailsRes);
             setProjectDetails(detailsRes.data);
 
@@ -300,27 +201,46 @@ export default function TrackTasks() {
             });
 
             setTasks(tasksByStatus);
-        } catch (error) {
-            console.error('Error fetching tasks:', error);
-            setSnackbar({
-                open: true,
-                message: 'Failed to load tasks',
-                severity: 'error',
-            });
-        } finally {
-            setLoading(false);
-        }
+      if (silent) console.log("✅ تم التحديث التلقائي بنجاح عند البروفايدر");
+    } catch (error) {
+      console.error("❌ خطأ في التحديث التلقائي:", error);
+    } finally {
+      isFetchingRef.current = false; // فك القفل دائماً
+      if (!silent)
+         setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!cardData?.id || !token) return;
+
+    // أول جلب للبيانات
+    fetchProjectData(false);
+
+    // إعداد التحديث التلقائي
+    const interval = setInterval(() => {
+      fetchProjectData(true);
+    }, POLLING_INTERVAL);
+
+    // تنظيف الـ Interval عند مغادرة الصفحة
+    return () => {
+      console.log("🛑 إيقاف التحديث التلقائي");
+      clearInterval(interval);
     };
+    // أضف cardData.id و token فقط لضمان عدم تكرار الـ Interval بلا داعي
+  }, [cardData?.id, token]);
 
-    useEffect(() => {
-        console.log('📍 useEffect triggered - cardData.id:', cardData?.id);
-        fetchProjectData();
-    }, [taskId]);
+  // ✅ Helper function for immediate refresh after actions
+  const immediateRefresh = async () => {
+    console.log("⚡ Immediate refresh after action");
+    await fetchProjectData(true);
+  };
 
-// تحديث الموعد النهائي في الحالة المحلية
+  // تحديث الموعد النهائي في الحالة المحلية
   const handleDeadlineUpdate = (newDeadline) => {
     setCardData((prev) => ({ ...prev, deadline: newDeadline }));
     setProjectDetails((prev) => ({ ...prev, deadline: newDeadline }));
+    immediateRefresh(); // ✅ Refresh after deadline update
   };
 
   // تحديث حالة المشروع عند الإغلاق
@@ -328,9 +248,8 @@ export default function TrackTasks() {
     try {
       console.log("🔄 handleProjectClosed called - refreshing project data...");
 
-      await fetchProjectData();
+      await fetchProjectData(false);
 
-      // Only show snackbar if skipSuccessMessage is false
       if (!skipSuccessMessage) {
         setSnackbar({
           open: true,
@@ -348,7 +267,8 @@ export default function TrackTasks() {
       });
     }
   };
-//  Handle task review submission
+
+  // Handle task review submission
   const handleSubmitReview = async (taskId, decision, comment) => {
     try {
       if (decision === "accept") {
@@ -359,28 +279,8 @@ export default function TrackTasks() {
 
       await taskService.updateProjectProgress(cardData.id, token);
 
-      const [tasksRes, detailsRes] = await Promise.all([
-        taskService.getTasksByStatus(cardData.id, null, token),
-        taskService.getProjectTaskDetails(cardData.id, token),
-      ]);
-
-      const allTasks = tasksRes.data;
-
-      const tasksByStatus = {
-        ToDo: [],
-        InProgress: [],
-        InReview: [],
-        Done: [],
-      };
-
-      allTasks.forEach((task) => {
-        if (tasksByStatus[task.status]) {
-          tasksByStatus[task.status].push(task);
-        }
-      });
-
-      setTasks(tasksByStatus);
-      setProjectDetails(detailsRes.data);
+      // ✅ Immediate refresh after review
+      await immediateRefresh();
 
       setSnackbar({
         open: true,
@@ -399,7 +299,7 @@ export default function TrackTasks() {
       });
     }
   };
-//  Handle review button click
+
   const handleReviewClick = (task) => {
     setReviewingTask(task);
     setOpenReviewDialog(true);
@@ -435,31 +335,10 @@ export default function TrackTasks() {
 
       if (editingTask) {
         await taskService.updateTask(editingTask.id, formData, token);
-
         await taskService.updateProjectProgress(cardData.id, token);
 
-        const [tasksRes, detailsRes] = await Promise.all([
-          taskService.getTasksByStatus(cardData.id, null, token),
-          taskService.getProjectTaskDetails(cardData.id, token),
-        ]);
-
-        const allTasks = tasksRes.data;
-
-        const tasksByStatus = {
-          ToDo: [],
-          InProgress: [],
-          InReview: [],
-          Done: [],
-        };
-
-        allTasks.forEach((task) => {
-          if (tasksByStatus[task.status]) {
-            tasksByStatus[task.status].push(task);
-          }
-        });
-
-        setTasks(tasksByStatus);
-        setProjectDetails(detailsRes.data);
+        // ✅ Immediate refresh after update
+        await immediateRefresh();
 
         setSnackbar({
           open: true,
@@ -468,11 +347,10 @@ export default function TrackTasks() {
         });
       } else {
         const res = await taskService.createTask(cardData.id, formData, token);
-        const createdTask = res.data;
-        setTasks((prev) => ({
-          ...prev,
-          [createdTask.status]: [...prev[createdTask.status], createdTask],
-        }));
+
+        // ✅ Immediate refresh after creation
+        await immediateRefresh();
+
         setSnackbar({
           open: true,
           message: "Task added successfully!",
@@ -518,13 +396,11 @@ export default function TrackTasks() {
         data.append("UploadFile", formData.uploadFile);
       }
 
-      const res = await taskService.createTask(cardData.id, data, token);
-      console.log("Created Task:", res.data);
-      const createdTask = res.data;
-      setTasks((prev) => ({
-        ...prev,
-        [createdTask.status]: [...prev[createdTask.status], createdTask],
-      }));
+      await taskService.createTask(cardData.id, data, token);
+
+      // ✅ Immediate refresh
+      await immediateRefresh();
+
       setSnackbar({
         open: true,
         message: "Task added successfully!",
@@ -543,10 +419,10 @@ export default function TrackTasks() {
   const handleDeleteTask = async (status, taskId) => {
     try {
       await taskService.deleteTask(taskId, token);
-      setTasks((prev) => ({
-        ...prev,
-        [status]: prev[status].filter((t) => t.id !== taskId),
-      }));
+
+      // ✅ Immediate refresh after delete
+      await immediateRefresh();
+
       setSnackbar({ open: true, message: "Task deleted!", severity: "info" });
       setAnchorEl(null);
     } catch (error) {
@@ -623,11 +499,10 @@ export default function TrackTasks() {
         targetStatus === "InReview" &&
         currentStatus === "InProgress"
       ) {
-        // ✅ Open dialog instead of direct submission
         setTaskForReview(draggedTask);
         setOpenReviewDueDateDialog(true);
         setDraggedTask(null);
-        return; // Don't proceed with move yet
+        return;
       } else if (
         targetStatus === "InProgress" &&
         currentStatus === "InReview"
@@ -639,28 +514,8 @@ export default function TrackTasks() {
 
       await taskService.updateProjectProgress(cardData.id, token);
 
-      const [tasksRes, detailsRes] = await Promise.all([
-        taskService.getTasksByStatus(cardData.id, null, token),
-        taskService.getProjectTaskDetails(cardData.id, token),
-      ]);
-
-      const allTasks = tasksRes.data;
-
-      const tasksByStatus = {
-        ToDo: [],
-        InProgress: [],
-        InReview: [],
-        Done: [],
-      };
-
-      allTasks.forEach((task) => {
-        if (tasksByStatus[task.status]) {
-          tasksByStatus[task.status].push(task);
-        }
-      });
-
-      setTasks(tasksByStatus);
-      setProjectDetails(detailsRes.data);
+      // ✅ Immediate refresh after drag
+      await immediateRefresh();
 
       setSnackbar({
         open: true,
@@ -697,41 +552,17 @@ export default function TrackTasks() {
     setDraggedTask(null);
   };
 
-  // ✅ Handle review due date submission
   const handleReviewDueDateSubmit = async (reviewDueDate) => {
     if (!taskForReview) return;
 
     try {
-      console.log("📤 User entered datetime:", reviewDueDate);
       console.log("📤 Sending to backend:", reviewDueDate);
 
       await taskService.submitForReview(taskForReview.id, reviewDueDate, token);
-
       await taskService.updateProjectProgress(cardData.id, token);
 
-      const [tasksRes, detailsRes] = await Promise.all([
-        taskService.getTasksByStatus(cardData.id, null, token),
-        taskService.getProjectTaskDetails(cardData.id, token),
-      ]);
-
-      const allTasks = tasksRes.data;
-      const tasksByStatus = {
-        ToDo: [],
-        InProgress: [],
-        InReview: [],
-        Done: [],
-      };
-
-      allTasks.forEach((task) => {
-        if (tasksByStatus[task.status]) {
-          tasksByStatus[task.status].push(task);
-        }
-      });
-
-      setTasks(tasksByStatus);
-      setProjectDetails(detailsRes.data);
-
-      console.log("✅ Task submitted successfully");
+      // ✅ Immediate refresh after submit
+      await immediateRefresh();
 
       setSnackbar({
         open: true,
@@ -781,8 +612,17 @@ export default function TrackTasks() {
 
   if (!cardData) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Typography>Loading...</Typography>
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: 4,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
       </Container>
     );
   }
@@ -847,7 +687,6 @@ export default function TrackTasks() {
         task={viewingReviewTask}
       />
 
-      {/* ✅ Review Due Date Dialog */}
       <ReviewDueDateDialog
         open={openReviewDueDateDialog}
         onClose={() => {

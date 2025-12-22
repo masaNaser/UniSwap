@@ -1,7 +1,7 @@
 import api from "./api";
 
 export const GetDashboard = async (token) => {
-  return await api.get(`/AdminDashboard/stats`, {
+  return await api.get('/AdminDashboard/stats', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -59,7 +59,7 @@ export const ReviewReport = async (token, reportId, accept) => {
 };
 
 export const Analytics = async (token) => {
-  return await api.get(`/AdminDashboard/analytics`, {
+  return await api.get('/AdminDashboard/analytics', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
