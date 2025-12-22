@@ -359,7 +359,7 @@ const PublishProjectModal = ({
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          Project Title *
+          Project Title 
         </Typography>
         <TextField
           fullWidth
@@ -382,7 +382,7 @@ const PublishProjectModal = ({
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          Description *
+          Description 
         </Typography>
         <TextField
           fullWidth
@@ -408,7 +408,7 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Service Category *
+            Service Category 
           </Typography>
           <FormControl fullWidth>
             <Select
@@ -450,7 +450,7 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            SubService *
+            SubService 
           </Typography>
           <FormControl fullWidth>
             <Select
@@ -496,7 +496,7 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Price (Points) *
+            Price (Points) 
           </Typography>
           <TextField
             fullWidth
@@ -552,22 +552,24 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Delivery Time (Days) *
+            Delivery Time (Days) 
           </Typography>
-          <TextField
-            fullWidth
-            type="number"
-            placeholder="e.g., 7"
-            value={deliveryTimeInDays}
-            onChange={(e) => setDeliveryTimeInDays(e.target.value)}
-            disabled={isSubmitting}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-                height: "46px",
-              },
-            }}
-          />
+         <TextField
+  fullWidth
+  type="number"
+  placeholder="e.g., 7"
+  value={deliveryTimeInDays}
+  onChange={(e) => setDeliveryTimeInDays(e.target.value)}
+  disabled={isSubmitting}
+  inputProps={{ min: 1 }}
+  sx={{
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "8px",
+      height: "46px",
+    },
+  }}
+/>
+
         </Grid>
       </Grid>
 
