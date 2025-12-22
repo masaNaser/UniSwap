@@ -244,7 +244,7 @@ const processQueue = (error, token = null) => {
 // 1. Interceptor للطلبات (إضافة الـ Token لكل طلب)
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
+const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -281,8 +281,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem("refreshToken");
-
+      const refreshToken = localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken");
       if (!refreshToken) {
         handleLogout();
         return Promise.reject(error);
@@ -297,15 +296,16 @@ api.interceptors.response.use(
         );
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
+        const storage = localStorage.getItem("refreshToken") ? localStorage : sessionStorage;
          // فك التوكن الجديد لتحديث وقت الانتهاء في الـ localStorage
         // هذا السطر مهم جداً لضمان استمرار الدورة بشكل صحيح
         const decoded = JSON.parse(atob(accessToken.split('.')[1])); 
-        localStorage.setItem('accessTokenExpiration', decoded.exp);
+        storage.setItem('accessTokenExpiration', decoded.exp);
         
         // تحديث البيانات في LocalStorage
-        localStorage.setItem("accessToken", accessToken);
+        storage.setItem("accessToken", accessToken);
         if (newRefreshToken) {
-          localStorage.setItem("refreshToken", newRefreshToken);
+          storage.setItem("refreshToken", newRefreshToken);
         }
 
         // إكمال الطلبات المعلقة
@@ -329,11 +329,9 @@ api.interceptors.response.use(
 
 // دالة تنظيف البيانات والتحويل للـ Login
 function handleLogout() {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("userName");
-  localStorage.removeItem("userId");
-  // تجنب Redirect متكرر إذا كنت أصلاً في صفحة اللوجن
+  localStorage.clear();
+  sessionStorage.clear(); // مهم جداً لمسح الجلسات المؤقتة
+  setToken(null); // عشان الواجهة تتحدث فوراً
   if (!window.location.pathname.includes("/login")) {
     window.location.href = "/login";
   }

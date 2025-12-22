@@ -27,10 +27,11 @@ import {
 } from "../../../../services/profileService";
 import AddServiceModal from "../../../../components/Modals/AddServiceModal";
 import { useProfile } from "../../../../Context/ProfileContext";
-
+import { getToken } from "../../../../utils/authHelpers";
 export default function ServicesSection() {
   const theme = useTheme();
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const { isMyProfile, userData } = useProfile();
 
   const [services, setServices] = useState([]);

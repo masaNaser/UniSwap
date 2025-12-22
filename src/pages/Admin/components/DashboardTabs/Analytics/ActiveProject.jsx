@@ -4,7 +4,7 @@ import {
   Paper, Typography, LinearProgress, Box, Chip, CircularProgress 
 } from '@mui/material';
 import { ActiveProjects } from '../../../../../services/adminService'; // تأكد من مسار ملف الـ api الخاص بك
-
+import { getToken } from '../../../../../utils/authHelpers';
 export default function ActiveProject() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +13,8 @@ export default function ActiveProject() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const token = localStorage.getItem('accessToken'); // أو أي مكان تخزن فيه التوكن
+        // const token = localStorage.getItem('accessToken'); // أو أي مكان تخزن فيه التوكن
+        const token = getToken();
         const response = await ActiveProjects(token);
         console.log("ActiveProjects",response);
         setProjects(response.data);

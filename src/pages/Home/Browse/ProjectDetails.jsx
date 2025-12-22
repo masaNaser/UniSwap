@@ -29,6 +29,7 @@ import {
 } from "../../../services/reviewService";
 import { formatDateTime } from "../../../utils/timeHelper";
 import { getImageUrl } from "../../../utils/imageHelper";
+import { getUserId } from "../../../utils/authHelpers";
 const ProjectDetails = () => {
   const token = localStorage.getItem("accessToken");
   const { id } = useParams();
@@ -48,7 +49,7 @@ const ProjectDetails = () => {
     severity: "success",
   });
 
-  const currentUserId = localStorage.getItem("userId");
+  const currentUserId = getUserId();
   const isReviewDisabled =
     reviewText.trim().length === 0 ||
     !reviewRating ||

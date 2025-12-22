@@ -31,7 +31,8 @@ import {
 import { getImageUrl } from "../../utils/imageHelper";
 import { formatDateTime } from "../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
-import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ أضيفي هاد
+import { useCurrentUser } from "../../Context/CurrentUserContext"; 
+import { getToken } from "../../utils/authHelpers"; 
 export default function RequestProjectCard({
   id,
   title,
@@ -48,7 +49,7 @@ export default function RequestProjectCard({
   clientAcceptPublished,
 }) {
   const theme = useTheme(); // 🔥 ضيفي هاد السطر
-  const { updateCurrentUser, startTemporaryPolling } = useCurrentUser(); // ✅ أضيفي هاد السطر
+  const { updateCurrentUser, startTemporaryPolling } = useCurrentUser(); 
 
   const [loading, setLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -63,8 +64,8 @@ export default function RequestProjectCard({
     message: "",
     severity: "success",
   });
-  const token = localStorage.getItem("accessToken");
-
+  // const token = localStorage.getItem("accessToken");
+const token = getToken();
   const isLongDescription = description && description.length > 100;
   const displayedDescription = showFullDescription
     ? description

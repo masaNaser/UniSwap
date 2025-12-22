@@ -31,13 +31,14 @@ import {
 } from "../../../services/profileService";
 import { useProfile } from "../../../Context/ProfileContext";
 import { getImageUrl } from "../../../utils/imageHelper";
-
+import { getToken } from "../../../utils/authHelpers";
 export default function PortfolioTab() {
   const [openModal, setOpenModal] = useState(false);
   const [editProject, setEditProject] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

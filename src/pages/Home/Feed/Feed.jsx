@@ -45,12 +45,12 @@ import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { useSearchParams } from "react-router-dom";
 import PostCardSkeleton from "../../../components/Skeletons/PostCardSkeleton";
 import dayjs from "dayjs";
-import { isAdmin } from "../../../utils/authHelpers";
+import { isAdmin,getToken } from "../../../utils/authHelpers";
 import { formatDateTime } from "../../../utils/timeHelper";
 import useInfiniteScroll from "../../../hooks/useInfiniteScroll";
 import EditPostModal from "../../../components/Modals/EditPostModal";
 import { useTheme } from "@mui/material/styles";
-
+import { getUserId,getUserName } from "../../../utils/authHelpers";
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
   const isCurrentUserComment = comment.user?.userName === currentUser?.userName;
@@ -89,8 +89,9 @@ export default function Feed() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const userToken = localStorage.getItem("accessToken");
-  const userName = localStorage.getItem("userName");
+  // const userToken = localStorage.getItem("accessToken");
+  const userToken = getToken();
+  const userName = getUserName();
 
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [currentPostId, setCurrentPostId] = useState(null);
@@ -478,7 +479,7 @@ export default function Feed() {
 
   const handleAddComment = async (postId, content) => {
     const tempCommentId = Date.now();
-    const currentUserId = localStorage.getItem("userId");
+    const currentUserId = getUserId();
     const currentUserAvatar = getImageUrl(
       currentUser?.profilePicture,
       userName

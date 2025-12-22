@@ -21,7 +21,7 @@ import {
   editCollaborationRequest,
 } from "../../services/collaborationService";
 import { useCurrentUser } from "../../Context/CurrentUserContext";
-
+import { getToken } from "../../utils/authHelpers";
 const RequestServiceModal = ({
   open,
   onClose,
@@ -41,7 +41,8 @@ const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
   const [pointsBudget, setPointsBudget] = useState(initialPoints || "");
   const [deadline, setDeadline] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const [clientAcceptPublished, setClientAcceptPublished] = useState(false);
 
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);

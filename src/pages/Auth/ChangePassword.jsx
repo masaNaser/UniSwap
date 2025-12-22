@@ -22,7 +22,7 @@ import { changePassword } from "../../services/authService";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-
+import { getToken } from "../../utils/authHelpers";
 export default function ChangePassword() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -91,7 +91,8 @@ export default function ChangePassword() {
 
   // -------------------- HANDLE SUBMIT --------------------
   const ResetHandle = async (data) => {
-    const token = localStorage.getItem("accessToken");
+    // const token = localStorage.getItem("accessToken");
+    const token = getToken();
     try {
       setLoading(true);
 

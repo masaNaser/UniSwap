@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { getUnreadCount, createChatHubConnection } from '../services/chatService';
-
+import { getToken } from '../utils/authHelpers';
 export const UnreadCountContext = createContext();
 
 export const UnreadCountProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
-  const token = localStorage.getItem('accessToken');
+  // const token = localStorage.getItem('accessToken');
+  const token = getToken();
   const connectionRef = useRef(null); // نستخدم useRef للحفاظ على استقرار الاتصال
 
   // 1. دالة جلب العداد من الباك اند
@@ -35,7 +36,6 @@ export const UnreadCountProvider = ({ children }) => {
     const start = async () => {
       try {
         await connection.start();
-        console.log("✅ SignalR Connected (Global)");
         
         // جلب العداد فور نجاح الاتصال
         refreshUnreadCount();
@@ -43,7 +43,6 @@ export const UnreadCountProvider = ({ children }) => {
         // الاستماع للرسائل الجديدة
         connection.on("ReceiveMessage", () => {
           setUnreadCount(prev => prev + 1);
-          console.log("🔔 New message: Count increased");
         });
       } catch (err) {
         console.error("❌ SignalR Connection Error:", err);
@@ -55,7 +54,6 @@ export const UnreadCountProvider = ({ children }) => {
     return () => {
       if (connectionRef.current) {
         connectionRef.current.stop();
-        console.log("🔌 SignalR Stopped");
       }
     };
   }, [token]); // لا نضع refreshUnreadCount هنا لتجنب إعادة الاتصال بلا داعي

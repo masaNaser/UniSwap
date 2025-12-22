@@ -13,11 +13,12 @@ import {
   DeleteSubServices,
 } from "../../../services/subServiceServices";
 import GenericModal from "../../../components/Modals/GenericModal";
-import { isAdmin } from "../../../utils/authHelpers";
+import { isAdmin,getToken } from "../../../utils/authHelpers";
 import AddIcon from "@mui/icons-material/Add";
 
 const SubServices = () => {
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const { id } = useParams(); // id الخدمة من الرابط
   const [subservices, setSubServices] = useState([]);
   const location = useLocation();

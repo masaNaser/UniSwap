@@ -42,7 +42,7 @@ import { getReviewByProject } from "../../../services/reviewService";
 import { formatDateTime } from "../../../utils/timeHelper";
 
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
-
+import { getToken } from "../../../utils/authHelpers";
 export default function TrackTasksHeader({
   cardData,
   projectDetails,
@@ -106,8 +106,8 @@ export default function TrackTasksHeader({
         .substring(0, 2)
         .toUpperCase();
 
-  const token = localStorage.getItem("accessToken");
-
+  // const token = localStorage.getItem("accessToken");
+const token = getToken();
   const isOverdue = cardData.projectStatus === "Overdue";
 
   const hasRejection =

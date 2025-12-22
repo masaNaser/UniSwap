@@ -15,7 +15,7 @@ import { useNavigateToProfile } from "../../hooks/useNavigateToProfile";
 import { useUnreadCount } from "../../Context/unreadCountContext";
 import { useTheme } from "@mui/material/styles";
 // import { useUnreadCount } from "../../Context/unreadCountContext";
-
+import { getToken,getUserId } from "../../utils/authHelpers";
 export default function ChatWindow({
   conversationId,
   receiverId,
@@ -34,8 +34,9 @@ export default function ChatWindow({
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const hasMoreRef = useRef(true);
-  const token = localStorage.getItem("accessToken");
-  const currentUserId = localStorage.getItem("userId");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
+  const currentUserId = getUserId();
   const initials = receiverName?.substring(0, 2).toUpperCase();
 
   const [initialScrollDone, setInitialScrollDone] = useState(false);

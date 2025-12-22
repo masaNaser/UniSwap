@@ -30,7 +30,7 @@ import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 import ShareDialog from "../../../components/Modals/ShareDialog";
 import { formatDateTime } from "../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
-
+import { getUserName } from "../../../utils/authHelpers";
 // ✅ FileDisplay Component - لعرض جميع أنواع الملفات
 const FileDisplay = ({ fileUrl }) => {
   if (!fileUrl) return null;
@@ -244,7 +244,7 @@ function PostCard({
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const open = Boolean(anchorEl);
-  const currentUserName = localStorage.getItem("userName");
+  const currentUserName = getUserName();
   const isPostAuthor = post.user.name === currentUserName;
   const isPostClosed = post.isClosed === true;
 

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { GetFullProfile } from "../services/profileService";
-
+import { getToken } from "../utils/authHelpers";
 export const CurrentUserContext = createContext(null);
 
 export const CurrentUserProvider = ({ children }) => {
@@ -11,7 +11,8 @@ export const CurrentUserProvider = ({ children }) => {
 
   // ✅ الدالة المحسّنة لتحديث بيانات المستخدم
  const updateCurrentUser = useCallback(async () => {
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   if (!token) {
     console.log("⚠️ No token found, skipping update");
     return null;
@@ -54,7 +55,8 @@ export const CurrentUserProvider = ({ children }) => {
   // ✅ تحميل بيانات المستخدم عند بدء التطبيق
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      const token = localStorage.getItem("accessToken");
+      // const token = localStorage.getItem("accessToken");
+      const token = getToken();
       if (token) {
         try {
           const res = await GetFullProfile(token);

@@ -1,6 +1,6 @@
 // hooks/useNavigateToProfile.js
 import { useNavigate } from 'react-router-dom';
-
+import { getUserId } from '../utils/authHelpers';
 /**
  * Custom Hook للانتقال لصفحة البروفايل
  * يتعامل تلقائياً مع:
@@ -16,7 +16,7 @@ export const useNavigateToProfile = () => {
       console.log(" userId is missing!");
       return;
     }
-    const currentUserId = localStorage.getItem("userId");
+    const currentUserId = getUserId();
     
     // إذا البروفايل تبعي، روح على /app/profile بدون userId
 if (String(userId) === String(currentUserId)) {

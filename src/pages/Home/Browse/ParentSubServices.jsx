@@ -15,10 +15,10 @@ import {
   EditSubServices,
   DeleteSubServices,
 } from "../../../services/subServiceServices";
-import { isAdmin } from "../../../utils/authHelpers";
+import { isAdmin,getToken } from "../../../utils/authHelpers";
 
 const ParentSubServices = () => {
-  const token = localStorage.getItem("accessToken");
+    const token = getToken();
   const { serviceId, subServiceId } = useParams();
   const location = useLocation();
   const params = new URLSearchParams(location.search);

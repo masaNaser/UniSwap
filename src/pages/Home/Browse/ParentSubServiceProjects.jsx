@@ -27,11 +27,10 @@ import StudyProjectModal from "../../../components/Modals/StudyProjectModal";
 import { browseProjectsBySubService } from "../../../services/publishProjectServices";
 import FilterSection from "../../../components/Filter/FilterSection";
 import { getImageUrl } from "../../../utils/imageHelper";
-import { isAdmin } from "../../../utils/authHelpers";
-
+import { isAdmin,getToken,getUserId } from "../../../utils/authHelpers";
 // Project Card Component
 const ProjectCard = ({ project, onEditClick }) => {
-  const currentUserId = localStorage.getItem("userId");
+  const currentUserId = getUserId();
   const isOwner = currentUserId === project.userId;
   const [expandedDescription, setExpandedDescription] = useState(false);
 
@@ -319,7 +318,8 @@ const ProjectCard = ({ project, onEditClick }) => {
 
 // Main Component
 const ParentSubServiceProjects = () => {
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const { serviceId, subServiceId, parentSubServiceId } = useParams();
   const location = useLocation();
   const params = new URLSearchParams(location.search);

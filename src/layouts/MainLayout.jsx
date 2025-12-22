@@ -10,7 +10,7 @@ import { GetFullProfile, GetProfileById } from "../services/profileService";
  import { useCurrentUser } from "../Context/CurrentUserContext";
 import { Box } from '@mui/material'; // ⬅️ استوردي Box
 import ScrollToTop from '../ScrollToTop';
-
+import { getToken,getUserId } from '../utils/authHelpers';
 export default function MainLayout() {
   const [userData, setUserData] = useState(null);
   const [isMyProfile, setIsMyProfile] = useState(false);
@@ -18,8 +18,9 @@ export default function MainLayout() {
 
   // ⬅️ دالة لجلب البيانات (هاي الأهم!)
   const fetchUserData = async (userId) => {
-    const token = localStorage.getItem("accessToken");
-    const currentUserId = localStorage.getItem("userId");
+    // const token = localStorage.getItem("accessToken");
+    const token = getToken();
+    const currentUserId = getUserId();
     
     if (!token) {
       console.warn("No token found");

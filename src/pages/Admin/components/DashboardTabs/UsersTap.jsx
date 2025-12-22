@@ -24,8 +24,10 @@ import {
 import { GetUsers } from "../../../../services/adminService";
 import { formatDate } from "../../../../utils/timeHelper";
 import { getImageUrl } from "../../../../utils/imageHelper";
+import { getToken } from "../../../../utils/authHelpers";
 export default function UsersTap() {
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");

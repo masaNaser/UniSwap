@@ -33,7 +33,7 @@ import CustomButton from "../../../components/CustomButton/CustomButton";
 import AddIcon from "@mui/icons-material/Add";
 import GenericModal from "../../../components/Modals/GenericModal";
 import { getImageUrl } from "../../../utils/imageHelper";
-
+import { getToken } from "../../../utils/authHelpers";
 // خريطة تربط اسم السيرفس بالأيقونة المناسبة
 const iconMap = {
   "Study Support": <SchoolIcon fontSize="large" sx={{ color: "#2196F3" }} />,
@@ -55,7 +55,8 @@ const iconMap = {
 };
 
 const Services = () => {
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const adminMode = isAdmin();
   const [services, setServices] = useState([]);
 

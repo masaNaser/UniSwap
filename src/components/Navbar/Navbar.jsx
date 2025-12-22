@@ -45,11 +45,10 @@ import { isAdmin } from "../../utils/authHelpers";
 import { useNotifications } from "../../Context/NotificationContext";
 import { ThemeModeContext } from "../../Context/ThemeContext";
 import { useTheme } from "@mui/material/styles";
+import { getToken,getUserName } from "../../utils/authHelpers";
 // ✅ Import Search API
 import { Search } from "../../services/FeedService";
-
 import NotificationMenu from "./NotificationMenu";
-
 const SearchBox = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -496,7 +495,7 @@ export default function PrimarySearchAppBar() {
   const { mode, toggleMode } = useContext(ThemeModeContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const userName = localStorage.getItem("userName");
+  const userName = getUserName();
   const { currentUser } = useCurrentUser();
   const { unreadCount } = useUnreadCount();
 
@@ -533,7 +532,8 @@ export default function PrimarySearchAppBar() {
         setIsSearching(true);
         setShowSearchResults(true);
         try {
-          const token = localStorage.getItem("accessToken");
+          // const token = localStorage.getItem("accessToken");
+          const token = getToken();
           const response = await Search(searchQuery, token);
           console.log("Search response:", response);
           setSearchResults(response.data || { posts: [], users: [] });

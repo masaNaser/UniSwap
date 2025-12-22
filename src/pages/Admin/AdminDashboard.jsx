@@ -23,9 +23,9 @@ import ReportsTap from "./components/DashboardTabs/ReportsTap";
 import AnalyticsTap from "./components/DashboardTabs/Analytics/AnalyticsTap";
 import { logout } from "../../services/authService";
 import { useNavigate, useSearchParams } from "react-router-dom";
-
+import { getUserName } from "../../utils/authHelpers";
 const AdminDashboard = () => {
-  const userName = localStorage.getItem("userName");
+  const userName = getUserName();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
   const reportIdParam = searchParams.get("reportId");

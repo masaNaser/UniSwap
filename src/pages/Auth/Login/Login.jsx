@@ -83,29 +83,38 @@ export default function Login() {
 
       if (response.status === 200) {
         const { accessToken, refreshToken, refreshTokenExpiration } = response.data;
-                const decoded = jwtDecode(accessToken);
-
+        const decoded = jwtDecode(accessToken);
         const accessExp = decoded.exp;
+        // 1. تحديد مكان التخزين بناءً على خيار "Remember Me"
+      // إذا اختار الصح، نخزن في localStorage (دائم)
+      // إذا لم يختار، نخزن في sessionStorage (ينتهي بإغلاق المتصفح)
+      const storage = data.rememberMe ? localStorage : sessionStorage;
+      // 2. تخزين التوكنات في المكان المختار
+      storage.setItem("accessToken", accessToken);
+      storage.setItem("refreshToken", refreshToken);
+      storage.setItem("accessTokenExpiration", accessExp);
+
         // حفظ في localStorage
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-// 3. تخزين وقت انتهاء الـ Access Token (مهم جداً للـ Interceptor)
-      // نضرب بـ 1000 لأن exp تكون بالثواني و JavaScript يتعامل بالملي ثانية
-      localStorage.setItem("refreshTokenExpiration", decoded.exp);
-      localStorage.setItem("accessTokenExpiration", accessExp); // من داخل التوكن (exp)
+        // localStorage.setItem("accessToken", accessToken);
+        // localStorage.setItem("refreshToken", refreshToken);
+        // 3. تخزين وقت انتهاء الـ Access Token (مهم جداً للـ Interceptor)
+        // نضرب بـ 1000 لأن exp تكون بالثواني و JavaScript يتعامل بالملي ثانية
+        storage.setItem("refreshTokenExpiration", decoded.exp);
+        // localStorage.setItem("accessTokenExpiration", accessExp); // من داخل التوكن (exp)
         // فك Token
         const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
         const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-        const userRole  = decoded[ "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+        const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
         // حفظ معلومات المستخدم
-        localStorage.setItem("userName", userName);
-        localStorage.setItem("userId", userId);
-
+        storage.setItem("userName", userName);
+        storage.setItem("userId", userId);
+        storage.setItem("userRole", userRole);
         Swal.fire({
           title: "Login successful!",
           icon: "success",
           timer: 1500,
+          showConfirmButton: false,
         }).then(() => {
           // التوجيه حسب Role
           if (userRole === "Admin") {

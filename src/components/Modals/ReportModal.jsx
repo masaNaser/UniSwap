@@ -3,9 +3,10 @@ import { TextField, MenuItem, Stack, Button, Box } from "@mui/material";
 import FlagIcon from "@mui/icons-material/Flag";
 import GenericModal from "./GenericModal";
 import { CreateReport } from "../../services/adminService";
-
+import { getToken } from "../../utils/authHelpers";
 const ReportModal = ({ open, onClose, userId, userName }) => {
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const [reason, setReason] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);

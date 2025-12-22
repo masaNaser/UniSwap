@@ -2,15 +2,16 @@ import React, { useEffect } from "react";
 import { getConversations, markMessageAsSeen } from "../../services/chatService";
 import { getImageUrl } from "../../utils/imageHelper";
 import { useUnreadCount } from "../../Context/unreadCountContext";
-
+import { getToken,getUserId } from "../../utils/authHelpers";
 export default function ChatList({
   conversations,
   setConversations,
   onSelectConversation,
   className = "",
 }) {
-  const token = localStorage.getItem("accessToken");
-  const userId = localStorage.getItem("userId");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
+  const userId = getUserId();
   
   // ✅ استخدم الـ Context
   const { decreaseUnreadCount,refreshUnreadCount } = useUnreadCount();

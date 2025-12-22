@@ -17,7 +17,7 @@ import {
   getClientdashboard,
 } from "../../services/projectService";
 import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ أضيفي هاد
-
+import { getToken } from "../../utils/authHelpers";
 const statuses = ["ToDo", "InProgress", "InReview", "Done"];
 const statusLabels = {
   ToDo: "To Do",
@@ -35,8 +35,8 @@ export default function TrackTasks() {
  
   const [cardData, setCardData] = useState(initialCardData);
   const isProvider = cardData?.isProvider || false;
-  const token = localStorage.getItem("accessToken");
-
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   // State management
   const [tasks, setTasks] = useState({
     ToDo: [],

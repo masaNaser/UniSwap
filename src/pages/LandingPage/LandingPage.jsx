@@ -8,7 +8,7 @@ import {
   IconButton,
   Collapse
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import ServiceCard from "../../components/Cards/ServiceCard";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import ImportContactsTwoToneIcon from "@mui/icons-material/ImportContactsTwoTone";
@@ -20,20 +20,33 @@ import Logo from "/logo.png";
 import heroImg from "../../assets/images/hero-bg.png";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useTheme } from "@mui/material/styles";
-
+import { isAuthenticated, isAdmin } from "../../utils/authHelpers"; // تأكد من مسار الملف الصحيح
 export default function LandingPage() {
   const theme = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 0) setScrolled(true);
-      else setScrolled(false);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+const navigate = useNavigate();
+
+useEffect(() => {
+// 1. فحص هل المستخدم مسجل دخول أصلاً؟
+  if (isAuthenticated()) {
+    // 2. إذا مسجل، هل هو أدمن أم مستخدم عادي؟
+    if (isAdmin()) {
+      navigate("/admin");
+    } else {
+      navigate("/app/feed");
+    }
+  }
+  
+  // كود السكرول القديم تبعك...
+  const handleScroll = () => {
+    if (window.scrollY > 0) setScrolled(true);
+    else setScrolled(false);
+  };
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, [navigate]);
 
   const FeatureCard = [
     {

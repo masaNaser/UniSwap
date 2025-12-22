@@ -7,7 +7,7 @@ import {
   markAllAsRead,
   deleteAll
 } from "../services/notificationService";
-
+import { getToken } from "../utils/authHelpers";
 const NotificationContext = createContext();
 
 export const useNotifications = () => useContext(NotificationContext);
@@ -20,7 +20,7 @@ export const NotificationProvider = ({ children }) => {
   const hasLoadedRef = useRef(false);
   
   // ✅ استخدم state بدل مباشرة من localStorage
-  const [token, setToken] = useState(() => localStorage.getItem("accessToken"));
+  const [token, setToken] = useState(() => getToken());
 
   // 🔥 جلب البيانات
   const loadInitialData = async () => {
@@ -73,7 +73,8 @@ export const NotificationProvider = ({ children }) => {
   // ✅ راقب التغيير في localStorage
   useEffect(() => {
     const handleStorageChange = () => {
-      const newToken = localStorage.getItem("accessToken");
+      // const newToken = localStorage.getItem("accessToken");
+      const newToken = getToken();
       // console.log("🔄 Token changed:", newToken ? "Token exists" : "No token");
       setToken(newToken);
       hasLoadedRef.current = false; // ✅ اسمح بتحميل جديد
@@ -84,7 +85,8 @@ export const NotificationProvider = ({ children }) => {
     
     // راقب التغييرات من نفس الـ window (login/logout)
     const intervalId = setInterval(() => {
-      const currentToken = localStorage.getItem("accessToken");
+      // const currentToken = localStorage.getItem("accessToken");
+      const currentToken = getToken();
       if (currentToken !== token) {
         handleStorageChange();
       }

@@ -26,7 +26,7 @@ import {
 } from "../../services/publishProjectServices";
 import { getServices } from "../../services/servicesService";
 import { getSubServices } from "../../services/subServiceServices";
-
+import { getToken } from "../../utils/authHelpers";
 const PublishProjectModal = ({
   open,
   onClose,
@@ -65,8 +65,7 @@ const PublishProjectModal = ({
     severity: "success",
   });
 
-  const token = localStorage.getItem("accessToken");
-
+const token = getToken();
   // Initialize form with existing project data if in edit mode
   useEffect(() => {
     if (open) {

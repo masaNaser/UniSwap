@@ -9,7 +9,7 @@ import RequestServiceModal from "../../../../components/Modals/RequestServiceMod
 import { getPendingRequests } from "../../../../services/collaborationService";
 import { formatDateTime } from "../../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
-
+import { getToken } from "../../../../utils/authHelpers";
 export default function ProviderDashboard({
   data,
   statusFilter,
@@ -67,8 +67,8 @@ useEffect(() => {
   const [editingRequest, setEditingRequest] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
-  const token = localStorage.getItem("accessToken");
-
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const handleImageUpdate = (userId, newAvatarUrl) => {
     setPendingRequests((prev) =>
       prev.map((req) =>

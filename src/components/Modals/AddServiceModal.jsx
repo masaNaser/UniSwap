@@ -10,10 +10,10 @@ import GenericModal from "../../components/Modals/GenericModal";
 import { CreateService, EditUserService } from "../../services/profileService";
 import { getServices } from "../../services/servicesService";
 import { getSubServices } from "../../services/subServiceServices";
-
+import { getToken } from "../../utils/authHelpers";
 export default function AddServiceModal({ open, handleClose, onAdded, editingService }) {
-  const token = localStorage.getItem("accessToken");
-
+  // const token = localStorage.getItem("accessToken");
+const token = getToken();
   const [allServices, setAllServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
   const [formData, setFormData] = useState({

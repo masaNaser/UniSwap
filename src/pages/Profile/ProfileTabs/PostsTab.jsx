@@ -30,7 +30,7 @@ import dayjs from "dayjs";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { formatDateTime } from "../../../utils/timeHelper";
-
+import { getToken,getUserId,getUserName } from "../../../utils/authHelpers";
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
   const isCurrentUserComment = comment.user?.userName === currentUser?.userName;
@@ -56,10 +56,11 @@ export default function PostsTab({ username }) {
   const { currentUser, loading } = useCurrentUser();
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
-  const userName = localStorage.getItem("userName");
+  const userName = getUserName();
 
-  const userToken = localStorage.getItem("accessToken");
-  const currentUserName = localStorage.getItem("userName");
+  // const userToken = localStorage.getItem("accessToken");
+  const userToken = getToken();
+  const currentUserName = getUserName();
 
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [currentPostId, setCurrentPostId] = useState(null);
@@ -375,7 +376,7 @@ export default function PostsTab({ username }) {
         userName: currentUserName,
         avatar: currentUserAvatar,
       },
-      authorId: localStorage.getItem("userId"),
+      authorId: getUserId(),
     };
 
     if (currentPostId === postId)

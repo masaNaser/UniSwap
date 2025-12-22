@@ -6,10 +6,10 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SidebarBox from './SidebarBox';
 import { trendingServices, topContributors, trendingTopics } from '../../../services/FeedService';
 import SidebarBoxSkeleton from '../../../components/Skeletons/SidebarBoxSkeleton';
-
+import { getToken } from '../../../utils/authHelpers';
 export default function Sidebar({ postsUpdated }) {
-  const token = localStorage.getItem("accessToken");
-  
+  // const token = localStorage.getItem("accessToken");
+   const token = getToken();
   const [services, setServices] = useState([]);
   const [contributors, setContributors] = useState([]);
   const [topics, setTopics] = useState([]);

@@ -24,6 +24,10 @@ export const resetPassword = ({ email, code, newPassword, confirmPassword }) =>
     }
   );  }
 export const logout = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("userName");
+  // مسح كل شيء من النوعين لضمان الأمان
+  localStorage.clear();
+  sessionStorage.clear();
+  
+  // التحويل للوجن
+  window.location.href = "/login"; 
 };

@@ -21,9 +21,10 @@ import {
 } from "@mui/icons-material";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import ActiveProject from "./ActiveProject";
-
+import { getToken } from "../../../../../utils/authHelpers";
 export default function AnalyticsTap() {
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const [analytics, setAnalytics] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -19,7 +19,7 @@ import {
 import { mapProjectsWithStatus } from "../../../utils/projectStatusMapper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { useLocation } from 'react-router-dom';
-
+import { getToken } from "../../../utils/authHelpers";
 export default function Project() {
   const location = useLocation();
   const notificationData = location.state;
@@ -65,8 +65,8 @@ export default function Project() {
     return localStorage.getItem("statusFilter") || "All Status";
   });
 
-  const token = localStorage.getItem("accessToken");
-
+  // const token = localStorage.getItem("accessToken");
+const token = getToken();
   useEffect(() => {
     localStorage.setItem("projectTabIndex", value.toString());
   }, [value]);

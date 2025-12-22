@@ -25,9 +25,10 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { getImageUrl } from "../../../../utils/imageHelper";
 import GenericModal from "../../../../components/Modals/GenericModal";
-
+import { getToken } from "../../../../utils/authHelpers";
 export default function ReportsTab({ onReportReviewed,highlightedReportId  }) {
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);

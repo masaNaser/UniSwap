@@ -28,9 +28,9 @@ import FilterSection from "../../../components/Filter/FilterSection";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import PublishProjectModal from "../../../components/Modals/PublishProjectModal";
 import api from "../../../services/api";
-
+import { getToken,getUserId } from "../../../utils/authHelpers";
 const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
-  const currentUserId = localStorage.getItem("userId");
+  const currentUserId = getUserId();
   const isOwner = currentUserId === project.userId;
   const canEdit = isOwner || adminMode;
 
@@ -334,7 +334,8 @@ const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
 };
 
 export default function SubServiceProjects() {
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
+  const token = getToken();
   const { id } = useParams();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
