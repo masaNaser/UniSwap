@@ -9,6 +9,7 @@ import { CurrentUserProvider } from "../Context/CurrentUserContext";
 import { GetFullProfile, GetProfileById } from "../services/profileService";
  import { useCurrentUser } from "../Context/CurrentUserContext";
 import { Box } from '@mui/material'; // ⬅️ استوردي Box
+import ScrollToTop from '../ScrollToTop';
 
 export default function MainLayout() {
   const [userData, setUserData] = useState(null);
@@ -67,8 +68,8 @@ export default function MainLayout() {
             flexDirection: 'column',
           }}
         >
+          <ScrollToTop/>
           <Navbar />
-          
           {/* Main Content */}
           <Box sx={{ flex: 1 }}>
             <Outlet />

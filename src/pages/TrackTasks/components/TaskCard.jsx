@@ -251,32 +251,39 @@ export default function TaskCard({
 
             {/* ✅ Review Due Date Display (for InReview tasks) */}
             {status === "InReview" && task.reviewDueAt && (
-              <Box sx={{ mb: 1, mt: 2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                  }}
-                >
-                  <AccessTimeIcon
-                    sx={{
-                      fontSize: 14,
-                      color: "#6B7280",
-                    }}
-                  />
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: "11px",
-                      color: "#6B7280",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Review Due: {formatDateTime(task.reviewDueAt)}
-                  </Typography>
-                </Box>
-              </Box>
+             <Box sx={{ mb: 1, mt: 2 }}>
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center", // يضمن محاذاة الأيقونة والنص
+      gap: 0.5,
+      justifyContent: "center",
+    }}
+  >
+    <AccessTimeIcon
+      sx={{
+        fontSize: 14,
+        color: "#6B7280",
+        verticalAlign: "middle", // هذا مهم لتصحيح المحاذاة
+      }}
+    />
+    <Typography
+      variant="caption"
+      sx={{
+        fontSize: "11px",
+        color: "#6B7280",
+        fontWeight: 500,
+        lineHeight: "14px", // نفس حجم الأيقونة
+        display: "inline-flex",
+        alignItems: "center",
+        mt:1
+      }}
+    >
+      Review Due: {formatDateTime(task.reviewDueAt)}
+    </Typography>
+  </Box>
+</Box>
+
             )}
 
             {/* View Review Button */}

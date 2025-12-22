@@ -72,7 +72,6 @@ export default function TrackTasks() {
   const [openReviewDueDateDialog, setOpenReviewDueDateDialog] = useState(false);
   const [taskForReview, setTaskForReview] = useState(null);
 
-  const { projectType } = useLocation().state ?? {};
 
 
   // Fetch project status from dashboard

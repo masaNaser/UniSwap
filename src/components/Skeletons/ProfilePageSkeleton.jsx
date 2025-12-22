@@ -1,150 +1,77 @@
 // src/components/Skeletons/ProfilePageSkeleton.jsx
 import React from "react";
-import {
-  Container,
-  Box,
-  Skeleton,
-  Card,
-  CardContent,
-  Paper,
-  Tabs,
-  Tab,
-} from "@mui/material";
+import { Container, Box, Skeleton, Card, CardContent, Paper, Tabs, Tab, useTheme } from "@mui/material";
 
-// 1️⃣ Skeleton للـ Profile Header
 function ProfileHeaderSkeleton() {
   return (
-    <Box
-      sx={{
-        position: "relative",
-        borderRadius: { xs: "12px", md: "20px" },
-        overflow: "hidden",
-        mt: { xs: 2, md: 5 },
-      }}
-    >
-      {/* Cover Image */}
-      <Skeleton
-        variant="rectangular"
-        sx={{
-          width: "100%",
-          height: { xs: 200, sm: 220, md: 260 },
-          borderRadius: { xs: "12px", md: "20px" },
-        }}
-      />
-
-      {/* Avatar positioned at bottom */}
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: 16,
-          left: { xs: 16, md: 24 },
-          display: "flex",
-          alignItems: "flex-end",
-          gap: { xs: 1, sm: 3 },
-        }}
-      >
-        <Skeleton
-          variant="circular"
-          width={{ xs: 70, sm: 80, md: 90 }}
-          height={{ xs: 70, sm: 80, md: 90 }}
-          sx={{ border: "3px solid white" }}
-        />
-
+    <Box sx={{ position: "relative", borderRadius: { xs: "12px", md: "20px" }, overflow: "hidden", mt: { xs: 2, md: 5 } }}>
+      <Skeleton variant="rectangular" sx={{ width: "100%", height: { xs: 200, sm: 220, md: 260 }, borderRadius: { xs: "12px", md: "20px" } }} />
+      <Box sx={{ position: "absolute", bottom: 16, left: { xs: 16, md: 24 }, display: "flex", alignItems: "flex-end", gap: { xs: 1, sm: 3 } }}>
+        <Skeleton variant="circular" width={80} height={80} sx={{ border: "3px solid", borderColor: "background.paper" }} />
         <Box sx={{ mb: 1 }}>
-          <Skeleton variant="text" width={200} height={36} />
-          <Skeleton variant="text" width={150} height={24} sx={{ mt: 0.5 }} />
-          <Skeleton variant="text" width={180} height={20} sx={{ mt: 1 }} />
+          <Skeleton variant="text" width={180} height={36} />
+          <Skeleton variant="text" width={120} height={24} />
         </Box>
-      </Box>
-
-      {/* Action Buttons */}
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: 16,
-          right: 16,
-          display: { xs: "none", md: "flex" },
-          gap: 1,
-        }}
-      >
-        <Skeleton variant="rounded" width={100} height={36} />
-        <Skeleton variant="rounded" width={140} height={36} />
-        <Skeleton variant="rounded" width={90} height={36} />
       </Box>
     </Box>
   );
 }
 
-// 2️⃣ Skeleton للـ Stats Cards
 function StatsCardsSkeleton() {
   return (
-    <Box sx={{ mt: 4 }}>
-      <div
-        className="cards-section"
-        style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}
-      >
-        {[1, 2, 3].map((item) => (
-          <Card key={item} sx={{ flex: 1, minWidth: 200, p: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Skeleton variant="circular" width={56} height={56} />
-              <Box sx={{ flex: 1 }}>
-                <Skeleton variant="text" width="70%" height={20} />
-                <Skeleton
-                  variant="text"
-                  width="50%"
-                  height={32}
-                  sx={{ mt: 0.5 }}
-                />
-              </Box>
+    <Box sx={{ mt: 4, display: "flex", gap: 2, flexWrap: "wrap" }}>
+      {[1, 2, 3].map((item) => (
+        <Card key={item} sx={{ flex: 1, minWidth: 200, p: 2, bgcolor: 'background.paper', backgroundImage: 'none' }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Skeleton variant="circular" width={56} height={56} />
+            <Box sx={{ flex: 1 }}>
+              <Skeleton variant="text" width="70%" />
+              <Skeleton variant="text" width="40%" height={32} />
             </Box>
-          </Card>
-        ))}
-      </div>
+          </Box>
+        </Card>
+      ))}
     </Box>
   );
 }
 
-// 3️⃣ Skeleton للـ Profile Info (About + Contact)
 function ProfileInfoSkeleton() {
+  const theme = useTheme();
   return (
-    <Box
-      sx={{
-        mt: 4,
-        background: "rgba(255, 255, 255, 0.95)",
-        borderRadius: "16px",
-        padding: "24px",
-      }}
-    >
-      {/* About Section */}
-      <Skeleton variant="text" width={150} height={28} sx={{ mb: 1.5 }} />
-      <Skeleton variant="text" width="100%" height={20} sx={{ mb: 0.5 }} />
-      <Skeleton variant="text" width="90%" height={20} sx={{ mb: 0.5 }} />
-      <Skeleton variant="text" width="70%" height={20} />
-
-      {/* Contact Section */}
-      <Box sx={{ mt: 3 }}>
-        <Box
-          sx={{
-            background: "rgba(241, 245, 249, 1)",
-            p: 2.5,
-            borderRadius: "12px",
-            border: "1px solid rgba(226, 232, 240, 1)",
-          }}
-        >
-          <Skeleton variant="text" width={80} height={20} sx={{ mb: 1.5 }} />
-          <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-            {[1, 2, 3, 4].map((item) => (
-              <Skeleton key={item} variant="rounded" width={36} height={36} />
-            ))}
-          </Box>
+    <Box sx={{ 
+      mt: 4, 
+      bgcolor: "background.paper", 
+      borderRadius: "16px", 
+      p: 3, 
+      border: "1px solid", 
+      borderColor: "divider",
+      backgroundImage: 'none'
+    }}>
+      <Skeleton variant="text" width={120} height={30} sx={{ mb: 2 }} />
+      <Skeleton variant="text" width="100%" />
+      <Skeleton variant="text" width="95%" />
+      <Skeleton variant="text" width="60%" />
+      
+      <Box sx={{ 
+        mt: 3, 
+        p: 2, 
+        borderRadius: "12px", 
+        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+        border: "1px solid",
+        borderColor: "divider"
+      }}>
+        <Skeleton variant="text" width={100} sx={{ mb: 1 }} />
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {[1, 2, 3].map(i => <Skeleton key={i} variant="rounded" width={35} height={35} />)}
         </Box>
       </Box>
     </Box>
   );
 }
-
 // 4️⃣ Skeleton للـ Tabs
 function ProfileTabsSkeleton() {
+    const theme = useTheme();
+
   return (
     <Box sx={{ mt: 3 }}>
       {/* Tab Headers */}
@@ -248,7 +175,7 @@ function ProfileTabsSkeleton() {
                     border: "1px solid #e2e8f0",
                     borderRadius: 1,
                     mb: 1,
-                    backgroundColor: "rgba(248, 250, 252, 1)",
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(248, 250, 252, 1)',
                   }}
                 >
                   <Skeleton
@@ -284,16 +211,15 @@ function ProfileTabsSkeleton() {
     </Box>
   );
 }
-
-// 5️⃣ الـ Component الرئيسي
 export default function ProfilePageSkeleton() {
   return (
     <Container maxWidth="lg">
-      <Box sx={{ mt: 3 }}>
+      <Box sx={{ mt: 3, minHeight: '100vh', pb: 5 }}> {/* minHeight لمنع القفز */}
         <ProfileHeaderSkeleton />
         <StatsCardsSkeleton />
         <ProfileInfoSkeleton />
         <ProfileTabsSkeleton />
+        {/* يمكنك إضافة باقي الأجزاء هنا بنفس النمط */}
       </Box>
     </Container>
   );

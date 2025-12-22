@@ -4,7 +4,7 @@ import { Box, CircularProgress } from "@mui/material";
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SidebarBox from './SidebarBox ';
-import { trendingServices, topContributors, trendingTopics } from '../../../services/FeedService'; // عدلي المسار حسب مشروعك
+import { trendingServices, topContributors, trendingTopics } from '../../../services/FeedService';
 
 export default function Sidebar({ postsUpdated }) {
   const token = localStorage.getItem("accessToken");
@@ -14,47 +14,66 @@ export default function Sidebar({ postsUpdated }) {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchData = async () => {
-        // await new Promise(resolve => setTimeout(resolve, 1000));
-
-    try {
-      setLoading(true);
-      
-      // ✅ اجلبي كل واحد لحاله
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        const servicesRes = await trendingServices(token);
-        console.log("trendingServices", servicesRes);
-        setServices(servicesRes.data || []); // ✅ ضيفي || []
-      } catch (err) {
-        console.error("Error fetching services:", err);
+        setLoading(true);
+        
+        // ✅ Services
+        try {
+          const servicesRes = await trendingServices(token);
+          console.log("📦 Services:", servicesRes.data);
+          setServices(servicesRes.data || []);
+        } catch (err) {
+          console.error("❌ Error fetching services:", err);
+          setServices([]);
+        }
+
+        // ✅ Contributors
+        try {
+          const contributorsRes = await topContributors(token);
+          console.log("👥 Contributors:", contributorsRes.data);
+          setContributors(contributorsRes.data || []);
+        } catch (err) {
+          console.error("❌ Error fetching contributors:", err);
+          setContributors([]);
+        }
+
+        // ✅ Topics - التعديل الأساسي هنا
+        try {
+          const topicsRes = await trendingTopics(token);
+          console.log("🔥 Topics RAW:", topicsRes);
+          console.log("🔥 Topics DATA:", topicsRes.data);
+          
+          if (topicsRes.data && Array.isArray(topicsRes.data)) {
+            // ✅ تأكدي إنو البيانات موجودة
+            const validTopics = topicsRes.data.filter(item => 
+              item && item.tag && typeof item.count === 'number'
+            );
+            
+            console.log("✅ Valid Topics:", validTopics);
+            setTopics(validTopics);
+          } else {
+            console.warn("⚠️ Topics data is not valid");
+            setTopics([]);
+          }
+        } catch (err) {
+          console.error("❌ Error fetching topics:", err);
+          setTopics([]);
+        }
+
+      } finally {
+        setLoading(false);
       }
+    };
 
-      try {
-        const contributorsRes = await topContributors(token);
-        console.log("topContributors", contributorsRes);
-        setContributors(contributorsRes.data || []); // ✅ ضيفي || []
-      } catch (err) {
-        console.error("Error fetching contributors:", err);
-      }
+    fetchData();
+  }, [token, postsUpdated]);
 
-      try {
-        const topicsRes = await trendingTopics(token);
-        console.log("trendingTopics", topicsRes);
-            console.log("🔥 trendingTopics BEFORE:", topics); // ✅ قبل
-        console.log("🔥 trendingTopics NEW:", topicsRes); // ✅ بعد
-        setTopics(topicsRes.data || []); // ✅ ضيفي || []
-      } catch (err) {
-        console.error("Error fetching topics:", err);
-      }
-
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchData();
-}, [token, postsUpdated]); // ✅ postsUpdated موجود بالـ dependencies
+  // ✅ Debug: اطبعي الـ state بعد كل تحديث
+  useEffect(() => {
+    console.log("🎯 Current Topics State:", topics);
+  }, [topics]);
 
   if (loading) {
     return (
@@ -86,6 +105,9 @@ useEffect(() => {
         items={contributors}
         type="contributors"
       />
+      
+      {/* ✅ Debug: اطبعي قبل ما ينعرض */}
+      {console.log("🚀 Rendering Topics with:", topics.length, "items")}
       
       <SidebarBox 
         title="Trending Topics" 

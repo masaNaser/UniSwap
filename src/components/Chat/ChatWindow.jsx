@@ -275,7 +275,7 @@ useEffect(() => {
           {loadingOlder && <CircularProgress size={24} />}
         </Box>
         {messages.length === 0 ? (
-          <p className="empty">No messages yet</p>
+          <p className="empty"></p>
         ) : (
           messages.map((m, i) => (
             <Message
