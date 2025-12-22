@@ -116,7 +116,7 @@ export default function PostsTab({ username }) {
         likes: p.likesCount,
         comments: p.commentsCount,
         shares: "",
-        fileUrl: p.fileUrl ? `https://uni.runasp.net/${p.fileUrl}` : null,
+        fileUrl: p.fileUrl ? `https://uni1swap.runasp.net/${p.fileUrl}` : null,
         isLiked: p.isLikedByMe || false,
         recentComments: [],
         isClosed: p.postStatus === "Closed", // ✅ تحديث: استخدام postStatus بدل isCommentsClosed

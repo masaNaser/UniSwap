@@ -1,12 +1,6 @@
 import api from "./api";
 
-export const GetDashboard = async (token) => {
-  return await api.get('/AdminDashboard/stats', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-};
+
 
 export const GetUsers = async (token) => {
   return await api.get(`/AdminDashboard/users`, {
@@ -16,6 +10,7 @@ export const GetUsers = async (token) => {
   });
 };
 
+// reports
 export const CreateReport = async (token,data) => {
   return await api.post('/reports', data,
     {
@@ -24,7 +19,6 @@ export const CreateReport = async (token,data) => {
     },
   });
 };
-
 
 export const GetOneReports = async (token, reportId) => {
   return await api.get(`/AdminDashboard/${reportId}/getReport`, {
@@ -58,6 +52,7 @@ export const ReviewReport = async (token, reportId, accept) => {
   );
 };
 
+// analystics 
 export const Analytics = async (token) => {
   return await api.get('/AdminDashboard/analytics', {
     headers: {
@@ -67,9 +62,25 @@ export const Analytics = async (token) => {
 };
 
 export const ActiveProjects = async (token) => {
-  return await api.get(`/AdminDashboard/active-projects`, {
+  return await api.get('/AdminDashboard/active-projects', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 }
+
+export const taskProgress= async (token) => {
+  return await api.get('/AdminDashboard/dashboard/task-progress', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export const GetDashboard = async (token) => {
+  return await api.get('/AdminDashboard/stats', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

@@ -22,6 +22,7 @@ import {
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import ActiveProject from "./ActiveProject";
 import { getToken } from "../../../../../utils/authHelpers";
+import TaskProgress from "./TaskProgress";
 export default function AnalyticsTap() {
   // const token = localStorage.getItem("accessToken");
   const token = getToken();
@@ -30,21 +31,23 @@ export default function AnalyticsTap() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchData = async () => {
-    setLoading(true);
+ const fetchData = async () => {
+  setLoading(true);
   try {
-  const analyticsRes = await Analytics(token);
-  console.log("Analytics:", analyticsRes.data);
-  const statsRes = await GetDashboard(token);
-  console.log("Stats:", statsRes.data);
-} catch(err) {
-  console.error(err.response || err);
-  setError("فشل تحميل البيانات");
-}
-finally {
-      setLoading(false);
-    }
-  };
+    const analyticsRes = await Analytics(token);
+    console.log("Analytics:", analyticsRes.data);
+    setAnalytics(analyticsRes.data); // ✅ احفظ الداتا!
+    
+    const statsRes = await GetDashboard(token);
+    console.log("Stats:", statsRes.data);
+    setStats(statsRes.data); // ✅ احفظ الداتا!
+  } catch(err) {
+    console.error(err.response || err);
+    setError("فشل تحميل البيانات");
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchData();
@@ -73,26 +76,39 @@ finally {
   const majorData = Object.entries(analytics.usersByMajor || {}).map(
     ([name, value]) => ({ name, value })
   );
-  const academicData = (() => {
-    const yearLabels = {
-      "0": "First Year",
-      "1": "Second Year",
-      "2": "Third Year",
-      "3": "Fourth Year",
-      "4": "Other"
-    };
+ const academicData = (() => {
+  const yearMapping = {
+    "FirstYear": "First Year",
+    "Secondyear": "Second Year", 
+    "Thirdyear": "Third Year",
+    "Fourthyear": "Fourth Year",
+    "another": "Other",
+    // للتوافق مع أي أسماء ثانية
+    "0": "First Year",
+    "1": "Second Year",
+    "2": "Third Year",
+    "3": "Fourth Year",
+    "4": "Other"
+  };
 
-    return Object.entries(analytics.usersByAcademicYear || {})
-      .map(([year, count]) => ({
-        year: yearLabels[year] || year,
-        count
-      }))
-      .sort((a, b) => {
-        // Sort by the original numeric order
-        const order = ["First Year", "Second Year", "Third Year", "Fourth Year", "Other"];
-        return order.indexOf(a.year) - order.indexOf(b.year);
-      });
-  })();
+  const order = ["First Year", "Second Year", "Third Year", "Fourth Year", "Other"];
+
+  return Object.entries(analytics.usersByAcademicYear || {})
+    .map(([year, count]) => ({
+      year: yearMapping[year] || year,
+      count
+    }))
+    .sort((a, b) => {
+      const indexA = order.indexOf(a.year);
+      const indexB = order.indexOf(b.year);
+      
+      // إذا ما لقينا السنة بالـ order، نحطها بالآخر
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      
+      return indexA - indexB;
+    });
+})();
   // لوحة ألوان واسعة جداً لتغطية أي عدد من التخصصات
   const COLORS = [
     "#4e79a7",
@@ -165,7 +181,22 @@ finally {
             iconBgColor="#fee2e2"
           />
         </Box>
-        <Box sx={{ mb: 3 }}><ActiveProject /></Box>
+<Box 
+  sx={{ 
+    mb: 3, 
+    display: 'grid',
+    gridTemplateColumns: {
+      xs: '1fr',                    // موبايل: عمود واحد
+      md: '1fr',                    // تابلت: عمود واحد
+      lg: 'minmax(0, 2fr) minmax(280px, 1fr)'  // ديسكتوب: الأول أكبر، الثاني أصغر
+    },
+    gap: 3
+  }}
+>
+  <ActiveProject />
+  <TaskProgress />
+</Box>
+         
         {/* Charts Row */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
           {/* Pie Chart - Major Distribution */}

@@ -261,7 +261,7 @@ export default function StudyProjectModal({
       snackbar={snackbar}
       onSnackbarClose={() => setSnackbar(null)}
     >
-      <Stack spacing={2.5}>
+      <Stack spacing={2.5} sx={{mt:2}}>
         {/* Title */}
         <TextField
           label="Project Title"

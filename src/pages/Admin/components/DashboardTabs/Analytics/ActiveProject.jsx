@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  Paper, Typography, LinearProgress, Box, Chip, CircularProgress 
+  Paper, Typography, LinearProgress, Box, Chip, CircularProgress,
+  useMediaQuery, useTheme
 } from '@mui/material';
-import { ActiveProjects } from '../../../../../services/adminService'; // تأكد من مسار ملف الـ api الخاص بك
+import { ActiveProjects } from '../../../../../services/adminService';
 import { getToken } from '../../../../../utils/authHelpers';
+
 export default function ActiveProject() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        // const token = localStorage.getItem('accessToken'); // أو أي مكان تخزن فيه التوكن
         const token = getToken();
         const response = await ActiveProjects(token);
-        console.log("ActiveProjects",response);
+        console.log("ActiveProjects", response);
         setProjects(response.data);
       } catch (err) {
         setError('Failed to load projects');
@@ -29,7 +33,6 @@ export default function ActiveProject() {
     fetchProjects();
   }, []);
 
-  // دالة لتحديد لون الـ Status Chip بناءً على الحالة
   const getStatusStyle = (status) => {
     switch (status) {
       case 'Active':
@@ -45,71 +48,209 @@ export default function ActiveProject() {
     }
   };
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>;
-  if (error) return <Typography color="error">{error}</Typography>;
+  if (loading) {
+    return (
+      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, bgcolor: '#fff', border: '1px solid #f1f5f9' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+          <CircularProgress />
+        </Box>
+      </Paper>
+    );
+  }
 
+  if (error) {
+    return (
+      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, bgcolor: '#fff', border: '1px solid #f1f5f9' }}>
+        <Typography color="error">{error}</Typography>
+      </Paper>
+    );
+  }
+
+  // عرض بطاقات للموبايل
+  if (isMobile) {
+    return (
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          p: 3, 
+          borderRadius: 3, 
+          bgcolor: '#fff',
+          border: '1px solid #f1f5f9'
+        }}
+      >
+        <Typography variant="h6" fontWeight="600" mb={3} sx={{ color: '#1e293b' }}>
+          Active Projects
+        </Typography>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {projects.map((project) => (
+            <Box
+              key={project.projectId}
+              sx={{
+                p: 2.5,
+                bgcolor: '#f8fafc',
+                borderRadius: 2,
+                border: '1px solid #e2e8f0'
+              }}
+            >
+              <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                <Typography variant="subtitle2" fontWeight="600" sx={{ flex: 1 }}>
+                  {project.projectName}
+                </Typography>
+                <Chip 
+                  label={project.status} 
+                  size="small"
+                  sx={{ 
+                    fontWeight: 600,
+                    fontSize: '0.7rem',
+                    height: 22,
+                    ml: 1,
+                    ...getStatusStyle(project.status)
+                  }} 
+                />
+              </Box>
+
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary">Progress</Typography>
+                  <Typography variant="caption" fontWeight="600">{project.progress}%</Typography>
+                </Box>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={project.progress} 
+                  sx={{ 
+                    height: 6, 
+                    borderRadius: 3, 
+                    bgcolor: '#e2e8f0',
+                    '& .MuiLinearProgress-bar': { 
+                      bgcolor: '#000',
+                      borderRadius: 3
+                    } 
+                  }} 
+                />
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ flex: '1 1 120px' }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Client
+                  </Typography>
+                  <Typography variant="body2" fontWeight="500">
+                    {project.clientName}
+                  </Typography>
+                </Box>
+                <Box sx={{ flex: '1 1 120px' }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Provider
+                  </Typography>
+                  <Typography variant="body2" fontWeight="500">
+                    {project.providerName}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </Paper>
+    );
+  }
+
+  // عرض جدول للشاشات الكبيرة
   return (
-    <Box sx={{ p: 3, backgroundColor: '#fff', borderRadius: '15px' }}>
-      <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
+    <Paper 
+      elevation={0} 
+      sx={{ 
+        p: 3, 
+        borderRadius: 3, 
+        bgcolor: '#fff',
+        border: '1px solid #f1f5f9'
+      }}
+    >
+      <Typography variant="h6" fontWeight="600" mb={3} sx={{ color: '#1e293b' }}>
         Active Projects
       </Typography>
 
-      <TableContainer component={Paper} elevation={0}>
-        <Table sx={{ minWidth: 650 }}>
+      <TableContainer sx={{ maxHeight: 400, overflow: 'auto' }}>
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ color: '#777', fontWeight: 500 }}>Project Name</TableCell>
-              <TableCell sx={{ color: '#777', fontWeight: 500 }}>Progress</TableCell>
-              <TableCell sx={{ color: '#777', fontWeight: 500 }}>Status</TableCell>
-              <TableCell sx={{ color: '#777', fontWeight: 500 }}>Client</TableCell>
-              <TableCell sx={{ color: '#777', fontWeight: 500 }}>Provider Name</TableCell>
+              <TableCell sx={{ color: '#64748b', fontWeight: 500, bgcolor: '#fff', fontSize: '0.875rem' }}>
+                Project Name
+              </TableCell>
+              <TableCell sx={{ color: '#64748b', fontWeight: 500, bgcolor: '#fff', fontSize: '0.875rem' }}>
+                Progress
+              </TableCell>
+              <TableCell sx={{ color: '#64748b', fontWeight: 500, bgcolor: '#fff', fontSize: '0.875rem' }}>
+                Status
+              </TableCell>
+              <TableCell sx={{ color: '#64748b', fontWeight: 500, bgcolor: '#fff', fontSize: '0.875rem' }}>
+                Client
+              </TableCell>
+              <TableCell sx={{ color: '#64748b', fontWeight: 500, bgcolor: '#fff', fontSize: '0.875rem' }}>
+                Provider
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {projects.map((project) => (
-              <TableRow key={project.projectId} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                <TableCell>{project.projectName}</TableCell>
+              <TableRow 
+                key={project.projectId} 
+                sx={{ 
+                  '&:last-child td': { border: 0 },
+                  '&:hover': { bgcolor: '#f8fafc' }
+                }}
+              >
+                <TableCell sx={{ fontSize: '0.875rem' }}>
+                  {project.projectName}
+                </TableCell>
                 
-                {/* عمود الـ Progress */}
-                <TableCell sx={{ width: '200px' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Box sx={{ width: '100%', mr: 1 }}>
+                <TableCell sx={{ width: '180px' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ flexGrow: 1 }}>
                       <LinearProgress 
                         variant="determinate" 
                         value={project.progress} 
                         sx={{ 
-                          height: 8, 
-                          borderRadius: 5, 
-                          backgroundColor: '#eee',
-                          '& .MuiLinearProgress-bar': { backgroundColor: '#000' } 
+                          height: 6, 
+                          borderRadius: 3, 
+                          bgcolor: '#e2e8f0',
+                          '& .MuiLinearProgress-bar': { 
+                            bgcolor: '#000',
+                            borderRadius: 3
+                          } 
                         }} 
                       />
                     </Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }}>
                       {project.progress}%
                     </Typography>
                   </Box>
                 </TableCell>
 
-                {/* عمود الـ Status */}
                 <TableCell>
                   <Chip 
                     label={project.status} 
                     size="small"
                     sx={{ 
-                      fontWeight: 'bold',
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      height: 24,
                       ...getStatusStyle(project.status)
                     }} 
                   />
                 </TableCell>
 
-                <TableCell>{project.clientName}</TableCell>
-                <TableCell>{project.providerName}</TableCell>
+                <TableCell sx={{ fontSize: '0.875rem' }}>
+                  {project.clientName}
+                </TableCell>
+                <TableCell sx={{ fontSize: '0.875rem' }}>
+                  {project.providerName}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-    </Box>
+    </Paper>
   );
 }
