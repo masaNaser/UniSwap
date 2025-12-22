@@ -6,9 +6,9 @@ import {
   Grid,
   Button,
   IconButton,
-  Collapse
+  Collapse,
 } from "@mui/material";
-import { Link,useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ServiceCard from "../../components/Cards/ServiceCard";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import ImportContactsTwoToneIcon from "@mui/icons-material/ImportContactsTwoTone";
@@ -20,38 +20,29 @@ import Logo from "/logo.png";
 import heroImg from "../../assets/images/hero-bg.png";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useTheme } from "@mui/material/styles";
-import { isAuthenticated, isAdmin } from "../../utils/authHelpers"; // تأكد من مسار الملف الصحيح
+import { isAdmin, getToken } from "../../utils/authHelpers";
+
 export default function LandingPage() {
   const theme = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const token = getToken();
+  const navigate = useNavigate();
 
-const navigate = useNavigate();
-
-useEffect(() => {
-// 1. فحص هل المستخدم مسجل دخول أصلاً؟
-  if (isAuthenticated()) {
-    // 2. إذا مسجل، هل هو أدمن أم مستخدم عادي؟
-    if (isAdmin()) {
-      navigate("/admin");
-    } else {
-      navigate("/app/feed");
-    }
-  }
-  
-  // كود السكرول القديم تبعك...
-  const handleScroll = () => {
-    if (window.scrollY > 0) setScrolled(true);
-    else setScrolled(false);
-  };
-  window.addEventListener("scroll", handleScroll);
-  return () => window.removeEventListener("scroll", handleScroll);
-}, [navigate]);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) setScrolled(true);
+      else setScrolled(false);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const FeatureCard = [
     {
       title: "Student Community",
-      description: "Connect with fellow students and build meaningful academic relationships",
+      description:
+        "Connect with fellow students and build meaningful academic relationships",
       icon: (
         <PeopleOutlinedIcon
           sx={{
@@ -66,7 +57,8 @@ useEffect(() => {
     },
     {
       title: "Skill Exchange",
-      description: "Trade your expertise for others' help using our innovative points system",
+      description:
+        "Trade your expertise for others' help using our innovative points system",
       icon: (
         <ElectricBoltSharp
           sx={{
@@ -81,7 +73,8 @@ useEffect(() => {
     },
     {
       title: "Academic Support",
-      description: "Get help with assignments, projects, and exam preparation from peers",
+      description:
+        "Get help with assignments, projects, and exam preparation from peers",
       icon: (
         <ImportContactsTwoToneIcon
           sx={{
@@ -96,7 +89,8 @@ useEffect(() => {
     },
     {
       title: "Real-time Chat",
-      description: "Instant messaging and collaboration tools to stay connected",
+      description:
+        "Instant messaging and collaboration tools to stay connected",
       icon: (
         <ChatBubbleOutlineOutlinedIcon
           sx={{
@@ -126,7 +120,8 @@ useEffect(() => {
     },
     {
       title: "Safe & Secure",
-      description: "University-verified platform ensuring a trusted learning environment",
+      description:
+        "University-verified platform ensuring a trusted learning environment",
       icon: (
         <ShieldOutlinedIcon
           sx={{
@@ -146,7 +141,7 @@ useEffect(() => {
       {/* Navbar - Fixed */}
       <Box
         sx={{
-          position: "fixed", // 🔥 fixed بدل sticky
+          position: "fixed",
           top: 0,
           left: 0,
           right: 0,
@@ -156,10 +151,14 @@ useEffect(() => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-        backgroundColor: scrolled 
-  ? (theme.palette.mode === "dark" ? "rgba(45, 45, 45, 0.7)" : "rgba(255, 255, 255, 0.85)")
-  : (theme.palette.mode === "dark" ? "rgba(45, 45, 45, 0.4)" : "rgba(255, 255, 255, 0.84)"),
-backdropFilter: "blur(15px)", // 🔥 blur أقوى
+          backgroundColor: scrolled
+            ? theme.palette.mode === "dark"
+              ? "rgba(45, 45, 45, 0.7)"
+              : "rgba(255, 255, 255, 0.85)"
+            : theme.palette.mode === "dark"
+            ? "rgba(45, 45, 45, 0.4)"
+            : "rgba(255, 255, 255, 0.84)",
+          backdropFilter: "blur(15px)",
           boxShadow: scrolled ? "0 2px 12px rgba(0,0,0,0.08)" : "none",
           transition: "all 0.3s ease",
         }}
@@ -170,7 +169,7 @@ backdropFilter: "blur(15px)", // 🔥 blur أقوى
             component="img"
             src={Logo}
             alt="UniSwap logo"
-            sx={{ width: 56, height: 50}}
+            sx={{ width: 56, height: 50 }}
           />
           <Typography
             sx={{
@@ -183,139 +182,240 @@ backdropFilter: "blur(15px)", // 🔥 blur أقوى
           </Typography>
         </Box>
 
-        {/* Desktop Buttons */}
+        {/* Desktop Buttons - التعديل هنا فقط */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             gap: 3,
-            "@media (max-width:433px)": {
-              display: "none",
-            },
+            "@media (max-width:433px)": { display: "none" },
           }}
         >
-          <Button
-            component={Link}
-            to="/login"
-            variant="outlined"
-            sx={{
-              color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              borderWidth: "2px",
-              fontWeight: 700,
-              borderRadius: "25px",
-              px: 3,
-              py: 1,
-              textTransform: "none",
-              ":hover":{
-                backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-                color:theme.palette.mode === "dark" ? "black" : "#fff",
-              }
-            }}
-          >
-            Login
-          </Button>
-          <Button
-            component={Link}
-            to="/register"
-            variant="outlined"
-            sx={{
-              color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              borderWidth: "2px",
-              fontWeight: 700,
-              borderRadius: "25px",
-              px: 3,
-              py: 1,
-              textTransform: "none",
-              ":hover":{
-                backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-                color:theme.palette.mode === "dark" ? "black" : "#fff",
-              }
-            }}
-          >
-            Sign Up
-          </Button>
+          {token ? (
+            <>
+              <Button
+                onClick={() => navigate(isAdmin() ? "/admin" : "/app/feed")}
+                variant="outlined"
+                sx={{
+                  color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderColor:
+                    theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderWidth: "2px",
+                  fontWeight: 700,
+                  borderRadius: "25px",
+                  px: 3,
+                  py: 1,
+                  textTransform: "none",
+                  ":hover": {
+                    backgroundColor:
+                      theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                    color: theme.palette.mode === "dark" ? "black" : "#fff",
+                  },
+                }}
+              >
+                Feed
+              </Button>
+              {/* <Button
+                component={Link}
+                to="/register"
+                variant="outlined"
+                      sx={{
+                  color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderColor:
+                    theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderWidth: "2px",
+                  fontWeight: 700,
+                  borderRadius: "25px",
+                  px: 3,
+                  py: 1,
+                  textTransform: "none",
+                  ":hover": {
+                    backgroundColor:
+                      theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                    color: theme.palette.mode === "dark" ? "black" : "#fff",
+                    ":hover": {
+                      backgroundColor:
+                        theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                      color: theme.palette.mode === "dark" ? "black" : "#fff",
+                    },
+                  },
+                }}
+              >
+                Sign Up
+              </Button> */}
+            </>
+          ) : (
+            <>
+              <Button
+                component={Link}
+                to="/login"
+                variant="outlined"
+                sx={{
+                  color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderColor:
+                    theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderWidth: "2px",
+                  fontWeight: 700,
+                  borderRadius: "25px",
+                  px: 3,
+                  py: 1,
+                  textTransform: "none",
+                  ":hover": {
+                    backgroundColor:
+                      theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                    color: theme.palette.mode === "dark" ? "black" : "#fff",
+                    ":hover": {
+                      backgroundColor:
+                        theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                      color: theme.palette.mode === "dark" ? "black" : "#fff",
+                    },
+                  },
+                }}
+              >
+                Login
+              </Button>
+              <Button
+                component={Link}
+                to="/register"
+                variant="outlined"
+                      sx={{
+                  color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderColor:
+                    theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderWidth: "2px",
+                  fontWeight: 700,
+                  borderRadius: "25px",
+                  px: 3,
+                  py: 1,
+                  textTransform: "none",
+                  ":hover": {
+                    backgroundColor:
+                      theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                    color: theme.palette.mode === "dark" ? "black" : "#fff",
+                    ":hover": {
+                      backgroundColor:
+                        theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                      color: theme.palette.mode === "dark" ? "black" : "#fff",
+                    },
+                  },
+                }}
+              >
+                Sign Up
+              </Button>
+            </>
+          )}
         </Box>
 
         {/* Mobile Menu Icon */}
         <Box
           sx={{
             display: "none",
-            "@media (max-width:433px)": {
-              display: "flex",
-            },
+            "@media (max-width:433px)": { display: "flex" },
           }}
         >
           <IconButton onClick={() => setMenuOpen(!menuOpen)}>
-            <MenuIcon sx={{ color: theme.palette.mode === "dark" ? "#fff" : "#004aad" }} />
+            <MenuIcon
+              sx={{ color: theme.palette.mode === "dark" ? "#fff" : "#004aad" }}
+            />
           </IconButton>
         </Box>
       </Box>
 
-      {/* Mobile Menu Collapse - Fixed */}
+      {/* Mobile Menu Collapse */}
       <Collapse in={menuOpen}>
         <Box
           sx={{
-            position: "fixed", // 🔥 fixed
+            position: "fixed",
             top: 70,
             left: 0,
             right: 0,
             zIndex: 999,
-            backgroundColor: theme.palette.mode === "dark" ? "#363636ffF5" : "rgba(255,255,255,0.98)",
+            backgroundColor:
+              theme.palette.mode === "dark"
+                ? "#363636ffF5"
+                : "rgba(255,255,255,0.98)",
             backdropFilter: "blur(10px)",
             display: "flex",
             justifyContent: "center",
             gap: 2,
             py: 2,
             boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-            "@media (min-width:434px)": {
-              display: "none",
-            },
+            "@media (min-width:434px)": { display: "none" },
           }}
         >
-          <Button
-            component={Link}
-            to="/login"
-            variant="outlined"
-            sx={{
-              color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              borderRadius: "25px",
-              px: 3,
-              textTransform: "none",
-              ":hover":{
-                backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-                color:theme.palette.mode === "dark" ? "black" : "#fff",
-              }
-            }}
-          >
-            Login
-          </Button>
-          <Button
-            component={Link}
-            to="/register"
-            variant="outlined"
-           sx={{
-              color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              borderColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-              borderRadius: "25px",
-              px: 3,
-              textTransform: "none",
-              ":hover":{
-                backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#004aad",
-                color:theme.palette.mode === "dark" ? "black" : "#fff",
-              }
-            }}
-          >
-            Sign Up
-          </Button>
+          {token ? (
+            <>
+              <Button
+                onClick={() => navigate(isAdmin() ? "/admin" : "/app/feed")}
+                variant="outlined"
+                sx={{
+                  color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderColor:
+                    theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderRadius: "25px",
+                  px: 3,
+                  textTransform: "none",
+                }}
+              >
+                Feed
+              </Button>
+              {/* <Button
+                component={Link}
+                to="/register"
+                variant="outlined"
+                sx={{
+                  color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderColor:
+                    theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderRadius: "25px",
+                  px: 3,
+                  textTransform: "none",
+                }}
+              >
+                Sign Up
+              </Button> */}
+            </>
+          ) : (
+            <>
+              <Button
+                component={Link}
+                to="/login"
+                variant="outlined"
+                sx={{
+                  color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderColor:
+                    theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderRadius: "25px",
+                  px: 3,
+                  textTransform: "none",
+                }}
+              >
+                Login
+              </Button>
+              <Button
+                component={Link}
+                to="/register"
+                variant="outlined"
+                sx={{
+                  color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderColor:
+                    theme.palette.mode === "dark" ? "#fff" : "#004aad",
+                  borderRadius: "25px",
+                  px: 3,
+                  textTransform: "none",
+                }}
+              >
+                Sign Up
+              </Button>
+            </>
+          )}
         </Box>
       </Collapse>
 
       {/* Content Container - with paddingTop */}
-      <Box sx={{ paddingTop: "70px" }}> {/* 🔥 هون المهم! */}
-        
+      <Box sx={{ paddingTop: "70px" }}>
+        {" "}
+        {/* 🔥 هون المهم! */}
         {/* Hero Section */}
         <Box
           sx={{
@@ -384,7 +484,8 @@ backdropFilter: "blur(15px)", // 🔥 blur أقوى
                 }}
               >
                 Join thousands of students transforming their university
-                experience through skill sharing, collaboration, and peer support.
+                experience through skill sharing, collaboration, and peer
+                support.
               </Typography>
               <Button
                 component={Link}
@@ -410,7 +511,6 @@ backdropFilter: "blur(15px)", // 🔥 blur أقوى
             </Box>
           </Container>
         </Box>
-
         {/* Features Section */}
         <Container maxWidth="lg">
           <Box sx={{ textAlign: "center", mt: 3 }}>
@@ -444,7 +544,6 @@ backdropFilter: "blur(15px)", // 🔥 blur أقوى
             ))}
           </Grid>
         </Container>
-
         {/* Footer */}
         <Box
           sx={{
@@ -472,7 +571,9 @@ backdropFilter: "blur(15px)", // 🔥 blur أقوى
                   alt="UniSwap logo"
                   style={{ height: "36px", width: "36px" }}
                 />
-                <Typography sx={{ fontWeight: 600, fontSize: 18, color: "#fff" }}>
+                <Typography
+                  sx={{ fontWeight: 600, fontSize: 18, color: "#fff" }}
+                >
                   UniSwap
                 </Typography>
               </Box>
