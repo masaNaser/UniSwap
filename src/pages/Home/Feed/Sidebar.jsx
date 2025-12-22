@@ -3,8 +3,9 @@ import StarIcon from '@mui/icons-material/Star';
 import { Box, CircularProgress } from "@mui/material";
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import SidebarBox from './SidebarBox ';
+import SidebarBox from './SidebarBox';
 import { trendingServices, topContributors, trendingTopics } from '../../../services/FeedService';
+import SidebarBoxSkeleton from '../../../components/Skeletons/SidebarBoxSkeleton';
 
 export default function Sidebar({ postsUpdated }) {
   const token = localStorage.getItem("accessToken");
@@ -19,46 +20,40 @@ export default function Sidebar({ postsUpdated }) {
       try {
         setLoading(true);
         
-        // ✅ Services
+        // Services
         try {
           const servicesRes = await trendingServices(token);
-          console.log("📦 Services:", servicesRes.data);
+          console.log("🔎 Trending Services Response:", servicesRes);
           setServices(servicesRes.data || []);
         } catch (err) {
-          console.error("❌ Error fetching services:", err);
+          console.error("Error fetching services:", err);
           setServices([]);
         }
 
-        // ✅ Contributors
+        // Contributors
         try {
           const contributorsRes = await topContributors(token);
-          console.log("👥 Contributors:", contributorsRes.data);
+          console.log("🔎 Top Contributors Response:", contributorsRes);
           setContributors(contributorsRes.data || []);
         } catch (err) {
-          console.error("❌ Error fetching contributors:", err);
+          console.error("Error fetching contributors:", err);
           setContributors([]);
         }
 
-        // ✅ Topics - التعديل الأساسي هنا
+        // Topics
         try {
           const topicsRes = await trendingTopics(token);
-          console.log("🔥 Topics RAW:", topicsRes);
-          console.log("🔥 Topics DATA:", topicsRes.data);
-          
+          console.log("🔎 Trending Topics Response:", topicsRes);
           if (topicsRes.data && Array.isArray(topicsRes.data)) {
-            // ✅ تأكدي إنو البيانات موجودة
             const validTopics = topicsRes.data.filter(item => 
               item && item.tag && typeof item.count === 'number'
             );
-            
-            console.log("✅ Valid Topics:", validTopics);
             setTopics(validTopics);
           } else {
-            console.warn("⚠️ Topics data is not valid");
             setTopics([]);
           }
         } catch (err) {
-          console.error("❌ Error fetching topics:", err);
+          console.error("Error fetching topics:", err);
           setTopics([]);
         }
 
@@ -70,18 +65,15 @@ export default function Sidebar({ postsUpdated }) {
     fetchData();
   }, [token, postsUpdated]);
 
-  // ✅ Debug: اطبعي الـ state بعد كل تحديث
-  useEffect(() => {
-    console.log("🎯 Current Topics State:", topics);
-  }, [topics]);
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+if (loading) {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
+      <SidebarBoxSkeleton type="services" />
+      <SidebarBoxSkeleton type="contributors" />
+      <SidebarBoxSkeleton type="topics" />
+    </Box>
+  );
+}
 
   return (
     <Box
@@ -99,17 +91,14 @@ export default function Sidebar({ postsUpdated }) {
         type="services"
       />
       
-      <SidebarBox 
+        <SidebarBox 
         title="Top Contributors" 
         icon={<StarIcon style={{ color: '#f4e64cff' }} />} 
         items={contributors}
         type="contributors"
       />
-      
-      {/* ✅ Debug: اطبعي قبل ما ينعرض */}
-      {console.log("🚀 Rendering Topics with:", topics.length, "items")}
-      
-      <SidebarBox 
+
+       <SidebarBox 
         title="Trending Topics" 
         icon={<TrendingUpIcon style={{ color: '#ff6b9d' }} />} 
         items={topics}

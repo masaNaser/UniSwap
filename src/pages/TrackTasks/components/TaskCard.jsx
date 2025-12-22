@@ -27,7 +27,6 @@ export default function TaskCard({
   onReviewClick,
   onViewReview,
 }) {
-
   const theme = useTheme();
 
   console.log("🔎 ReviewDueAt:", task.reviewDueAt);
@@ -89,7 +88,7 @@ export default function TaskCard({
             size="small"
             onClick={onMenuOpen}
             sx={{
-              position: 'absolute',
+              position: "absolute",
               top: 8,
               right: 8,
               zIndex: 1,
@@ -100,9 +99,9 @@ export default function TaskCard({
         )}
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
           }}
         >
           <Box sx={{ flex: 1 }}>
@@ -165,7 +164,7 @@ export default function TaskCard({
 
             {/* File Attachment */}
             {task.uploadFile && (
-              <Box >
+              <Box>
                 <Button
                   size="small"
                   startIcon={<AttachFileIcon />}
@@ -224,7 +223,7 @@ export default function TaskCard({
                   sx={{
                     height: "100%",
                     width: `${task.progressPercentage}%`,
-                    background: 'linear-gradient(to right, #00C8FF, #8B5FF6)',
+                    background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
                     transition: "width 0.3s ease",
                   }}
                 />
@@ -251,39 +250,38 @@ export default function TaskCard({
 
             {/* ✅ Review Due Date Display (for InReview tasks) */}
             {status === "InReview" && task.reviewDueAt && (
-             <Box sx={{ mb: 1, mt: 2 }}>
-  <Box
-    sx={{
-      display: "flex",
-      alignItems: "center", // يضمن محاذاة الأيقونة والنص
-      gap: 0.5,
-      justifyContent: "center",
-    }}
-  >
-    <AccessTimeIcon
-      sx={{
-        fontSize: 14,
-        color: "#6B7280",
-        verticalAlign: "middle", // هذا مهم لتصحيح المحاذاة
-      }}
-    />
-    <Typography
-      variant="caption"
-      sx={{
-        fontSize: "11px",
-        color: "#6B7280",
-        fontWeight: 500,
-        lineHeight: "14px", // نفس حجم الأيقونة
-        display: "inline-flex",
-        alignItems: "center",
-        mt:1
-      }}
-    >
-      Review Due: {formatDateTime(task.reviewDueAt)}
-    </Typography>
-  </Box>
-</Box>
-
+              <Box sx={{ mb: 1, mt: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center", // يضمن محاذاة الأيقونة والنص
+                    gap: 0.5,
+                    justifyContent: "center",
+                  }}
+                >
+                  <AccessTimeIcon
+                    sx={{
+                      fontSize: 14,
+                      color: "#6B7280",
+                      verticalAlign: "middle", // هذا مهم لتصحيح المحاذاة
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: "11px",
+                      color: "#6B7280",
+                      fontWeight: 500,
+                      lineHeight: "14px", // نفس حجم الأيقونة
+                      display: "inline-flex",
+                      alignItems: "center",
+                      mt: 1,
+                    }}
+                  >
+                    Review Due: {formatDateTime(task.reviewDueAt)}
+                  </Typography>
+                </Box>
+              </Box>
             )}
 
             {/* View Review Button */}

@@ -298,19 +298,20 @@ export default function Feed() {
   };
 
   const openEditDialog = (postId) => {
-    const postToEdit = posts.find((p) => p.id === postId);
-    if (!postToEdit) return;
+  const postToEdit = posts.find((p) => p.id === postId);
+  if (!postToEdit) return;
 
-    setEditDialog({
-      open: true,
-      postId,
-      content: postToEdit.content,
-      tags: postToEdit.selectedTags.join(","),
-      file: null,
-      existingFileUrl: postToEdit.fileUrl || "",
-      previewUrl: "",
-    });
-  };
+  setEditDialog({
+    open: true,
+    postId,
+    content: postToEdit.content,
+    tags: postToEdit.selectedTags.join(","),
+    file: null,
+    existingFileUrl: postToEdit.fileUrl || "",
+    previewUrl: "",
+    removeFile: false, // مهم جداً
+  });
+};
 
   const closeEditDialog = () => {
     setEditDialog({
@@ -324,44 +325,81 @@ export default function Feed() {
     });
   };
 
-  const handleEditPost = async () => {
-    const { postId, content, tags, file } = editDialog;
+ const handleEditPost = async () => {
+  const { postId, content, tags, file, removeFile } = editDialog;
 
-    setIsUpdating(true);
+  setIsUpdating(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("Content", content);
-      formData.append("Tags", tags);
-      if (file) formData.append("File", file);
+  try {
+    const formData = new FormData();
+    
+    // Add content
+    formData.append("Content", content);
+    
+    // Add tags - handle both string and array
+    if (tags) {
+      const tagsArray = typeof tags === 'string' 
+        ? tags.split(',').map(t => t.trim()).filter(Boolean)
+        : tags;
+      
+      // Send each tag separately
+      tagsArray.forEach(tag => {
+        formData.append("Tags", tag);
+      });
+    }
+    
+    // Handle file operations
+    if (removeFile === true) {
+      // User wants to remove the file
+      formData.append("RemoveFile", "true");
+      console.log("🗑️ Sending removeFile: true");
+    } else if (file) {
+      // User uploaded a new file
+      formData.append("File", file);
+      formData.append("RemoveFile", "false");
+      console.log("📁 Sending new file:", file.name);
+    } else {
+      // No changes to file
+      formData.append("RemoveFile", "false");
+    }
 
-      const response = await editPost(formData, userToken, postId);
-      console.log(response);
-
-      if (response.status === 204) {
-        // ✅ اعمل refresh للصفحة الأولى فقط
-        await fetchPosts(1, false);
-        setPage(1);
-        setHasMore(true);
-
-        closeEditDialog();
-        setSnackbar({
-          open: true,
-          message: "Your post has been updated. ✓",
-          severity: "success",
-        });
+    // Debug: Log FormData contents
+    console.log("📤 FormData being sent:");
+    for (let pair of formData.entries()) {
+      if (pair[0] === 'File') {
+        console.log(pair[0] + ': [File Object]', pair[1].name);
+      } else {
+        console.log(pair[0] + ': ' + pair[1]);
       }
-    } catch (error) {
-      console.error("Error editing post:", error);
+    }
+
+    const response = await editPost(formData, userToken, postId);
+    console.log("✅ Response:", response);
+
+    if (response.status === 204) {
+      // Refresh posts
+      await fetchPosts(1, false);
+      setPage(1);
+      setHasMore(true);
+
+      closeEditDialog();
       setSnackbar({
         open: true,
-        message: "Failed to update post.",
-        severity: "error",
+        message: "Your post has been updated. ✓",
+        severity: "success",
       });
-    } finally {
-      setIsUpdating(false);
     }
-  };
+  } catch (error) {
+    console.error("❌ Error editing post:", error);
+    setSnackbar({
+      open: true,
+      message: "Failed to update post.",
+      severity: "error",
+    });
+  } finally {
+    setIsUpdating(false);
+  }
+};
 
   const handleLikePost = async (postId) => {
     const postToUpdate = posts.find((p) => p.id === postId);
@@ -956,214 +994,7 @@ export default function Feed() {
         snackbar={snackbar}
         onSnackbarClose={handleSnackbarClose}
       />
-      {/* <Dialog
-        open={editDialog.open}
-        onClose={closeEditDialog}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: "12px",
-          },
-        }}
-      >
-        <DialogTitle>Edit Post</DialogTitle>
-        <DialogContent sx={{ pt: 5 }}>
-          <TextField
-            fullWidth
-            multiline
-            rows={5}
-            label="Content"
-            value={editDialog.content}
-            onChange={(e) =>
-              setEditDialog((prev) => ({ ...prev, content: e.target.value }))
-            }
-            sx={{ mb: 3, mt: 1 }}
-          />
-          <TextField
-            fullWidth
-            label="Tags (comma separated)"
-            value={editDialog.tags}
-            onChange={(e) =>
-              setEditDialog((prev) => ({ ...prev, tags: e.target.value }))
-            }
-            sx={{ mb: 2 }}
-          />
-
-          {/* Upload Buttons */}
-      {/* <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
-            {/* Image Upload */}
-      {/* <Box>
-              <input
-                type="file"
-                accept="image/*"
-                id="edit-upload-image"
-                style={{ display: "none" }}
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    setEditDialog((prev) => ({
-                      ...prev,
-                      file,
-                      previewUrl: URL.createObjectURL(file),
-                    }));
-                  }
-                }}
-              />
-              <label htmlFor="edit-upload-image">
-                <Button
-                  component="span"
-                  variant="outlined"
-                  startIcon={<ImageIcon />}
-                  sx={{ textTransform: "none" }}
-                >
-                  Choose Image
-                </Button>
-              </label>
-            </Box>  */}
-
-      {/* Document Upload */}
-      {/* <Box>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
-                id="edit-upload-document"
-                style={{ display: "none" }}
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    setEditDialog((prev) => ({
-                      ...prev,
-                      file,
-                      previewUrl: null,
-                    }));
-                  }
-                }}
-              />
-              <label htmlFor="edit-upload-document">
-                <Button
-                  component="span"
-                  variant="outlined"
-                  startIcon={<AttachFile />}
-                  sx={{ textTransform: "none" }}
-                >
-                  Choose Document
-                </Button>
-              </label>
-            </Box>
-          </Box> */}
-
-      {/* Preview Section - للملف الجديد أو الموجود */}
-      {/* {(editDialog.file || editDialog.existingFileUrl) && (
-            <Box sx={{ mt: 2, mb: 2 }}>
-              {editDialog.previewUrl &&
-              editDialog.previewUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) ? (
-                // Image Preview (جديد أو موجود)
-                <Box sx={{ textAlign: "center", position: "relative" }}>
-                  <img
-                    src={editDialog.previewUrl}
-                    alt="Preview"
-                    style={{
-                      width: "50%",
-                      maxHeight: "200px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <IconButton
-                    onClick={() => {
-                      setEditDialog((prev) => ({
-                        ...prev,
-                        file: null,
-                        previewUrl: "",
-                        existingFileUrl: "",
-                      }));
-                      const imageInput =
-                        document.getElementById("edit-upload-image");
-                      const docInput = document.getElementById(
-                        "edit-upload-document"
-                      );
-                      if (imageInput) imageInput.value = "";
-                      if (docInput) docInput.value = "";
-                    }}
-                    size="small"
-                    sx={{
-                      position: "absolute",
-                      top: -10,
-                      right: "23%",
-                      bgcolor: "rgba(0,0,0,0.5)",
-                      color: "white",
-                      "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
-                    }}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              ) : (
-                // Document Preview (جديد أو موجود)
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Chip
-                    label={`${
-                      editDialog.file
-                        ? editDialog.file.name
-                        : "Attached document"
-                    }`}
-                    color="primary"
-                    variant="outlined"
-                    onDelete={() => {
-                      setEditDialog((prev) => ({
-                        ...prev,
-                        file: null,
-                        previewUrl: "",
-                        existingFileUrl: "",
-                      }));
-                      const imageInput =
-                        document.getElementById("edit-upload-image");
-                      const docInput = document.getElementById(
-                        "edit-upload-document"
-                      );
-                      if (imageInput) imageInput.value = "";
-                      if (docInput) docInput.value = "";
-                    }}
-                  />
-                </Box>
-              )}
-            </Box>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={closeEditDialog}
-            disabled={isUpdating}
-            sx={{
-              color: "#6B7280",
-              textTransform: "none",
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleEditPost}
-            variant="contained"
-            disabled={isUpdating}
-            sx={{
-              bgcolor: "#3B82F6",
-              textTransform: "none",
-              minWidth: "100px",
-              "&:hover": {
-                bgcolor: "#2563EB",
-              },
-            }}
-          >
-            {isUpdating ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              "Save"
-            )}
-          </Button>
-        </DialogActions>
-      // </Dialog> */}
+    
 
       <Snackbar
         open={snackbar.open}

@@ -129,6 +129,15 @@ export default function SidebarBox({ title, icon, items, type }) {
 
   // Trending Topics
   const renderTopics = () => {
+    
+    if (!items || items.length === 0) {
+      return (
+        <Typography variant="body2" color="text.secondary" textAlign="center" py={2}>
+          No topics yet
+        </Typography>
+      );
+    }
+
     // 1) توسعة tags: فصل react,c++ → react و c++
     const expanded = items.flatMap(item => {
       if (!item.tag) return [];
@@ -139,6 +148,7 @@ export default function SidebarBox({ title, icon, items, type }) {
         count: item.count
       }));
     });
+
 
     // 2) تجميع counts حسب كل تاغ
     const grouped = expanded.reduce((acc, cur) => {

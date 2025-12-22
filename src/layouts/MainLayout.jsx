@@ -35,7 +35,6 @@ export default function MainLayout() {
         : await GetProfileById(token, userId);
       
       setUserData(res.data);
-      console.log(" Profile data refreshed:", res.data);
          if (mine) {
         await updateCurrentUser();
       }

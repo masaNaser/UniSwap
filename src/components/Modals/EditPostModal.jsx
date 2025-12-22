@@ -6,14 +6,12 @@ import {
   IconButton,
   Chip,
   Autocomplete,
-  InputAdornment,
 } from "@mui/material";
 import {
   Image as ImageIcon,
   AttachFile,
   Close as CloseIcon,
   Edit as EditIcon,
-  LocalOffer,
 } from "@mui/icons-material";
 import GenericModal from "../../components/Modals/GenericModal";
 
@@ -61,6 +59,9 @@ const EditPostModal = ({
         ...prev,
         file,
         previewUrl: isImage ? URL.createObjectURL(file) : null,
+        // Clear existing file when new file is selected
+        existingFileUrl: "",
+        removeFile: false, // Reset remove flag when selecting new file
       }));
     }
   };
@@ -71,12 +72,36 @@ const EditPostModal = ({
       file: null,
       previewUrl: "",
       existingFileUrl: "",
+      removeFile: true, // إضافة flag لإخبار الباك إند بحذف الملف
     }));
     const imageInput = document.getElementById("edit-upload-image");
     const docInput = document.getElementById("edit-upload-document");
     if (imageInput) imageInput.value = "";
     if (docInput) docInput.value = "";
   };
+
+  // Helper function to check if file is an image
+  const isImageFile = (url) => {
+    if (!url) return false;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+    return imageExtensions.some(ext => url.toLowerCase().includes(ext));
+  };
+
+  // Get display file name from URL
+  const getFileName = (url) => {
+    if (!url) return "Attached document";
+    try {
+      const parts = url.split('/');
+      return parts[parts.length - 1];
+    } catch {
+      return "Attached document";
+    }
+  };
+
+  // Determine what to show in preview
+  const hasNewFile = editDialog.file;
+  const hasExistingFile = editDialog.existingFileUrl && !editDialog.removeFile;
+  const showPreview = hasNewFile || hasExistingFile;
 
   return (
     <GenericModal
@@ -198,9 +223,10 @@ const EditPostModal = ({
       </Box>
 
       {/* Preview Section */}
-      {(editDialog.file || editDialog.existingFileUrl) && (
+      {showPreview && (
         <Box sx={{ mt: 2, mb: 2 }}>
-          {editDialog.previewUrl ? (
+          {/* New file preview (from file input) */}
+          {hasNewFile && editDialog.previewUrl ? (
             <Box sx={{ display: "inline-block", position: "relative" }}>
               <img
                 src={editDialog.previewUrl}
@@ -228,7 +254,8 @@ const EditPostModal = ({
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Box>
-          ) : (
+          ) : hasNewFile && !editDialog.previewUrl ? (
+            // New document (not image)
             <Box sx={{
               display: "flex",
               alignItems: "center",
@@ -241,13 +268,11 @@ const EditPostModal = ({
               <AttachFile sx={{ color: "#3B82F6" }} />
               <Box sx={{ flex: 1 }}>
                 <Box sx={{ fontWeight: 500, fontSize: "14px" }}>
-                  {editDialog.file ? editDialog.file.name : "Attached document"}
+                  {editDialog.file.name}
                 </Box>
-                {editDialog.file && (
-                  <Box sx={{ fontSize: "12px", color: "text.secondary" }}>
-                    {(editDialog.file.size / 1024).toFixed(2)} KB
-                  </Box>
-                )}
+                <Box sx={{ fontSize: "12px", color: "text.secondary" }}>
+                  {(editDialog.file.size / 1024).toFixed(2)} KB
+                </Box>
               </Box>
               <IconButton
                 onClick={handleRemoveFile}
@@ -260,7 +285,64 @@ const EditPostModal = ({
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Box>
-          )}
+          ) : hasExistingFile && isImageFile(editDialog.existingFileUrl) ? (
+            // Existing image
+            <Box sx={{ display: "inline-block", position: "relative" }}>
+              <img
+                src={editDialog.existingFileUrl}
+                alt="Current file"
+                style={{
+                  width: "100%",
+                  maxWidth: "300px",
+                  maxHeight: "200px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                }}
+              />
+              <IconButton
+                onClick={handleRemoveFile}
+                size="small"
+                sx={{
+                  position: "absolute",
+                  top: -10,
+                  right: -10,
+                  bgcolor: "rgba(0,0,0,0.5)",
+                  color: "white",
+                  "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ) : hasExistingFile ? (
+            // Existing document (not image)
+            <Box sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              p: 2,
+              border: "1px solid #e0e0e0",
+              borderRadius: "8px",
+              bgcolor: "#f5f5f5"
+            }}>
+              <AttachFile sx={{ color: "#3B82F6" }} />
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ fontWeight: 500, fontSize: "14px" }}>
+                  {getFileName(editDialog.existingFileUrl)}
+                </Box>
+              </Box>
+              <IconButton
+                onClick={handleRemoveFile}
+                size="small"
+                sx={{
+                  color: "error.main",
+                  "&:hover": { bgcolor: "error.light" }
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ) : null}
         </Box>
       )}
     </GenericModal>

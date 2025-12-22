@@ -31,17 +31,16 @@ export default function AnalyticsTap() {
 
   const fetchData = async () => {
     setLoading(true);
-    try {
-      const [analyticsRes, statsRes] = await Promise.all([
-        Analytics(token),
-        GetDashboard(token),
-      ]);
-      console.log(analyticsRes);
-      setAnalytics(analyticsRes.data);
-      setStats(statsRes.data);
-    } catch (err) {
-      setError("فشل تحميل البيانات");
-    } finally {
+  try {
+  const analyticsRes = await Analytics(token);
+  console.log("Analytics:", analyticsRes.data);
+  const statsRes = await GetDashboard(token);
+  console.log("Stats:", statsRes.data);
+} catch(err) {
+  console.error(err.response || err);
+  setError("فشل تحميل البيانات");
+}
+finally {
       setLoading(false);
     }
   };
