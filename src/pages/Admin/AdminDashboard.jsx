@@ -65,7 +65,7 @@ const AdminDashboard = () => {
       <Paper
         elevation={0}
         sx={{
-          width: isMobile ? 80 : 260,
+          width: isMobile ? 80 : 230,
           bgcolor: "white",
           borderRight: "1px solid #e2e8f0",
           display: "flex",
@@ -95,8 +95,12 @@ const AdminDashboard = () => {
           orientation="vertical"
           value={currentTab}
           onChange={handleTabChange}
-          TabIndicatorProps={{ style: { display: "none" } }}
-          sx={{ flexGrow: 1, px: 1, "& .MuiTabs-flexContainer": { alignItems: "stretch" } }}
+          sx={{ 
+    flexGrow: 1, 
+    px: 1, 
+    "& .MuiTabs-flexContainer": { alignItems: "stretch" },
+    "& .MuiTabs-indicator": { display: "none" } // إخفاء المؤشر هنا يمنع التحذيرات
+  }}
         >
           {menuItems.map((item) => (
             <Tab
@@ -104,6 +108,7 @@ const AdminDashboard = () => {
               icon={item.icon}
               iconPosition={isMobile ? "top" : "start"}
               label={isMobile ? "" : item.label}
+              disableRipple
               sx={{
                 textTransform: "none",
                 justifyContent: isMobile ? "center" : "flex-start",
@@ -118,9 +123,13 @@ const AdminDashboard = () => {
           ))}
 
           <Box sx={{ px: 1, mt: 1 }}>
-            <IconButton onClick={() => navigate("/app/browse")} sx={{ width: "100%", borderRadius: 2, p: 1.5, justifyContent: isMobile ? "center" : "flex-start", color: "#0f172a", "&:hover": { bgcolor: "#f1f5f9" } }}>
-              <ExploreIcon sx={{ mr: isMobile ? 0 : 1.5 }} />
-              {!isMobile && <Typography variant="body2" fontWeight="medium">Go to Browse</Typography>}
+            <IconButton  onClick={() => navigate("/app/browse")} sx={{ width: "100%", borderRadius: 2, p: 1.5, justifyContent: isMobile ? "center" : "flex-start", color: "#0f172a", "&:hover": { bgcolor: "#f1f5f9" } }}>
+              <ExploreIcon sx={{ mr: isMobile ? 0 : 1.5 ,color: "#64748b",}} />
+              {!isMobile && <Typography variant="body2" fontWeight="medium" 
+              sx={{
+                 color: "#64748b"
+                 }}>
+                  Go to Browse</Typography>}
             </IconButton>
           </Box>
         </Tabs>
@@ -135,7 +144,12 @@ const AdminDashboard = () => {
       </Paper>
 
       {/* MAIN CONTENT Area */}
-      <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, ml: isMobile ? "80px" : "260px", width: isMobile ? "calc(100% - 80px)" : `calc(100% - 260px)`, transition: "margin 0.3s ease" }}>
+      <Box component="main" sx={{ 
+        flexGrow: 1,
+         p: { xs: 2, md: 4 }, 
+         ml: isMobile ? "80px" : "260px",
+         width: isMobile ? "calc(100% - 80px)" : `calc(100% - 260px)`,
+         transition: "margin 0.3s ease" }}>
         <Box mb={4}>
           <Typography variant="h4" fontWeight="bold" sx={{ color: "#1e293b" }}>Admin Dashboard</Typography>
           <Typography variant="body1" color="text.secondary">Welcome back, {userName}</Typography>

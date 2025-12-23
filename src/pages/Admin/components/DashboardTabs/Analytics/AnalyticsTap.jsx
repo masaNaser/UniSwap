@@ -23,6 +23,50 @@ import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOu
 import ActiveProject from "./ActiveProject";
 import { getToken } from "../../../../../utils/authHelpers";
 import TaskProgress from "./TaskProgress";
+const CustomLegend = ({ payload }) => {
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(2, 1fr)",
+        gap: "8px 16px",
+        mt: 2,
+        maxHeight: 150,
+        overflowY: "auto",
+      }}
+    >
+      {payload?.map((entry, index) => (
+        <Box
+          key={index}
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        >
+          <Box
+            sx={{
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              bgcolor: entry.color,
+              flexShrink: 0,
+            }}
+          />
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: "12px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+            title={entry.value}
+          >
+            {entry.value}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+  );
+};
+
 export default function AnalyticsTap() {
   // const token = localStorage.getItem("accessToken");
   const token = getToken();
@@ -30,7 +74,7 @@ export default function AnalyticsTap() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  
  const fetchData = async () => {
   setLoading(true);
   try {
@@ -77,19 +121,19 @@ export default function AnalyticsTap() {
     ([name, value]) => ({ name, value })
   );
  const academicData = (() => {
-  const yearMapping = {
-    "FirstYear": "First Year",
-    "Secondyear": "Second Year", 
-    "Thirdyear": "Third Year",
-    "Fourthyear": "Fourth Year",
-    "another": "Other",
-    // للتوافق مع أي أسماء ثانية
-    "0": "First Year",
-    "1": "Second Year",
-    "2": "Third Year",
-    "3": "Fourth Year",
-    "4": "Other"
-  };
+const yearMapping = {
+  "Firstyear": "First Year",  // تم تغيير Y إلى y لتطابق الباك
+  "Secondyear": "Second Year", 
+  "Thirdyear": "Third Year",
+  "Fourthyear": "Fourth Year",
+  "another": "Other",
+  // للتوافق مع أي أسماء ثانية
+  "0": "First Year",
+  "1": "Second Year",
+  "2": "Third Year",
+  "3": "Fourth Year",
+  "4": "Other"
+};
 
   const order = ["First Year", "Second Year", "Third Year", "Fourth Year", "Other"];
 
@@ -184,18 +228,20 @@ export default function AnalyticsTap() {
 <Box 
   sx={{ 
     mb: 3, 
-    display: 'grid',
-    gridTemplateColumns: {
-      xs: '1fr',                    // موبايل: عمود واحد
-      md: '1fr',                    // تابلت: عمود واحد
-      lg: 'minmax(0, 2fr) minmax(280px, 1fr)'  // ديسكتوب: الأول أكبر، الثاني أصغر
-    },
-    gap: 3
+    // display: 'grid',
+    // gridTemplateColumns: {
+    //   xs: '1fr',                    // موبايل: عمود واحد
+    //   md: '1fr',                    // تابلت: عمود واحد
+    //   lg: 'minmax(0, 2fr) minmax(280px, 1fr)'  // ديسكتوب: الأول أكبر، الثاني أصغر
+    // },
+    // gap: 3
   }}
 >
   <ActiveProject />
-  <TaskProgress />
-</Box>
+  </Box>
+  <Box sx={{mb:3}}> <TaskProgress /></Box>
+   
+
          
         {/* Charts Row */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
@@ -221,10 +267,11 @@ export default function AnalyticsTap() {
                   <Pie
                     data={majorData}
                     cx="50%"
-                    cy="40%" // رفعنا الدائرة للأعلى قليلاً
+                    cy="50%" // رفعنا الدائرة للأعلى قليلاً
                     outerRadius={80}
                     dataKey="value"
                     label={renderCustomLabel}
+                    sx={{mt:2}}
                   >
                     {majorData.map((_, index) => (
                       <Cell
@@ -234,17 +281,8 @@ export default function AnalyticsTap() {
                     ))}
                   </Pie>
                   <Tooltip />
-                  <Legend
-                    verticalAlign="bottom"
-                    align="center"
-                    iconType="circle"
-                    wrapperStyle={{
-                      paddingTop: "20px",
-                      maxHeight: "150px", // تحديد أقصى ارتفاع للأسماء
-                      overflowY: "auto", // تفعيل السكرول إذا زاد العدد
-                      fontSize: "12px",
-                    }}
-                  />
+                <Legend content={<CustomLegend />} />
+
                 </PieChart>
               </ResponsiveContainer>
             </Box>

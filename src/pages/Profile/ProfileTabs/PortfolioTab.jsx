@@ -63,9 +63,15 @@ export default function PortfolioTab() {
     }
   };
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+useEffect(() => {
+  if (!token) return;
+
+  if (!isMyProfile && !userData?.id) return;
+
+  fetchProjects();
+}, [token, isMyProfile, userData?.id]);
+
+
 
   const handleDeleteClick = (project) => {
     setProjectToDelete(project);
