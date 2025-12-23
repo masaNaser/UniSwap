@@ -8,6 +8,7 @@ import {
   deleteAll
 } from "../services/notificationService";
 import { getToken } from "../utils/authHelpers";
+import { useCurrentUser } from "./CurrentUserContext";
 const NotificationContext = createContext();
 
 export const useNotifications = () => useContext(NotificationContext);
@@ -18,20 +19,21 @@ export const NotificationProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const connectionRef = useRef(null);
   const hasLoadedRef = useRef(false);
-  
+
   // ✅ استخدم state بدل مباشرة من localStorage
   const [token, setToken] = useState(() => getToken());
+  const { updateCurrentUser } = useCurrentUser();
 
   // 🔥 جلب البيانات
   const loadInitialData = async () => {
     if (!token || hasLoadedRef.current) return;
-    
+
     try {
       // console.log("🔄 Loading notifications...");
       setLoading(true);
-      
+
       const startTime = Date.now();
-      
+
       const [notifRes, countRes] = await Promise.all([
         getAllNotifications(token),
         getUnreadCount(token),
@@ -43,9 +45,9 @@ export const NotificationProvider = ({ children }) => {
       // console.log("🔢 Unread Count:", countRes.data);
 
       let flatNotifications = [];
-      
+
       if (Array.isArray(notifRes.data)) {
-        flatNotifications = notifRes.data.flatMap(group => 
+        flatNotifications = notifRes.data.flatMap(group =>
           Array.isArray(group.items) ? group.items : []
         );
       }
@@ -56,7 +58,7 @@ export const NotificationProvider = ({ children }) => {
       setNotifications(flatNotifications);
       setunreadNotificationCount(countRes.data);
       hasLoadedRef.current = true;
-      
+
     } catch (error) {
       console.error("❌ Error loading notifications:", error);
       console.error("❌ Error Details:", {
@@ -82,7 +84,7 @@ export const NotificationProvider = ({ children }) => {
 
     // راقب التغييرات من نفس الـ tab
     window.addEventListener("storage", handleStorageChange);
-    
+
     // راقب التغييرات من نفس الـ window (login/logout)
     const intervalId = setInterval(() => {
       // const currentToken = localStorage.getItem("accessToken");
@@ -109,7 +111,7 @@ export const NotificationProvider = ({ children }) => {
     }
 
     // console.log("🚀 NotificationProvider Mounted");
-    
+
     // جلب البيانات فوراً
     loadInitialData();
 
@@ -122,14 +124,31 @@ export const NotificationProvider = ({ children }) => {
 
         connection.on("ReceiveNotification", async (notification) => {
           console.log("📬 New notification received:", notification);
-          
+
           try {
             // إعادة جلب كل الإشعارات
             hasLoadedRef.current = false;
             await loadInitialData();
+            const pointsRelatedTypes = [
+              "Project",
+              "Completed",
+              "Collaboration",
+              "Review",
+              "Rating"
+            ];
+
+            const isPointsRelated =
+              pointsRelatedTypes.includes(notification.refType) ||
+              notification.message?.toLowerCase().includes("point") ||
+              notification.message?.toLowerCase().includes("completed") ||
+              notification.message?.toLowerCase().includes("accepted");
+
+            if (isPointsRelated && updateCurrentUser) {
+              console.log("🔄 Updating user points after notification");
+              await updateCurrentUser();
+            }
           } catch (error) {
             console.error("❌ Error reloading notifications:", error);
-            // Fallback: أضف الإشعار مباشرة
             setNotifications((prev) => [notification, ...prev]);
             setunreadNotificationCount((prev) => prev + 1);
           }
@@ -151,7 +170,7 @@ export const NotificationProvider = ({ children }) => {
         connectionRef.current.stop();
       }
     };
-  }, [token]);
+  }, [token, updateCurrentUser]);
 
   const handleMarkAsRead = async (id) => {
     try {
@@ -174,7 +193,7 @@ export const NotificationProvider = ({ children }) => {
       console.error("❌ Error marking all as read:", error);
     }
   };
-  
+
   const deleteAllNotification = async () => {
     try {
       await deleteAll(token);
