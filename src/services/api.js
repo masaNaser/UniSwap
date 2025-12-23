@@ -331,7 +331,7 @@ api.interceptors.response.use(
 function handleLogout() {
   localStorage.clear();
   sessionStorage.clear(); // مهم جداً لمسح الجلسات المؤقتة
-  setToken(null); // عشان الواجهة تتحدث فوراً
+  // setToken(null); // عشان الواجهة تتحدث فوراً
   if (!window.location.pathname.includes("/login")) {
     window.location.href = "/login";
   }

@@ -14,8 +14,8 @@ import {
   Edit as EditIcon,
 } from "@mui/icons-material";
 import GenericModal from "../../components/Modals/GenericModal";
+import {RemoveImgInPost} from "../../services/postService";
 import {getToken} from "../../utils/authHelpers"
-import { RemoveImgInPost } from "../../services/postService"; // تأكد من المسار الصحيح
 const EditPostModal = ({
   open,
   onClose,
@@ -68,36 +68,41 @@ const EditPostModal = ({
   };
 
 const handleRemoveFile = async () => {
-    // 1. إذا كان هناك ملف موجود مسبقاً على السيرفر، نقوم بحذفه عبر الـ API
-    if (editDialog.existingFileUrl && editDialog.id) {
-      try {
-        const token = getToken(); // أو الطريقة التي تخزن بها التوكن
-        await RemoveImgInPost(token, editDialog.id);
+  // 1️⃣ إذا في ملف موجود على السيرفر، احذفه فوراً
+  if (editDialog.existingFileUrl && editDialog.postId) {
+    try {
+      const token = getToken();
+      const response = await RemoveImgInPost(token, editDialog.postId);
+       console.log("RemoveImgInPost",response)
+      if (response.status === 204) {
+        console.log("✅ File deleted from server successfully");
         
-        // اختيارياً: يمكنك إظهار رسالة نجاح هنا عبر الـ snackbar
-      } catch (error) {
-        console.error("Failed to remove file from server:", error);
-        // يمكنك التعامل مع الخطأ هنا (مثلاً عدم حذف الصورة من الواجهة إذا فشل الطلب)
-        return; 
+        // 2️⃣ حدّث البوست في الـ Feed مباشرة
+        if (editDialog.onFileRemoved) {
+          editDialog.onFileRemoved(editDialog.postId);
+        }
       }
+    } catch (error) {
+      console.error("❌ Failed to delete file from server:", error);
+      // استمر عشان على الأقل نحذف من المودال
     }
+  }
 
-    // 2. تحديث الحالة المحلية لإخفاء الملف من المودال والبوست
-    setEditDialog((prev) => ({
-      ...prev,
-      file: null,
-      previewUrl: "",
-      existingFileUrl: "",
-      removeFile: true, 
-    }));
+  // 3️⃣ احذف الملف من المودال (UI)
+  setEditDialog((prev) => ({
+    ...prev,
+    file: null,
+    previewUrl: "",
+    existingFileUrl: "",
+    removeFile: true,
+  }));
 
-    // 3. تنظيف قيم مدخلات الملفات (Inputs)
-    const imageInput = document.getElementById("edit-upload-image");
-    const docInput = document.getElementById("edit-upload-document");
-    if (imageInput) imageInput.value = "";
-    if (docInput) docInput.value = "";
-  };
-
+  // 4️⃣ نظّف الـ input fields
+  const imageInput = document.getElementById("edit-upload-image");
+  const docInput = document.getElementById("edit-upload-document");
+  if (imageInput) imageInput.value = "";
+  if (docInput) docInput.value = "";
+};
   // Helper function to check if file is an image
   const isImageFile = (url) => {
     if (!url) return false;

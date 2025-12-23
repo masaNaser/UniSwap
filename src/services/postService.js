@@ -24,9 +24,8 @@ export const deletePost = async (token, postId) => {
     },
   });
 };
-
 export const RemoveImgInPost = async (token, postId) => {
-  return await api.delete(`/Posts/${postId}/remove-image`, {
+  return await api.put(`/Posts/${postId}/remove-image`, null, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

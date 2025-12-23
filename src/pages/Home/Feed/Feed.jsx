@@ -51,6 +51,9 @@ import useInfiniteScroll from "../../../hooks/useInfiniteScroll";
 import EditPostModal from "../../../components/Modals/EditPostModal";
 import { useTheme } from "@mui/material/styles";
 import { getUserId,getUserName } from "../../../utils/authHelpers";
+import LikesModal from "./LikesModal";
+import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
+
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
   const isCurrentUserComment = comment.user?.userName === currentUser?.userName;
@@ -124,6 +127,15 @@ export default function Feed() {
     severity: "success",
   });
 
+  // بعد state الموجودة، أضف هاي:
+const [likesModalOpen, setLikesModalOpen] = useState(false);
+const [currentPostLikes, setCurrentPostLikes] = useState([]);
+
+// أضف function جديدة:
+const handleShowLikes = (postLikes) => {
+  setCurrentPostLikes(postLikes || []);
+  setLikesModalOpen(true);
+};
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
@@ -159,6 +171,7 @@ export default function Feed() {
         fileUrl: p.fileUrl ? `https://uni1swap.runasp.net/${p.fileUrl}` : null,
         isLiked: p.isLikedByMe || false,
         recentComments: [],
+          likedBy: p.likedBy || [], // ✅ أضف هاد السطر
         isClosed: p.postStatus === "Closed",
       }));
 
@@ -297,8 +310,15 @@ export default function Feed() {
       });
     }
   };
-
-  const openEditDialog = (postId) => {
+const handleFileRemovedFromPost = (postId) => {
+  console.log("🗑️ Removing file from post in Feed:", postId);
+  setPosts((prev) =>
+    prev.map((p) =>
+      p.id === postId ? { ...p, fileUrl: null } : p
+    )
+  );
+};
+const openEditDialog = (postId) => {
   const postToEdit = posts.find((p) => p.id === postId);
   if (!postToEdit) return;
 
@@ -310,9 +330,10 @@ export default function Feed() {
     file: null,
     existingFileUrl: postToEdit.fileUrl || "",
     previewUrl: "",
-    removeFile: false, // مهم جداً
+    removeFile: false,
+    onFileRemoved: handleFileRemovedFromPost, // 👈 مهم!
   });
-};
+};;
 
   const closeEditDialog = () => {
     setEditDialog({
@@ -326,7 +347,7 @@ export default function Feed() {
     });
   };
 
- const handleEditPost = async () => {
+const handleEditPost = async () => {
   const { postId, content, tags, file, removeFile } = editDialog;
 
   setIsUpdating(true);
@@ -334,51 +355,49 @@ export default function Feed() {
   try {
     const formData = new FormData();
     
-    // Add content
     formData.append("Content", content);
     
-    // Add tags - handle both string and array
     if (tags) {
       const tagsArray = typeof tags === 'string' 
         ? tags.split(',').map(t => t.trim()).filter(Boolean)
         : tags;
       
-      // Send each tag separately
       tagsArray.forEach(tag => {
         formData.append("Tags", tag);
       });
     }
     
-    // Handle file operations
-    if (removeFile === true) {
-      // User wants to remove the file
-      formData.append("RemoveFile", "true");
-      console.log("🗑️ Sending removeFile: true");
+    // ⚠️ الجزء المهم - لو الملف انحذف قبل، ما نبعث removeFile مرة ثانية
+    if (removeFile === true && !editDialog.existingFileUrl) {
+      // الملف انحذف فعلاً من السيرفر، ما نبعث شي
+      formData.append("RemoveFile", "false");
     } else if (file) {
-      // User uploaded a new file
       formData.append("File", file);
       formData.append("RemoveFile", "false");
-      console.log("📁 Sending new file:", file.name);
     } else {
-      // No changes to file
       formData.append("RemoveFile", "false");
-    }
-
-    // Debug: Log FormData contents
-    console.log("📤 FormData being sent:");
-    for (let pair of formData.entries()) {
-      if (pair[0] === 'File') {
-        console.log(pair[0] + ': [File Object]', pair[1].name);
-      } else {
-        console.log(pair[0] + ': ' + pair[1]);
-      }
     }
 
     const response = await editPost(formData, userToken, postId);
-    console.log("✅ Response:", response);
 
     if (response.status === 204) {
-      // Refresh posts
+      // Update post in state
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? {
+                ...p,
+                content: content,
+                selectedTags: typeof tags === 'string' 
+                  ? tags.split(',').map(t => t.trim()).filter(Boolean)
+                  : tags,
+                fileUrl: removeFile ? null : (file ? URL.createObjectURL(file) : p.fileUrl)
+              }
+            : p
+        )
+      );
+
+      // Refresh from server
       await fetchPosts(1, false);
       setPage(1);
       setHasMore(true);
@@ -759,16 +778,6 @@ export default function Feed() {
     fetchPosts(1, false); // ✅ التحميل الأول
   }, [userToken]);
 
-   const handleFileRemoved = (postId) => {
-  // ✅ تحديث البوست في الـ state لإزالة الـ fileUrl
-  setPosts((prev) =>
-    prev.map((p) =>
-      p.id === postId
-        ? { ...p, fileUrl: null }
-        : p
-    )
-  );
-};
   return (
     <>
       <Container maxWidth="lg" className="container">
@@ -853,6 +862,8 @@ export default function Feed() {
                         onCloseComments={handleCloseComments}
                         onAddCommentInline={handleAddComment}
                         fetchRecentComments={fetchRecentComments}
+                          onShowLikes={handleShowLikes} // ✅ أضف هاد السطر
+
                         currentUserAvatar={getImageUrl(
                           currentUser?.profilePicture,
                           currentUser?.userName || userName
@@ -1003,11 +1014,14 @@ export default function Feed() {
         onSubmit={handleEditPost}
         isUpdating={isUpdating}
         snackbar={snackbar}
-          onFileRemoved={handleFileRemoved} // ✅ ضيفي هاد السطر
-
         onSnackbarClose={handleSnackbarClose}
       />
-    
+     <LikesModal
+  open={likesModalOpen}
+  onClose={() => setLikesModalOpen(false)}
+  likes={currentPostLikes}
+  onUserClick={useNavigateToProfile}
+/>
 
       <Snackbar
         open={snackbar.open}

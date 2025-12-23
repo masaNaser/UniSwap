@@ -33,7 +33,7 @@ import { useTheme } from "@mui/material/styles";
 import { getUserName } from "../../../utils/authHelpers";
 // ✅ FileDisplay Component - لعرض جميع أنواع الملفات
 const FileDisplay = ({ fileUrl }) => {
-  if (!fileUrl) return null;
+  if (!fileUrl || fileUrl === null || fileUrl === "") return null;
 
   const getFileExtension = (url) => {
     return url.split(".").pop().toLowerCase();
@@ -232,6 +232,8 @@ function PostCard({
   fetchRecentComments,
   onAddCommentInline,
   currentUserAvatar,
+  onShowLikes, 
+
 }) {
   const theme = useTheme(); // 🔥 ضيفي هاد السطر
 
@@ -406,7 +408,16 @@ function PostCard({
               )
             }
             label={`${post.likes} Likes`}
-            onClick={handleLikeClick}
+             onClick={(e) => {
+    // ✅ لو كبس على القلب، عمل لايك
+    if (e.target.closest('button')) {
+      handleLikeClick();
+    } 
+    // ✅ لو كبس على النص، عرض اللايكات
+    else if (post.likes > 0 && onShowLikes) {
+      onShowLikes(post.likedBy);
+    }
+  }}
           />
 
           <ActionButton
