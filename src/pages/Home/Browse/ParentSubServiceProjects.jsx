@@ -25,6 +25,7 @@ import CustomButton from "../../../components/CustomButton/CustomButton";
 import StudyProjectModal from "../../../components/Modals/StudyProjectModal";
 import { browseProjectsBySubService } from "../../../services/publishProjectServices";
 import FilterSection from "../../../components/Filter/FilterSection";
+import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { isAdmin, getToken, getUserId } from "../../../utils/authHelpers";
 // Project Card Component
@@ -313,6 +314,7 @@ const ParentSubServiceProjects = () => {
   // const token = localStorage.getItem("accessToken");
   const token = getToken();
   const { serviceId, subServiceId, parentSubServiceId } = useParams();
+  const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const serviceName = params.get("serviceName");
@@ -381,9 +383,22 @@ const ParentSubServiceProjects = () => {
     setEditData(null);
   };
 
-  // Success callback
-  const handleSuccess = () => {
+  const handleSuccess = async () => {
+    console.log("📚 Study project published successfully!");
+
+    // Refresh the projects list
     fetchProjects(page);
+
+    // Force update user points after publishing
+    // Wait 1 seconds for backend to award the points
+    setTimeout(async () => {
+      console.log("🔄 Updating user points after study project publish...");
+
+      if (updateCurrentUser) {
+        await updateCurrentUser();
+        console.log("✅ User points updated!");
+      }
+    }, 1000);
   };
 
   // Filter projects

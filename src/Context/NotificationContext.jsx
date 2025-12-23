@@ -134,14 +134,16 @@ export const NotificationProvider = ({ children }) => {
               "Completed",
               "Collaboration",
               "Review",
-              "Rating"
+              "Rating",
+              "System"
             ];
 
             const isPointsRelated =
               pointsRelatedTypes.includes(notification.refType) ||
               notification.message?.toLowerCase().includes("point") ||
               notification.message?.toLowerCase().includes("completed") ||
-              notification.message?.toLowerCase().includes("accepted");
+              notification.message?.toLowerCase().includes("accepted") ||
+              notification.message?.toLowerCase().includes("earned");
 
             if (isPointsRelated && updateCurrentUser) {
               console.log("🔄 Updating user points after notification");
