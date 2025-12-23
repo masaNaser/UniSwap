@@ -15,6 +15,7 @@ import {
   Avatar,
   IconButton,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -159,6 +160,7 @@ const ProjectCard = ({ project, onEditClick }) => {
                   fontSize: "13px",
                   lineHeight: 1.4,
                   wordBreak: "break-word",
+                  whiteSpace: "pre-wrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   display: "-webkit-box",
@@ -198,6 +200,7 @@ const ProjectCard = ({ project, onEditClick }) => {
                     fontSize: "13px",
                     lineHeight: 1.4,
                     wordBreak: "break-word",
+                    whiteSpace: "pre-wrap",
                   }}
                 >
                   {project.description}
@@ -419,6 +422,22 @@ const ParentSubServiceProjects = () => {
     return filtered;
   }, [projects, searchQuery]);
 
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
       {/* Breadcrumbs */}
@@ -506,15 +525,7 @@ const ParentSubServiceProjects = () => {
       />
 
       {/* Projects Grid */}
-      {loading ? (
-        <Typography
-          variant="h6"
-          color="text.secondary"
-          sx={{ textAlign: "center", mt: 4 }}
-        >
-          Loading projects...
-        </Typography>
-      ) : filteredProjects.length === 0 ? (
+      {filteredProjects.length === 0 ? (
         <Typography
           variant="h6"
           color="text.secondary"

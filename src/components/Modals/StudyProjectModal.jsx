@@ -8,14 +8,11 @@ import {
   Autocomplete,
   IconButton,
   Button,
-  Card,
-  CardMedia,
 } from "@mui/material";
-import FolderIcon from "@mui/icons-material/Folder";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import SchoolIcon from "@mui/icons-material/School";
+import ImageIcon from "@mui/icons-material/Image";
 import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 import EditIcon from "@mui/icons-material/Edit";
 import GenericModal from "./GenericModal";
 import { CreateStudySupportSub } from "../../services/studySupportService";
@@ -125,15 +122,20 @@ export default function StudyProjectModal({
 
   // Validation
   const isFormValid = () => {
-    return formData.title.trim() !== "" && formData.description.trim() !== "";
+    return (
+      formData.title.trim() !== "" &&
+      formData.description.trim() !== "" &&
+      (imgPreview !== null || editData)
+    );
   };
+
 
   // Submit Handler
   const handleSubmit = async () => {
     if (!isFormValid()) {
       setSnackbar({
         open: true,
-        message: "Title and Description are required!",
+        message: "Title, Description, and Cover Image are required!",
         severity: "error",
       });
       return;
@@ -267,138 +269,133 @@ export default function StudyProjectModal({
           value={formData.description}
           onChange={handleChange}
           disabled={isSubmitting}
+          InputProps={{
+            sx: {
+              whiteSpace: "pre-wrap",
+            }
+          }}
         />
 
         {/* Project Image Section */}
-        <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Project Image {!editData && "*"}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}>
+            Cover Image *
           </Typography>
 
-          {imgPreview ? (
-            <Card sx={{ position: "relative", maxWidth: 400 }}>
-              <CardMedia
+          {!imgPreview ? (
+            <Box
+              sx={{
+                border: "2px dashed #E5E7EB",
+                borderRadius: "8px",
+                p: 3,
+                textAlign: "center",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                "&:hover": {
+                  borderColor: "#3B82F6",
+                  bgcolor: "#F0F9FF",
+                },
+              }}
+              onClick={() => document.getElementById("study-img-upload").click()}
+            >
+              <ImageIcon sx={{ fontSize: 48, color: "#9CA3AF", mb: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                Click to upload cover image
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                PNG, JPG, GIF up to 5MB
+              </Typography>
+              <input
+                id="study-img-upload"
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleImageChange}
+                disabled={isSubmitting}
+              />
+            </Box>
+          ) : (
+            <Box sx={{ position: "relative" }}>
+              <Box
                 component="img"
-                height="200"
-                image={imgPreview}
-                alt="Project preview"
-                sx={{ objectFit: "cover" }}
+                src={imgPreview}
+                alt="Preview"
+                sx={{ width: "100%", height: 200, objectFit: "cover", borderRadius: 2 }}
               />
               <IconButton
-                size="small"
                 onClick={handleRemoveImage}
                 sx={{
                   position: "absolute",
                   top: 8,
                   right: 8,
-                  bgcolor: "white",
-                  "&:hover": { bgcolor: "grey.100" },
-                  boxShadow: 2,
+                  bgcolor: "rgba(0,0,0,0.6)",
+                  color: "white",
+                  "&:hover": { bgcolor: "rgba(0,0,0,0.8)" },
                 }}
+                size="small"
               >
-                <CloseIcon fontSize="small" />
+                <CloseIcon />
               </IconButton>
-            </Card>
-          ) : (
-            <label htmlFor="study-img-upload">
-              <input
-                accept="image/*"
-                id="study-img-upload"
-                name="img"
-                type="file"
-                hidden
-                onChange={handleImageChange}
-                disabled={isSubmitting}
-              />
-              <Button
-                component="span"
-                variant="outlined"
-                startIcon={<PhotoCameraIcon />}
-                sx={{ textTransform: "none" }}
-                disabled={isSubmitting}
-              >
-                Upload Project Image
-              </Button>
-            </label>
-          )}
-
-          {editData && !formData.img && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-              Leave empty to keep current image
-            </Typography>
+              {editData && !formData.img && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                  Leave empty to keep current
+                </Typography>
+              )}
+            </Box>
           )}
         </Box>
+
 
         {/* Project File Section */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Project File {!editData && "*"}
+            File
           </Typography>
 
-          {filePreview ? (
-            <Box
+          {!filePreview ? (
+            <Button
+              variant="outlined"
+              startIcon={<AttachFileIcon />}
+              fullWidth
+              onClick={() => document.getElementById("study-file-upload").click()}
+              disabled={isSubmitting}
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                p: 2,
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 1,
-                bgcolor: "grey.50",
+                textTransform: "none",
+                borderRadius: "8px",
+                height: "46px",
+                borderStyle: "dashed",
               }}
             >
-              <InsertDriveFileIcon color="primary" />
-              {formData.file ? (
-                <Typography variant="body2" sx={{ flex: 1 }}>
-                  {formData.file.name}
-                </Typography>
-              ) : (
-                <Button
-                  component="a"
-                  href={`https://uni1swap.runasp.net/${filePreview}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    flex: 1,
-                    textTransform: "none",
-                    justifyContent: "flex-start",
-                  }}
-                >
-                  {getFileName(filePreview)}
-                </Button>
-              )}
-              <IconButton size="small" onClick={handleRemoveFile}>
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          ) : (
-            <label htmlFor="study-file-upload">
+              Upload File
               <input
                 id="study-file-upload"
-                name="file"
                 type="file"
                 hidden
                 onChange={handleFileChange}
                 disabled={isSubmitting}
               />
-              <Button
-                component="span"
-                variant="outlined"
-                startIcon={<FolderIcon />}
-                sx={{ textTransform: "none" }}
-                disabled={isSubmitting}
-              >
-                Upload Project File
-              </Button>
-            </label>
+            </Button>
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                p: 1.5,
+                bgcolor: "#F3F4F6",
+                borderRadius: "8px",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <AttachFileIcon sx={{ fontSize: 20, color: "text.secondary" }} />
+                <Typography variant="body2">{filePreview.name || filePreview}</Typography>
+              </Box>
+              <IconButton size="small" onClick={handleRemoveFile}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
           )}
 
-          {editData && !formData.file && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-              Leave empty to keep current file
-            </Typography>
-          )}
         </Box>
 
         {/* Tags Section */}
@@ -412,22 +409,18 @@ export default function StudyProjectModal({
             options={[]}
             value={tags}
             inputValue={tagInputValue}
-            onInputChange={(event, newInputValue) => {
-              setTagInputValue(newInputValue);
-            }}
-            onChange={(event, newValue) => {
-              setTags(newValue);
-              setTagInputValue("");
-            }}
+            onInputChange={(event, newInputValue) => setTagInputValue(newInputValue)}
+            onChange={(event, newValue) => { setTags(newValue); setTagInputValue(""); }}
+            disabled={isSubmitting}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => {
                 const { key, ...tagProps } = getTagProps({ index });
                 return (
                   <Chip
                     key={key}
-                    variant="outlined"
                     label={option}
                     size="small"
+                    sx={{ bgcolor: "rgb(0 0 0 / 6%)" }}
                     {...tagProps}
                   />
                 );
@@ -437,10 +430,11 @@ export default function StudyProjectModal({
               <TextField
                 {...params}
                 placeholder={tags.length === 0 ? "Type a tag and press Enter" : ""}
-                size="small"
                 disabled={isSubmitting}
-                InputProps={{
-                  ...params.InputProps,
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "8px",
+                  },
                 }}
               />
             )}

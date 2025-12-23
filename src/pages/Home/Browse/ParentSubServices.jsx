@@ -1,7 +1,5 @@
-// src/pages/Home/Browse/ParentSubServices.jsx
-
 import React, { useEffect, useState } from "react";
-import { Container, Grid, Typography, Box, Breadcrumbs, TextField } from "@mui/material";
+import { Container, Grid, Typography, Box, Breadcrumbs, TextField, CircularProgress } from "@mui/material";
 import { Link, useParams, useLocation } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -15,10 +13,10 @@ import {
   EditSubServices,
   DeleteSubServices,
 } from "../../../services/subServiceServices";
-import { isAdmin,getToken } from "../../../utils/authHelpers";
+import { isAdmin, getToken } from "../../../utils/authHelpers";
 
 const ParentSubServices = () => {
-    const token = getToken();
+  const token = getToken();
   const { serviceId, subServiceId } = useParams();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -125,6 +123,22 @@ const ParentSubServices = () => {
     );
   }
 
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       {/* Breadcrumbs */}
@@ -190,37 +204,34 @@ const ParentSubServices = () => {
       </Box>
 
       {/* Grid of Subjects */}
-      {loading ? (
-        <Typography>Loading subjects...</Typography>
-      ) : (
-        <Grid container spacing={3} sx={{ mb: "55px" }}>
-          {parentSubServices.map((subject) => (
-            <Grid item xs={12} sm={6} md={4} key={subject.id}>
-              <ServiceCard
-                title={subject.name}
-                description={subject.description || ""}
-                cardWidth="368px"
-                cardHeight="160px"
-                url={`/app/browse/${serviceId}/${subServiceId}/${subject.id}/projects?serviceName=${encodeURIComponent(
-                  serviceName
-                )}&subServiceName=${encodeURIComponent(
-                  subServiceName
-                )}&parentSubServiceName=${encodeURIComponent(subject.name)}`}
-                adminMode={adminMode}
-                onEdit={() => {
-                  setSelectedSubject(subject);
-                  setFormData({ name: subject.name });
-                  setOpenEditModal(true);
-                }}
-                onDelete={() => {
-                  setSelectedSubject(subject);
-                  setOpenDeleteModal(true);
-                }}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
+      <Grid container spacing={3} sx={{ mb: "55px" }}>
+        {parentSubServices.map((subject) => (
+          <Grid item xs={12} sm={6} md={4} key={subject.id}>
+            <ServiceCard
+              title={subject.name}
+              description={subject.description || ""}
+              titleFontSize="1.2rem"
+              cardWidth="368px"
+              cardHeight="160px"
+              url={`/app/browse/${serviceId}/${subServiceId}/${subject.id}/projects?serviceName=${encodeURIComponent(
+                serviceName
+              )}&subServiceName=${encodeURIComponent(
+                subServiceName
+              )}&parentSubServiceName=${encodeURIComponent(subject.name)}`}
+              adminMode={adminMode}
+              onEdit={() => {
+                setSelectedSubject(subject);
+                setFormData({ name: subject.name });
+                setOpenEditModal(true);
+              }}
+              onDelete={() => {
+                setSelectedSubject(subject);
+                setOpenDeleteModal(true);
+              }}
+            />
+          </Grid>
+        ))}
+      </Grid>
 
       {/* Create Modal */}
       <GenericModal

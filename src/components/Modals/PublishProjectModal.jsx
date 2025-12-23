@@ -19,7 +19,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import ImageIcon from "@mui/icons-material/Image";
 import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
 import GenericModal from "../Modals/GenericModal";
 import {
   publishFromCompletedProject,
@@ -408,6 +407,11 @@ const PublishProjectModal = ({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           disabled={isSubmitting}
+          InputProps={{
+            sx: {
+              whiteSpace: "pre-wrap",
+            }
+          }}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: "8px",
@@ -612,13 +616,10 @@ const PublishProjectModal = ({
 
       {/* Image Upload */}
       <Box sx={{ mb: 2 }}>
-        <Typography
-          variant="body2"
-          sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
-        >
-          Project Image{" "}
-          {isEditMode ? "(Optional - leave blank to keep current)" : "*"}
+        <Typography variant="body2" sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}>
+          Cover Image *
         </Typography>
+
         {!imagePreview ? (
           <Box
             sx={{
@@ -645,7 +646,7 @@ const PublishProjectModal = ({
             />
             <ImageIcon sx={{ fontSize: 48, color: "#9CA3AF", mb: 1 }} />
             <Typography variant="body2" color="text.secondary">
-              Click to upload project image
+              Click to upload cover image
             </Typography>
             <Typography variant="caption" color="text.secondary">
               PNG, JPG, GIF up to 5MB
@@ -680,6 +681,11 @@ const PublishProjectModal = ({
             >
               <CloseIcon />
             </IconButton>
+            {isEditMode && imagePreview && !image && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                Leave empty to keep current
+              </Typography>
+            )}
           </Box>
         )}
       </Box>
@@ -690,7 +696,7 @@ const PublishProjectModal = ({
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          File (Optional)
+          File
         </Typography>
         {!file && !fileName ? (
           <Button
@@ -743,7 +749,7 @@ const PublishProjectModal = ({
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          Tags (Optional)
+          Tags
         </Typography>
         <Autocomplete
           multiple

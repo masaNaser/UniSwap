@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Grid, Typography, Box, Breadcrumbs, TextField } from "@mui/material";
+import { Container, Grid, Typography, Box, Breadcrumbs, TextField, CircularProgress } from "@mui/material";
 import { Link, useParams, useLocation } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -13,7 +13,7 @@ import {
   DeleteSubServices,
 } from "../../../services/subServiceServices";
 import GenericModal from "../../../components/Modals/GenericModal";
-import { isAdmin,getToken } from "../../../utils/authHelpers";
+import { isAdmin, getToken } from "../../../utils/authHelpers";
 import AddIcon from "@mui/icons-material/Add";
 
 const SubServices = () => {
@@ -35,17 +35,23 @@ const SubServices = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({ name: "" });
-  
+
+  const [loading, setLoading] = useState(true);
+
   // جلب الداتا
   const fetchSubServices = async () => {
     try {
+      setLoading(true);
       const response = await getSubServices(token, id);
-      console.log("fetchSubServices",response.data);
+      console.log("fetchSubServices", response.data);
       setSubServices(response.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
+
 
   useEffect(() => {
     if (!id) return;
@@ -58,7 +64,7 @@ const SubServices = () => {
       const response = await CreateSubServices(token, id, formData);
       console.log("creatSub", response);
       setOpenCreateModal(false);
-      fetchSubServices();z
+      fetchSubServices(); z
     } finally {
       setIsSubmitting(false);
     }
@@ -96,6 +102,22 @@ const SubServices = () => {
       </Container>
     );
   }
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -162,14 +184,15 @@ const SubServices = () => {
               title={sub.name}
               cardWidth="368px"
               cardHeight="160px"
+              titleFontSize="1.2rem"
               url={
                 serviceName === "Study Support"
                   ? `/app/browse/${id}/${sub.id}/subjects?serviceName=${encodeURIComponent(
-                      serviceName
-                    )}&subServiceName=${encodeURIComponent(sub.name)}`
+                    serviceName
+                  )}&subServiceName=${encodeURIComponent(sub.name)}`
                   : `/app/services/${sub.id}/projects?name=${encodeURIComponent(
-                      sub.name
-                    )}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`
+                    sub.name
+                  )}&parentId=${id}&parentName=${encodeURIComponent(serviceName)}`
               }
               adminMode={adminMode}
               onEdit={() => {

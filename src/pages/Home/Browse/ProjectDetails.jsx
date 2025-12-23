@@ -1,4 +1,3 @@
-//ProjectDetails.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
@@ -14,6 +13,7 @@ import {
   Paper,
   Alert,
   Snackbar,
+  CircularProgress,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -50,6 +50,7 @@ const ProjectDetails = () => {
   });
 
   const currentUserId = getUserId();
+  const isProjectOwner = currentUserId === project?.userId;
   const isReviewDisabled =
     reviewText.trim().length === 0 ||
     !reviewRating ||
@@ -173,11 +174,19 @@ const ProjectDetails = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Typography variant="h6">Loading project details...</Typography>
-      </Container>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
     );
   }
+
 
   if (error) {
     return (
@@ -470,7 +479,12 @@ const ProjectDetails = () => {
           <Typography
             variant="body1"
             color="text.secondary"
-            sx={{ fontSize: "1.02rem", lineHeight: 1.8 }}
+            sx={{
+              fontSize: "1.02rem",
+              lineHeight: 1.8,
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word"
+            }}
           >
             {project.description || "No description provided."}
           </Typography>
@@ -602,8 +616,8 @@ const ProjectDetails = () => {
             Reviews ({reviews.length})
           </Typography>
 
-          {/* Add Review Form */}
-          {!hasUserReviewed ? (
+          {/* Add Review Form - Only show if NOT the project owner */}
+          {!isProjectOwner && !hasUserReviewed ? (
             <Paper
               elevation={0}
               sx={{
@@ -659,14 +673,14 @@ const ProjectDetails = () => {
                 </CustomButton>
               )}
             </Paper>
-          ) : (
+          ) : !isProjectOwner && hasUserReviewed ? (
             <Alert severity="info" sx={{ mb: 4 }}>
               You have already reviewed this project. Thank you for your
               feedback!
             </Alert>
-          )}
+          ) : null}
 
-          {/* Reviews List - NEW DESIGN */}
+          {/* Reviews List */}
           {reviews.length > 0 ? (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
               {reviews.map((review) => (
@@ -777,7 +791,9 @@ const ProjectDetails = () => {
               }}
             >
               <Typography variant="body2" color="text.secondary">
-                No reviews yet. Be the first to review this project!
+                {isProjectOwner
+                  ? "No reviews yet."
+                  : "No reviews yet. Be the first to review this project!"}
               </Typography>
             </Box>
           )}

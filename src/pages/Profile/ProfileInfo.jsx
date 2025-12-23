@@ -8,14 +8,14 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import { useTheme } from "@mui/material/styles";
 export default function ProfileInfo() {
-   const theme = useTheme();
+  const theme = useTheme();
   const { userData } = useProfile();
 
   const getFirstName = (userName) => {
     return userName?.match(/^[A-Z][a-z]*/)?.[0] || userName;
   };
 
-const detectPlatform = (url) => {
+  const detectPlatform = (url) => {
     if (!url) return 'website';
     const u = url.toLowerCase();
     if (u.includes('github.com')) return 'github';
@@ -45,8 +45,8 @@ const detectPlatform = (url) => {
       ? userData.socialLinks
       : userData.socialLinks
         .split(/[\n,]+/)       // تفصل على الفاصلة أو سطر جديد
-          .map(l => l.trim()) // إزالة الفراغات
-          .filter(Boolean); // إزالة الفراغات الفارغة
+        .map(l => l.trim()) // إزالة الفراغات
+        .filter(Boolean); // إزالة الفراغات الفارغة
 
     if (!links.length) return <Typography>No contact info</Typography>;
 
@@ -99,22 +99,27 @@ const detectPlatform = (url) => {
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
           About {getFirstName(userData.userName)}
         </Typography>
-        <Typography sx={{color: theme.palette.mode === 'dark' ? '#fff' : 'rgba(0, 0, 0, 0.7)', lineHeight: 1.6 }}>
+        <Typography sx={{
+          color: theme.palette.mode === 'dark' ? '#fff' : 'rgba(0, 0, 0, 0.7)',
+          lineHeight: 1.6,
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word"
+        }}>
           {userData.bio || "No bio available yet."}
         </Typography>
       </Box>
 
-   {/* Info Grid */}
-<Box
-  sx={{
-    display: "grid",
-    gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-    gap: 2,
-    mt: 3,
-  }}
->
-  {/* Response Time */}
-  {/* <Box 
+      {/* Info Grid */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+          gap: 2,
+          mt: 3,
+        }}
+      >
+        {/* Response Time */}
+        {/* <Box 
     sx={{
       background: "rgba(241, 245, 249, 1)",
       p: 2.5,
@@ -149,8 +154,8 @@ const detectPlatform = (url) => {
     </Typography>
   </Box> */}
 
-  {/* Skills */}
-  {/* <Box 
+        {/* Skills */}
+        {/* <Box 
     sx={{
       background: "rgba(241, 245, 249, 1)",
       p: 2.5,
@@ -201,38 +206,38 @@ const detectPlatform = (url) => {
     </Box>
   </Box> */}
 
-  {/* Contact */}
-  <Box 
-    sx={{
-      // background: "rgba(241, 245, 249, 1)",
-      backgroundColor: theme.palette.mode === 'dark' ? '#4f4d4dff' : 'rgba(241, 245, 249, 1)',
-      p: 2.5,
-      borderRadius: "12px",
-      border: "1px solid rgba(226, 232, 240, 1)",
-      transition: "all 0.2s",
-      "&:hover": {
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-      }
-    }}
-  >
-    <Typography
-      sx={{
-        fontWeight: 600,
-        fontSize: "13px",
-        mb: 1.5,
-        // color: "rgba(71, 85, 105, 1)",
-       color: theme.palette.mode === 'dark' ? '#fff' : 'rgba(71, 85, 105, 1)',
-        textTransform: "uppercase",
-        letterSpacing: "0.5px",
-      }}
-    >
-      Contact
-    </Typography>
-    <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-        {renderLinks()}
-    </Box>
-  </Box>
-</Box>
+        {/* Contact */}
+        <Box
+          sx={{
+            // background: "rgba(241, 245, 249, 1)",
+            backgroundColor: theme.palette.mode === 'dark' ? '#4f4d4dff' : 'rgba(241, 245, 249, 1)',
+            p: 2.5,
+            borderRadius: "12px",
+            border: "1px solid rgba(226, 232, 240, 1)",
+            transition: "all 0.2s",
+            "&:hover": {
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+            }
+          }}
+        >
+          <Typography
+            sx={{
+              fontWeight: 600,
+              fontSize: "13px",
+              mb: 1.5,
+              // color: "rgba(71, 85, 105, 1)",
+              color: theme.palette.mode === 'dark' ? '#fff' : 'rgba(71, 85, 105, 1)',
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
+            Contact
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+            {renderLinks()}
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 }

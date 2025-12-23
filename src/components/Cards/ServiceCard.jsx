@@ -20,8 +20,9 @@ const ServiceCard = ({
   onEdit,
   onDelete,
   image,
-  cardWidth = "368px", 
+  cardWidth = "368px",
   cardHeight = "270px",
+  titleFontSize = "1rem",
 }) => {
   const theme = useTheme();
 
@@ -129,7 +130,7 @@ const ServiceCard = ({
             onClick={() => setShowFullTitle(!showFullTitle)}
             sx={{
               fontWeight: "bold",
-              fontSize: "1rem",
+              fontSize: titleFontSize,
               wordBreak: "break-word",
               overflowWrap: "break-word",
               cursor: "pointer",

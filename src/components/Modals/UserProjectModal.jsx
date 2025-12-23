@@ -120,7 +120,8 @@ export default function UserProjectModal({
     return (
       formData.title.trim() !== "" &&
       formData.description.trim() !== "" &&
-      formData.duration.trim() !== ""
+      formData.duration.trim() !== "" &&
+      (coverImagePreview !== null || editData)
     );
   };
 
@@ -128,7 +129,7 @@ export default function UserProjectModal({
     if (!isFormValid()) {
       setSnackbar({
         open: true,
-        message: "Title, Description, and Duration are required!",
+        message: "Title, Description, Duration, and Cover Image are required!",
         severity: "error",
       });
       return;
@@ -261,7 +262,7 @@ export default function UserProjectModal({
         {/* Cover Image Section */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Cover Image
+            Cover Image *
           </Typography>
 
           {coverImagePreview ? (

@@ -252,6 +252,7 @@ useEffect(() => {
                         fontSize: "13px",
                         lineHeight: 1.4,
                         wordBreak: "break-word",
+                        whiteSpace: "pre-wrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         display: "-webkit-box",
@@ -291,6 +292,7 @@ useEffect(() => {
                           fontSize: "13px",
                           lineHeight: 1.4,
                           wordBreak: "break-word",
+                          whiteSpace: "pre-wrap",
                         }}
                       >
                         {p.description}

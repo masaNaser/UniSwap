@@ -11,6 +11,7 @@ import {
   DialogContentText,
   DialogActions,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import ServiceCard from "../../../components/Cards/ServiceCard";
 import {
@@ -87,15 +88,21 @@ const Services = () => {
     image: null,
   });
 
+  const [loading, setLoading] = useState(true);
+
   const fetchService = async () => {
     try {
+      setLoading(true);
       const response = await getServices(token);
       console.log("Fetched Services:", response.data);
       setServices(response.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchService();
@@ -195,6 +202,21 @@ const Services = () => {
     setDeleteDialog(false);
     setSelectedService(null);
   };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
