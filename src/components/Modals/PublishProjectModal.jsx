@@ -12,6 +12,7 @@ import {
   Chip,
   IconButton,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import PublishIcon from "@mui/icons-material/Publish";
 import EditIcon from "@mui/icons-material/Edit";
@@ -51,7 +52,7 @@ const PublishProjectModal = ({
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
   const [tags, setTags] = useState([]);
-  const [currentTag, setCurrentTag] = useState("");
+  const [tagInputValue, setTagInputValue] = useState("");
 
   const [services, setServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
@@ -65,7 +66,7 @@ const PublishProjectModal = ({
     severity: "success",
   });
 
-const token = getToken();
+  const token = getToken();
   // Initialize form with existing project data if in edit mode
   useEffect(() => {
     if (open) {
@@ -79,6 +80,7 @@ const token = getToken();
           existingProject.deliveryTimeInDays?.toString() || ""
         );
         setTags(existingProject.tags || []);
+        setTagInputValue("");
 
         // Set existing image preview
         if (existingProject.img) {
@@ -194,17 +196,6 @@ const token = getToken();
     }
   };
 
-  const handleAddTag = () => {
-    if (currentTag.trim() && !tags.includes(currentTag.trim())) {
-      setTags([...tags, currentTag.trim()]);
-      setCurrentTag("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove));
-  };
-
   const handleRemoveImage = () => {
     setImage(null);
     setImagePreview(null);
@@ -218,17 +209,17 @@ const token = getToken();
   // For edit mode, image is optional if already exists
   const isFormValid = isEditMode
     ? title.trim() !== "" &&
-      description.trim() !== "" &&
-      subServiceId !== "" &&
-      points !== "" &&
-      deliveryTimeInDays !== ""
+    description.trim() !== "" &&
+    subServiceId !== "" &&
+    points !== "" &&
+    deliveryTimeInDays !== ""
     : title.trim() !== "" &&
-      description.trim() !== "" &&
-      serviceId !== "" &&
-      subServiceId !== "" &&
-      points !== "" &&
-      deliveryTimeInDays !== "" &&
-      image !== null;
+    description.trim() !== "" &&
+    serviceId !== "" &&
+    subServiceId !== "" &&
+    points !== "" &&
+    deliveryTimeInDays !== "" &&
+    image !== null;
 
   const handleSubmit = async () => {
     if (!isFormValid) {
@@ -315,8 +306,7 @@ const token = getToken();
         error.response?.data?.message ||
         error.response?.data?.title ||
         error.message ||
-        `Failed to ${
-          isEditMode ? "update" : "publish"
+        `Failed to ${isEditMode ? "update" : "publish"
         } project. Please try again.`;
 
       setSnackbar({
@@ -341,7 +331,7 @@ const token = getToken();
     setFile(null);
     setFileName("");
     setTags([]);
-    setCurrentTag("");
+    setTagInputValue("");
     setIsSubmitting(false);
     onClose();
   };
@@ -700,7 +690,7 @@ const token = getToken();
           variant="body2"
           sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
         >
-          Additional File (Optional)
+          File (Optional)
         </Typography>
         {!file && !fileName ? (
           <Button
@@ -755,53 +745,47 @@ const token = getToken();
         >
           Tags (Optional)
         </Typography>
-        <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
-          <TextField
-            fullWidth
-            placeholder="Add tags (e.g., React, Design, Modern)"
-            value={currentTag}
-            onChange={(e) => setCurrentTag(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAddTag();
-              }
-            }}
-            disabled={isSubmitting}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-                height: "46px",
-              },
-            }}
-          />
-          <Button
-            variant="contained"
-            onClick={handleAddTag}
-            disabled={!currentTag.trim() || isSubmitting}
-            sx={{
-              minWidth: "46px",
-              width: "46px",
-              height: "46px",
-              p: 0,
-              background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
-            }}
-          >
-            <AddIcon />
-          </Button>
-        </Box>
-        {tags.length > 0 && (
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {tags.map((tag, index) => (
-              <Chip
-                key={index}
-                label={tag}
-                onDelete={() => handleRemoveTag(tag)}
-                sx={{ bgcolor: "rgb(0 0 0 / 6%)" }}
-              />
-            ))}
-          </Box>
-        )}
+        <Autocomplete
+          multiple
+          freeSolo
+          options={[]}
+          value={tags}
+          inputValue={tagInputValue}
+          onInputChange={(event, newInputValue) => {
+            setTagInputValue(newInputValue);
+          }}
+          onChange={(event, newValue) => {
+            setTags(newValue);
+            setTagInputValue("");
+          }}
+          disabled={isSubmitting}
+          renderTags={(value, getTagProps) =>
+            value.map((option, index) => {
+              const { key, ...tagProps } = getTagProps({ index });
+              return (
+                <Chip
+                  key={key}
+                  label={option}
+                  size="small"
+                  sx={{ bgcolor: "rgb(0 0 0 / 6%)" }}
+                  {...tagProps}
+                />
+              );
+            })
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder={tags.length === 0 ? "Type a tag and press Enter" : ""}
+              disabled={isSubmitting}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                },
+              }}
+            />
+          )}
+        />
       </Box>
     </GenericModal>
   );

@@ -24,19 +24,6 @@
 /* Make sidebar sticky */
 .feed-sidebar {
   margin: 40px auto;
-  position: sticky;
-  top: 80px;
-  align-self: flex-start;
-  max-height: calc(100vh - 100px);
-  overflow-y: auto;
-
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
-
-.feed-sidebar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
 }
 
 .wave {
@@ -77,13 +64,5 @@
 @media (max-width: 600px) {
   .cards-section {
     flex-wrap: wrap;
-  }
-
-  /* ✅ Disable sticky on mobile for better UX */
-  .feed-sidebar {
-    position: relative;
-    top: auto;
-    max-height: none;
-    overflow-y: visible;
   }
 }

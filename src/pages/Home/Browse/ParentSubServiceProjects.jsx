@@ -21,13 +21,12 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import FolderIcon from "@mui/icons-material/Folder";
-
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import StudyProjectModal from "../../../components/Modals/StudyProjectModal";
 import { browseProjectsBySubService } from "../../../services/publishProjectServices";
 import FilterSection from "../../../components/Filter/FilterSection";
 import { getImageUrl } from "../../../utils/imageHelper";
-import { isAdmin,getToken,getUserId } from "../../../utils/authHelpers";
+import { isAdmin, getToken, getUserId } from "../../../utils/authHelpers";
 // Project Card Component
 const ProjectCard = ({ project, onEditClick }) => {
   const currentUserId = getUserId();
@@ -104,20 +103,13 @@ const ProjectCard = ({ project, onEditClick }) => {
       >
         {/* User Info */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Link
-            to={`/app/profile/${project.userId}`}
-            style={{ textDecoration: "none" }}
-          >
+          <Link to={`/app/profile/${project.userId}`} style={{ textDecoration: "none" }}>
             <Avatar
               sx={{ width: 32, height: 32, mr: 1, cursor: "pointer" }}
-              src={
-                project.profilePicture
-                  ? `https://uni1swap.runasp.net${project.profilePicture}`
-                  : null
-              }
+              src={getImageUrl(project.profilePicture, project.userName)}
+              alt={project.userName}
             >
-              {!project.profilePicture &&
-                project.userName?.substring(0, 2).toUpperCase()}
+              {project.userName?.substring(0, 2).toUpperCase()}
             </Avatar>
           </Link>
           <Typography
@@ -340,31 +332,31 @@ const ParentSubServiceProjects = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch projects
- const fetchProjects = async (page = 1) => {
-  try {
-    setLoading(true);
-    const response = await browseProjectsBySubService(
-      token,
-      parentSubServiceId,
-      page,
-      pageSize
-    );
+  const fetchProjects = async (page = 1) => {
+    try {
+      setLoading(true);
+      const response = await browseProjectsBySubService(
+        token,
+        parentSubServiceId,
+        page,
+        pageSize
+      );
 
-    if (Array.isArray(response.data)) {
-      setProjects(response.data);
-      console.log("Full project data:", response.data[0]); // 🔍 Check this
-      setTotalPages(1);
-    } else if (response.data.items) {
-      setProjects(response.data.items);
-      console.log("Full project data:", response.data.items[0]); // 🔍 Check this
-      setTotalPages(response.data.totalPages || 1);
+      if (Array.isArray(response.data)) {
+        setProjects(response.data);
+        console.log("Full project data:", response.data[0]); // 🔍 Check this
+        setTotalPages(1);
+      } else if (response.data.items) {
+        setProjects(response.data.items);
+        console.log("Full project data:", response.data.items[0]); // 🔍 Check this
+        setTotalPages(response.data.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("Error fetching projects:", err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Error fetching projects:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   useEffect(() => {
     if (parentSubServiceId) {
       fetchProjects(page);

@@ -28,7 +28,8 @@ import FilterSection from "../../../components/Filter/FilterSection";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import PublishProjectModal from "../../../components/Modals/PublishProjectModal";
 import api from "../../../services/api";
-import { getToken,getUserId } from "../../../utils/authHelpers";
+import { getToken, getUserId } from "../../../utils/authHelpers";
+import { getImageUrl } from "../../../utils/imageHelper";
 const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
   const currentUserId = getUserId();
   const isOwner = currentUserId === project.userId;
@@ -178,19 +179,13 @@ const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Link
-            to={`/app/profile/${project.userId}`}
-            style={{ textDecoration: "none" }}
-          >
+          <Link to={`/app/profile/${project.userId}`} style={{ textDecoration: "none" }}>
             <Avatar
               sx={{ width: 32, height: 32, mr: 1, cursor: "pointer" }}
-              src={
-                project.profilePicture
-                  ? `https://uni1swap.runasp.net${project.profilePicture}`
-                  : null
-              }
+              src={getImageUrl(project.profilePicture, project.userName)}
+              alt={project.userName}
             >
-              {!project.profilePicture && project.userName.substring(0, 2).toUpperCase()}
+              {project.userName?.substring(0, 2).toUpperCase()}
             </Avatar>
           </Link>
           <Typography

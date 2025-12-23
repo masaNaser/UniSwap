@@ -177,7 +177,7 @@ export default function TaskDialog({
         <Button
           onClick={onSubmit}
           variant="contained"
-          disabled={!newTask?.title?.trim()}
+          disabled={!newTask?.title?.trim() || !newTask?.description?.trim()}
           sx={{ background: 'linear-gradient(to right, #00C8FF, #8B5FF6)' }}
         >
           {editingTask ? 'Update' : 'Add'}

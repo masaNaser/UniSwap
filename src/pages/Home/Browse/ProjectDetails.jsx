@@ -431,14 +431,10 @@ const ProjectDetails = () => {
               cursor: "pointer",
               textDecoration: "none",
             }}
-            src={
-              project.profilePicture
-                ? `https://uni1swap.runasp.net/${project.profilePicture}`
-                : undefined
-            }
+            src={getImageUrl(project.profilePicture, project.userName)}
+            alt={project.userName}
           >
-            {!project.profilePicture &&
-              (project.userName?.[0]?.toUpperCase() || "U")}
+            {project.userName?.[0]?.toUpperCase() || "U"}
           </Avatar>
           <Box>
             <Typography
@@ -691,15 +687,11 @@ const ProjectDetails = () => {
                       fontSize: "1.1rem",
                       fontWeight: "600",
                     }}
-                    src={getImageUrl(
-                      review.reviewerPicture,
-                      review.reviewerName
-                    )}
+                    src={getImageUrl(review.reviewerPicture, review.reviewerName)}
+                    alt={review.reviewerName}
                   >
-                    {!review.reviewerPicture &&
-                      (review.reviewerName?.[0]?.toUpperCase() || "U")}
+                    {review.reviewerName?.[0]?.toUpperCase() || "U"}
                   </Avatar>
-
                   {/* Review Content */}
                   <Box sx={{ flex: 1 }}>
                     {/* Reviewer Name */}

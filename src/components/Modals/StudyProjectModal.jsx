@@ -5,12 +5,12 @@ import {
   Stack,
   Typography,
   Chip,
+  Autocomplete,
   IconButton,
   Button,
   Card,
   CardMedia,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import FolderIcon from "@mui/icons-material/Folder";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import SchoolIcon from "@mui/icons-material/School";
@@ -38,10 +38,11 @@ export default function StudyProjectModal({
     img: null,
     file: null,
   });
-  
+
   const [imgPreview, setImgPreview] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
-  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState([]);
+  const [tagInputValue, setTagInputValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState(null);
 
@@ -51,15 +52,16 @@ export default function StudyProjectModal({
       setFormData({
         title: editData.title || "",
         description: editData.description || "",
-        tags: editData.tags || [],
         img: null,
         file: null,
       });
-      
+
+      setTags(editData.tags || []);
+
       if (editData.img) {
         setImgPreview(getImageUrl(editData.img));
       }
-      
+
       if (editData.filePath) {
         setFilePreview(editData.filePath);
       }
@@ -75,7 +77,7 @@ export default function StudyProjectModal({
       setImgPreview(null);
       setFilePreview(null);
     }
-    setTagInput("");
+    setTagInputValue("");
   }, [editData, open]);
 
   const handleChange = (e) => {
@@ -87,7 +89,7 @@ export default function StudyProjectModal({
     const file = e.target.files?.[0];
     if (file) {
       setFormData((prev) => ({ ...prev, img: file }));
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImgPreview(reader.result);
@@ -119,25 +121,6 @@ export default function StudyProjectModal({
     setFilePreview(null);
     const input = document.getElementById("study-file-upload");
     if (input) input.value = "";
-  };
-
-  // Add Tag
-  const handleAddTag = () => {
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()],
-      }));
-      setTagInput("");
-    }
-  };
-
-  // Delete Tag
-  const handleDeleteTag = (tagToDelete) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToDelete),
-    }));
   };
 
   // Validation
@@ -180,7 +163,7 @@ export default function StudyProjectModal({
       }
 
       // Add tags
-      formData.tags.forEach((tag) => data.append("Tags", tag));
+      tags.forEach((tag) => data.append("Tags", tag));
 
       console.log("Submitting study project:", formData);
 
@@ -261,7 +244,7 @@ export default function StudyProjectModal({
       snackbar={snackbar}
       onSnackbarClose={() => setSnackbar(null)}
     >
-      <Stack spacing={2.5} sx={{mt:2}}>
+      <Stack spacing={2.5} sx={{ mt: 2 }}>
         {/* Title */}
         <TextField
           label="Project Title"
@@ -338,7 +321,7 @@ export default function StudyProjectModal({
               </Button>
             </label>
           )}
-          
+
           {editData && !formData.img && (
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
               Leave empty to keep current image
@@ -410,7 +393,7 @@ export default function StudyProjectModal({
               </Button>
             </label>
           )}
-          
+
           {editData && !formData.file && (
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
               Leave empty to keep current file
@@ -421,43 +404,47 @@ export default function StudyProjectModal({
         {/* Tags Section */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Tags (Optional)
+            Tags
           </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <TextField
-              size="small"
-              placeholder="Add tag..."
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAddTag();
-                }
-              }}
-              fullWidth
-              disabled={isSubmitting}
-            />
-            <IconButton 
-              color="primary" 
-              onClick={handleAddTag}
-              disabled={isSubmitting}
-            >
-              {/* <AddIcon /> */}
-            </IconButton>
-          </Box>
-          <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {formData.tags.map((tag, idx) => (
-              <Chip
-                key={idx}
-                label={tag}
-                onDelete={() => handleDeleteTag(tag)}
-                color="primary"
-                variant="outlined"
+          <Autocomplete
+            multiple
+            freeSolo
+            options={[]}
+            value={tags}
+            inputValue={tagInputValue}
+            onInputChange={(event, newInputValue) => {
+              setTagInputValue(newInputValue);
+            }}
+            onChange={(event, newValue) => {
+              setTags(newValue);
+              setTagInputValue("");
+            }}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => {
+                const { key, ...tagProps } = getTagProps({ index });
+                return (
+                  <Chip
+                    key={key}
+                    variant="outlined"
+                    label={option}
+                    size="small"
+                    {...tagProps}
+                  />
+                );
+              })
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder={tags.length === 0 ? "Type a tag and press Enter" : ""}
                 size="small"
+                disabled={isSubmitting}
+                InputProps={{
+                  ...params.InputProps,
+                }}
               />
-            ))}
-          </Box>
+            )}
+          />
         </Box>
       </Stack>
     </GenericModal>

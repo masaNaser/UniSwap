@@ -45,7 +45,7 @@ import { isAdmin } from "../../utils/authHelpers";
 import { useNotifications } from "../../Context/NotificationContext";
 import { ThemeModeContext } from "../../Context/ThemeContext";
 import { useTheme } from "@mui/material/styles";
-import { getToken,getUserName } from "../../utils/authHelpers";
+import { getToken, getUserName } from "../../utils/authHelpers";
 // ✅ Import Search API
 import { Search } from "../../services/FeedService";
 import NotificationMenu from "./NotificationMenu";
@@ -104,7 +104,7 @@ const SearchResultsDropdown = ({
   theme,
 }) => {
   if (!searchQuery) return null;
- console.log("Rendering SearchResultsDropdown with:",searchResults.users.id );
+  console.log("Rendering SearchResultsDropdown with:", searchResults.users.id);
   // Helper function to get user avatar
   // const getUserAvatar = (userName) => {
   //   return `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=3B82F6&color=fff&bold=true&size=40`;
@@ -215,8 +215,7 @@ const SearchResultsDropdown = ({
                 >
                   {/* User Avatar */}
                   <Avatar
-                    // src={getUserAvatar(user.userName)}
-                    src={getImageUrl(user.profilePicture)}
+                    src={getImageUrl(user.profilePicture, user.userName)}
                     alt={user.userName}
                     sx={{
                       width: 40,
@@ -224,7 +223,9 @@ const SearchResultsDropdown = ({
                       border: `2px solid ${theme.palette.divider}`,
                       boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                     }}
-                  />
+                  >
+                    {user.userName?.substring(0, 2).toUpperCase()}
+                  </Avatar>
 
                   {/* User Info */}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -252,7 +253,7 @@ const SearchResultsDropdown = ({
                       <Typography
                         sx={{
                           fontSize: "0.8rem",
-                            color: theme.palette.text.primary, // 🔥
+                          color: theme.palette.text.primary, // 🔥
                           fontWeight: 500,
                         }}
                       >
@@ -399,8 +400,7 @@ const SearchResultsDropdown = ({
                   >
                     {/* <ArticleIcon sx={{ color: "#22C55E", fontSize: 20 }} /> */}
                     <Avatar
-                      // src={getUserAvatar(user.userName)}
-                      src={getImageUrl(post.authorPicture)}
+                      src={getImageUrl(post.authorPicture, post.author)}
                       alt={post.author}
                       sx={{
                         width: 40,
@@ -408,7 +408,9 @@ const SearchResultsDropdown = ({
                         border: `2px solid ${theme.palette.divider}`,
                         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                       }}
-                    />
+                    >
+                      {post.author?.substring(0, 2).toUpperCase()}
+                    </Avatar>
                   </Box>
 
                   {/* Post Content */}
@@ -574,18 +576,18 @@ export default function PrimarySearchAppBar() {
   };
 
   const toggleMobileMenu = () => setMobileOpen((p) => !p);
-  
-   
- const isActive = (path) => {
+
+
+  const isActive = (path) => {
     const currentPath = location.pathname;
     if (path === "/app/browse") {
-      return currentPath.startsWith("/app/browse") || 
-             currentPath.startsWith("/app/services") ||
-             currentPath.match(/^\/app\/project\/[^/]+$/);
+      return currentPath.startsWith("/app/browse") ||
+        currentPath.startsWith("/app/services") ||
+        currentPath.match(/^\/app\/project\/[^/]+$/);
     }
     if (path === "/app/project") {
-      return currentPath === "/app/project" || 
-             currentPath.startsWith("/app/TrackTasks");
+      return currentPath === "/app/project" ||
+        currentPath.startsWith("/app/TrackTasks");
     }
     return currentPath === path;
   };
@@ -637,8 +639,8 @@ export default function PrimarySearchAppBar() {
                   color: "#74767a",
                   display: { xs: "none", sm: "block" },
                   cursor: "pointer",
-                   fontSize: { sm: "1rem", md: "1.5rem" },
-    
+                  fontSize: { sm: "1rem", md: "1.5rem" },
+
                 }}
               >
                 UniSwap
@@ -647,7 +649,7 @@ export default function PrimarySearchAppBar() {
 
             {/* DESKTOP LINKS */}
             {windowWidth >= 1029 && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2,ml:3 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, ml: 3 }}>
                 <Button
                   component={Link}
                   to="/app/feed"
@@ -736,7 +738,7 @@ export default function PrimarySearchAppBar() {
                       theme.palette.mode === "dark" ? "#474646ff" : "#F8FAFC",
                     width: "100%",
                     maxWidth: windowWidth >= 1029 ? 300 : 250,
-                        border: `1px solid ${theme.palette.mode === "dark"
+                    border: `1px solid ${theme.palette.mode === "dark"
                       ? "rgba(255,255,255,0.1)"
                       : "rgba(0,0,0,0.08)"
                       }`,
@@ -757,7 +759,7 @@ export default function PrimarySearchAppBar() {
                     {isSearching ? (
                       <CircularProgress size={20} />
                     ) : (
-                      <SearchIcon sx={{ color: theme.palette.text.secondary }}/>
+                      <SearchIcon sx={{ color: theme.palette.text.secondary }} />
                     )}
                   </SearchIconWrapper>
                   <StyledInputBase
@@ -866,7 +868,7 @@ export default function PrimarySearchAppBar() {
                 </IconButton>
               )}
 
-                <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
+              <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
                 <NotificationMenu
                   notifications={notifications}
                   unreadNotificationCount={unreadNotificationCount}
@@ -984,7 +986,7 @@ export default function PrimarySearchAppBar() {
                         sx={{
                           fontSize: "0.9rem",
                           fontWeight: "500",
-                            color: theme.palette.text.secondary, // 🔥
+                          color: theme.palette.text.secondary, // 🔥
                         }}
                       >
                         {currentUser?.averageRating || "0"}
@@ -1064,13 +1066,13 @@ export default function PrimarySearchAppBar() {
               </Menu>
 
               {windowWidth < 1029 && (
-                  <IconButton
-                    size="large"
-                    onClick={toggleMobileMenu}
-                    color="inherit"
-                  >
-                    <MenuIcon />
-                  </IconButton>
+                <IconButton
+                  size="large"
+                  onClick={toggleMobileMenu}
+                  color="inherit"
+                >
+                  <MenuIcon />
+                </IconButton>
               )}
             </Box>
           </Toolbar>
