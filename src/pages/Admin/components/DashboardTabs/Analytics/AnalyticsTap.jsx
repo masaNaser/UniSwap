@@ -228,18 +228,21 @@ const yearMapping = {
 <Box 
   sx={{ 
     mb: 3, 
-    // display: 'grid',
-    // gridTemplateColumns: {
-    //   xs: '1fr',                    // موبايل: عمود واحد
-    //   md: '1fr',                    // تابلت: عمود واحد
-    //   lg: 'minmax(0, 2fr) minmax(280px, 1fr)'  // ديسكتوب: الأول أكبر، الثاني أصغر
-    // },
-    // gap: 3
+    display: 'grid',
+    gridTemplateColumns: {
+      xs: '1fr', 
+      md: '1fr', 
+      // تم تعديل النسبة هنا ليعطي الجدول مساحة أكبر والتقارير مساحة كافية
+      lg: 'minmax(0, 2.5fr) minmax(320px, 1fr)' 
+    },
+    gap: 3,
+    alignItems: 'start' // يضمن بقاء العناصر في الأعلى إذا اختلف الطول
   }}
 >
   <ActiveProject />
-  </Box>
-  <Box sx={{mb:3}}> <TaskProgress /></Box>
+  <TaskProgress />
+</Box>
+  {/* <Box sx={{mb:3}}> <TaskProgress /></Box> */}
    
 
          

@@ -25,6 +25,14 @@ export const deletePost = async (token, postId) => {
   });
 };
 
+export const RemoveImgInPost = async (token, postId) => {
+  return await api.delete(`/Posts/${postId}/remove-image`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
 export const editPost = async (formData, token, postId) => {
   return await api.put(`/Posts/${postId}`, formData, {
     headers: {

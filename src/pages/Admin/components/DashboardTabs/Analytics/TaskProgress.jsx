@@ -85,9 +85,9 @@ export default function TaskProgress() {
       </Typography>
 
       {/* النسبة المئوية الكلية */}
-      <Typography variant="h6" fontWeight="800" sx={{ color: '#1e293b', mb: 2 }}>
+      {/* <Typography variant="h6" fontWeight="800" sx={{ color: '#1e293b', mb: 2 }}>
         {data.progressPercentage}%
-      </Typography>
+      </Typography> */}
 
       {/* شريط التقدم الملون (Multi-color progress bar) */}
       <Box sx={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', mb: 1, bgcolor: '#f1f5f9' }}>

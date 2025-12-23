@@ -759,6 +759,16 @@ export default function Feed() {
     fetchPosts(1, false); // ✅ التحميل الأول
   }, [userToken]);
 
+   const handleFileRemoved = (postId) => {
+  // ✅ تحديث البوست في الـ state لإزالة الـ fileUrl
+  setPosts((prev) =>
+    prev.map((p) =>
+      p.id === postId
+        ? { ...p, fileUrl: null }
+        : p
+    )
+  );
+};
   return (
     <>
       <Container maxWidth="lg" className="container">
@@ -993,6 +1003,8 @@ export default function Feed() {
         onSubmit={handleEditPost}
         isUpdating={isUpdating}
         snackbar={snackbar}
+          onFileRemoved={handleFileRemoved} // ✅ ضيفي هاد السطر
+
         onSnackbarClose={handleSnackbarClose}
       />
     

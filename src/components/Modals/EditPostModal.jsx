@@ -14,7 +14,8 @@ import {
   Edit as EditIcon,
 } from "@mui/icons-material";
 import GenericModal from "../../components/Modals/GenericModal";
-
+import {getToken} from "../../utils/authHelpers"
+import { RemoveImgInPost } from "../../services/postService"; // تأكد من المسار الصحيح
 const EditPostModal = ({
   open,
   onClose,
@@ -66,14 +67,31 @@ const EditPostModal = ({
     }
   };
 
-  const handleRemoveFile = () => {
+const handleRemoveFile = async () => {
+    // 1. إذا كان هناك ملف موجود مسبقاً على السيرفر، نقوم بحذفه عبر الـ API
+    if (editDialog.existingFileUrl && editDialog.id) {
+      try {
+        const token = getToken(); // أو الطريقة التي تخزن بها التوكن
+        await RemoveImgInPost(token, editDialog.id);
+        
+        // اختيارياً: يمكنك إظهار رسالة نجاح هنا عبر الـ snackbar
+      } catch (error) {
+        console.error("Failed to remove file from server:", error);
+        // يمكنك التعامل مع الخطأ هنا (مثلاً عدم حذف الصورة من الواجهة إذا فشل الطلب)
+        return; 
+      }
+    }
+
+    // 2. تحديث الحالة المحلية لإخفاء الملف من المودال والبوست
     setEditDialog((prev) => ({
       ...prev,
       file: null,
       previewUrl: "",
       existingFileUrl: "",
-      removeFile: true, // إضافة flag لإخبار الباك إند بحذف الملف
+      removeFile: true, 
     }));
+
+    // 3. تنظيف قيم مدخلات الملفات (Inputs)
     const imageInput = document.getElementById("edit-upload-image");
     const docInput = document.getElementById("edit-upload-document");
     if (imageInput) imageInput.value = "";
