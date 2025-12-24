@@ -32,7 +32,7 @@ export const logout = async () => {
   try {
     // إرسال طلب logout للباك-إند لإلغاء الـ refresh token من الـ database
     await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL || "https://uni1swap.runasp.net/"}Account/logout`,
+      `${import.meta.env.VITE_API_BASE_URL}/Account/logout`,
       {}, // body فاضي لأن الـ backend بيقرأ refresh token من الـ cookie
       { withCredentials: true } // مهم لإرسال الـ cookies
     );

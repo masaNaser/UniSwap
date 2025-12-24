@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Card,
@@ -16,6 +16,10 @@ import {
   DialogContentText,
   DialogActions,
   CardMedia,
+  Pagination,
+  useMediaQuery,
+  Skeleton,
+  useTheme,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -47,6 +51,39 @@ export default function PortfolioTab() {
   const open = Boolean(anchorEl);
   const { isMyProfile, userData } = useProfile();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const theme = useTheme();
+  // isMobile سيكون true إذا كانت الشاشة أصغر من sm (600px)
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const projectsPerPage = isMobile ? 4 : 6;
+  // حساب المشاريع التي ستظهر في الصفحة الحالية
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = projects.slice(
+    indexOfFirstProject,
+    indexOfLastProject
+  );
+  //خلي المتصفح يروح لعنوان قسم المشاريع بالضبط مهما كان حجم الشاشة.
+  const projectsTopRef = useRef(null);
+  // دالة لتغيير الصفحة
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+
+    // ننتظر قليلاً حتى ينتهي الـ Render للمشاريع الجديدة
+    setTimeout(() => {
+      if (projectsTopRef.current) {
+        // حساب موقع العنصر بالنسبة للصفحة
+        const yOffset = -100; // مقدار الإزاحة للأعلى (عشان ما يختفي الـ Header)
+        const y =
+          projectsTopRef.current.getBoundingClientRect().top +
+          window.pageYOffset +
+          yOffset;
+
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    }, 10);
+  };
+
   const fetchProjects = async () => {
     try {
       setLoading(true);
@@ -55,6 +92,7 @@ export default function PortfolioTab() {
         isMyProfile ? null : userData.id
       );
       setProjects(data);
+      setCurrentPage(1);
       console.log("Fetched projects:", data);
     } catch (err) {
       console.error(err);
@@ -63,15 +101,13 @@ export default function PortfolioTab() {
     }
   };
 
-useEffect(() => {
-  if (!token) return;
+  useEffect(() => {
+    if (!token) return;
 
-  if (!isMyProfile && !userData?.id) return;
+    if (!isMyProfile && !userData?.id) return;
 
-  fetchProjects();
-}, [token, isMyProfile, userData?.id]);
-
-
+    fetchProjects();
+  }, [token, isMyProfile, userData?.id]);
 
   const handleDeleteClick = (project) => {
     setProjectToDelete(project);
@@ -122,9 +158,9 @@ useEffect(() => {
   };
 
   const toggleDescription = (projectId) => {
-    setExpandedDescriptions(prev => ({
+    setExpandedDescriptions((prev) => ({
       ...prev,
-      [projectId]: !prev[projectId]
+      [projectId]: !prev[projectId],
     }));
   };
 
@@ -146,15 +182,43 @@ useEffect(() => {
       )}
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-          <CircularProgress />
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+            },
+            gap: 3,
+          }}
+        >
+          {[...Array(projectsPerPage)].map((_, index) => (
+            <Card key={index} sx={{ borderRadius: "12px", height: "350px" }}>
+              <Skeleton variant="rectangular" height={200} />
+              <CardContent>
+                <Skeleton variant="text" width="80%" height={30} />
+                <Skeleton variant="text" width="60%" />
+                <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+                  <Skeleton variant="circular" width={40} height={20} />
+                  <Skeleton variant="circular" width={40} height={20} />
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
         </Box>
       ) : projects.length === 0 ? (
-        <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 5 }}>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          align="center"
+          sx={{ mt: 5 }}
+        >
           No projects yet.
         </Typography>
       ) : (
         <Box
+          ref={projectsTopRef}
           sx={{
             display: "grid",
             gridTemplateColumns: {
@@ -166,7 +230,7 @@ useEffect(() => {
             mb: 5,
           }}
         >
-          {projects.map((p) => (
+          {currentProjects.map((p) => (
             <Card
               key={p.id}
               sx={{
@@ -324,7 +388,9 @@ useEffect(() => {
                 </Box>
 
                 {/* Tags Section */}
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1 }}>
+                <Box
+                  sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1 }}
+                >
                   {p.tags?.slice(0, 3).map((tag, idx) => (
                     <Chip
                       key={idx}
@@ -347,7 +413,8 @@ useEffect(() => {
                         }}
                         onClick={(e) => {
                           const parent = e.currentTarget.parentNode;
-                          const hiddenChips = parent.querySelectorAll(".hidden-chip");
+                          const hiddenChips =
+                            parent.querySelectorAll(".hidden-chip");
                           hiddenChips.forEach(
                             (chip) => (chip.style.display = "inline-flex")
                           );
@@ -382,33 +449,38 @@ useEffect(() => {
                     }}
                   >
                     {p.duration && (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                        <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                      >
+                        <AccessTimeIcon
+                          sx={{ fontSize: 16, color: "text.secondary" }}
+                        />
                         <Typography variant="caption" color="text.secondary">
-                          {p.duration} 
+                          {p.duration}
                         </Typography>
                       </Box>
                     )}
 
-                    {p.projectFilePath && typeof p.projectFilePath === "string" && (
-                      <Button
-                        variant="text"
-                        size="small"
-                        startIcon={<FolderIcon sx={{ fontSize: 16 }} />}
-                        component="a"
-                        href={`https://uni1swap.runasp.net/${p.projectFilePath}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{
-                          textTransform: "none",
-                          fontSize: "0.75rem",
-                          px: 1,
-                          minWidth: "auto",
-                        }}
-                      >
-                        View File
-                      </Button>
-                    )}
+                    {p.projectFilePath &&
+                      typeof p.projectFilePath === "string" && (
+                        <Button
+                          variant="text"
+                          size="small"
+                          startIcon={<FolderIcon sx={{ fontSize: 16 }} />}
+                          component="a"
+                          href={`https://uni1swap.runasp.net/${p.projectFilePath}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            textTransform: "none",
+                            fontSize: "0.75rem",
+                            px: 1,
+                            minWidth: "auto",
+                          }}
+                        >
+                          View File
+                        </Button>
+                      )}
                   </Box>
                 </Box>
               </CardContent>
@@ -451,7 +523,8 @@ useEffect(() => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete "{projectToDelete?.title}"? You won't be able to revert this!
+            Are you sure you want to delete "{projectToDelete?.title}"? You
+            won't be able to revert this!
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -487,6 +560,21 @@ useEffect(() => {
         onSuccess={handleSuccess}
         editData={editProject}
       />
+      {/* Pagination UI */}
+      {!loading && projects.length > projectsPerPage && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <Pagination
+            count={Math.ceil(projects.length / projectsPerPage)}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+            variant="outlined"
+            shape="rounded"
+            size={isMobile ? "small" : "medium"} // تصغير الحجم في الموبايل
+            siblingCount={isMobile ? 0 : 1} // تقليل عدد الأرقام الجانبية في الموبايل
+          />
+        </Box>
+      )}
     </Box>
   );
 }
