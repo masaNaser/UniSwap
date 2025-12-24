@@ -76,76 +76,75 @@ export default function Login() {
   // تحديد التاب الحالي
   const currentTab = location.pathname === "/login" ? 0 : 1;
 
-  const loginHandle = async (data) => {
-    try {
-      setLoading(true);
-      const response = await loginApi(data);
-
-      if (response.status === 200) {
-        const { accessToken, refreshToken, refreshTokenExpiration } = response.data;
-        const decoded = jwtDecode(accessToken);
-        const accessExp = decoded.exp;
-        // 1. تحديد مكان التخزين بناءً على خيار "Remember Me"
-      // إذا اختار الصح، نخزن في localStorage (دائم)
-      // إذا لم يختار، نخزن في sessionStorage (ينتهي بإغلاق المتصفح)
+const loginHandle = async (data) => {
+  try {
+    setLoading(true);
+    const response = await loginApi(data);
+    console.log("login", response);
+    
+    if (response.status === 200) {
+      // ✅ الـ backend بيرجع بس الـ accessToken
+      // الـ refreshToken بيتحفظ تلقائياً بالـ cookie (HttpOnly)
+      const { accessToken } = response.data;
+      
+      // فك التوكن لاستخراج المعلومات
+      const decoded = jwtDecode(accessToken);
+      
+      // 1. تحديد مكان التخزين بناءً على خيار "Remember Me"
       const storage = data.rememberMe ? localStorage : sessionStorage;
-      // 2. تخزين التوكنات في المكان المختار
+      
+      // 2. ✅ تخزين بس الـ Access Token ومعلومات المستخدم
       storage.setItem("accessToken", accessToken);
-      storage.setItem("refreshToken", refreshToken);
-      storage.setItem("accessTokenExpiration", accessExp);
-
-        // حفظ في localStorage
-        // localStorage.setItem("accessToken", accessToken);
-        // localStorage.setItem("refreshToken", refreshToken);
-        // 3. تخزين وقت انتهاء الـ Access Token (مهم جداً للـ Interceptor)
-        // نضرب بـ 1000 لأن exp تكون بالثواني و JavaScript يتعامل بالملي ثانية
-        storage.setItem("refreshTokenExpiration", decoded.exp);
-        // localStorage.setItem("accessTokenExpiration", accessExp); // من داخل التوكن (exp)
-        // فك Token
-        const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-        const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-        const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
-        // حفظ معلومات المستخدم
-        storage.setItem("userName", userName);
-        storage.setItem("userId", userId);
-        storage.setItem("userRole", userRole);
-        Swal.fire({
-          title: "Login successful!",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        }).then(() => {
-          // التوجيه حسب Role
-          if (userRole === "Admin") {
-            navigate("/admin");
-          } else {
-            navigate("/app/feed");
-          }
-        });
-      }
-    } catch (error) {
-      // ✅ هون المشكلة - لازم نمنع الـ form من الـ reset
-      const msg =
-        error.response?.data?.message ||
-        error.response?.data?.title ||
-        "Invalid email or password"; // ✅ غيّرت الرسالة لتكون أوضح
-      // ✅ عرض الـ error تحت حقل الـ password
-      setError("password", {
-        type: "manual",
-        message: msg,
-      });
-      console.error("Login error:", error);
-
+      storage.setItem("accessTokenExpiration", decoded.exp);
+      
+      // 3. استخراج معلومات المستخدم من التوكن
+      const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+      const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+      const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      
+      // 4. حفظ معلومات المستخدم
+      storage.setItem("userName", userName);
+      storage.setItem("userId", userId);
+      storage.setItem("userRole", userRole);
+      
+      // 5. عرض رسالة نجاح والتوجيه
       Swal.fire({
-        icon: "error",
-        title: "Login failed",
-        text: msg,
+        title: "Login successful!",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      }).then(() => {
+        // التوجيه حسب Role
+        if (userRole === "Admin") {
+          navigate("/admin");
+        } else {
+          navigate("/app/feed");
+        }
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    const msg =
+      error.response?.data?.message ||
+      error.response?.data?.title ||
+      "Invalid email or password";
+    
+    // عرض الـ error تحت حقل الـ password
+    setError("password", {
+      type: "manual",
+      message: msg,
+    });
+    
+    console.error("Login error:", error);
+    
+    Swal.fire({
+      icon: "error",
+      title: "Login failed",
+      text: msg,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>

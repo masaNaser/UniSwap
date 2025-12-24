@@ -31,6 +31,7 @@ import { getImageUrl } from "../../../utils/imageHelper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { formatDateTime } from "../../../utils/timeHelper";
 import { getToken,getUserId,getUserName } from "../../../utils/authHelpers";
+import LikesModal from "../../Home/Feed/LikesModal";
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
   const isCurrentUserComment = comment.user?.userName === currentUser?.userName;
@@ -57,6 +58,14 @@ export default function PostsTab({ username }) {
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const userName = getUserName();
+    const [likesModalOpen, setLikesModalOpen] = useState(false);
+  const [currentPostLikes, setCurrentPostLikes] = useState([]);
+  
+    // أضف function جديدة:
+    const handleShowLikes = (postLikes) => {
+      setCurrentPostLikes(postLikes || []);
+      setLikesModalOpen(true);
+    };
 
   // const userToken = localStorage.getItem("accessToken");
   const userToken = getToken();
@@ -119,6 +128,7 @@ export default function PostsTab({ username }) {
         fileUrl: p.fileUrl ? `https://uni1swap.runasp.net/${p.fileUrl}` : null,
         isLiked: p.isLikedByMe || false,
         recentComments: [],
+        likedBy: p.likedBy || [], // ✅ أضف هاد السطر
         isClosed: p.postStatus === "Closed", // ✅ تحديث: استخدام postStatus بدل isCommentsClosed
       }));
       setPosts(postsData);
@@ -620,6 +630,7 @@ export default function PostsTab({ username }) {
             onCloseComments={handleCloseComments} // ✅ إضافة
             onAddCommentInline={handleAddComment}
             fetchRecentComments={fetchRecentComments}
+            onShowLikes={handleShowLikes} 
             currentUserAvatar={getImageUrl(
               currentUser?.profilePicture,
               currentUser?.userName || currentUserName
@@ -644,6 +655,11 @@ export default function PostsTab({ username }) {
           currentUser?.userName || currentUserName
         )}
         isPostClosed={modalPost?.isClosed} // ✅ تمرير حالة البوست
+      />
+       <LikesModal
+        open={likesModalOpen}
+        onClose={() => setLikesModalOpen(false)}
+        likes={currentPostLikes}
       />
 
       {/* Delete Dialog */}

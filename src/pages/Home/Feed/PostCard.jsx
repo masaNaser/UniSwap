@@ -166,7 +166,7 @@ const CommentBubble = ({ comment, theme, onUserClick }) => (
   <Box sx={{ display: "flex", gap: 1, mb: 1, minWidth: 0 }}>
     <Avatar
       src={comment.author?.avatar}
-      sx={{ width: 24, height: 24, flexShrink: 0, cursor: 'pointer' }}
+      sx={{ width: 24, height: 24, flexShrink: 0, cursor: "pointer" }}
       onClick={() => onUserClick(comment.authorId)}
     />
     <Box
@@ -184,11 +184,11 @@ const CommentBubble = ({ comment, theme, onUserClick }) => (
         fontWeight="bold"
         onClick={() => onUserClick(comment.authorId)}
         sx={{
-          cursor: 'pointer',
-          '&:hover': {
-            textDecoration: 'underline',
-            color: 'primary.main'
-          }
+          cursor: "pointer",
+          "&:hover": {
+            textDecoration: "underline",
+            color: "primary.main",
+          },
         }}
       >
         {comment.author.userName}
@@ -232,8 +232,7 @@ function PostCard({
   fetchRecentComments,
   onAddCommentInline,
   currentUserAvatar,
-  onShowLikes, 
-
+  onShowLikes,
 }) {
   const theme = useTheme(); // 🔥 ضيفي هاد السطر
 
@@ -408,16 +407,16 @@ function PostCard({
               )
             }
             label={`${post.likes} Likes`}
-             onClick={(e) => {
-    // ✅ لو كبس على القلب، عمل لايك
-    if (e.target.closest('button')) {
-      handleLikeClick();
-    } 
-    // ✅ لو كبس على النص، عرض اللايكات
-    else if (post.likes > 0 && onShowLikes) {
-      onShowLikes(post.likedBy);
-    }
-  }}
+            onClick={(e) => {
+              // ✅ لو كبس على القلب، عمل لايك
+              if (e.target.closest("button")) {
+                handleLikeClick();
+              }
+              // ✅ لو كبس على النص، عرض اللايكات
+              else if (post.likes > 0 && onShowLikes) {
+                onShowLikes(post.likedBy);
+              }
+            }}
           />
 
           <ActionButton
