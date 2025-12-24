@@ -449,7 +449,7 @@ const PublishProjectModal = ({
                 {loadingServices ? (
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <CircularProgress size={16} />
-                    <span>Loading services...</span>
+                    {/* <span>Loading services...</span> */}
                   </Box>
                 ) : (
                   "Select Service"
@@ -495,7 +495,7 @@ const PublishProjectModal = ({
                 ) : loadingSubServices ? (
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <CircularProgress size={16} />
-                    <span>Loading...</span>
+                    {/* <span>Loading...</span> */}
                   </Box>
                 ) : (
                   "Select SubService"
@@ -574,22 +574,17 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Delivery Time (Days)
+            Delivery Time 
           </Typography>
           <TextField
             fullWidth
-            type="number"
-            placeholder="e.g., 7"
+            // type="number"
+            placeholder="e.g., 7 days"
             value={deliveryTimeInDays}
             onChange={(e) => {
-              const value = Number(e.target.value);
-
-              if (value < 1) return;
-
               setDeliveryTimeInDays(value);
             }}
             disabled={isSubmitting}
-            inputProps={{ min: 1 }}
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
