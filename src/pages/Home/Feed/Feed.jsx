@@ -15,7 +15,6 @@ import {
 // icons
 import {
   WavingHand,
-  AttachFile,
   Image as ImageIcon,
 } from "@mui/icons-material";
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
@@ -45,14 +44,13 @@ import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { useSearchParams } from "react-router-dom";
 import PostCardSkeleton from "../../../components/Skeletons/PostCardSkeleton";
 import dayjs from "dayjs";
-import { isAdmin,getToken } from "../../../utils/authHelpers";
+import { isAdmin, getToken } from "../../../utils/authHelpers";
 import { formatDateTime } from "../../../utils/timeHelper";
 import useInfiniteScroll from "../../../hooks/useInfiniteScroll";
 import EditPostModal from "../../../components/Modals/EditPostModal";
 import { useTheme } from "@mui/material/styles";
-import { getUserId,getUserName } from "../../../utils/authHelpers";
+import { getUserId, getUserName } from "../../../utils/authHelpers";
 import LikesModal from "./LikesModal";
-import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
@@ -128,14 +126,14 @@ export default function Feed() {
   });
 
   // بعد state الموجودة، أضف هاي:
-const [likesModalOpen, setLikesModalOpen] = useState(false);
-const [currentPostLikes, setCurrentPostLikes] = useState([]);
+  const [likesModalOpen, setLikesModalOpen] = useState(false);
+  const [currentPostLikes, setCurrentPostLikes] = useState([]);
 
-// أضف function جديدة:
-const handleShowLikes = (postLikes) => {
-  setCurrentPostLikes(postLikes || []);
-  setLikesModalOpen(true);
-};
+  // أضف function جديدة:
+  const handleShowLikes = (postLikes) => {
+    setCurrentPostLikes(postLikes || []);
+    setLikesModalOpen(true);
+  };
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
@@ -171,7 +169,7 @@ const handleShowLikes = (postLikes) => {
         fileUrl: p.fileUrl ? `https://uni1swap.runasp.net/${p.fileUrl}` : null,
         isLiked: p.isLikedByMe || false,
         recentComments: [],
-          likedBy: p.likedBy || [], // ✅ أضف هاد السطر
+        likedBy: p.likedBy || [], // ✅ أضف هاد السطر
         isClosed: p.postStatus === "Closed",
       }));
 
@@ -310,30 +308,30 @@ const handleShowLikes = (postLikes) => {
       });
     }
   };
-const handleFileRemovedFromPost = (postId) => {
-  console.log("🗑️ Removing file from post in Feed:", postId);
-  setPosts((prev) =>
-    prev.map((p) =>
-      p.id === postId ? { ...p, fileUrl: null } : p
-    )
-  );
-};
-const openEditDialog = (postId) => {
-  const postToEdit = posts.find((p) => p.id === postId);
-  if (!postToEdit) return;
+  const handleFileRemovedFromPost = (postId) => {
+    console.log("🗑️ Removing file from post in Feed:", postId);
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId ? { ...p, fileUrl: null } : p
+      )
+    );
+  };
+  const openEditDialog = (postId) => {
+    const postToEdit = posts.find((p) => p.id === postId);
+    if (!postToEdit) return;
 
-  setEditDialog({
-    open: true,
-    postId,
-    content: postToEdit.content,
-    tags: postToEdit.selectedTags.join(","),
-    file: null,
-    existingFileUrl: postToEdit.fileUrl || "",
-    previewUrl: "",
-    removeFile: false,
-    onFileRemoved: handleFileRemovedFromPost, // 👈 مهم!
-  });
-};;
+    setEditDialog({
+      open: true,
+      postId,
+      content: postToEdit.content,
+      tags: postToEdit.selectedTags.join(","),
+      file: null,
+      existingFileUrl: postToEdit.fileUrl || "",
+      previewUrl: "",
+      removeFile: false,
+      onFileRemoved: handleFileRemovedFromPost,
+    });
+  };;
 
   const closeEditDialog = () => {
     setEditDialog({
@@ -347,79 +345,79 @@ const openEditDialog = (postId) => {
     });
   };
 
-const handleEditPost = async () => {
-  const { postId, content, tags, file, removeFile } = editDialog;
+  const handleEditPost = async () => {
+    const { postId, content, tags, file, removeFile } = editDialog;
 
-  setIsUpdating(true);
+    setIsUpdating(true);
 
-  try {
-    const formData = new FormData();
-    
-    formData.append("Content", content);
-    
-    if (tags) {
-      const tagsArray = typeof tags === 'string' 
-        ? tags.split(',').map(t => t.trim()).filter(Boolean)
-        : tags;
-      
-      tagsArray.forEach(tag => {
-        formData.append("Tags", tag);
-      });
-    }
-    
-    // ⚠️ الجزء المهم - لو الملف انحذف قبل، ما نبعث removeFile مرة ثانية
-    if (removeFile === true && !editDialog.existingFileUrl) {
-      // الملف انحذف فعلاً من السيرفر، ما نبعث شي
-      formData.append("RemoveFile", "false");
-    } else if (file) {
-      formData.append("File", file);
-      formData.append("RemoveFile", "false");
-    } else {
-      formData.append("RemoveFile", "false");
-    }
+    try {
+      const formData = new FormData();
 
-    const response = await editPost(formData, userToken, postId);
+      formData.append("Content", content);
 
-    if (response.status === 204) {
-      // Update post in state
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId
-            ? {
+      if (tags) {
+        const tagsArray = typeof tags === 'string'
+          ? tags.split(',').map(t => t.trim()).filter(Boolean)
+          : tags;
+
+        tagsArray.forEach(tag => {
+          formData.append("Tags", tag);
+        });
+      }
+
+      // ⚠️ الجزء المهم - لو الملف انحذف قبل، ما نبعث removeFile مرة ثانية
+      if (removeFile === true && !editDialog.existingFileUrl) {
+        // الملف انحذف فعلاً من السيرفر، ما نبعث شي
+        formData.append("RemoveFile", "false");
+      } else if (file) {
+        formData.append("File", file);
+        formData.append("RemoveFile", "false");
+      } else {
+        formData.append("RemoveFile", "false");
+      }
+
+      const response = await editPost(formData, userToken, postId);
+
+      if (response.status === 204) {
+        // Update post in state
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? {
                 ...p,
                 content: content,
-                selectedTags: typeof tags === 'string' 
+                selectedTags: typeof tags === 'string'
                   ? tags.split(',').map(t => t.trim()).filter(Boolean)
                   : tags,
                 fileUrl: removeFile ? null : (file ? URL.createObjectURL(file) : p.fileUrl)
               }
-            : p
-        )
-      );
+              : p
+          )
+        );
 
-      // Refresh from server
-      await fetchPosts(1, false);
-      setPage(1);
-      setHasMore(true);
+        // Refresh from server
+        await fetchPosts(1, false);
+        setPage(1);
+        setHasMore(true);
 
-      closeEditDialog();
+        closeEditDialog();
+        setSnackbar({
+          open: true,
+          message: "Your post has been updated. ✓",
+          severity: "success",
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error editing post:", error);
       setSnackbar({
         open: true,
-        message: "Your post has been updated. ✓",
-        severity: "success",
+        message: "Failed to update post.",
+        severity: "error",
       });
+    } finally {
+      setIsUpdating(false);
     }
-  } catch (error) {
-    console.error("❌ Error editing post:", error);
-    setSnackbar({
-      open: true,
-      message: "Failed to update post.",
-      severity: "error",
-    });
-  } finally {
-    setIsUpdating(false);
-  }
-};
+  };
 
   const handleLikePost = async (postId) => {
     const postToUpdate = posts.find((p) => p.id === postId);
@@ -427,11 +425,25 @@ const handleEditPost = async () => {
 
     const isCurrentlyLiked = postToUpdate.isLiked;
     const originalLikes = postToUpdate.likes;
+    const originalLikedBy = postToUpdate.likedBy || [];
+
+    const currentUserId = getUserId();
+    const updatedLikedBy = isCurrentlyLiked
+      ? originalLikedBy.filter(user => user.id !== currentUserId) // Remove user
+      : [
+        ...originalLikedBy,
+        {
+          id: currentUserId,
+          userName: currentUser?.userName || getUserName(),
+          profilePictureUrl: currentUser?.profilePicture
+        }
+      ];
 
     setPosts((prev) =>
       updatePost(prev, postId, {
         isLiked: !isCurrentlyLiked,
         likes: isCurrentlyLiked ? originalLikes - 1 : originalLikes + 1,
+        likedBy: updatedLikedBy
       })
     );
 
@@ -444,7 +456,8 @@ const handleEditPost = async () => {
         setPosts((prev) =>
           updatePost(prev, postId, {
             isLiked: response.data.isLikedByMe || !isCurrentlyLiked,
-            likes: response.data.likesCount,
+            likes: response.data.likesCount ?? (isCurrentlyLiked ? originalLikes - 1 : originalLikes + 1),
+            likedBy: response.data.likedBy || updatedLikedBy
           })
         );
       }
@@ -457,6 +470,7 @@ const handleEditPost = async () => {
         updatePost(prev, postId, {
           isLiked: isCurrentlyLiked,
           likes: originalLikes,
+          likedBy: originalLikedBy
         })
       );
       setSnackbar({
@@ -862,7 +876,7 @@ const handleEditPost = async () => {
                         onCloseComments={handleCloseComments}
                         onAddCommentInline={handleAddComment}
                         fetchRecentComments={fetchRecentComments}
-                          onShowLikes={handleShowLikes} // ✅ أضف هاد السطر
+                        onShowLikes={handleShowLikes} 
 
                         currentUserAvatar={getImageUrl(
                           currentUser?.profilePicture,
@@ -1016,12 +1030,11 @@ const handleEditPost = async () => {
         snackbar={snackbar}
         onSnackbarClose={handleSnackbarClose}
       />
-     <LikesModal
-  open={likesModalOpen}
-  onClose={() => setLikesModalOpen(false)}
-  likes={currentPostLikes}
-  onUserClick={useNavigateToProfile}
-/>
+      <LikesModal
+        open={likesModalOpen}
+        onClose={() => setLikesModalOpen(false)}
+        likes={currentPostLikes}
+      />
 
       <Snackbar
         open={snackbar.open}

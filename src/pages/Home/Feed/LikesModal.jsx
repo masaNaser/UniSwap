@@ -1,4 +1,3 @@
-// src/components/Modals/LikesModal.jsx
 import React from 'react';
 import {
   Dialog,
@@ -16,11 +15,19 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon, Favorite as FavoriteIcon } from '@mui/icons-material';
 import { getImageUrl } from '../../../utils/imageHelper';
+import { useNavigateToProfile } from '../../../hooks/useNavigateToProfile';
 
-function LikesModal({ open, onClose, likes, onUserClick }) {
+function LikesModal({ open, onClose, likes }) {
+  const navigateToProfile = useNavigateToProfile();
+
+  const handleUserClick = (userId) => {
+    navigateToProfile(userId);
+    onClose();
+  };
+
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={onClose}
       PaperProps={{
         sx: {
@@ -30,9 +37,9 @@ function LikesModal({ open, onClose, likes, onUserClick }) {
         }
       }}
     >
-      <DialogTitle sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+      <DialogTitle sx={{
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'space-between',
         pb: 1
       }}>
@@ -46,9 +53,9 @@ function LikesModal({ open, onClose, likes, onUserClick }) {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      
+
       <Divider />
-      
+
       <DialogContent sx={{ p: 0 }}>
         {likes && likes.length > 0 ? (
           <List sx={{ py: 0 }}>
@@ -63,13 +70,10 @@ function LikesModal({ open, onClose, likes, onUserClick }) {
                     px: 3,
                     py: 2,
                   }}
-                  onClick={() => {
-                    if (onUserClick) onUserClick(user.id);
-                    onClose();
-                  }}
+                  onClick={() => handleUserClick(user.id)}
                 >
                   <ListItemAvatar>
-                    <Avatar 
+                    <Avatar
                       src={getImageUrl(user.profilePictureUrl, user.userName)}
                       sx={{ width: 48, height: 48 }}
                     />
