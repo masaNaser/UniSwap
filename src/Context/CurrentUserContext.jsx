@@ -19,15 +19,9 @@ export const CurrentUserProvider = ({ children }) => {
   }
 
   try {
-    console.log("🔄 Updating current user data...");
-    const res = await GetFullProfile(token);
-    
-    console.log("📊 New points from API:", res.data.totalPoints);
-    
+    const res = await GetFullProfile(token);    
     // 🔥 الحل الأقوى: استخدمي functional update
     setCurrentUser(prevUser => {
-      console.log("🔄 Previous points:", prevUser?.totalPoints);
-      console.log("🆕 New points:", res.data.totalPoints);
       
       // ✅ هاد بيضمن إنه الـ state يتحدث
       return { ...res.data };
@@ -42,12 +36,10 @@ export const CurrentUserProvider = ({ children }) => {
 
   // 🔥 دالة لتفعيل الـ Polling المؤقت
   const startTemporaryPolling = useCallback((duration = 2000) => {
-    console.log("🚀 Starting temporary polling for", duration, "ms");
     setEnablePolling(true);
 
     // أوقف الـ polling بعد المدة المحددة
     setTimeout(() => {
-      console.log("⏹️ Stopping temporary polling");
       setEnablePolling(false);
     }, duration);
   }, []);
@@ -61,7 +53,6 @@ export const CurrentUserProvider = ({ children }) => {
         try {
           const res = await GetFullProfile(token);
           setCurrentUser(res.data);
-          console.log("✅ Initial user data loaded");
         } catch (error) {
           console.error("❌ Error loading current user:", error);
         }
@@ -75,7 +66,6 @@ export const CurrentUserProvider = ({ children }) => {
   // 🔥 Polling Effect - بس لما يكون مفعّل
   useEffect(() => {
     if (enablePolling) {
-      console.log("📡 Polling enabled - checking every 2 seconds");
       
       pollingIntervalRef.current = setInterval(() => {
         updateCurrentUser();
@@ -83,7 +73,6 @@ export const CurrentUserProvider = ({ children }) => {
 
       return () => {
         if (pollingIntervalRef.current) {
-          console.log("🛑 Clearing polling interval");
           clearInterval(pollingIntervalRef.current);
         }
       };

@@ -52,7 +52,7 @@ export default function TrackTasksHeader({
   onDeadlineUpdate,
   onProjectClosed,
 }) {
-  console.log("📊 TrackTasksHeader rendered with props:",cardData)
+  console.log("📊 TrackTasksHeader rendered with props:", cardData);
   const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
 
   const theme = useTheme();
@@ -94,11 +94,18 @@ export default function TrackTasksHeader({
     ? projectDetails?.clientInitials ||
       cardData.clientInitials ||
       displayName
-        ?.split(" ")
+        // ?.split(" ")
+        // .map((n) => n[0])
+        // .join("")
+        // .substring(0, 2)
+        // .toUpperCase()
+        ?.trim()
+        .split(/\s+/) // تقسيم بناءً على أي مسافة بيضاء
         .map((n) => n[0])
         .join("")
         .substring(0, 2)
-        .toUpperCase()
+        .toUpperCase() ||
+      "??"
     : displayName
         ?.split(" ")
         .map((n) => n[0])
@@ -107,7 +114,7 @@ export default function TrackTasksHeader({
         .toUpperCase();
 
   // const token = localStorage.getItem("accessToken");
-const token = getToken();
+  const token = getToken();
   const isOverdue = cardData.projectStatus === "Overdue";
 
   const hasRejection =
@@ -120,17 +127,17 @@ const token = getToken();
         return;
       }
 
-      console.log("🔍 Checking if should fetch review:", {
-        projectStatus: cardData.projectStatus,
-        isCompleted: cardData.projectStatus === "Completed",
-        hasRejection: !!projectDetails?.rejectionReason,
-      });
+      // console.log("🔍 Checking if should fetch review:", {
+      //   projectStatus: cardData.projectStatus,
+      //   isCompleted: cardData.projectStatus === "Completed",
+      //   hasRejection: !!projectDetails?.rejectionReason,
+      // });
 
       if (cardData.projectStatus === "Completed") {
         try {
-          console.log("📡 Fetching review for project:", cardData.id);
+          // console.log("📡 Fetching review for project:", cardData.id);
           const response = await getReviewByProject(cardData.id, token);
-          console.log("✅ Review fetch response:", response.data);
+          // console.log("✅ Review fetch response:", response.data);
           setReviewData(response.data);
         } catch (error) {
           console.error("❌ Error fetching review:", error);
@@ -161,18 +168,18 @@ const token = getToken();
     const clientAcceptedPublishing =
       projectDetails?.clientAcceptPublished || false;
 
-    console.log("📢 Can publish check:", {
-      isProvider,
-      isCompleted,
-      isPublished,
-      clientAcceptedPublishing,
-    });
+    // console.log("📢 Can publish check:", {
+    //   isProvider,
+    //   isCompleted,
+    //   isPublished,
+    //   clientAcceptedPublishing,
+    // });
 
     return isCompleted && !isPublished && clientAcceptedPublishing;
   };
 
   const handlePublishSuccess = (publishedData) => {
-    console.log("✅ Project published:", publishedData);
+    // console.log("✅ Project published:", publishedData);
 
     if (onProjectClosed) {
       onProjectClosed(true);
@@ -217,10 +224,10 @@ const token = getToken();
       }
 
       const deadlineISO = newDeadlineDateTime.toISOString();
-      console.log("🔄 Updating deadline via API:", {
-        collaborationId,
-        deadlineISO,
-      });
+      // console.log("🔄 Updating deadline via API:", {
+      //   collaborationId,
+      //   deadlineISO,
+      // });
       await editCollaborationRequest(token, collaborationId, {
         deadline: deadlineISO,
       });
@@ -273,12 +280,12 @@ const token = getToken();
       ? cardData.projectStatus === "Active" && progressPercentage === 100
       : cardData.projectStatus === "SubmittedForFinalReview";
 
-    console.log("🔒 Can close project check:", {
-      isProvider,
-      projectStatus: cardData.projectStatus,
-      progressPercentage,
-      result,
-    });
+    // console.log("🔒 Can close project check:", {
+    //   isProvider,
+    //   projectStatus: cardData.projectStatus,
+    //   progressPercentage,
+    //   result,
+    // });
 
     return result;
   };
@@ -311,7 +318,7 @@ const token = getToken();
     try {
       setClosingProject(true);
       await closeProjectByProvider(cardData.id, token);
-      console.log("✅ Project submitted successfully");
+      // console.log("✅ Project submitted successfully");
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -323,7 +330,7 @@ const token = getToken();
       setOpenCloseDialog(false);
 
       if (onProjectClosed) {
-        console.log("🔄 Calling onProjectClosed callback");
+        // console.log("🔄 Calling onProjectClosed callback");
         await onProjectClosed();
       }
     } catch (err) {
@@ -362,22 +369,22 @@ const token = getToken();
         comment: reviewData.isAccepted ? reviewData.comment : undefined,
       };
 
-      console.log("📤 Sending close request to backend:", closeRequestData);
-      console.log(
-        "🔗 API endpoint:",
-        `/api/Projects/${cardData.id}/close-by-client`
-      );
+      // console.log("📤 Sending close request to backend:", closeRequestData);
+      // console.log(
+      //   "🔗 API endpoint:",
+      //   `/api/Projects/${cardData.id}/close-by-client`
+      // );
 
       await closeProjectByClient(cardData.id, token, closeRequestData);
 
-      console.log("✅ Project review submitted successfully");
+      // console.log("✅ Project review submitted successfully");
 
       // 🔥 فعّل الـ polling لمدة 10 ثواني
       startTemporaryPolling(2000);
-      console.log("🚀 Polling started for points update");
+      // console.log("🚀 Polling started for points update");
 
       if (reviewData.isAccepted) {
-        console.log("✅ Project accepted - rating and review saved");
+        // console.log("✅ Project accepted - rating and review saved");
         setSnackbar({
           open: true,
           message:
@@ -396,7 +403,7 @@ const token = getToken();
       setOpenReviewDialog(false);
 
       if (onProjectClosed) {
-        console.log("🔄 Calling onProjectClosed callback");
+        // console.log("🔄 Calling onProjectClosed callback");
         await onProjectClosed();
       }
     } catch (err) {
@@ -431,8 +438,8 @@ const token = getToken();
 
   const handleOverdueSubmit = async (decisionData) => {
     try {
-      console.log("📤 Submitting overdue decision:", decisionData);
-
+      // console.log("📤 Submitting overdue decision:", decisionData);
+      setLoading(true);
       const response = await handleOverdueDecision(
         cardData.id,
         token,
@@ -441,11 +448,11 @@ const token = getToken();
 
       console.log("✅ Overdue decision submitted successfully");
       console.log("📊 Server response:", response.data);
-     // 🔥 إذا كان cancel (reject extend) - فعّل الـ polling
-    if (!decisionData.acceptExtend) {
-      startTemporaryPolling(2000);
-      console.log("🚀 Polling started for points refund");
-
+      // 🔥 إذا كان cancel (reject extend) - فعّل الـ polling
+      if (!decisionData.acceptExtend) {
+        startTemporaryPolling(2000);
+        console.log("🚀 Polling started for points refund");
+      }
       // رسالة النجاح تختلف حسب القرار المتخذ
       const successMessage = decisionData.acceptExtend
         ? "Project deadline extended successfully! The project is now Active. ⏰"
@@ -460,10 +467,10 @@ const token = getToken();
       setOpenOverdueDialog(false);
 
       if (onProjectClosed) {
-        console.log("🔄 Calling onProjectClosed callback");
+        // console.log("🔄 Calling onProjectClosed callback");
         await onProjectClosed();
       }
-    }} catch (err) {
+    } catch (err) {
       console.error("❌ Error handling overdue decision:", err);
       console.log("📋 Error details:", {
         status: err.response?.status,
@@ -483,8 +490,7 @@ const token = getToken();
         severity: "error",
       });
     }
-  }
-
+  };
 
   const handleSnackbarClose = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));

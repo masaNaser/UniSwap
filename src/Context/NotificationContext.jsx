@@ -103,7 +103,6 @@ export const NotificationProvider = ({ children }) => {
   // ✅ جلب البيانات فوراً عند Mount أو تغيير Token
   useEffect(() => {
     if (!token) {
-      console.log("⚠️ No token found");
       setLoading(false);
       setNotifications([]);
       setunreadNotificationCount(0);
@@ -118,12 +117,10 @@ export const NotificationProvider = ({ children }) => {
     // ثم اتصال SignalR
     const startConnection = async () => {
       try {
-        console.log("🔌 Connecting to SignalR...");
         const connection = createNotificationHub(token);
         connectionRef.current = connection;
 
         connection.on("ReceiveNotification", async (notification) => {
-          console.log("📬 New notification received:", notification);
 
           try {
             // إعادة جلب كل الإشعارات
@@ -167,7 +164,6 @@ export const NotificationProvider = ({ children }) => {
     startConnection();
 
     return () => {
-      console.log("🔌 Disconnecting SignalR...");
       if (connectionRef.current) {
         connectionRef.current.stop();
       }

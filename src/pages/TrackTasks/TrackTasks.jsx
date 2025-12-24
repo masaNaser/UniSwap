@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, CircularProgress, Box, Typography } from "@mui/material";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import TrackTasksHeader from "./components/TrackTasksHeader";
@@ -18,6 +18,7 @@ import {
 } from "../../services/projectService";
 import { useCurrentUser } from "../../Context/CurrentUserContext"; // ✅ أضيفي هاد
 import { getToken } from "../../utils/authHelpers";
+import { createProjectHubConnection } from "../../services/projectHub"; // تأكد من المسار الصحيح
 const statuses = ["ToDo", "InProgress", "InReview", "Done"];
 const statusLabels = {
   ToDo: "To Do",
@@ -27,6 +28,7 @@ const statusLabels = {
 };
 
 export default function TrackTasks() {
+  const connectionRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const initialCardData = location.state;
@@ -34,6 +36,7 @@ export default function TrackTasks() {
   const { updateCurrentUser } = useCurrentUser();
 
   const [cardData, setCardData] = useState(initialCardData);
+  console.log("cardData",initialCardData)
   const isProvider = cardData?.isProvider || false;
   // const token = localStorage.getItem("accessToken");
   const token = getToken();
@@ -72,8 +75,121 @@ export default function TrackTasks() {
   const [openReviewDueDateDialog, setOpenReviewDueDateDialog] = useState(false);
   const [taskForReview, setTaskForReview] = useState(null);
 
-  const { projectType } = useLocation().state ?? {};
+useEffect(() => {
+  let isMounted = true;
+  let connection = null;
 
+  const startConnection = async () => {
+    if (!cardData?.id || !token) return;
+
+    connection = createProjectHubConnection();
+    connectionRef.current = connection;
+
+    try {
+      await connection.start();
+      if (isMounted) {
+        console.log("Connected to SignalR Hub ✅");
+        await connection.invoke("JoinProject", cardData.id);
+const STATUS_MAP = {
+    0: "ToDo",
+    1: "InProgress",
+    2: "InReview",
+    3: "Done"
+};
+        // 1. عند إنشاء مهمة جديدة
+// 1. عند إنشاء مهمة جديدة
+connection.on("TaskCreated", (newTask) => {
+    // التأكد أن الـ status نصي
+    const statusKey = typeof newTask.status === 'number' ? STATUS_MAP[newTask.status] : newTask.status;
+    
+    setTasks(prev => {
+        const currentList = prev[statusKey] || [];
+        // منع التكرار
+        if (currentList.some(t => t.id === newTask.id)) return prev;
+
+        return {
+            ...prev,
+            [statusKey]: [...currentList, { ...newTask, status: statusKey }]
+        };
+    });
+});
+
+// 2. عند تغيير حالة المهمة (نقلها)
+connection.on("TaskStatusChanged", (updatedTask) => {
+    const statusKey = typeof updatedTask.status === 'number' ? STATUS_MAP[updatedTask.status] : updatedTask.status;
+
+    setTasks(prev => {
+        const newState = { ...prev };
+
+        // حذف المهمة من أي قائمة قديمة كانت فيها
+        Object.keys(newState).forEach(key => {
+            newState[key] = newState[key].filter(t => t.id !== updatedTask.id);
+        });
+
+        // إضافتها للقائمة الجديدة
+        if (newState[statusKey]) {
+            newState[statusKey] = [...newState[statusKey], { ...updatedTask, status: statusKey }];
+        }
+
+        return newState;
+    });
+});
+  // 3. عند تعديل بيانات مهمة (العنوان، الوصف، أو نسبة الإنجاز داخل نفس الحالة)
+connection.on("TaskUpdated", (updatedTask) => {
+    console.log("SignalR: TaskUpdated received", updatedTask);
+    
+    const statusKey = typeof updatedTask.status === 'number' 
+                      ? STATUS_MAP[updatedTask.status] 
+                      : updatedTask.status;
+
+    setTasks(prev => {
+        const newState = { ...prev };
+        
+        // نبحث عن المهمة في القائمة الصحيحة ونحدث بياناتها
+        if (newState[statusKey]) {
+            newState[statusKey] = newState[statusKey].map(t => 
+                t.id === updatedTask.id ? { ...updatedTask, status: statusKey } : t
+            );
+        }
+        
+        return { ...newState };
+    });
+});
+        // 3. عند تحديث نسبة إنجاز المشروع
+        connection.on("ProjectProgressUpdated", (data) => {
+          console.log("SignalR: ProjectProgressUpdated", data);
+          setProjectDetails(prev => ({ 
+            ...prev, 
+            progressPercentage: data.progressPercentage 
+          }));
+        });
+
+        // 4. عند حذف مهمة
+        connection.on("TaskDeleted", (data) => {
+           console.log("SignalR: TaskDeleted", data);
+           setTasks(prev => {
+             const newState = { ...prev };
+             Object.keys(newState).forEach(s => 
+               newState[s] = newState[s].filter(t => t.id !== data.taskId)
+             );
+             return newState;
+           });
+        });
+      }
+    } catch (err) {
+      console.error("SignalR Connection Error: ", err);
+    }
+  };
+
+  startConnection();
+
+  return () => {
+    isMounted = false;
+    if (connection) {
+      connection.stop();
+    }
+  };
+}, [cardData?.id]);
 
   // Fetch project status from dashboard
   const fetchProjectStatus = async () => {
@@ -329,7 +445,7 @@ export default function TrackTasks() {
     try {
       console.log("🔄 handleProjectClosed called - refreshing project data...");
 
-      await fetchProjectData();
+      // await fetchProjectData();
 
       // Only show snackbar if skipSuccessMessage is false
       if (!skipSuccessMessage) {
@@ -540,24 +656,15 @@ export default function TrackTasks() {
     }
   };
 
-  const handleDeleteTask = async (status, taskId) => {
-    try {
-      await taskService.deleteTask(taskId, token);
-      setTasks((prev) => ({
-        ...prev,
-        [status]: prev[status].filter((t) => t.id !== taskId),
-      }));
-      setSnackbar({ open: true, message: "Task deleted!", severity: "info" });
-      setAnchorEl(null);
-    } catch (error) {
-      console.error("Error deleting task:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to delete task",
-        severity: "error",
-      });
-    }
-  };
+const handleDeleteTask = async (status, taskId) => {
+  try {
+    await taskService.deleteTask(taskId, token);
+    // لا تضع setTasks هنا، الـ SignalR سيفعل ذلك عبر حدث "TaskDeleted"
+    setSnackbar({ open: true, message: "Request sent...", severity: "info" });
+  } catch (error) {
+    setSnackbar({ open: true, message: "Failed to delete", severity: "error" });
+  }
+};
 
   const handleEditTask = (task, status) => {
     setEditingTask({ ...task, status });

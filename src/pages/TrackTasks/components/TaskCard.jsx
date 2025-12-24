@@ -29,7 +29,6 @@ export default function TaskCard({
 }) {
   const theme = useTheme();
 
-  console.log("🔎 ReviewDueAt:", task.reviewDueAt);
 
   const handleFileClick = () => {
     if (task.uploadFile) {
@@ -45,14 +44,17 @@ export default function TaskCard({
     }
   };
 
-  const hasNotBeenReviewed =
-    !task.lastClientDecision ||
-    task.lastClientDecision.toLowerCase() === "pending";
-  const showReviewButton =
-    !isProvider && status === "InReview" && hasNotBeenReviewed;
+const lastDecision = task.lastClientDecision
+  ? String(task.lastClientDecision).toLowerCase()
+  : null;
 
-  const isRejected = task.lastClientDecision?.toLowerCase() === "rejected";
-  const showViewReviewButton = isProvider && isRejected;
+const hasNotBeenReviewed = !lastDecision || lastDecision === "pending";
+const showReviewButton =
+  !isProvider && status === "InReview" && hasNotBeenReviewed;
+
+const isRejected = lastDecision === "rejected";
+const showViewReviewButton = isProvider && isRejected;
+
 
   const handleViewReviewClick = (e) => {
     e.preventDefault();

@@ -15,7 +15,6 @@ export const UnreadCountProvider = ({ children }) => {
     try {
       const response = await getUnreadCount(token);
       setUnreadCount(response.data || 0);
-      console.log('🔄 Updated unread count:', response.data);
     } catch (error) {
       console.error('❌ Error fetching unread count:', error);
     }
