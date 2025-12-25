@@ -15,7 +15,7 @@ export const renderContentWithLinks = (text) => {
         <a
           key={index}
           href={href}
-          target="_blank"
+          // target="_blank"
           rel="noopener noreferrer"
           style={{ 
             color: "#3b82f6", 

@@ -55,6 +55,8 @@ export default function TrackTasksHeader({
   onDeadlineUpdate,
   onProjectClosed,
 }) {
+
+  
   const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -133,6 +135,7 @@ export default function TrackTasksHeader({
     };
 
     fetchReview();
+    return () => { isMounted = false; }; // تنظيف الـ Effect
   }, [cardData.id, cardData.projectStatus, isProvider, token]);
 
   // ===== Helper Functions =====
@@ -239,16 +242,31 @@ export default function TrackTasksHeader({
   };
 
 const canCloseProject = () => {
-  if (!cardData?.projectStatus) return false;
+  if (!cardData?.projectStatus) {
+    log("⚠️ No project status");
+    return false;
+  }
   
-  // تحويل الحالة لنص صغير للمقارنة الآمنة
-  const status = cardData.projectStatus.toLowerCase();
+  // تحويل الحالة لنص صغير وحذف المسافات لضمان المطابقة
+const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";  
+  log("Checking canCloseProject:", { 
+    status, 
+    isProvider, 
+    progressPercentage 
+  });
 
   if (isProvider) {
+    // البروفايدر يغلق فقط إذا كان فعالاً والإنجاز 100%
     return status === "active" && progressPercentage === 100;
   } else {
-    // فحص كل الاحتمالات الممكنة للكلمة
-    return status === "submittedforfinalreview" || status === "inreview";
+    // الكلاينت يغلق إذا كانت الحالة "قيد المراجعة"
+    // أضفنا كل الاحتمالات الممكنة للاسم القادم من السيرفر
+    return (
+      status === "submittedforfinalreview" || 
+      status === "inreview" ||
+      status === "submitted" ||
+      status.includes("submitted")
+    );
   }
 };
 
@@ -426,8 +444,18 @@ const canCloseProject = () => {
   const handleViewReview = () => {
     setOpenViewReviewDialog(true);
   };
+  useEffect(() => {
+  log("🔔 Header Detected Status Change:", cardData?.projectStatus);
+  log("🔔 Header Decision - Can Close?:", canCloseProject());
+}, [cardData?.projectStatus, progressPercentage]);
 
   return (
+    <>
+    {isDevelopment && (
+  <Typography variant="caption" sx={{position:'absolute', top:0, left:0, color:'red'}}>
+     Current Status: {cardData?.projectStatus}
+  </Typography>
+)}
     <Box
       sx={{
         bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
@@ -977,5 +1005,6 @@ const canCloseProject = () => {
         </Alert>
       </Snackbar>
     </Box>
+    </>
   );
 }
