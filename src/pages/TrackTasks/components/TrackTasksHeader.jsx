@@ -135,7 +135,6 @@ export default function TrackTasksHeader({
     };
 
     fetchReview();
-    return () => { isMounted = false; }; // تنظيف الـ Effect
   }, [cardData.id, cardData.projectStatus, isProvider, token]);
 
   // ===== Helper Functions =====

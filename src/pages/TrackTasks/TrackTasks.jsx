@@ -1499,16 +1499,17 @@ const handleProjectClosed = async (skipSuccessMessage = false) => {
 
     // ✅ التصحيح: السيرفر يرسل 'status' وليس 'projectStatus'
     // ونأخذ 'projectId' إذا كان 'id' غير موجود
-const serverStatus = updatedData?.status || updatedData?.projectStatus;
+const serverStatus = updatedData?.status || updatedData?.projectStatus || "SubmittedForFinalReview";
+
     setCardData(prev => ({
       ...prev,
-      ...updatedData, // نحدث كل البيانات القادمة
-   projectStatus: serverStatus // ✅ نضمن تحديث الحالة بالقيمة القادمة من السيرفر
+      ...updatedData,
+      projectStatus: serverStatus 
     }));
 
     setProjectDetails(updatedData);
 
-    log("✅ Local state updated to status:", serverStatus);
+    log("✅ Local state updated to status:", newStatus);
 
     if (!skipSuccessMessage) {
       setSnackbar({
