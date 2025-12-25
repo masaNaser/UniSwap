@@ -5,6 +5,12 @@ const api = axios.create({
   withCredentials: true, // مهم جداً لإرسال الـ cookies
 });
 
+// Create a separate axios instance for refresh calls (no interceptors)
+const apiRefresh = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://uni1swap.runasp.net/",
+  withCredentials: true,
+});
+
 // متغيرات التحكم بالـ Queue والـ Refresh
 let isRefreshing = false;
 let failedQueue = [];
@@ -68,40 +74,34 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        //  استخدام api instance بدلاً من axios مباشرة
-        const response = await axios.post(
-          `${
-            import.meta.env.VITE_API_BASE_URL || "https://uni1swap.runasp.net/"
-          }Account/refresh-token`,
-          {},
-          { withCredentials: true }
-        );
-
+        //  Use the separate refresh instance
+        const response = await apiRefresh.post("/Account/refresh-token", {});
         const { accessToken } = response.data;
 
-        // تحديد نوع الـ storage المستخدم
+        // Determine which storage to use
         const storage = localStorage.getItem("accessToken")
           ? localStorage
           : sessionStorage;
 
-        //  فك التوكن الجديد لتحديث وقت الانتهاء بشكل آمن
+        // Properly decode and store expiration as NUMBER
         try {
           const decoded = JSON.parse(atob(accessToken.split(".")[1]));
-          storage.setItem("accessTokenExpiration", decoded.exp);
+          storage.setItem("accessToken", accessToken);
+          storage.setItem("accessTokenExpiration", decoded.exp.toString());
+
+          console.log("✅ Token refreshed successfully");
         } catch (decodeError) {
-          console.warn("Could not decode token:", decodeError);
+          console.error("Failed to decode token:", decodeError);
         }
 
-        // تحديث الـ access token
-        storage.setItem("accessToken", accessToken);
-
-        // إكمال الطلبات المعلقة
+        // Process queued requests
         processQueue(null, accessToken);
 
-        // تحديث الطلب الحالي وإعادة إرساله
+        // Retry original request
         originalRequest.headers["Authorization"] = "Bearer " + accessToken;
         return api(originalRequest);
       } catch (refreshError) {
+        console.error("❌ Token refresh failed:", refreshError);
         processQueue(refreshError, null);
         handleLogout();
         return Promise.reject(refreshError);
@@ -114,8 +114,8 @@ api.interceptors.response.use(
   }
 );
 
-// دالة تنظيف البيانات والتحويل للـ Login
 function handleLogout() {
+  console.log("🚪 Session expired, logging out...");
   localStorage.clear();
   sessionStorage.clear();
   if (!window.location.pathname.includes("/login")) {

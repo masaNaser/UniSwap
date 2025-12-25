@@ -4,35 +4,50 @@ import { refreshToken } from '../services/authService';
  * التحقق من صلاحية التوكن وتحديثه إذا كان قريب من الانتهاء
  */
 export const checkAndRefreshToken = async () => {
+  console.log("🔍 [Timer] Checking token status...");
+  
   const storage = localStorage.getItem("accessToken") ? localStorage : sessionStorage;
   const token = storage.getItem("accessToken");
   const expiration = storage.getItem("accessTokenExpiration");
 
   if (!token || !expiration) {
+    console.log("⚠️ [Timer] No token or expiration found");
     return false;
   }
 
-  // حساب الوقت المتبقي بالثواني
-  const currentTime = Math.floor(Date.now() / 1000);
-  const timeUntilExpiry = expiration - currentTime;
+  // ✅ Parse expiration as number
+  const expirationTime = parseInt(expiration, 10);
+  if (isNaN(expirationTime)) {
+    console.error("❌ [Timer] Invalid expiration format");
+    return false;
+  }
 
-  // إذا باقي أقل من 5 دقائق (300 ثانية)، حدّث التوكن
-  if (timeUntilExpiry < 300) {
+  const currentTime = Math.floor(Date.now() / 1000);
+  const timeUntilExpiry = expirationTime - currentTime;
+
+  console.log(`⏱️ [Timer] Token expires in ${Math.floor(timeUntilExpiry / 60)} minutes (${timeUntilExpiry} seconds)`);
+
+  // ✅ Refresh if less than 6 minutes remaining (increased buffer for safety)
+  if (timeUntilExpiry < 360) {
+    console.log(`🔄 [Timer] Token expiring soon (${Math.floor(timeUntilExpiry / 60)} min remaining), refreshing...`);
     try {
       const response = await refreshToken();
       const { accessToken } = response.data;
 
-      // فك التوكن الجديد
+      // Decode new token
       const decoded = JSON.parse(atob(accessToken.split('.')[1]));
       
-      // تحديث التخزين
+      // Update storage
       storage.setItem("accessToken", accessToken);
-      storage.setItem("accessTokenExpiration", decoded.exp);
+      storage.setItem("accessTokenExpiration", decoded.exp.toString());
       
+      const newTimeLeft = decoded.exp - Math.floor(Date.now() / 1000);
+      console.log(`✅ [Timer] Token refreshed successfully - new expiry in ${Math.floor(newTimeLeft / 60)} minutes`);
       return true;
     } catch (error) {
-      console.error("Failed to refresh token:", error);
-      // في حالة الفشل، امسح البيانات وأعد التوجيه للـ login
+      console.error("❌ [Timer] Failed to refresh token:", error);
+      
+      // Clear and redirect
       localStorage.clear();
       sessionStorage.clear();
       window.location.href = "/login";
@@ -40,23 +55,35 @@ export const checkAndRefreshToken = async () => {
     }
   }
 
+  console.log(`✔️ [Timer] Token is still valid, no refresh needed`);
   return true;
 };
 
-//Timer لتحديث التوكن تلقائياً كل 10 دقائق
+/**
+ * ✅ Check every 5 minutes in production
+ */
 export const startTokenRefreshTimer = () => {
-  // تحقق فوراً عند بدء التطبيق
+  console.log("✅ [Timer] Token refresh timer starting...");
+  
+  // Check immediately on start
   checkAndRefreshToken();
 
-  // ثم كرر كل 10 دقائق
-  return setInterval(() => {
+  // ✅ Check every 5 minutes
+  const timerId = setInterval(() => {
+    console.log("⏰ [Timer] 5-minute interval triggered");
     checkAndRefreshToken();
-  }, 10 * 60 * 1000); // 10 minutes
+  }, 5 * 60 * 1000); // 5 minutes
+
+  console.log(`✅ [Timer] Timer started (ID: ${timerId}, checks every 5 min)`);
+  return timerId;
 };
 
-// إيقاف Timer عند Logout
+/**
+ * Stop the timer
+ */
 export const stopTokenRefreshTimer = (timerId) => {
   if (timerId) {
     clearInterval(timerId);
+    console.log(`🛑 [Timer] Token refresh timer stopped (ID: ${timerId})`);
   }
 };
