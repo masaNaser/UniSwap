@@ -23,7 +23,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import PublishIcon from "@mui/icons-material/Publish";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useMemo } from "react";
 import { getImageUrl } from "../../../utils/imageHelper";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import ProgressSection from "./ProgressSection";
@@ -138,22 +138,22 @@ export default function TrackTasksHeader({
   }, [cardData.id, cardData.projectStatus, isProvider, token]);
 
   // ===== Helper Functions =====
-  const canPublishProject = () => {
-    if (!isProvider) return false;
+// const canPublishProject = () => {
+//   if (!isProvider) return false;
 
-    const isCompleted = cardData.projectStatus === "Completed";
-    const isPublished = projectDetails?.isPublished || false;
-    const clientAcceptedPublishing = projectDetails?.clientAcceptPublished || false;
+//   const isCompleted = cardData.projectStatus === "Completed";
+//   const isPublished = projectDetails?.isPublished || false;
+//   const clientAcceptedPublishing = projectDetails?.clientAcceptPublished || false;
 
-    return isCompleted && !isPublished && clientAcceptedPublishing;
-  };
+//   return isCompleted && !isPublished && clientAcceptedPublishing;
+// };
 
-  const handlePublishSuccess = (publishedData) => {
-    log("✅ Project published:", publishedData);
-    if (onProjectClosed) {
-      onProjectClosed(true);
-    }
-  };
+// const handlePublishSuccess = (publishedData) => {
+//   log("✅ Project published:", publishedData);
+//   if (onProjectClosed) {
+//     onProjectClosed(true);
+//   }
+// };
 
   const getMinDateTime = () => {
     const now = new Date();
@@ -282,112 +282,190 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
   const canHandleOverdue = () => {
     return !isProvider && isOverdue;
   };
+  // ✅ أضف هاي الأسطر الأربعة
+// 1. زر النشر (يظهر فوراً عند اكتمال المشروع)
+  const showPublishButton = useMemo(() => {
+    if (!isProvider) return false;
+    const isCompleted = cardData?.projectStatus === "Completed";
+    const isPublished = projectDetails?.isPublished || false;
+    const clientAcceptedPublishing = projectDetails?.clientAcceptPublished || false;
+    return isCompleted && !isPublished && clientAcceptedPublishing;
+  }, [cardData?.projectStatus, projectDetails?.isPublished, projectDetails?.clientAcceptPublished, isProvider]);
 
-  const handleCloseProjectClick = () => {
+  // 2. زر إغلاق المشروع (تعديل منطق التحقق من النص)
+  const showCloseProjectButton = useMemo(() => {
+    if (!cardData?.projectStatus) return false;
+    const status = cardData.projectStatus.toLowerCase().trim();
+    
     if (isProvider) {
-      setOpenCloseDialog(true);
+      return status === "active" && progressPercentage === 100;
     } else {
-      setOpenReviewDialog(true);
+      return ["submittedforfinalreview", "inreview", "submitted"].includes(status);
     }
+  }, [cardData?.projectStatus, progressPercentage, isProvider]);
+
+  // 3. أزرار المراجعة والتأخير
+  const showViewReviewButton = useMemo(() => {
+    if (!isProvider) return false;
+    const isCompleted = cardData?.projectStatus === "Completed";
+    const isActive = cardData?.projectStatus === "Active";
+    return isCompleted || (isActive && !!projectDetails?.rejectionReason);
+  }, [cardData?.projectStatus, projectDetails?.rejectionReason, isProvider]);
+
+  const showHandleOverdueButton = useMemo(() => {
+    return !isProvider && isOverdue;
+  }, [isProvider, isOverdue]);
+
+   const handlePublishSuccess = (publishedData) => {
+    log("✅ Project published:", publishedData);
+    if (onProjectClosed) onProjectClosed(true);
+  };
+  
+  // const handleCloseProjectClick = () => {
+  //   if (isProvider) {
+  //     setOpenCloseDialog(true);
+  //   } else {
+  //     setOpenReviewDialog(true);
+  //   }
+  // };
+  
+  const handleCloseProjectClick = () => {
+    if (isProvider) setOpenCloseDialog(true);
+    else setOpenReviewDialog(true);
   };
 
+  // const handleProviderSubmit = async () => {
+  //   try {
+  //     setClosingProject(true);
+  //     await closeProjectByProvider(cardData.id, token);
+  //     log("✅ Project submitted successfully");
+
+  //     await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  //     setSnackbar({
+  //       open: true,
+  //       message: "Project submitted for final review successfully! ✅",
+  //       severity: "success",
+  //     });
+  //     setOpenCloseDialog(false);
+
+  //     if (onProjectClosed) {
+  //       await onProjectClosed();
+  //     }
+  //   } catch (err) {
+  //     logError("❌ Error submitting project:", err);
+
+  //     let errorMessage = "Failed to submit project.";
+  //     if (err.response?.data?.detail) {
+  //       errorMessage = err.response.data.detail;
+  //     } else if (err.response?.data?.message) {
+  //       errorMessage = err.response.data.message;
+  //     }
+  //     setSnackbar({
+  //       open: true,
+  //       message: errorMessage,
+  //       severity: "error",
+  //     });
+  //   } finally {
+  //     setClosingProject(false);
+  //   }
+  // };
+   
   const handleProviderSubmit = async () => {
     try {
       setClosingProject(true);
       await closeProjectByProvider(cardData.id, token);
-      log("✅ Project submitted successfully");
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setSnackbar({
-        open: true,
-        message: "Project submitted for final review successfully! ✅",
-        severity: "success",
-      });
+      setSnackbar({ open: true, message: "Project submitted for review! ✅", severity: "success" });
       setOpenCloseDialog(false);
-
-      if (onProjectClosed) {
-        await onProjectClosed();
-      }
+      if (onProjectClosed) await onProjectClosed();
     } catch (err) {
-      logError("❌ Error submitting project:", err);
-
-      let errorMessage = "Failed to submit project.";
-      if (err.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      }
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      setSnackbar({ open: true, message: "Failed to submit.", severity: "error" });
     } finally {
       setClosingProject(false);
     }
   };
 
-  const handleClientReview = async (reviewData) => {
+// const handleClientReview = async (reviewData) => {
+//   try {
+//     setClosingProject(true);
+
+//     const closeRequestData = {
+//       isAccepted: reviewData.isAccepted,
+//       rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
+//       rating: reviewData.isAccepted ? reviewData.rating : undefined,
+//       comment: reviewData.isAccepted ? reviewData.comment : undefined,
+//     };
+
+//     await closeProjectByClient(cardData.id, token, closeRequestData);
+
+//     // ✅ Start polling for points update
+//     startTemporaryPolling(2000);
+//     log("🚀 Polling started for points update");
+
+//     // ✅ أظهر الرسالة المناسبة
+//     if (reviewData.isAccepted) {
+//       setSnackbar({
+//         open: true,
+//         message: "Project completed successfully! Rating and review submitted. Points transferred. ✅",
+//         severity: "success",
+//       });
+//     } else {
+//       setSnackbar({
+//         open: true,
+//         message: "Project rejected and returned to Active status for rework.",
+//         severity: "info",
+//       });
+//     }
+
+//     setOpenReviewDialog(false);
+
+//     // ✅ خلّي الأب يحدّث الـ state
+//     if (onProjectClosed) {
+//       await onProjectClosed(true); // skip success message
+//     }
+//   } catch (err) {
+//     logError("❌ Error reviewing project:", err);
+
+//     let errorMessage = "Failed to review project.";
+//     if (err.response?.data?.detail) {
+//       errorMessage = err.response.data.detail;
+//     } else if (err.response?.data?.message) {
+//       errorMessage = err.response.data.message;
+//     } else if (err.response?.data?.errors) {
+//       const errors = err.response.data.errors;
+//       errorMessage = Object.values(errors).flat().join(", ");
+//     } else if (err.message) {
+//       errorMessage = err.message;
+//     }
+//     setSnackbar({
+//       open: true,
+//       message: errorMessage,
+//       severity: "error",
+//     });
+//   } finally {
+//     setClosingProject(false);
+//   }
+// };
+
+ const handleClientReview = async (reviewData) => {
     try {
       setClosingProject(true);
-
       const closeRequestData = {
         isAccepted: reviewData.isAccepted,
         rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
         rating: reviewData.isAccepted ? reviewData.rating : undefined,
         comment: reviewData.isAccepted ? reviewData.comment : undefined,
       };
-
       await closeProjectByClient(cardData.id, token, closeRequestData);
-
-      // ✅ Start polling for points update
       startTemporaryPolling(2000);
-      log("🚀 Polling started for points update");
-
-      if (reviewData.isAccepted) {
-        setSnackbar({
-          open: true,
-          message: "Project completed successfully! Rating and review submitted. Points transferred. ✅",
-          severity: "success",
-        });
-      } else {
-        setSnackbar({
-          open: true,
-          message: "Project rejected and returned to Active status for rework.",
-          severity: "info",
-        });
-      }
-
       setOpenReviewDialog(false);
-
-      if (onProjectClosed) {
-        await onProjectClosed();
-      }
+      if (onProjectClosed) await onProjectClosed(true);
     } catch (err) {
-      logError("❌ Error reviewing project:", err);
-
-      let errorMessage = "Failed to review project.";
-      if (err.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.errors) {
-        const errors = err.response.data.errors;
-        errorMessage = Object.values(errors).flat().join(", ");
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      setSnackbar({ open: true, message: "Error processing review", severity: "error" });
     } finally {
       setClosingProject(false);
     }
   };
-
   const handleOverdueSubmit = async (decisionData) => {
     try {
       setLoading(true);
@@ -443,10 +521,6 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
   const handleViewReview = () => {
     setOpenViewReviewDialog(true);
   };
-  useEffect(() => {
-  log("🔔 Header Detected Status Change:", cardData?.projectStatus);
-  log("🔔 Header Decision - Can Close?:", canCloseProject());
-}, [cardData?.projectStatus, progressPercentage]);
 
   return (
     <>
@@ -571,7 +645,7 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
             justifyContent: "flex-end",
           }}
         >
-          {canPublishProject() && (
+          {showPublishButton && (
             <CustomButton
               startIcon={<PublishIcon />}
               onClick={() => setOpenPublishModal(true)}
@@ -588,7 +662,7 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
             </CustomButton>
           )}
 
-          {canHandleOverdue() && (
+          {showHandleOverdueButton && (
             <CustomButton
               startIcon={<WarningAmberIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
               onClick={() => setOpenOverdueDialog(true)}
@@ -605,7 +679,7 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
             </CustomButton>
           )}
 
-          {canViewReview() && (
+          {showViewReviewButton && (
             <CustomButton
               startIcon={<RateReviewIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
               onClick={handleViewReview}
@@ -625,7 +699,7 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
             </CustomButton>
           )}
 
-          {canCloseProject() && (
+          {showCloseProjectButton  && (
             <CustomButton
               startIcon={<CheckCircleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
               onClick={handleCloseProjectClick}
