@@ -24,6 +24,7 @@ import {
 } from "@mui/icons-material";
 import Logo from "/logo.png";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
+import { startTokenRefreshTimer } from "../../../utils/tokenRefresh";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import CustomButton from "../../../components/CustomButton/CustomButton";
@@ -107,7 +108,12 @@ const loginHandle = async (data) => {
       storage.setItem("userId", userId);
       storage.setItem("userRole", userRole);
       
-      // 5. عرض رسالة نجاح والتوجيه
+      // 5. بدء Timer للتحديث التلقائي
+      const timerId = startTokenRefreshTimer();
+      window.tokenRefreshTimerId = timerId;
+      console.log("✅ Token refresh timer started after login");
+      
+      // 6. عرض رسالة نجاح والتوجيه
       Swal.fire({
         title: "Login successful!",
         icon: "success",

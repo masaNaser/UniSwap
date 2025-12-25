@@ -1,9 +1,47 @@
 import api from "./api";
-import axios from "axios";
+import { stopTokenRefreshTimer } from "../utils/tokenRefresh";
 
-export const register = (data) => api.post("/Account/register", data);
+// ==================== Authentication ====================
 
-export const login = (credentials) => api.post("/Account/login", credentials);
+export const login = async (credentials) => {
+  const response = await api.post("/Account/login", credentials);
+  return response;
+};
+
+export const register = async (userData) => {
+  const response = await api.post("/Account/register", userData);
+  return response;
+};
+
+export const logout = async () => {
+  try {
+    // إرسال طلب logout للباك-إند لإلغاء الـ refresh token من الـ database
+    await api.post("/Account/logout", {});
+  } catch (e) {
+    console.warn("Logout request failed", e);
+  } finally {
+    //  إيقاف Timer قبل مسح البيانات
+    if (window.tokenRefreshTimerId) {
+      stopTokenRefreshTimer(window.tokenRefreshTimerId);
+      window.tokenRefreshTimerId = null;
+    }
+
+    // مسح البيانات من المتصفح
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // التحويل للـ login
+    window.location.href = "/login";
+  }
+};
+
+// ✅ تحديث التوكن
+export const refreshToken = async () => {
+  const response = await api.post("/Account/refresh-token", {});
+  return response;
+};
+
+// ==================== Password Management ====================
 
 export const forgotPassword = (data) =>
   api.post("/Account/ForgotPassword", data);
@@ -17,32 +55,9 @@ export const resetPassword = ({ email, code, newPassword, confirmPassword }) =>
   });
 
 export const changePassword = async (data, token) => {
-  return await api.post(
-    `/Account/ChangePassword`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-};
-
-export const logout = async () => {
-  try {
-    // إرسال طلب logout للباك-إند لإلغاء الـ refresh token من الـ database
-    await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL || "https://uni1swap.runasp.net/"}Account/logout`,
-      {}, // body فاضي لأن الـ backend بيقرأ refresh token من الـ cookie
-      { withCredentials: true } // مهم لإرسال الـ cookies
-    );
-  } catch (e) {
-    console.warn("Logout request failed", e);
-  } finally {
-    // مسح البيانات من المتصفح
-    localStorage.clear();
-    sessionStorage.clear();
-    // التحويل للـ login
-    window.location.href = "/login";
-  }
+  return await api.post(`/Account/ChangePassword`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };

@@ -21,7 +21,6 @@
   flex: 1 1 480px; /* grow, shrink, min-size */
 }
 
-/* Make sidebar sticky */
 .feed-sidebar {
   margin: 40px auto;
 }
