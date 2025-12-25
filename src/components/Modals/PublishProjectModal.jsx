@@ -574,7 +574,7 @@ const PublishProjectModal = ({
             variant="body2"
             sx={{ mb: 0.7, fontWeight: "medium", color: "text.primary" }}
           >
-            Delivery Time 
+            Delivery Time
           </Typography>
           <TextField
             fullWidth
@@ -582,7 +582,7 @@ const PublishProjectModal = ({
             placeholder="e.g., 7 days"
             value={deliveryTimeInDays}
             onChange={(e) => {
-              setDeliveryTimeInDays(value);
+              setDeliveryTimeInDays(e.target.value);
             }}
             disabled={isSubmitting}
             sx={{

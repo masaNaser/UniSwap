@@ -7,6 +7,7 @@ export default function MessageInput({ onSend }) {
   const [text, setText] = useState("");
   const [files, setFiles] = useState([]);
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const handleAttachClick = () => fileInputRef.current.click();
 
@@ -27,15 +28,20 @@ export default function MessageInput({ onSend }) {
     onSend(text, files);
     setText("");
     setFiles([]);
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = '40px';
+    }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault(); 
-      handleSendClick();
-    }
-  };
-
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendClick();
+    }
+    // If Shift+Enter is pressed, allow default behavior (new line)
+  };
   return (
     <div className="message-input-wrapper">
       {/* منطقة عرض الملفات المرفقة - فوق الـ input */}
@@ -54,12 +60,23 @@ export default function MessageInput({ onSend }) {
 
       {/* منطقة الإدخال */}
       <div className="message-input">
-        <input
-          type="text"
+        <textarea
+          ref={textareaRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Type a message..."
           onKeyDown={handleKeyDown}
+          rows={1}
+          style={{
+            resize: 'none',
+            overflow: 'hidden',
+            minHeight: '40px',
+            maxHeight: '120px',
+          }}
+          onInput={(e) => {
+            e.target.style.height = 'auto';
+            e.target.style.height = e.target.scrollHeight + 'px';
+          }}
         />
         <button onClick={handleAttachClick}>
           <AttachFileIcon />
