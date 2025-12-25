@@ -30,6 +30,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { formatDateTime } from "../../../utils/timeHelper";
 import { useNavigateToProfile } from "../../../hooks/useNavigateToProfile";
 import { useTheme } from "@mui/material/styles";
+import { renderContentWithLinks } from "../../../utils/textHelper";
 
 const style = {
   position: "absolute",
@@ -161,7 +162,7 @@ const Comment = ({
                 variant="body2"
                 sx={{ my: 0.5, pr: isCurrentUser ? 3 : 0 }}
               >
-                {comment.content}
+                {renderContentWithLinks(comment.content)}
               </Typography>
               <Typography
                 variant="caption"

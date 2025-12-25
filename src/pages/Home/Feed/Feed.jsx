@@ -277,6 +277,7 @@ export default function Feed() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [updateCurrentUser]);
+
   const openDeleteDialog = (postId) => {
     setDeleteDialog({ open: true, postId });
   };
@@ -308,6 +309,7 @@ export default function Feed() {
       });
     }
   };
+
   const handleFileRemovedFromPost = (postId) => {
     console.log("🗑️ Removing file from post in Feed:", postId);
     setPosts((prev) =>
@@ -316,6 +318,7 @@ export default function Feed() {
       )
     );
   };
+  
   const openEditDialog = (postId) => {
     const postToEdit = posts.find((p) => p.id === postId);
     if (!postToEdit) return;

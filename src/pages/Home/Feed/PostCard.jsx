@@ -31,6 +31,8 @@ import ShareDialog from "../../../components/Modals/ShareDialog";
 import { formatDateTime } from "../../../utils/timeHelper";
 import { useTheme } from "@mui/material/styles";
 import { getUserName } from "../../../utils/authHelpers";
+import { renderContentWithLinks } from "../../../utils/textHelper";
+
 // ✅ FileDisplay Component - لعرض جميع أنواع الملفات
 const FileDisplay = ({ fileUrl }) => {
   if (!fileUrl || fileUrl === null || fileUrl === "") return null;
@@ -193,7 +195,7 @@ const CommentBubble = ({ comment, theme, onUserClick }) => (
       >
         {comment.author.userName}
       </Typography>
-      <Typography variant="body2">{comment.content}</Typography>
+      <Typography variant="body2">{renderContentWithLinks(comment.content)}</Typography>
       <Typography
         variant="caption"
         color="text.secondary"

@@ -32,6 +32,7 @@ import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { formatDateTime } from "../../../utils/timeHelper";
 import { getToken,getUserId,getUserName } from "../../../utils/authHelpers";
 import LikesModal from "../../Home/Feed/LikesModal";
+import PostCardSkeleton from '../../../components/Skeletons/PostCardSkeleton'; // تأكد من صحة المسار حسب مشروعك
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
   const isCurrentUserComment = comment.user?.userName === currentUser?.userName;
@@ -591,18 +592,20 @@ export default function PostsTab({ username }) {
     );
   };
 
-  if (loadingPosts) {
+if (loadingPosts) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 5 }}>
-        <CircularProgress />
+      <Box sx={{ mt: 3, width: "100%" }}>
+        {[1, 2, 3].map((i) => (
+          <PostCardSkeleton key={i} />
+        ))}
       </Box>
     );
   }
 
-  if (posts.length === 0) {
+if (posts.length === 0) {
     return (
-      <Box sx={{ textAlign: "center", py: 5, color: "text.secondary" }}>
-        <p>No posts yet</p>
+      <Box sx={{ textAlign: "center", py: 10, color: "text.secondary" }}>
+        <p style={{ fontSize: '1.2rem' }}>No posts yet 📭</p>
       </Box>
     );
   }

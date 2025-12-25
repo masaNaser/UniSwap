@@ -16,6 +16,7 @@ import {
   Menu,
   MenuItem,
   CircularProgress,
+  Skeleton 
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -30,6 +31,8 @@ import PublishProjectModal from "../../../components/Modals/PublishProjectModal"
 import api from "../../../services/api";
 import { getToken, getUserId } from "../../../utils/authHelpers";
 import { getImageUrl } from "../../../utils/imageHelper";
+import ProjectCardSkeleton from "../../../components/Skeletons/ProjectCardSkeleton";
+
 const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
   const currentUserId = getUserId();
   const isOwner = currentUserId === project.userId;
@@ -554,13 +557,13 @@ export default function SubServiceProjects() {
     }
   ];
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+  //       <CircularProgress />
+  //     </Box>
+  //   );
+  // }
 
   if (error) {
     return (
@@ -572,102 +575,109 @@ export default function SubServiceProjects() {
     );
   }
 
-  return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-      <Breadcrumbs
-        separator={<NavigateNextIcon fontSize="small" />}
-        sx={{ mb: 2 }}
+ return (
+  <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+    <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 2 }}>
+      <Typography component={Link} to="/app/browse" color="inherit" sx={{ textDecoration: "none" }}>
+        Services
+      </Typography>
+      <Typography
+        component={Link}
+        to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
+        color="inherit"
+        sx={{ textDecoration: "none" }}
       >
-        <Typography
-          component={Link}
-          to="/app/browse"
-          color="inherit"
-          sx={{ textDecoration: "none" }}
-        >
-          Services
-        </Typography>
-        <Typography
-          component={Link}
-          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
-          color="inherit"
-          sx={{ textDecoration: "none" }}
-        >
-          {parentServiceName}
-        </Typography>
-        <Typography color="text.primary">{subServiceName}</Typography>
-      </Breadcrumbs>
+        {parentServiceName}
+      </Typography>
+      <Typography color="text.primary">{subServiceName}</Typography>
+    </Breadcrumbs>
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 4,
-        }}
-      >
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            {subServiceName}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {totalCount} {totalCount === 1 ? "project" : "projects"} available
-          </Typography>
-        </Box>
-        <CustomButton
-          component={Link}
-          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-        >
-          Back
-        </CustomButton>
+    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+      <Box>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+          {subServiceName}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {loading ? <Skeleton width={100} /> : `${totalCount} ${totalCount === 1 ? "project" : "projects"} available`}
+        </Typography>
       </Box>
+      <CustomButton
+        component={Link}
+        to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
+        variant="outlined"
+        startIcon={<ArrowBackIcon />}
+      >
+        Back
+      </CustomButton>
+    </Box>
 
-      <FilterSection
-        searchPlaceholder="Search projects..."
-        searchValue={searchQuery}
-        onSearchChange={handleSearchChange}
-        items={filterItems}
+    <FilterSection
+      searchPlaceholder="Search projects..."
+      searchValue={searchQuery}
+      onSearchChange={handleSearchChange}
+      items={filterItems}
+    />
+
+    {/* الحاوية المشتركة للـ Skeleton والكروت الحقيقية */}
+   
+{/* الحاوية باستخدام نظام الـ Grid اللي ضبط معك في الصفحة الثانية */}
+<Box
+  sx={{
+    display: "grid",
+    gridTemplateColumns: {
+      xs: "1fr",           // موبايل: كرت واحد
+      sm: "repeat(2, 1fr)", // تابلت: كرتين
+      md: "repeat(3, 1fr)", // لابتوب: 3 كروت
+    },
+    gap: 3, // المسافة بين الكروت
+    mt: 2,
+  }}
+>
+  {loading ? (
+    /* هنا الـ Skeleton سيرجع 6 كروت، والـ Box grid سيوزعهم تلقائياً 3 في كل صف */
+    <ProjectCardSkeleton count={6} />
+  ) : projects.length === 0 ? (
+    <Box sx={{ gridColumn: "1 / -1", textAlign: "center", py: 4 }}>
+      <Typography variant="h6" color="text.secondary">
+        No projects found.
+      </Typography>
+    </Box>
+  ) : (
+    /* عرض المشاريع الحقيقية */
+    projects.map((project) => (
+      <ProjectCard 
+        key={project.id} 
+        project={project} 
+        onEditClick={handleEditClick} 
       />
+    ))
+  )}
+</Box>
 
-      {projects.length === 0 ? (
-        <Typography variant="h6" color="text.secondary" sx={{ textAlign: "center", mt: 4 }}>
-          No projects found.
-        </Typography>
-      ) : (
-        <>
-          <Grid container spacing={5}>
-            {projects.map((project) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={project.id}>
-                <ProjectCard project={project} onEditClick={handleEditClick} />
-              </Grid>
-            ))}
-          </Grid>
-
-          {totalPages > 1 && (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={(event, value) => setPage(value)}
-                color="primary"
-                variant="outlined"
-              />
-            </Box>
-          )}
-        </>
-      )}
-
-      {projectToEdit && (
-        <PublishProjectModal
-          open={editModalOpen}
-          onClose={handleEditModalClose}
-          publishProjectId={projectToEdit.id}
-          existingProject={projectToEdit}
-          isEditMode={true}
-          onEditSuccess={handleEditSuccess}
+    {/* الترقيم (Pagination) */}
+    {!loading && totalPages > 1 && (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(event, value) => setPage(value)}
+          color="primary"
+          variant="outlined"
         />
-      )}
-    </Container>
-  );
+      </Box>
+    )}
+
+    {/* المودال */}
+    {projectToEdit && (
+      <PublishProjectModal
+        open={editModalOpen}
+        onClose={handleEditModalClose}
+        publishProjectId={projectToEdit.id}
+        existingProject={projectToEdit}
+        isEditMode={true}
+        onEditSuccess={handleEditSuccess}
+      />
+    )}
+  </Container>
+);
 }
