@@ -1,7 +1,7 @@
 .chat-container {
   display: flex;
   height: 90vh;
-    border-radius: 16px;
+  border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   background: #fff;
 
@@ -15,40 +15,47 @@
   flex-direction: column;
   background: linear-gradient(180deg, #f8f9fc 0%, #ffffff 100%);
   overflow-y: auto;
-    position: relative;
-
+  position: relative;
 }
 
 .chat-list-header {
   padding: 0 20px;
   font-size: 18px;
   color: #fff;
-  height: 70px;            /* نفس الارتفاع تماماً */
+  height: 70px; /* نفس الارتفاع تماماً */
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  background: linear-gradient(to right, rgba(14, 165, 233, 1), rgba(152, 16, 250, 1));
+  background: linear-gradient(
+    to right,
+    rgba(14, 165, 233, 1),
+    rgba(152, 16, 250, 1)
+  );
   font-weight: bold;
-    letter-spacing: 0.3px;
+  letter-spacing: 0.3px;
   border-bottom: 1px solid #ddd;
   border-radius: 10px 10px 0 0;
-    position: relative;
+  position: relative;
   overflow: hidden;
 }
 
 .chat-list-header::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
   pointer-events: none;
 }
 .chat-list-items {
   flex: 1;
-   overflow-y: auto;
+  overflow-y: auto;
   /* padding: 8px 0; */
 }
 /* لتصميم شريط السكرول */
@@ -76,20 +83,23 @@
   cursor: pointer;
   border-bottom: 1px solid #eee;
   /* transition: background-color 0.2s; */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  
 }
 
 .chat-item::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
   height: 0;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 1), rgba(152, 16, 250, 1));
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 1),
+    rgba(152, 16, 250, 1)
+  );
   border-radius: 0 3px 3px 0;
   transition: height 0.3s ease;
 }
@@ -99,7 +109,11 @@
 }
 
 .chat-item.active {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(152, 16, 250, 0.12));
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.12),
+    rgba(152, 16, 250, 0.12)
+  );
 }
 
 .chat-item.active::before {
@@ -115,7 +129,6 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 3px;
-  
 }
 
 .chat-last {
@@ -132,7 +145,7 @@
   align-items: flex-end;
   font-size: 12px;
   color: #888;
-  gap:2px
+  gap: 2px;
 }
 
 .chat-date {
@@ -146,16 +159,19 @@
   flex-direction: column;
   background: #fff;
   position: relative;
-
 }
 
 .chat-header {
   display: flex;
-  height: 70px;            /* نفس الارتفاع تماماً */
+  height: 70px; /* نفس الارتفاع تماماً */
   align-items: center;
   justify-content: space-between;
-  padding:0 20px;
- background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(152, 16, 250, 0.05));
+  padding: 0 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.05),
+    rgba(152, 16, 250, 0.05)
+  );
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -166,11 +182,17 @@
   padding: 15px;
   overflow-y: auto;
   background: #f5f7fa;
-  background-image: 
-    radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(152, 16, 250, 0.03) 0%, transparent 50%);
+  background-image: radial-gradient(
+      circle at 20% 50%,
+      rgba(14, 165, 233, 0.03) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(152, 16, 250, 0.03) 0%,
+      transparent 50%
+    );
 }
-
 
 .message {
   margin-bottom: 10px;
@@ -182,11 +204,11 @@
   position: relative;
 
   /* --- الإضافات والتعديلات الأساسية --- */
-  max-width: 50%;           /* حدد عرض أقصى للمسج (مثلاً 70% من عرض الشاشة) */
-  width: fit-content;        /* بتكبر حسب النص بس بتوقف عند الـ 70% */
-  word-wrap: break-word;     /* كسر الكلمات الطويلة جداً */
+  max-width: 50%; /* حدد عرض أقصى للمسج (مثلاً 70% من عرض الشاشة) */
+  width: fit-content; /* بتكبر حسب النص بس بتوقف عند الـ 70% */
+  word-wrap: break-word; /* كسر الكلمات الطويلة جداً */
   overflow-wrap: break-word; /* لضمان كسر النص في المتصفحات الحديثة */
-  white-space: pre-wrap;     /* عشان يحافظ على الفراغات وينزل سطر لو كبست Enter */
+  white-space: pre-wrap; /* عشان يحافظ على الفراغات وينزل سطر لو كبست Enter */
 }
 
 @keyframes messageSlide {
@@ -214,8 +236,7 @@
   flex-direction: column;
   /* border-top: 1px solid #ddd; */
   background: #fff;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
-
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
 }
 
 /* منطقة عرض الملفات المرفقة - فوق الـ input */
@@ -226,8 +247,7 @@
   padding: 10px;
   background: #f9f9f9;
   border-bottom: 1px solid #e0e0e0;
-    animation: slideDown 0.3s ease;
-
+  animation: slideDown 0.3s ease;
 }
 
 @keyframes slideDown {
@@ -262,35 +282,36 @@
   align-items: center;
   color: rgba(0, 75, 173, 0.84);
   transition: all 0.2s ease;
-    border-radius: 50%;
-
+  border-radius: 50%;
 }
 
 .remove-file-btn:hover {
   background: #fff;
   color: #d32f2f;
-  transform: rotate(90deg);}
+  transform: rotate(90deg);
+}
 
 /* منطقة الإدخال */
 .message-input {
   display: flex;
   padding: 10px;
   background: #fff;
-  
 }
 
-.message-input input {
+.message-input textarea {
   flex: 1;
   padding: 8px 10px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 6px;
   outline: none;
-    font-size: 14px;
+  font-size: 14px;
   transition: all 0.3s ease;
   background: #f9fafb;
+  font-family: inherit;
+  line-height: 1.5;
 }
 
-.message-input input::placeholder {
+.message-input textarea::placeholder {
   color: #9ca3af;
 }
 .message-input button {
@@ -307,8 +328,7 @@
 
 .message-input button:hover {
   background-color: rgba(0, 75, 173, 0.1);
-    transform: scale(1.05);
-
+  transform: scale(1.05);
 }
 .message-input button:active {
   transform: scale(0.95);
@@ -331,8 +351,11 @@
   font-size: 18px;
   color: #9ca3af;
   background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
-  background-image: 
-    radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(14, 165, 233, 0.05) 0%,
+    transparent 50%
+  );
 }
 
 /* .empty-window::before {
@@ -342,23 +365,22 @@
   opacity: 0.5;
 } */
 
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .chat-container {
     height: 100vh;
     border-radius: 0;
   }
-  
+
   .chat-list {
     width: 100%;
     display: none;
   }
-  
+
   .chat-list.mobile-show {
     display: flex;
   }
-  
+
   .message {
     max-width: 65%;
   }
@@ -377,7 +399,7 @@
     width: 100%;
     display: none;
   }
-  
+
   .chat-list.mobile-show {
     display: flex !important;
   }
@@ -426,7 +448,6 @@
   background-color: #f5f5f5;
 }
 
-
 /* ==================== DARK MODE ==================== */
 
 .chat-container.dark-mode {
@@ -456,7 +477,11 @@
 }
 
 .chat-container.dark-mode .chat-item.active {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(152, 16, 250, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.2),
+    rgba(152, 16, 250, 0.2)
+  );
 }
 
 .chat-container.dark-mode .chat-name {
@@ -480,15 +505,26 @@
 }
 
 .chat-container.dark-mode .chat-header {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(152, 16, 250, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.1),
+    rgba(152, 16, 250, 0.1)
+  );
   border-bottom: 1px solid #333;
 }
 
 .chat-container.dark-mode .messages {
   background: #121212;
-  background-image: 
-    radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(152, 16, 250, 0.05) 0%, transparent 50%);
+  background-image: radial-gradient(
+      circle at 20% 50%,
+      rgba(14, 165, 233, 0.05) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(152, 16, 250, 0.05) 0%,
+      transparent 50%
+    );
 }
 
 .chat-container.dark-mode .message.them {
@@ -510,13 +546,13 @@
   background: #1e1e1e;
 }
 
-.chat-container.dark-mode .message-input input {
+.chat-container.dark-mode .message-input textarea {
   background: #2a2a2a;
   color: #fff;
   border: 1px solid #333;
 }
 
-.chat-container.dark-mode .message-input input::placeholder {
+.chat-container.dark-mode .message-input textarea::placeholder {
   color: #666;
 }
 
