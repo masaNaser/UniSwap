@@ -187,7 +187,6 @@ const ProjectDetails = () => {
     );
   }
 
-
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -253,12 +252,13 @@ const ProjectDetails = () => {
           {project.subServiceName && project.subServiceId && (
             <Typography
               component={Link}
-              to={`/app/services/${project.subServiceId
-                }/projects?name=${encodeURIComponent(
-                  project.subServiceName
-                )}&parentName=${encodeURIComponent(
-                  project.serviceName
-                )}&parentId=${project.serviceId}`}
+              to={`/app/services/${
+                project.subServiceId
+              }/projects?name=${encodeURIComponent(
+                project.subServiceName
+              )}&parentName=${encodeURIComponent(
+                project.serviceName
+              )}&parentId=${project.serviceId}`}
               color="inherit"
               sx={{ textDecoration: "none" }}
             >
@@ -290,7 +290,15 @@ const ProjectDetails = () => {
 
       {/* TOP SECTION - Image on Left (70%) + Service Details Card on Right (30%) */}
       <Container maxWidth="lg" sx={{ mb: 6 }}>
-        <Box sx={{ display: "flex", gap: 4, alignItems: "flex-start" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: 4,
+            alignItems: "stretch",
+          }}
+        >
+          {" "}
           <Box sx={{ flex: 2, minWidth: 0 }}>
             {project.img && !imgError ? (
               <Box
@@ -300,7 +308,7 @@ const ProjectDetails = () => {
                 onError={() => setImgError(true)}
                 sx={{
                   width: "100%",
-                  height: "350px",
+height: { xs: "220px", sm: "280px", md: "350px" },
                   objectFit: "cover",
                   borderRadius: "12px",
                 }}
@@ -309,7 +317,7 @@ const ProjectDetails = () => {
               <Box
                 sx={{
                   width: "100%",
-                  height: "350px",
+height: { xs: "220px", sm: "280px", md: "350px" },
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -323,7 +331,6 @@ const ProjectDetails = () => {
               </Box>
             ) : null}
           </Box>
-
           {/* Right - Service Details Card */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Paper
@@ -405,7 +412,7 @@ const ProjectDetails = () => {
                     Price
                   </Typography>
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                <Typography variant="body2" sx={{ fontWeight: "medium" }} >
                   {project.points || 0} pts
                 </Typography>
               </Box>
@@ -422,7 +429,7 @@ const ProjectDetails = () => {
           sx={{
             fontWeight: "bold",
             mb: 3,
-            fontSize: { xs: "1.8rem", md: "2.2rem" },
+            fontSize: { xs: "1rem", md: "1.6rem" },
           }}
         >
           {project.title}
@@ -483,7 +490,7 @@ const ProjectDetails = () => {
               fontSize: "1.02rem",
               lineHeight: 1.8,
               whiteSpace: "pre-wrap",
-              wordBreak: "break-word"
+              wordBreak: "break-word",
             }}
           >
             {project.description || "No description provided."}
@@ -536,6 +543,7 @@ const ProjectDetails = () => {
                 alignItems: "center",
                 gap: 3,
                 p: 3,
+                flexWrap:"wrap",
                 bgcolor: "rgb(106, 103, 254, 0.05)",
                 borderRadius: "12px",
                 border: "1px solid rgb(106, 103, 254, 0.2)",
@@ -701,7 +709,10 @@ const ProjectDetails = () => {
                       fontSize: "1.1rem",
                       fontWeight: "600",
                     }}
-                    src={getImageUrl(review.reviewerPicture, review.reviewerName)}
+                    src={getImageUrl(
+                      review.reviewerPicture,
+                      review.reviewerName
+                    )}
                     alt={review.reviewerName}
                   >
                     {review.reviewerName?.[0]?.toUpperCase() || "U"}
@@ -816,8 +827,8 @@ const ProjectDetails = () => {
               snackbar.severity === "success"
                 ? "#3b82f6"
                 : snackbar.severity === "error"
-                  ? "#EF4444"
-                  : undefined,
+                ? "#EF4444"
+                : undefined,
             color: "white",
             "& .MuiAlert-icon": {
               color: "white",

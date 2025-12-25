@@ -145,6 +145,7 @@ const SubServices = () => {
           justifyContent: "space-between",
           alignItems: "center",
           mb: 4,
+          flexWrap:"wrap"
         }}
       >
         <Box>

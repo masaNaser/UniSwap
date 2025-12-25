@@ -67,20 +67,19 @@ export default function FilterSection({
         onChange={onSearchChange}
         size="small"
         sx={{
-          flex: 1,
-          minWidth: "300px",
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "6px",
-            // backgroundColor: "#FAFBFC",
-            backgroundColor: theme.palette.mode === 'dark' ? '#474646ff' : '#FAFBFC',
-            "& fieldset": { borderColor: "#E2E8F0" },
-            "&:hover fieldset": { borderColor: "#CBD5E1" },
-            "&.Mui-focused fieldset": { borderColor: "#94A3B8" },
-          },
-          "& .MuiOutlinedInput-input": {
-            padding: "10px 12px",
-            fontSize: "14px",
-          },
+        flex: 1,
+    minWidth: { xs: "100%", sm: "280px" },
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "6px",
+      backgroundColor: theme.palette.mode === "dark" ? "#474646ff" : "#FAFBFC",
+      "& fieldset": { borderColor: "#E2E8F0" },
+      "&:hover fieldset": { borderColor: "#CBD5E1" },
+      "&.Mui-focused fieldset": { borderColor: "#94A3B8" },
+    },
+    "& .MuiOutlinedInput-input": {
+      padding: "10px 12px",
+      fontSize: "14px",
+    },
         }}
         InputProps={{
           startAdornment: (

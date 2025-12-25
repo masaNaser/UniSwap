@@ -16,7 +16,7 @@ import {
   Menu,
   MenuItem,
   CircularProgress,
-  Skeleton 
+  Skeleton,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -88,12 +88,12 @@ const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
             open={open}
             onClose={handleMenuClose}
             anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
+              vertical: "top",
+              horizontal: "right",
             }}
             transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
+              vertical: "top",
+              horizontal: "right",
             }}
           >
             <MenuItem
@@ -122,7 +122,9 @@ const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
         <CardMedia
           component="img"
           height="200"
-          image={project.img ? `https://uni1swap.runasp.net/${project.img}` : null}
+          image={
+            project.img ? `https://uni1swap.runasp.net/${project.img}` : null
+          }
           alt={project.title}
           sx={{
             borderTopLeftRadius: "12px",
@@ -182,7 +184,10 @@ const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Link to={`/app/profile/${project.userId}`} style={{ textDecoration: "none" }}>
+          <Link
+            to={`/app/profile/${project.userId}`}
+            style={{ textDecoration: "none" }}
+          >
             <Avatar
               sx={{ width: 32, height: 32, mr: 1, cursor: "pointer" }}
               src={getImageUrl(project.profilePicture, project.userName)}
@@ -403,9 +408,9 @@ export default function SubServiceProjects() {
   const mapRatingToBackend = (rating) => {
     const mapping = {
       "All Ratings": null,
-      "High": "high",
-      "Average": "avg",
-      "Low": "low",
+      High: "high",
+      Average: "avg",
+      Low: "low",
     };
     return mapping[rating];
   };
@@ -422,25 +427,25 @@ export default function SubServiceProjects() {
 
       // Add search if present (use debouncedSearch)
       if (debouncedSearch.trim()) {
-        queryParams.append('Search', debouncedSearch.trim());
+        queryParams.append("Search", debouncedSearch.trim());
       }
 
       // Add sort
       const sortParam = mapSortToBackend(selectedSort);
       if (sortParam) {
-        queryParams.append('SortBy', sortParam);
+        queryParams.append("SortBy", sortParam);
       }
 
       // Add price range
       const priceParam = mapPriceToBackend(selectedPrice);
       if (priceParam) {
-        queryParams.append('PriceRange', priceParam);
+        queryParams.append("PriceRange", priceParam);
       }
 
       // Add rating filter
       const ratingParam = mapRatingToBackend(selectedRating);
       if (ratingParam) {
-        queryParams.append('RatingFilter', ratingParam);
+        queryParams.append("RatingFilter", ratingParam);
       }
 
       console.log("📡 Fetching projects with params:", queryParams.toString());
@@ -524,37 +529,37 @@ export default function SubServiceProjects() {
 
   const filterItems = [
     {
-      type: 'menu',
+      type: "menu",
       label: selectedSort,
       items: [
         { label: "Highest Rated", value: "Highest Rated" },
         { label: "Price: Low to High", value: "Price: Low to High" },
-        { label: "Price: High to Low", value: "Price: High to Low" }
+        { label: "Price: High to Low", value: "Price: High to Low" },
       ],
-      onSelect: handleSortSelect
+      onSelect: handleSortSelect,
     },
     {
-      type: 'menu',
+      type: "menu",
       label: selectedPrice,
       items: [
         { label: "All Prices", value: "All Prices" },
         { label: "Under 50 pts", value: "Under 50 pts" },
         { label: "50-100 pts", value: "50-100 pts" },
-        { label: "Over 100 pts", value: "Over 100 pts" }
+        { label: "Over 100 pts", value: "Over 100 pts" },
       ],
-      onSelect: handlePriceSelect
+      onSelect: handlePriceSelect,
     },
     {
-      type: 'menu',
+      type: "menu",
       label: selectedRating,
       items: [
         { label: "All Ratings", value: "All Ratings" },
         { label: "High", value: "High" },
         { label: "Average", value: "Average" },
-        { label: "Low", value: "Low" }
+        { label: "Low", value: "Low" },
       ],
-      onSelect: handleRatingSelect
-    }
+      onSelect: handleRatingSelect,
+    },
   ];
 
   // if (loading) {
@@ -575,109 +580,137 @@ export default function SubServiceProjects() {
     );
   }
 
- return (
-  <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-    <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 2 }}>
-      <Typography component={Link} to="/app/browse" color="inherit" sx={{ textDecoration: "none" }}>
-        Services
-      </Typography>
-      <Typography
-        component={Link}
-        to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
-        color="inherit"
-        sx={{ textDecoration: "none" }}
+  return (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        sx={{ mb: 2 }}
       >
-        {parentServiceName}
-      </Typography>
-      <Typography color="text.primary">{subServiceName}</Typography>
-    </Breadcrumbs>
+        <Typography
+          component={Link}
+          to="/app/browse"
+          color="inherit"
+          sx={{ textDecoration: "none" }}
+        >
+          Services
+        </Typography>
+        <Typography
+          component={Link}
+          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
+            parentServiceName
+          )}`}
+          color="inherit"
+          sx={{ textDecoration: "none" }}
+        >
+          {parentServiceName}
+        </Typography>
+        <Typography color="text.primary">{subServiceName}</Typography>
+      </Breadcrumbs>
 
-    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
-      <Box>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-          {subServiceName}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {loading ? <Skeleton width={100} /> : `${totalCount} ${totalCount === 1 ? "project" : "projects"} available`}
-        </Typography>
-      </Box>
-      <CustomButton
-        component={Link}
-        to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(parentServiceName)}`}
-        variant="outlined"
-        startIcon={<ArrowBackIcon />}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+          flexWrap: "wrap",
+        }}
       >
-        Back
-      </CustomButton>
-    </Box>
-
-    <FilterSection
-      searchPlaceholder="Search projects..."
-      searchValue={searchQuery}
-      onSearchChange={handleSearchChange}
-      items={filterItems}
-    />
-
-    {/* الحاوية المشتركة للـ Skeleton والكروت الحقيقية */}
-   
-{/* الحاوية باستخدام نظام الـ Grid اللي ضبط معك في الصفحة الثانية */}
-<Box
-  sx={{
-    display: "grid",
-    gridTemplateColumns: {
-      xs: "1fr",           // موبايل: كرت واحد
-      sm: "repeat(2, 1fr)", // تابلت: كرتين
-      md: "repeat(3, 1fr)", // لابتوب: 3 كروت
-    },
-    gap: 3, // المسافة بين الكروت
-    mt: 2,
-  }}
->
-  {loading ? (
-    /* هنا الـ Skeleton سيرجع 6 كروت، والـ Box grid سيوزعهم تلقائياً 3 في كل صف */
-    <ProjectCardSkeleton count={6} />
-  ) : projects.length === 0 ? (
-    <Box sx={{ gridColumn: "1 / -1", textAlign: "center", py: 4 }}>
-      <Typography variant="h6" color="text.secondary">
-        No projects found.
-      </Typography>
-    </Box>
-  ) : (
-    /* عرض المشاريع الحقيقية */
-    projects.map((project) => (
-      <ProjectCard 
-        key={project.id} 
-        project={project} 
-        onEditClick={handleEditClick} 
-      />
-    ))
-  )}
-</Box>
-
-    {/* الترقيم (Pagination) */}
-    {!loading && totalPages > 1 && (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={(event, value) => setPage(value)}
-          color="primary"
+        <Box>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ fontWeight: "bold" }}
+          >
+            {subServiceName}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {`${totalCount} ${
+              totalCount === 1 ? "project" : "projects"
+            } available`}
+          </Typography>
+        </Box>
+        <CustomButton
+          component={Link}
+          to={`/app/browse/${parentServiceId}?name=${encodeURIComponent(
+            parentServiceName
+          )}`}
           variant="outlined"
-        />
+          startIcon={<ArrowBackIcon />}
+        >
+          Back
+        </CustomButton>
       </Box>
-    )}
 
-    {/* المودال */}
-    {projectToEdit && (
-      <PublishProjectModal
-        open={editModalOpen}
-        onClose={handleEditModalClose}
-        publishProjectId={projectToEdit.id}
-        existingProject={projectToEdit}
-        isEditMode={true}
-        onEditSuccess={handleEditSuccess}
+      <FilterSection
+        searchPlaceholder="Search projects..."
+        searchValue={searchQuery}
+        onSearchChange={handleSearchChange}
+        items={filterItems}
       />
-    )}
-  </Container>
-);
+
+      {/* الحاوية المشتركة للـ Skeleton والكروت الحقيقية */}
+
+      {/* الحاوية باستخدام نظام الـ Grid اللي ضبط معك في الصفحة الثانية */}
+
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr", // موبايل: كرت واحد
+            sm: "repeat(2, 1fr)", // تابلت: كرتين
+            md: "repeat(3, 1fr)", // لابتوب: 3 كروت
+          },
+          gap: 3, // المسافة بين الكروت
+          mt: 2,
+        }}
+      >
+        {loading ? (
+          /* هنا الـ Skeleton سيرجع 6 كروت، والـ Box grid سيوزعهم تلقائياً 3 في كل صف */
+          <ProjectCardSkeleton count={6} />
+        ) : projects.length === 0 ? (
+          <Box sx={{ gridColumn: "1 / -1", textAlign: "center", py: 4 }}>
+            <Typography variant="h6" color="text.secondary">
+              No projects found.
+            </Typography>
+          </Box>
+        ) : (
+          /* عرض المشاريع الحقيقية */
+          projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onEditClick={handleEditClick}
+            />
+          ))
+        )}
+      </Box>
+
+      {/* الترقيم (Pagination) */}
+      {!loading && totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 6 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(event, value) => setPage(value)}
+            color="primary"
+            variant="outlined"
+          />
+        </Box>
+      )}
+
+      {/* المودال */}
+      {projectToEdit && (
+        <PublishProjectModal
+          open={editModalOpen}
+          onClose={handleEditModalClose}
+          publishProjectId={projectToEdit.id}
+          existingProject={projectToEdit}
+          isEditMode={true}
+          onEditSuccess={handleEditSuccess}
+        />
+      )}
+    </Container>
+  );
 }

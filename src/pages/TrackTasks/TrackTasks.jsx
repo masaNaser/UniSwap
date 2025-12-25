@@ -1041,10 +1041,10 @@ const STATUS_MAP = {
   0: "ToDo",
   1: "InProgress",
   2: "InReview",
-  3: "Done"
+  3: "Done",
 };
 
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === "development";
 const log = (...args) => isDevelopment && console.log(...args);
 const logError = (...args) => console.error(...args);
 
@@ -1052,34 +1052,39 @@ const logError = (...args) => console.error(...args);
 const tasksReducer = (state, action) => {
   try {
     switch (action.type) {
-      case 'SET_TASKS':
+      case "SET_TASKS":
         return action.payload;
 
-      case 'TASK_CREATED': {
-        const statusKey = typeof action.payload.status === 'number' 
-          ? STATUS_MAP[action.payload.status] 
-          : action.payload.status;
-        
+      case "TASK_CREATED": {
+        const statusKey =
+          typeof action.payload.status === "number"
+            ? STATUS_MAP[action.payload.status]
+            : action.payload.status;
+
         if (!state[statusKey]) {
           logError(`Invalid status key: ${statusKey}`);
           return state;
         }
 
         // منع التكرار
-        if (state[statusKey].some(t => t.id === action.payload.id)) {
+        if (state[statusKey].some((t) => t.id === action.payload.id)) {
           return state;
         }
 
         return {
           ...state,
-          [statusKey]: [...state[statusKey], { ...action.payload, status: statusKey }]
+          [statusKey]: [
+            ...state[statusKey],
+            { ...action.payload, status: statusKey },
+          ],
         };
       }
 
-      case 'TASK_STATUS_CHANGED': {
-        const statusKey = typeof action.payload.status === 'number' 
-          ? STATUS_MAP[action.payload.status] 
-          : action.payload.status;
+      case "TASK_STATUS_CHANGED": {
+        const statusKey =
+          typeof action.payload.status === "number"
+            ? STATUS_MAP[action.payload.status]
+            : action.payload.status;
 
         if (!state[statusKey]) {
           logError(`Invalid status key: ${statusKey}`);
@@ -1087,22 +1092,28 @@ const tasksReducer = (state, action) => {
         }
 
         const newState = { ...state };
-        
+
         // حذف المهمة من جميع القوائم
-        Object.keys(newState).forEach(key => {
-          newState[key] = newState[key].filter(t => t.id !== action.payload.id);
+        Object.keys(newState).forEach((key) => {
+          newState[key] = newState[key].filter(
+            (t) => t.id !== action.payload.id
+          );
         });
 
         // إضافتها للقائمة الجديدة
-        newState[statusKey] = [...newState[statusKey], { ...action.payload, status: statusKey }];
+        newState[statusKey] = [
+          ...newState[statusKey],
+          { ...action.payload, status: statusKey },
+        ];
 
         return newState;
       }
 
-      case 'TASK_UPDATED': {
-        const statusKey = typeof action.payload.status === 'number' 
-          ? STATUS_MAP[action.payload.status] 
-          : action.payload.status;
+      case "TASK_UPDATED": {
+        const statusKey =
+          typeof action.payload.status === "number"
+            ? STATUS_MAP[action.payload.status]
+            : action.payload.status;
 
         if (!state[statusKey]) {
           logError(`Invalid status key: ${statusKey}`);
@@ -1111,16 +1122,20 @@ const tasksReducer = (state, action) => {
 
         return {
           ...state,
-          [statusKey]: state[statusKey].map(t => 
-            t.id === action.payload.id ? { ...action.payload, status: statusKey } : t
-          )
+          [statusKey]: state[statusKey].map((t) =>
+            t.id === action.payload.id
+              ? { ...action.payload, status: statusKey }
+              : t
+          ),
         };
       }
 
-      case 'TASK_DELETED': {
+      case "TASK_DELETED": {
         const newState = { ...state };
-        Object.keys(newState).forEach(key => {
-          newState[key] = newState[key].filter(t => t.id !== action.payload.taskId);
+        Object.keys(newState).forEach((key) => {
+          newState[key] = newState[key].filter(
+            (t) => t.id !== action.payload.taskId
+          );
         });
         return newState;
       }
@@ -1129,7 +1144,7 @@ const tasksReducer = (state, action) => {
         return state;
     }
   } catch (error) {
-    logError('Error in tasksReducer:', error);
+    logError("Error in tasksReducer:", error);
     return state;
   }
 };
@@ -1179,96 +1194,105 @@ export default function TrackTasks() {
   const [taskForReview, setTaskForReview] = useState(null);
 
   // ===== SignalR Connection =====
-  useEffect(() => {
-    if (!cardData?.id || !token) {
-      log("⚠️ Cannot start SignalR - missing cardData.id or token");
-      return;
-    }
+// ===== SignalR Connection =====
+useEffect(() => {
+  if (!cardData?.id || !token) {
+    log("⚠️ Cannot start SignalR - missing cardData.id or token");
+    return;
+  }
 
-    let isMounted = true;
-    let connection = null;
+  let isMounted = true;
+  let connection = null;
 
-    const startConnection = async () => {
-      connection = createProjectHubConnection();
-      connectionRef.current = connection;
+  const startConnection = async () => {
+    connection = createProjectHubConnection(); // تأكد أن هذه الدالة ترجع HubConnection
+    connectionRef.current = connection;
 
-      try {
-        await connection.start();
-        if (!isMounted) return;
+    try {
+      await connection.start();
+      if (!isMounted) return;
 
-        log("✅ Connected to SignalR Hub");
-        await connection.invoke("JoinProject", cardData.id);
+      log("✅ Connected to SignalR Hub");
+      await connection.invoke("JoinProject", cardData.id);
 
-        // ✅ Event Handlers with Error Handling
-        connection.on("TaskCreated", (newTask) => {
-          try {
-            log("SignalR: TaskCreated", newTask);
-            dispatch({ type: 'TASK_CREATED', payload: newTask });
-          } catch (error) {
-            logError("Error handling TaskCreated:", error);
-          }
-        });
+      // --- Task Events ---
+      connection.on("TaskCreated", (newTask) => {
+        dispatch({ type: "TASK_CREATED", payload: newTask });
+      });
 
-        connection.on("TaskStatusChanged", (updatedTask) => {
-          try {
-            log("SignalR: TaskStatusChanged", updatedTask);
-            dispatch({ type: 'TASK_STATUS_CHANGED', payload: updatedTask });
-          } catch (error) {
-            logError("Error handling TaskStatusChanged:", error);
-          }
-        });
+      connection.on("TaskStatusChanged", (updatedTask) => {
+        dispatch({ type: "TASK_STATUS_CHANGED", payload: updatedTask });
+      });
 
-        connection.on("TaskUpdated", (updatedTask) => {
-          try {
-            log("SignalR: TaskUpdated", updatedTask);
-            dispatch({ type: 'TASK_UPDATED', payload: updatedTask });
-          } catch (error) {
-            logError("Error handling TaskUpdated:", error);
-          }
-        });
+      connection.on("TaskUpdated", (updatedTask) => {
+        dispatch({ type: "TASK_UPDATED", payload: updatedTask });
+      });
 
-        connection.on("ProjectProgressUpdated", (data) => {
-          try {
-            log("SignalR: ProjectProgressUpdated", data);
-            setProjectDetails(prev => ({ 
-              ...prev, 
-              progressPercentage: data.progressPercentage 
-            }));
-          } catch (error) {
-            logError("Error handling ProjectProgressUpdated:", error);
-          }
-        });
+      connection.on("TaskDeleted", (data) => {
+        dispatch({ type: "TASK_DELETED", payload: data });
+      });
 
-        connection.on("TaskDeleted", (data) => {
-          try {
-            log("SignalR: TaskDeleted", data);
-            dispatch({ type: 'TASK_DELETED', payload: data });
-          } catch (error) {
-            logError("Error handling TaskDeleted:", error);
-          }
-        });
+      // --- Project Progress ---
+      connection.on("ProjectProgressUpdated", (data) => {
+        setProjectDetails((prev) => ({
+          ...prev,
+          progressPercentage: data.progressPercentage,
+        }));
+      });
 
-      } catch (err) {
-        logError("❌ SignalR Connection Error:", err);
-        if (isMounted) {
+      // --- ✅ التعديل المطلوب: استلام حدث إغلاق المشروع (بدون useEffect داخلي) ---
+      connection.on("ProjectClosed", (data) => {
+        log("SignalR: Received ProjectClosed", data);
+        
+        // مقارنة الـ ID (تأكد من حالة الأحرف projectId)
+        if (data.projectId === cardData.id || data.ProjectId === cardData.id) {
+          setCardData(prev => ({
+            ...prev,
+            projectStatus: "SubmittedForFinalReview" 
+          }));
+
           setSnackbar({
             open: true,
-            message: "Failed to connect to real-time updates",
-            severity: "warning"
+            message: "The provider has submitted the work! Review is now available.",
+            severity: "info"
           });
         }
-      }
-    };
+      });
 
-    startConnection();
+      // --- المشروع اكتمل ونُشر نهائياً ---
+      connection.on("ProjectPublished", (data) => {
+        log("SignalR: ProjectPublished", data);
+        // تحديث الحالة لـ Completed
+        setCardData(prev => ({ ...prev, projectStatus: "Completed" }));
+        
+        setSnackbar({
+          open: true,
+          message: "🎉 Project has been officially completed and published!",
+          severity: "success",
+        });
+      });
 
-    return () => {
-      isMounted = false;
-      if (connection) {
-        connection.stop().catch(err => logError("Error stopping connection:", err));
+    } catch (err) {
+      logError("❌ SignalR Connection Error:", err);
+      if (isMounted) {
+        setSnackbar({
+          open: true,
+          message: "Failed to connect to real-time updates",
+          severity: "warning",
+        });
       }
-    };
-  }, [cardData?.id, token]);
+    }
+  };
+
+  startConnection();
+
+  return () => {
+    isMounted = false;
+    if (connection) {
+      connection.stop().catch((err) => logError("Error stopping connection:", err));
+    }
+  };
+}, [cardData?.id, token]); // لاحظ حذف التبعيات غير الضرورية لتقليل الـ Re-renders
 
   // ===== Fetch Project Status =====
   const fetchProjectStatus = async () => {
@@ -1304,7 +1328,8 @@ export default function TrackTasks() {
             );
 
             if (currentProject) {
-              const status = currentProject.projectStatus || currentProject.status;
+              const status =
+                currentProject.projectStatus || currentProject.status;
               log(`✅ Found project in "${filter}" with status:`, status);
               return status;
             }
@@ -1325,42 +1350,53 @@ export default function TrackTasks() {
   // ===== Fetch Project Data =====
   const fetchProjectData = async () => {
     if (!cardData?.id || !token) {
-      log('⚠️ Cannot fetch - missing cardData.id or token');
+      log("⚠️ Cannot fetch - missing cardData.id or token");
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
-      log('🔄 Fetching project data for ID:', cardData.id);
+      log("🔄 Fetching project data for ID:", cardData.id);
 
-      const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
-      log('✅ Fetched project details:', detailsRes.data);
+      const detailsRes = await taskService.getProjectTaskDetails(
+        cardData.id,
+        token
+      );
+      log("✅ Fetched project details:", detailsRes.data);
       setProjectDetails(detailsRes.data);
 
       const dashboardStatus = await fetchProjectStatus();
-      log('📊 Dashboard Status Result:', dashboardStatus);
+      log("📊 Dashboard Status Result:", dashboardStatus);
 
-      setCardData(prev => {
+      setCardData((prev) => {
         const finalStatus = dashboardStatus
           ? mapProjectStatus(dashboardStatus)
-          : (prev.projectStatus || 'Active');
+          : prev.projectStatus || "Active";
 
         return {
           ...prev,
-          title: detailsRes.data.title || detailsRes.data.projectName || 'Project',
-          description: detailsRes.data.description || '',
+          title:
+            detailsRes.data.title || detailsRes.data.projectName || "Project",
+          description: detailsRes.data.description || "",
           projectStatus: finalStatus,
           status: finalStatus,
           deadline: detailsRes.data.deadline,
-          progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0,
-          rejectionReason: detailsRes.data.rejectionReason || prev.rejectionReason,
-          projectType: detailsRes.data.type || prev.projectType || 'RequestProject'
+          progressPercentage:
+            detailsRes.data.progressPercentage || prev.progressPercentage || 0,
+          rejectionReason:
+            detailsRes.data.rejectionReason || prev.rejectionReason,
+          projectType:
+            detailsRes.data.type || prev.projectType || "RequestProject",
         };
       });
 
-      const tasksRes = await taskService.getTasksByStatus(cardData.id, null, token);
-      log('All Tasks:', tasksRes.data);
+      const tasksRes = await taskService.getTasksByStatus(
+        cardData.id,
+        null,
+        token
+      );
+      log("All Tasks:", tasksRes.data);
 
       const tasksByStatus = {
         ToDo: [],
@@ -1369,21 +1405,20 @@ export default function TrackTasks() {
         Done: [],
       };
 
-      tasksRes.data.forEach(task => {
+      tasksRes.data.forEach((task) => {
         const status = task.status;
         if (tasksByStatus[status]) {
           tasksByStatus[status].push(task);
         }
       });
 
-      dispatch({ type: 'SET_TASKS', payload: tasksByStatus });
-
+      dispatch({ type: "SET_TASKS", payload: tasksByStatus });
     } catch (error) {
-      logError('Error fetching tasks:', error);
+      logError("Error fetching tasks:", error);
       setSnackbar({
         open: true,
-        message: 'Failed to load tasks',
-        severity: 'error',
+        message: "Failed to load tasks",
+        severity: "error",
       });
     } finally {
       setLoading(false);
@@ -1393,12 +1428,12 @@ export default function TrackTasks() {
   // ✅ Fixed Dependency Array
   useEffect(() => {
     if (!cardData?.id) {
-      log('📍 Skipping fetch - no cardData.id');
+      log("📍 Skipping fetch - no cardData.id");
       return;
     }
-    log('📍 useEffect triggered - cardData.id:', cardData.id);
+    log("📍 useEffect triggered - cardData.id:", cardData.id);
     fetchProjectData();
-  }, [cardData?.id]);
+  }, [cardData?.id,token]);
 
   // ===== Handlers =====
   const handleDeadlineUpdate = (newDeadline) => {
@@ -1422,7 +1457,8 @@ export default function TrackTasks() {
       logError("Error refreshing project data:", error);
       setSnackbar({
         open: true,
-        message: "Project closed but failed to refresh data. Please reload the page.",
+        message:
+          "Project closed but failed to refresh data. Please reload the page.",
         severity: "warning",
       });
     }
@@ -1441,9 +1477,10 @@ export default function TrackTasks() {
 
       setSnackbar({
         open: true,
-        message: decision === "accept"
-          ? "Task accepted successfully!"
-          : "Task rejected. Revision comments saved.",
+        message:
+          decision === "accept"
+            ? "Task accepted successfully!"
+            : "Task rejected. Revision comments saved.",
         severity: "success",
       });
     } catch (error) {
@@ -1501,7 +1538,7 @@ export default function TrackTasks() {
       } else {
         await taskService.createTask(cardData.id, formData, token);
         // ✅ SignalR will handle adding to state
-        
+
         setSnackbar({
           open: true,
           message: "Task added successfully!",
@@ -1569,18 +1606,18 @@ export default function TrackTasks() {
     try {
       await taskService.deleteTask(taskId, token);
       // ✅ SignalR will handle removing from state
-      
-      setSnackbar({ 
-        open: true, 
-        message: "Task deleted successfully", 
-        severity: "success" 
+
+      setSnackbar({
+        open: true,
+        message: "Task deleted successfully",
+        severity: "success",
       });
     } catch (error) {
       logError("Error deleting task:", error);
-      setSnackbar({ 
-        open: true, 
-        message: error.response?.data?.message || "Failed to delete task", 
-        severity: "error" 
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Failed to delete task",
+        severity: "error",
       });
     }
   };
@@ -1645,12 +1682,18 @@ export default function TrackTasks() {
     try {
       if (targetStatus === "InProgress" && currentStatus === "ToDo") {
         await taskService.moveToInProgress(draggedTask.id, token);
-      } else if (targetStatus === "InReview" && currentStatus === "InProgress") {
+      } else if (
+        targetStatus === "InReview" &&
+        currentStatus === "InProgress"
+      ) {
         setTaskForReview(draggedTask);
         setOpenReviewDueDateDialog(true);
         setDraggedTask(null);
         return;
-      } else if (targetStatus === "InProgress" && currentStatus === "InReview") {
+      } else if (
+        targetStatus === "InProgress" &&
+        currentStatus === "InReview"
+      ) {
         await taskService.moveToInProgress(draggedTask.id, token);
       } else if (targetStatus === "Done" && currentStatus === "InReview") {
         await taskService.acceptTask(draggedTask.id, "", token);
@@ -1667,15 +1710,17 @@ export default function TrackTasks() {
     } catch (error) {
       logError("Error moving task:", error);
 
-      const backendError = error.response?.data?.detail || error.response?.data?.message;
+      const backendError =
+        error.response?.data?.detail || error.response?.data?.message;
       let errorMessage;
       let severity = "warning";
 
-      if (backendError && (
-        backendError.includes("must be Rejected") ||
-        backendError.includes("Forbidden") ||
-        backendError.includes("not allowed")
-      )) {
+      if (
+        backendError &&
+        (backendError.includes("must be Rejected") ||
+          backendError.includes("Forbidden") ||
+          backendError.includes("not allowed"))
+      ) {
         errorMessage = `Cannot move task from ${statusLabels[currentStatus]} to ${statusLabels[targetStatus]}`;
       } else {
         errorMessage = backendError || "Failed to move task";
@@ -1724,7 +1769,10 @@ export default function TrackTasks() {
 
   // ===== Computed Values =====
   const completedTasks = tasks.Done.length;
-  const totalTasks = Object.values(tasks).reduce((sum, list) => sum + list.length, 0);
+  const totalTasks = Object.values(tasks).reduce(
+    (sum, list) => sum + list.length,
+    0
+  );
   const progressPercentage = projectDetails?.progressPercentage || 0;
 
   // ===== Render =====

@@ -238,13 +238,19 @@ export default function TrackTasksHeader({
     setIsEditing(true);
   };
 
-  const canCloseProject = () => {
-    const result = isProvider
-      ? cardData.projectStatus === "Active" && progressPercentage === 100
-      : cardData.projectStatus === "SubmittedForFinalReview";
+const canCloseProject = () => {
+  if (!cardData?.projectStatus) return false;
+  
+  // تحويل الحالة لنص صغير للمقارنة الآمنة
+  const status = cardData.projectStatus.toLowerCase();
 
-    return result;
-  };
+  if (isProvider) {
+    return status === "active" && progressPercentage === 100;
+  } else {
+    // فحص كل الاحتمالات الممكنة للكلمة
+    return status === "submittedforfinalreview" || status === "inreview";
+  }
+};
 
   const canViewReview = () => {
     if (!isProvider) return false;
