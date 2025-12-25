@@ -3,7 +3,6 @@ import {
   Typography,
   Avatar,
   Chip,
-  Grid,
   Button,
   IconButton,
   TextField,
@@ -40,9 +39,13 @@ import {
 } from "../../../services/taskService";
 import { getReviewByProject } from "../../../services/reviewService";
 import { formatDateTime } from "../../../utils/timeHelper";
-
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { getToken } from "../../../utils/authHelpers";
+
+const isDevelopment = import.meta.env.NODE_ENV === 'development';
+const log = (...args) => isDevelopment && console.log(...args);
+const logError = (...args) => console.error(...args);
+
 export default function TrackTasksHeader({
   cardData,
   projectDetails,
@@ -52,9 +55,7 @@ export default function TrackTasksHeader({
   onDeadlineUpdate,
   onProjectClosed,
 }) {
-  console.log("📊 TrackTasksHeader rendered with props:", cardData);
   const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
-
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
@@ -63,7 +64,6 @@ export default function TrackTasksHeader({
 
   const [isEditing, setIsEditing] = useState(false);
   const [newDeadline, setNewDeadline] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
@@ -90,97 +90,64 @@ export default function TrackTasksHeader({
     ? projectDetails?.clientAvatar || cardData.clientAvatar
     : projectDetails?.providerAvatar;
 
-  const displayInitials = isProvider
-    ? projectDetails?.clientInitials ||
-      cardData.clientInitials ||
-      displayName
-        // ?.split(" ")
-        // .map((n) => n[0])
-        // .join("")
-        // .substring(0, 2)
-        // .toUpperCase()
-        ?.trim()
-        .split(/\s+/) // تقسيم بناءً على أي مسافة بيضاء
-        .map((n) => n[0])
-        .join("")
-        .substring(0, 2)
-        .toUpperCase() ||
-      "??"
-    : displayName
-        ?.split(" ")
-        .map((n) => n[0])
-        .join("")
-        .substring(0, 2)
-        .toUpperCase();
+  // ✅ Fixed: تنظيف المنطق وإزالة التكرار
+  const getInitials = (name) => {
+    if (!name) return "??";
+    return name
+      .trim()
+      .split(/\s+/)
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase();
+  };
 
-  // const token = localStorage.getItem("accessToken");
+  const displayInitials = isProvider
+    ? projectDetails?.clientInitials || 
+      cardData.clientInitials || 
+      getInitials(displayName)
+    : getInitials(displayName);
+
   const token = getToken();
   const isOverdue = cardData.projectStatus === "Overdue";
+  const hasRejection = projectDetails?.rejectionReason && cardData.projectStatus === "Active";
 
-  const hasRejection =
-    projectDetails?.rejectionReason && cardData.projectStatus === "Active";
-
+  // ===== Fetch Review =====
   useEffect(() => {
     const fetchReview = async () => {
       if (!isProvider || !cardData.id) {
-        console.log("⏭️ Skipping review fetch - not provider or no project ID");
+        log("⏭️ Skipping review fetch - not provider or no project ID");
         return;
       }
 
-      // console.log("🔍 Checking if should fetch review:", {
-      //   projectStatus: cardData.projectStatus,
-      //   isCompleted: cardData.projectStatus === "Completed",
-      //   hasRejection: !!projectDetails?.rejectionReason,
-      // });
-
       if (cardData.projectStatus === "Completed") {
         try {
-          // console.log("📡 Fetching review for project:", cardData.id);
+          log("📡 Fetching review for project:", cardData.id);
           const response = await getReviewByProject(cardData.id, token);
-          // console.log("✅ Review fetch response:", response.data);
           setReviewData(response.data);
         } catch (error) {
-          console.error("❌ Error fetching review:", error);
-          console.log("📋 Error details:", {
-            status: error.response?.status,
-            data: error.response?.data,
-            message: error.message,
-          });
+          logError("❌ Error fetching review:", error);
           setReviewData(null);
         }
       }
     };
 
     fetchReview();
-  }, [
-    cardData.id,
-    cardData.projectStatus,
-    isProvider,
-    token,
-    projectDetails?.rejectionReason,
-  ]);
+  }, [cardData.id, cardData.projectStatus, isProvider, token]);
 
+  // ===== Helper Functions =====
   const canPublishProject = () => {
     if (!isProvider) return false;
 
     const isCompleted = cardData.projectStatus === "Completed";
     const isPublished = projectDetails?.isPublished || false;
-    const clientAcceptedPublishing =
-      projectDetails?.clientAcceptPublished || false;
-
-    // console.log("📢 Can publish check:", {
-    //   isProvider,
-    //   isCompleted,
-    //   isPublished,
-    //   clientAcceptedPublishing,
-    // });
+    const clientAcceptedPublishing = projectDetails?.clientAcceptPublished || false;
 
     return isCompleted && !isPublished && clientAcceptedPublishing;
   };
 
   const handlePublishSuccess = (publishedData) => {
-    // console.log("✅ Project published:", publishedData);
-
+    log("✅ Project published:", publishedData);
     if (onProjectClosed) {
       onProjectClosed(true);
     }
@@ -224,15 +191,11 @@ export default function TrackTasksHeader({
       }
 
       const deadlineISO = newDeadlineDateTime.toISOString();
-      // console.log("🔄 Updating deadline via API:", {
-      //   collaborationId,
-      //   deadlineISO,
-      // });
       await editCollaborationRequest(token, collaborationId, {
         deadline: deadlineISO,
       });
 
-      console.log("✅ Deadline updated successfully");
+      log("✅ Deadline updated successfully");
       if (onDeadlineUpdate) {
         onDeadlineUpdate(deadlineISO);
       }
@@ -244,7 +207,7 @@ export default function TrackTasksHeader({
         severity: "success",
       });
     } catch (err) {
-      console.error("❌ Error updating deadline:", err);
+      logError("❌ Error updating deadline:", err);
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
@@ -280,13 +243,6 @@ export default function TrackTasksHeader({
       ? cardData.projectStatus === "Active" && progressPercentage === 100
       : cardData.projectStatus === "SubmittedForFinalReview";
 
-    // console.log("🔒 Can close project check:", {
-    //   isProvider,
-    //   projectStatus: cardData.projectStatus,
-    //   progressPercentage,
-    //   result,
-    // });
-
     return result;
   };
 
@@ -297,9 +253,7 @@ export default function TrackTasksHeader({
     const isActive = cardData.projectStatus === "Active";
     const hasRejection = projectDetails?.rejectionReason;
 
-    const result = isCompleted || (isActive && hasRejection);
-
-    return result;
+    return isCompleted || (isActive && hasRejection);
   };
 
   const canHandleOverdue = () => {
@@ -318,7 +272,7 @@ export default function TrackTasksHeader({
     try {
       setClosingProject(true);
       await closeProjectByProvider(cardData.id, token);
-      // console.log("✅ Project submitted successfully");
+      log("✅ Project submitted successfully");
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -330,15 +284,10 @@ export default function TrackTasksHeader({
       setOpenCloseDialog(false);
 
       if (onProjectClosed) {
-        // console.log("🔄 Calling onProjectClosed callback");
         await onProjectClosed();
       }
     } catch (err) {
-      console.error("❌ Error submitting project:", err);
-      console.log("📋 Error details:", {
-        status: err.response?.status,
-        data: err.response?.data,
-      });
+      logError("❌ Error submitting project:", err);
 
       let errorMessage = "Failed to submit project.";
       if (err.response?.data?.detail) {
@@ -362,37 +311,24 @@ export default function TrackTasksHeader({
 
       const closeRequestData = {
         isAccepted: reviewData.isAccepted,
-        rejectionReason: reviewData.isAccepted
-          ? undefined
-          : reviewData.rejectionReason,
+        rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
         rating: reviewData.isAccepted ? reviewData.rating : undefined,
         comment: reviewData.isAccepted ? reviewData.comment : undefined,
       };
 
-      // console.log("📤 Sending close request to backend:", closeRequestData);
-      // console.log(
-      //   "🔗 API endpoint:",
-      //   `/api/Projects/${cardData.id}/close-by-client`
-      // );
-
       await closeProjectByClient(cardData.id, token, closeRequestData);
 
-      // console.log("✅ Project review submitted successfully");
-
-      // 🔥 فعّل الـ polling لمدة 10 ثواني
+      // ✅ Start polling for points update
       startTemporaryPolling(2000);
-      // console.log("🚀 Polling started for points update");
+      log("🚀 Polling started for points update");
 
       if (reviewData.isAccepted) {
-        // console.log("✅ Project accepted - rating and review saved");
         setSnackbar({
           open: true,
-          message:
-            "Project completed successfully! Rating and review submitted. Points transferred. ✅",
+          message: "Project completed successfully! Rating and review submitted. Points transferred. ✅",
           severity: "success",
         });
       } else {
-        console.log("❌ Project rejected - returned to Active");
         setSnackbar({
           open: true,
           message: "Project rejected and returned to Active status for rework.",
@@ -403,17 +339,10 @@ export default function TrackTasksHeader({
       setOpenReviewDialog(false);
 
       if (onProjectClosed) {
-        // console.log("🔄 Calling onProjectClosed callback");
         await onProjectClosed();
       }
     } catch (err) {
-      console.error("❌ Error reviewing project:", err);
-      console.log("📋 Full error object:", {
-        message: err.message,
-        response: err.response,
-        status: err.response?.status,
-        data: err.response?.data,
-      });
+      logError("❌ Error reviewing project:", err);
 
       let errorMessage = "Failed to review project.";
       if (err.response?.data?.detail) {
@@ -438,22 +367,17 @@ export default function TrackTasksHeader({
 
   const handleOverdueSubmit = async (decisionData) => {
     try {
-      // console.log("📤 Submitting overdue decision:", decisionData);
       setLoading(true);
-      const response = await handleOverdueDecision(
-        cardData.id,
-        token,
-        decisionData
-      );
+      await handleOverdueDecision(cardData.id, token, decisionData);
 
-      console.log("✅ Overdue decision submitted successfully");
-      console.log("📊 Server response:", response.data);
-      // 🔥 إذا كان cancel (reject extend) - فعّل الـ polling
+      log("✅ Overdue decision submitted successfully");
+
+      // ✅ Start polling if cancelled (refund points)
       if (!decisionData.acceptExtend) {
         startTemporaryPolling(2000);
-        console.log("🚀 Polling started for points refund");
+        log("🚀 Polling started for points refund");
       }
-      // رسالة النجاح تختلف حسب القرار المتخذ
+
       const successMessage = decisionData.acceptExtend
         ? "Project deadline extended successfully! The project is now Active. ⏰"
         : "Project cancelled successfully! Points have been refunded to your account. 💰";
@@ -467,15 +391,10 @@ export default function TrackTasksHeader({
       setOpenOverdueDialog(false);
 
       if (onProjectClosed) {
-        // console.log("🔄 Calling onProjectClosed callback");
         await onProjectClosed();
       }
     } catch (err) {
-      console.error("❌ Error handling overdue decision:", err);
-      console.log("📋 Error details:", {
-        status: err.response?.status,
-        data: err.response?.data,
-      });
+      logError("❌ Error handling overdue decision:", err);
 
       let errorMessage = "Failed to process your request.";
       if (err.response?.data?.detail) {
@@ -489,6 +408,8 @@ export default function TrackTasksHeader({
         message: errorMessage,
         severity: "error",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -508,8 +429,7 @@ export default function TrackTasksHeader({
         mb: 3,
         p: { xs: 2, sm: 3 },
         pb: 0,
-        border:
-          isOverdue || hasRejection ? "2px solid #DC2626" : "1px solid #E5E7EB",
+        border: isOverdue || hasRejection ? "2px solid #DC2626" : "1px solid #E5E7EB",
         position: "relative",
       }}
     >
@@ -547,16 +467,8 @@ export default function TrackTasksHeader({
             boxShadow: 3,
           }}
         >
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={1}
-          >
-            <Typography
-              fontWeight="bold"
-              sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
-            >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+            <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
               Edit Deadline
             </Typography>
             <IconButton size="small" onClick={() => setIsEditing(false)}>
@@ -614,13 +526,7 @@ export default function TrackTasksHeader({
           gap: { xs: 1.5, sm: 1 },
         }}
       >
-        <IconButton
-          onClick={onBack}
-          sx={{
-            color: "#6B7280",
-            p: 1,
-          }}
-        >
+        <IconButton onClick={onBack} sx={{ color: "#6B7280", p: 1 }}>
           <ArrowBackIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
         </IconButton>
 
@@ -651,9 +557,7 @@ export default function TrackTasksHeader({
 
           {canHandleOverdue() && (
             <CustomButton
-              startIcon={
-                <WarningAmberIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
-              }
+              startIcon={<WarningAmberIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
               onClick={() => setOpenOverdueDialog(true)}
               sx={{
                 textTransform: "none",
@@ -670,9 +574,7 @@ export default function TrackTasksHeader({
 
           {canViewReview() && (
             <CustomButton
-              startIcon={
-                <RateReviewIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
-              }
+              startIcon={<RateReviewIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
               onClick={handleViewReview}
               sx={{
                 textTransform: "none",
@@ -692,9 +594,7 @@ export default function TrackTasksHeader({
 
           {canCloseProject() && (
             <CustomButton
-              startIcon={
-                <CheckCircleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
-              }
+              startIcon={<CheckCircleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
               onClick={handleCloseProjectClick}
               sx={{
                 textTransform: "none",
@@ -746,16 +646,13 @@ export default function TrackTasksHeader({
           </Typography>
         </Box>
 
-        {/* Progress Section - Responsive positioning */}
+        {/* Progress Section */}
         <Box
           sx={{
             position: { xs: "static", md: "absolute" },
             top: { md: 80 },
             right: {
-              md:
-                !isProvider && cardData.projectStatus === "Active" && !isOverdue
-                  ? 56
-                  : 16,
+              md: !isProvider && cardData.projectStatus === "Active" && !isOverdue ? 56 : 16,
             },
             width: { xs: "100%", sm: "100%", md: "280px" },
           }}
@@ -833,8 +730,7 @@ export default function TrackTasksHeader({
                 if (cardData.projectStatus === "Overdue") return "#FEE2E2";
                 if (cardData.projectStatus === "Active") return "#D1FAE5";
                 if (cardData.projectStatus === "Completed") return "#DBEAFE";
-                if (cardData.projectStatus === "SubmittedForFinalReview")
-                  return "#F3E8FF";
+                if (cardData.projectStatus === "SubmittedForFinalReview") return "#F3E8FF";
                 if (cardData.projectStatus === "Cancelled") return "#F3F4F6";
                 return "#EFF6FF";
               })(),
@@ -842,8 +738,7 @@ export default function TrackTasksHeader({
                 if (cardData.projectStatus === "Overdue") return "#DC2626";
                 if (cardData.projectStatus === "Active") return "#059669";
                 if (cardData.projectStatus === "Completed") return "#0284C7";
-                if (cardData.projectStatus === "SubmittedForFinalReview")
-                  return "#A855F7";
+                if (cardData.projectStatus === "SubmittedForFinalReview") return "#A855F7";
                 if (cardData.projectStatus === "Cancelled") return "#6B7280";
                 return "#0284C7";
               })(),
@@ -889,8 +784,7 @@ export default function TrackTasksHeader({
               color="#991B1B"
               sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
             >
-              This project passed its deadline on{" "}
-              {formatDateTime(cardData.deadline)}.
+              This project passed its deadline on {formatDateTime(cardData.deadline)}.
               {!isProvider &&
                 " Please use the 'Handle Overdue' button above to extend the deadline or cancel the project."}
             </Typography>
@@ -971,40 +865,42 @@ export default function TrackTasksHeader({
             tasks must be completed before submission.
           </Typography>
         </DialogContent>
-        <DialogActions
-          sx={{
-            px: { xs: 2, sm: 3 },
-            pb: { xs: 2, sm: 3 },
-            flexWrap: "wrap",
-            gap: 1,
-          }}
-        >
-          <Button
-            onClick={() => setOpenCloseDialog(false)}
-            disabled={closingProject}
-            sx={{
-              textTransform: "none",
-              fontSize: { xs: "0.875rem", sm: "1rem" },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleProviderSubmit}
-            variant="contained"
-            disabled={closingProject}
-            sx={{
-              textTransform: "none",
-              fontSize: { xs: "0.875rem", sm: "1rem" },
-              background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
-              "&:hover": {
-                background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
-              },
-            }}
-          >
-            {closingProject ? "Submitting..." : "Confirm Submit"}
-          </Button>
-        </DialogActions>
+      <DialogActions
+  sx={{
+    px: { xs: 2, sm: 3 },
+    pb: { xs: 2, sm: 3 },
+    flexWrap: "wrap",
+    gap: 1,
+  }}
+>
+  <Button
+    onClick={() => setOpenCloseDialog(false)}
+    disabled={closingProject}
+    sx={{
+      textTransform: "none",
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+    }}
+  >
+    Cancel
+  </Button>
+
+  <Button
+    onClick={handleProviderSubmit}
+    variant="contained"
+    disabled={closingProject}
+    sx={{
+      textTransform: "none",
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
+      "&:hover": {
+        background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
+      },
+    }}
+  >
+    {closingProject ? "Submitting..." : "Confirm Submit"}
+  </Button>
+</DialogActions>
+
       </Dialog>
 
       {/* Client Review Dialog */}
