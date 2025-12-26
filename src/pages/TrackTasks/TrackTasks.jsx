@@ -1325,11 +1325,11 @@ export default function TrackTasks() {
               status: "Completed",
             }));
 
-            setSnackbar({
-              open: true,
-              message: "🎉 The client has accepted the project! Well done!",
-              severity: "success",
-            });
+            // setSnackbar({
+            //   open: true,
+            //   message: "🎉 The client has accepted the project! Well done!",
+            //   severity: "success",
+            // });
           }
         });
 
@@ -1379,13 +1379,13 @@ export default function TrackTasks() {
                 data.reason || data.Reason || "No reason provided",
             }));
 
-            setSnackbar({
-              open: true,
-              message: `⚠️ Project rejected: ${
-                data.reason || data.Reason || "Check rejection details"
-              }`,
-              severity: "warning",
-            });
+            // setSnackbar({
+            //   open: true,
+            //   message: `⚠️ Project rejected: ${
+            //     data.reason || data.Reason || "Check rejection details"
+            //   }`,
+            //   severity: "warning",
+            // });
           }
         });
       } catch (err) {
@@ -1565,11 +1565,11 @@ export default function TrackTasks() {
 
       setProjectDetails(newData);
 
-      setSnackbar({
-        open: true,
-        message: "Project submitted For Final Review.",
-        severity: "success",
-      });
+      // setSnackbar({
+      //   open: true,
+      //   message: "Project submitted For Final Review.",
+      //   severity: "success",
+      // });
     } catch (error) {
       logError("Error refreshing project data:", error);
     }
@@ -1877,7 +1877,24 @@ export default function TrackTasks() {
     setSelectedTask({ task, status });
     setAnchorEl(e.currentTarget);
   };
+   
+  const handleProjectStatusUpdate = async (newStatus) => {
+  log("🔄 Manual Status Update triggered:", newStatus);
+  
+  setCardData((prev) => ({
+    ...prev,
+    projectStatus: newStatus,
+    status: newStatus,
+  }));
 
+  setProjectDetails((prev) => ({
+    ...prev,
+    status: newStatus,
+  }));
+
+  // إعادة جلب كل البيانات من السيرفر للتأكد أن كل شيء متزامن
+  await fetchProjectData(); 
+};
   // ===== Computed Values =====
   const completedTasks = tasks.Done.length;
   const totalTasks = Object.values(tasks).reduce(
@@ -1915,9 +1932,11 @@ export default function TrackTasks() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <TrackTasksHeader
+      
         // 🚩 السر هنا: عندما تتغير الحالة، الـ key سيتغير
         // مما يجبر الـ Header على "إعادة الرندرة" وحساب canCloseProject من جديد
-        key={`${cardData?.id}-${cardData?.projectStatus}`}
+  key={`header-${cardData?.id}-${cardData?.projectStatus}-${Date.now()}`}
+  onProjectStatusUpdate={handleProjectStatusUpdate}
         cardData={cardData}
         projectDetails={projectDetails}
         isProvider={isProvider}

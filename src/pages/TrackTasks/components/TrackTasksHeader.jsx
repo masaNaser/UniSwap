@@ -54,6 +54,7 @@ export default function TrackTasksHeader({
   onBack,
   onDeadlineUpdate,
   onProjectClosed,
+  onProjectStatusUpdate
 }) {
   const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
   const theme = useTheme();
@@ -135,25 +136,7 @@ export default function TrackTasksHeader({
 
     fetchReview();
   }, [cardData.id, cardData.projectStatus, isProvider, token]);
-
-  // ===== Helper Functions =====
-  // const canPublishProject = () => {
-  //   if (!isProvider) return false;
-
-  //   const isCompleted = cardData.projectStatus === "Completed";
-  //   const isPublished = projectDetails?.isPublished || false;
-  //   const clientAcceptedPublishing = projectDetails?.clientAcceptPublished || false;
-
-  //   return isCompleted && !isPublished && clientAcceptedPublishing;
-  // };
-
-  // const handlePublishSuccess = (publishedData) => {
-  //   log("✅ Project published:", publishedData);
-  //   if (onProjectClosed) {
-  //     onProjectClosed(true);
-  //   }
-  // };
-
+ 
   const getMinDateTime = () => {
     const now = new Date();
     const minDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -281,7 +264,6 @@ export default function TrackTasksHeader({
   const canHandleOverdue = () => {
     return !isProvider && isOverdue;
   };
-  // ✅ أضف هاي الأسطر الأربعة
   // 1. زر النشر (يظهر فوراً عند اكتمال المشروع)
   const showPublishButton = useMemo(() => {
     if (!isProvider) return false;
@@ -298,8 +280,6 @@ export default function TrackTasksHeader({
   ]);
 
   // 2. زر إغلاق المشروع (تعديل منطق التحقق من النص)
-  // 2. زر إغلاق المشروع (تعديل منطق التحقق من النص)
-
   const showCloseProjectButton = useMemo(() => {
     if (!cardData?.projectStatus) {
       log("⚠️ No projectStatus in cardData");
@@ -356,61 +336,14 @@ export default function TrackTasksHeader({
   const showHandleOverdueButton = useMemo(() => {
     return !isProvider && isOverdue;
   }, [isProvider, isOverdue]);
-
   const handlePublishSuccess = (publishedData) => {
     log("✅ Project published:", publishedData);
     if (onProjectClosed) onProjectClosed(true);
   };
-
-  // const handleCloseProjectClick = () => {
-  //   if (isProvider) {
-  //     setOpenCloseDialog(true);
-  //   } else {
-  //     setOpenReviewDialog(true);
-  //   }
-  // };
-
   const handleCloseProjectClick = () => {
     if (isProvider) setOpenCloseDialog(true);
     else setOpenReviewDialog(true);
   };
-
-  // const handleProviderSubmit = async () => {
-  //   try {
-  //     setClosingProject(true);
-  //     await closeProjectByProvider(cardData.id, token);
-  //     log("✅ Project submitted successfully");
-
-  //     await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  //     setSnackbar({
-  //       open: true,
-  //       message: "Project submitted for final review successfully! ✅",
-  //       severity: "success",
-  //     });
-  //     setOpenCloseDialog(false);
-
-  //     if (onProjectClosed) {
-  //       await onProjectClosed();
-  //     }
-  //   } catch (err) {
-  //     logError("❌ Error submitting project:", err);
-
-  //     let errorMessage = "Failed to submit project.";
-  //     if (err.response?.data?.detail) {
-  //       errorMessage = err.response.data.detail;
-  //     } else if (err.response?.data?.message) {
-  //       errorMessage = err.response.data.message;
-  //     }
-  //     setSnackbar({
-  //       open: true,
-  //       message: errorMessage,
-  //       severity: "error",
-  //     });
-  //   } finally {
-  //     setClosingProject(false);
-  //   }
-  // };
 
   const handleProviderSubmit = async () => {
     try {
@@ -434,96 +367,64 @@ export default function TrackTasksHeader({
     }
   };
 
-  // const handleClientReview = async (reviewData) => {
-  //   try {
-  //     setClosingProject(true);
+const handleClientReview = async (reviewData) => {
+  try {
 
-  //     const closeRequestData = {
-  //       isAccepted: reviewData.isAccepted,
-  //       rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
-  //       rating: reviewData.isAccepted ? reviewData.rating : undefined,
-  //       comment: reviewData.isAccepted ? reviewData.comment : undefined,
-  //     };
+    setClosingProject(true);
+    const closeRequestData = {
+      isAccepted: reviewData.isAccepted,
+      rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
+      rating: reviewData.isAccepted ? reviewData.rating : undefined,
+      comment: reviewData.isAccepted ? reviewData.comment : undefined,
+    };
+    
+    log("📤 Submitting client review:", closeRequestData);
+    await closeProjectByClient(cardData.id, token, closeRequestData);
+    
+    // ✅ تحديث الحالة يدوياً وفوراً عند الكلاينت
+    // نستخدم الدالة التي مررناها من الأب
+    if (onProjectStatusUpdate) {
+       const nextStatus = reviewData.isAccepted ? "Completed" : "Active";
+       await onProjectStatusUpdate(nextStatus); 
+       log(`🔄 UI status forced to: ${nextStatus}`);
+    }
 
-  //     await closeProjectByClient(cardData.id, token, closeRequestData);
-
-  //     // ✅ Start polling for points update
-  //     startTemporaryPolling(2000);
-  //     log("🚀 Polling started for points update");
-
-  //     // ✅ أظهر الرسالة المناسبة
-  //     if (reviewData.isAccepted) {
-  //       setSnackbar({
-  //         open: true,
-  //         message: "Project completed successfully! Rating and review submitted. Points transferred. ✅",
-  //         severity: "success",
-  //       });
-  //     } else {
-  //       setSnackbar({
-  //         open: true,
-  //         message: "Project rejected and returned to Active status for rework.",
-  //         severity: "info",
-  //       });
-  //     }
-
-  //     setOpenReviewDialog(false);
-
-  //     // ✅ خلّي الأب يحدّث الـ state
-  //     if (onProjectClosed) {
-  //       await onProjectClosed(true); // skip success message
-  //     }
-  //   } catch (err) {
-  //     logError("❌ Error reviewing project:", err);
-
-  //     let errorMessage = "Failed to review project.";
-  //     if (err.response?.data?.detail) {
-  //       errorMessage = err.response.data.detail;
-  //     } else if (err.response?.data?.message) {
-  //       errorMessage = err.response.data.message;
-  //     } else if (err.response?.data?.errors) {
-  //       const errors = err.response.data.errors;
-  //       errorMessage = Object.values(errors).flat().join(", ");
-  //     } else if (err.message) {
-  //       errorMessage = err.message;
-  //     }
-  //     setSnackbar({
-  //       open: true,
-  //       message: errorMessage,
-  //       severity: "error",
-  //     });
-  //   } finally {
-  //     setClosingProject(false);
-  //   }
-  // };
-
-  const handleClientReview = async (reviewData) => {
-    try {
-      setClosingProject(true);
-      const closeRequestData = {
-        isAccepted: reviewData.isAccepted,
-        rejectionReason: reviewData.isAccepted
-          ? undefined
-          : reviewData.rejectionReason,
-        rating: reviewData.isAccepted ? reviewData.rating : undefined,
-        comment: reviewData.isAccepted ? reviewData.comment : undefined,
-      };
-      await closeProjectByClient(cardData.id, token, closeRequestData);
- if (reviewData.isAccepted) {
+    if (reviewData.isAccepted) {
       startTemporaryPolling(2000);
       log("🚀 Polling started for points update");
-    }
-          setOpenReviewDialog(false);
-      if (onProjectClosed) await onProjectClosed(true);
-    } catch (err) {
+      
       setSnackbar({
         open: true,
-        message: "Error processing review",
-        severity: "error",
+        message: "✅ Project accepted! Rating submitted. Points transferred.",
+        severity: "success",
       });
-    } finally {
-      setClosingProject(false);
+    } 
+    else {
+      setSnackbar({
+        open: true,
+        message: "⚠️ Project rejected. Provider will rework it.",
+        severity: "warning",
+      });
     }
-  };
+    
+    setOpenReviewDialog(false);
+    
+    // هذا السطر استمر بتركه كدعم إضافي
+    if (onProjectClosed) {
+      await onProjectClosed(true); 
+    }
+    
+  } catch (err) {
+    logError("❌ Error reviewing project:", err);
+    setSnackbar({
+      open: true,
+      message: err.response?.data?.message || "Error processing review",
+      severity: "error",
+    });
+  } finally {
+    setClosingProject(false);
+  }
+};
   const handleOverdueSubmit = async (decisionData) => {
     try {
       setLoading(true);
