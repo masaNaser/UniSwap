@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   Box,
   Dialog,
@@ -10,6 +10,7 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  Typography,
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import PostCard from "../../Home/Feed/PostCard";
@@ -30,9 +31,11 @@ import dayjs from "dayjs";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { formatDateTime } from "../../../utils/timeHelper";
-import { getToken,getUserId,getUserName } from "../../../utils/authHelpers";
+import { getToken, getUserId, getUserName } from "../../../utils/authHelpers";
 import LikesModal from "../../Home/Feed/LikesModal";
-import PostCardSkeleton from '../../../components/Skeletons/PostCardSkeleton'; // تأكد من صحة المسار حسب مشروعك
+import PostCardSkeleton from '../../../components/Skeletons/PostCardSkeleton';
+import useInfiniteScroll from "../../../hooks/useInfiniteScroll";
+
 // normalize comment
 const normalizeComment = (comment, userName, currentUser) => {
   const isCurrentUserComment = comment.user?.userName === currentUser?.userName;
@@ -59,16 +62,20 @@ export default function PostsTab({ username }) {
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const userName = getUserName();
-    const [likesModalOpen, setLikesModalOpen] = useState(false);
+  const [likesModalOpen, setLikesModalOpen] = useState(false);
   const [currentPostLikes, setCurrentPostLikes] = useState([]);
-  
-    // أضف function جديدة:
-    const handleShowLikes = (postLikes) => {
-      setCurrentPostLikes(postLikes || []);
-      setLikesModalOpen(true);
-    };
 
-  // const userToken = localStorage.getItem("accessToken");
+  // ✅ Infinite Scroll State
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  const handleShowLikes = (postLikes) => {
+    setCurrentPostLikes(postLikes || []);
+    setLikesModalOpen(true);
+  };
+
   const userToken = getToken();
   const currentUserName = getUserName();
 
@@ -108,11 +115,18 @@ export default function PostsTab({ username }) {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // ✅ Fetch user posts from API
-  const fetchUserPosts = async () => {
-    setLoadingPosts(true);
+  // ✅ Fetch user posts with pagination (wrapped in useCallback)
+  const fetchUserPosts = useCallback(async (pageNumber = 1, append = false) => {
+    // Prevent duplicate requests
+    if (loadingMore && !isInitialLoad) return;
+
+    setLoadingMore(true);
+    const startTime = Date.now();
+
     try {
-      const response = await GetAllPost(userToken, username);
+      const response = await GetAllPost(userToken, username, pageNumber, 10); // ✅ إضافة pagination
+      console.log("📥 PostsTab - Fetched page", response.data);
+
       const postsData = response.data.map((p) => ({
         id: p.id,
         content: p.content,
@@ -129,10 +143,33 @@ export default function PostsTab({ username }) {
         fileUrl: p.fileUrl ? `https://uni1swap.runasp.net/${p.fileUrl}` : null,
         isLiked: p.isLikedByMe || false,
         recentComments: [],
-        likedBy: p.likedBy || [], // ✅ أضف هاد السطر
-        isClosed: p.postStatus === "Closed", // ✅ تحديث: استخدام postStatus بدل isCommentsClosed
+        likedBy: p.likedBy || [],
+        isClosed: p.postStatus === "Closed",
       }));
-      setPosts(postsData);
+
+      if (append) {
+        setPosts((prev) => {
+          // ✅ Prevent duplicate posts
+          const existingIds = new Set(prev.map(p => p.id));
+          const newPosts = postsData.filter(p => !existingIds.has(p.id));
+          return [...prev, ...newPosts];
+        });
+      } else {
+        setPosts(postsData);
+      }
+
+      // ✅ Check if there are more posts
+      setHasMore(postsData.length === 10);
+
+      // Minimum loading time for UX
+      const elapsedTime = Date.now() - startTime;
+      const minimumLoadingTime = 800;
+      const remainingTime = Math.max(0, minimumLoadingTime - elapsedTime);
+
+      if (remainingTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingTime));
+      }
+
     } catch (error) {
       setSnackbar({
         open: true,
@@ -141,9 +178,30 @@ export default function PostsTab({ username }) {
       });
       console.error("Error fetching posts:", error);
     } finally {
+      setLoadingMore(false);
       setLoadingPosts(false);
+      setIsInitialLoad(false);
     }
-  };
+  }, [userToken, username, loadingMore, isInitialLoad]);
+
+  // ✅ Load more posts function
+
+  const loadMorePosts = useCallback(() => {
+    if (!hasMore || loadingMore) {
+      console.log("⏸️ PostsTab - Skipping load:", { hasMore, loadingMore });
+      return;
+    }
+
+    console.log("📄 PostsTab - Loading page:", page + 1);
+    setPage((prevPage) => {
+      const nextPage = prevPage + 1;
+      fetchUserPosts(nextPage, true);
+      return nextPage;
+    });
+  }, [hasMore, loadingMore, fetchUserPosts]);
+
+  // ✅ Hook for infinite scroll
+  const observerRef = useInfiniteScroll(loadMorePosts, hasMore, loadingMore);
 
   const fetchRecentComments = useCallback(
     async (postId) => {
@@ -178,10 +236,15 @@ export default function PostsTab({ username }) {
     }
   }, [posts.length, fetchRecentComments]);
 
-  // Fetch posts on mount or when username changes
+  // ✅ Initial load with proper reset
   useEffect(() => {
     if (username && userToken) {
-      fetchUserPosts();
+      console.log("🔄 PostsTab - Initial load triggered");
+      setPage(1);
+      setHasMore(true);
+      setIsInitialLoad(true);
+      setLoadingPosts(true);
+      fetchUserPosts(1, false);
     }
   }, [username, userToken]);
 
@@ -306,11 +369,25 @@ export default function PostsTab({ username }) {
 
     const isCurrentlyLiked = postToUpdate.isLiked;
     const originalLikes = postToUpdate.likes;
+    const originalLikedBy = postToUpdate.likedBy || [];
+
+    const currentUserId = getUserId();
+    const updatedLikedBy = isCurrentlyLiked
+      ? originalLikedBy.filter(user => user.id !== currentUserId)
+      : [
+        ...originalLikedBy,
+        {
+          id: currentUserId,
+          userName: currentUser?.userName || getUserName(),
+          profilePictureUrl: currentUser?.profilePicture
+        }
+      ];
 
     setPosts((prev) =>
       updatePost(prev, postId, {
         isLiked: !isCurrentlyLiked,
         likes: isCurrentlyLiked ? originalLikes - 1 : originalLikes + 1,
+        likedBy: updatedLikedBy
       })
     );
 
@@ -324,6 +401,7 @@ export default function PostsTab({ username }) {
           updatePost(prev, postId, {
             isLiked: response.data.isLikedByMe || !isCurrentlyLiked,
             likes: response.data.likesCount,
+            likedBy: response.data.likedBy || updatedLikedBy
           })
         );
       }
@@ -333,6 +411,7 @@ export default function PostsTab({ username }) {
         updatePost(prev, postId, {
           isLiked: isCurrentlyLiked,
           likes: originalLikes,
+          likedBy: originalLikedBy
         })
       );
       setSnackbar({
@@ -554,7 +633,6 @@ export default function PostsTab({ username }) {
     }
   };
 
-  // ✅ Handle Close Comments
   const handleCloseComments = async (postId) => {
     try {
       const response = await closeCommentPost(userToken, postId);
@@ -565,7 +643,6 @@ export default function PostsTab({ username }) {
           prev.map((p) => (p.id === postId ? { ...p, isClosed: true } : p))
         );
         
-        // ✅ إذا كان الـ Modal مفتوح، حدّث الـ modalPost كمان
         if (modalPost?.id === postId) {
           setModalPost((prev) => ({ ...prev, isClosed: true }));
         }
@@ -592,7 +669,8 @@ export default function PostsTab({ username }) {
     );
   };
 
-if (loadingPosts) {
+  // ✅ Initial Loading State
+  if (loadingPosts && isInitialLoad) {
     return (
       <Box sx={{ mt: 3, width: "100%" }}>
         {[1, 2, 3].map((i) => (
@@ -602,7 +680,8 @@ if (loadingPosts) {
     );
   }
 
-if (posts.length === 0) {
+  // ✅ Empty State
+  if (posts.length === 0 && !loadingPosts) {
     return (
       <Box sx={{ textAlign: "center", py: 10, color: "text.secondary" }}>
         <p style={{ fontSize: '1.2rem' }}>No posts yet 📭</p>
@@ -615,8 +694,6 @@ if (posts.length === 0) {
       <Box
         sx={{
           mt: 3,
-          // maxWidth: "800px",
-          // px: { xs: 1, sm: 2, md: 3 },
           py: 2,
           width:"100%"
         }}
@@ -630,7 +707,7 @@ if (posts.length === 0) {
             onLike={handleLikePost}
             onShowComments={handleShowComments}
             onShare={handleSharePost}
-            onCloseComments={handleCloseComments} // ✅ إضافة
+            onCloseComments={handleCloseComments}
             onAddCommentInline={handleAddComment}
             fetchRecentComments={fetchRecentComments}
             onShowLikes={handleShowLikes} 
@@ -640,9 +717,44 @@ if (posts.length === 0) {
             )}
           />
         ))}
+
+        {/* ✅ Loading Indicator */}
+        {loadingMore && (
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 6,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2.5,
+              borderRadius: "16px",
+              mx: 2,
+            }}
+          >
+            <CircularProgress size={40} sx={{ color: "#3B82F6" }} />
+          </Box>
+        )}
+
+        {/* ✅ Observer Element for Infinite Scroll */}
+        <div ref={observerRef} style={{ height: "20px" }} />
+
+        {/* ✅ End Message */}
+        {/* {!hasMore && posts.length > 0 && (
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <Typography
+              sx={{
+                color: "#9CA3AF",ظ
+                fontWeight: "600",
+                fontSize: "16px",
+              }}
+            >
+              🎉 You've reached the end!
+            </Typography>
+          </Box>
+        )} */}
       </Box>
 
-      {/* ✅ إضافة isPostClosed للـ CommentsModal */}
       <CommentsModal
         isVisible={commentsModalVisible}
         onClose={() => setCommentsModalVisible(false)}
@@ -657,9 +769,10 @@ if (posts.length === 0) {
           currentUser?.profilePicture,
           currentUser?.userName || currentUserName
         )}
-        isPostClosed={modalPost?.isClosed} // ✅ تمرير حالة البوست
+        isPostClosed={modalPost?.isClosed}
       />
-       <LikesModal
+
+      <LikesModal
         open={likesModalOpen}
         onClose={() => setLikesModalOpen(false)}
         likes={currentPostLikes}

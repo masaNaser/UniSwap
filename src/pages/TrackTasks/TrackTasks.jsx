@@ -1291,7 +1291,7 @@ export default function TrackTasks() {
             setSnackbar({
               open: true,
               message:
-                "🎉 The provider has submitted the work! Review is now available.",
+                "The project has submitted successfully !",
               severity: "info",
             });
 
@@ -1302,6 +1302,11 @@ export default function TrackTasks() {
         });
         // --- ✅ المشروع اكتمل (قبله الكلاينت) ---
         connection.on("ProjectCompleted", (data) => {
+          // ✅ القفل: إذا كانت الحالة محلياً أصبحت Completed، تجاهل رسالة السيرفر الآن
+  if (cardDataRef.current?.projectStatus === "Completed") {
+    log("⏳ Already updated locally to Completed. Ignoring SignalR message to prevent jumping.");
+    return;
+  }
           log("🔔 SignalR: Received ProjectCompleted", data);
 
           const receivedProjectId = data.projectId || data.ProjectId;
@@ -1575,33 +1580,53 @@ useEffect(() => {
   };
 
   const handleSubmitReview = async (taskId, decision, comment) => {
-    try {
-      if (decision === "accept") {
-        await taskService.acceptTask(taskId, comment, token);
-      } else {
-        await taskService.rejectTask(taskId, comment, token);
-      }
+  try {
+    // 1. تحديد الحالة الجديدة بناءً على القرار
+    // إذا قبل المهمة الأخيرة، ربما نعتبر المشروع Completed، وإذا رفض نرجعه Active
+    const newProjectStatus = decision === "accept" ? "Completed" : "Active";
 
-      // ✅ SignalR will handle the update, but we update progress
-      await taskService.updateProjectProgress(cardData.id, token);
-
-      setSnackbar({
-        open: true,
-        message:
-          decision === "accept"
-            ? "Task accepted successfully!"
-            : "Task rejected. Revision comments saved.",
-        severity: "success",
-      });
-    } catch (error) {
-      logError("Error submitting review:", error);
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Failed to submit review",
-        severity: "error",
-      });
+    if (decision === "accept") {
+      await taskService.acceptTask(taskId, comment, token);
+    } else {
+      await taskService.rejectTask(taskId, comment, token);
     }
-  };
+
+    // 2. تحديث الحالة محلياً "فوراً" قبل أي fetch
+    // هذا سيضمن اختفاء الأزرار وتغير اللون فوراً
+    setCardData((prev) => ({
+      ...prev,
+      projectStatus: newProjectStatus,
+      status: newProjectStatus,
+    }));
+
+    setProjectDetails((prev) => ({
+      ...prev,
+      status: newProjectStatus,
+    }));
+
+    // 3. تحديث التقدم
+    await taskService.updateProjectProgress(cardData.id, token);
+
+    // 4. استدعاء التحديث الشامل مع تأخير بسيط لضمان استقرار الباك إند
+    setTimeout(() => {
+      fetchProjectData();
+    }, 1500);
+
+    setSnackbar({
+      open: true,
+      message: decision === "accept" ? "Task accepted!" : "Task rejected!",
+      severity: "success",
+    });
+
+  } catch (error) {
+    logError("Error submitting review:", error);
+    setSnackbar({
+      open: true,
+      message: error.response?.data?.message || "Failed to submit review",
+      severity: "error",
+    });
+  }
+};
 
   const handleReviewClick = (task) => {
     setReviewingTask(task);
@@ -1884,6 +1909,7 @@ useEffect(() => {
   };
 
   const handleProjectStatusUpdate = async (newStatus) => {
+    
     log("🔄 Manual Status Update triggered:", newStatus);
 
     setCardData((prev) => ({
@@ -1899,8 +1925,10 @@ useEffect(() => {
 
     // إعادة جلب كل البيانات من السيرفر للتأكد أن كل شيء متزامن
 try {
-    await fetchProjectData(); 
-    log("✅ Sync complete");
+// 3. تأخير الـ Fetch قليلاً لضمان استقرار الباك إند ومنع التضارب مع SignalR
+  setTimeout(() => {
+    fetchProjectData(); 
+  }, 1000);    log("✅ Sync complete");
   } catch (err) {
     logError("❌ Sync failed", err);
   }  };
@@ -1944,8 +1972,7 @@ try {
 
         // 🚩 السر هنا: عندما تتغير الحالة، الـ key سيتغير
         // مما يجبر الـ Header على "إعادة الرندرة" وحساب canCloseProject من جديد
-key={`header-${cardData?.id}-${cardData?.projectStatus}`}
-        onProjectStatusUpdate={handleProjectStatusUpdate}
+key={cardData?.id} // ثبت الـ key على الـ id فقط عشان ما يختفي المكون        onProjectStatusUpdate={handleProjectStatusUpdate}
         cardData={cardData}
         projectDetails={projectDetails}
         isProvider={isProvider}
