@@ -23,7 +23,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import PublishIcon from "@mui/icons-material/Publish";
-import { useState, useEffect,useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getImageUrl } from "../../../utils/imageHelper";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import ProgressSection from "./ProgressSection";
@@ -42,7 +42,7 @@ import { formatDateTime } from "../../../utils/timeHelper";
 import { useCurrentUser } from "../../../Context/CurrentUserContext";
 import { getToken } from "../../../utils/authHelpers";
 
-const isDevelopment = import.meta.env.NODE_ENV === 'development';
+const isDevelopment = import.meta.env.NODE_ENV === "development";
 const log = (...args) => isDevelopment && console.log(...args);
 const logError = (...args) => console.error(...args);
 
@@ -55,8 +55,6 @@ export default function TrackTasksHeader({
   onDeadlineUpdate,
   onProjectClosed,
 }) {
-
-  
   const { updateCurrentUser, startTemporaryPolling } = useCurrentUser();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -105,14 +103,15 @@ export default function TrackTasksHeader({
   };
 
   const displayInitials = isProvider
-    ? projectDetails?.clientInitials || 
-      cardData.clientInitials || 
+    ? projectDetails?.clientInitials ||
+      cardData.clientInitials ||
       getInitials(displayName)
     : getInitials(displayName);
 
   const token = getToken();
   const isOverdue = cardData.projectStatus === "Overdue";
-  const hasRejection = projectDetails?.rejectionReason && cardData.projectStatus === "Active";
+  const hasRejection =
+    projectDetails?.rejectionReason && cardData.projectStatus === "Active";
 
   // ===== Fetch Review =====
   useEffect(() => {
@@ -138,22 +137,22 @@ export default function TrackTasksHeader({
   }, [cardData.id, cardData.projectStatus, isProvider, token]);
 
   // ===== Helper Functions =====
-// const canPublishProject = () => {
-//   if (!isProvider) return false;
+  // const canPublishProject = () => {
+  //   if (!isProvider) return false;
 
-//   const isCompleted = cardData.projectStatus === "Completed";
-//   const isPublished = projectDetails?.isPublished || false;
-//   const clientAcceptedPublishing = projectDetails?.clientAcceptPublished || false;
+  //   const isCompleted = cardData.projectStatus === "Completed";
+  //   const isPublished = projectDetails?.isPublished || false;
+  //   const clientAcceptedPublishing = projectDetails?.clientAcceptPublished || false;
 
-//   return isCompleted && !isPublished && clientAcceptedPublishing;
-// };
+  //   return isCompleted && !isPublished && clientAcceptedPublishing;
+  // };
 
-// const handlePublishSuccess = (publishedData) => {
-//   log("✅ Project published:", publishedData);
-//   if (onProjectClosed) {
-//     onProjectClosed(true);
-//   }
-// };
+  // const handlePublishSuccess = (publishedData) => {
+  //   log("✅ Project published:", publishedData);
+  //   if (onProjectClosed) {
+  //     onProjectClosed(true);
+  //   }
+  // };
 
   const getMinDateTime = () => {
     const now = new Date();
@@ -240,34 +239,34 @@ export default function TrackTasksHeader({
     setIsEditing(true);
   };
 
-const canCloseProject = () => {
-  if (!cardData?.projectStatus) {
-    log("⚠️ No project status");
-    return false;
-  }
-  
-  // تحويل الحالة لنص صغير وحذف المسافات لضمان المطابقة
-const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";  
-  log("Checking canCloseProject:", { 
-    status, 
-    isProvider, 
-    progressPercentage 
-  });
+  const canCloseProject = () => {
+    if (!cardData?.projectStatus) {
+      log("⚠️ No project status");
+      return false;
+    }
 
-  if (isProvider) {
-    // البروفايدر يغلق فقط إذا كان فعالاً والإنجاز 100%
-    return status === "active" && progressPercentage === 100;
-  } else {
-    // الكلاينت يغلق إذا كانت الحالة "قيد المراجعة"
-    // أضفنا كل الاحتمالات الممكنة للاسم القادم من السيرفر
-    return (
-      status === "submittedforfinalreview" || 
-      status === "inreview" ||
-      status === "submitted" ||
-      status.includes("submitted")
-    );
-  }
-};
+    // تحويل الحالة لنص صغير وحذف المسافات لضمان المطابقة
+    const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
+    log("Checking canCloseProject:", {
+      status,
+      isProvider,
+      progressPercentage,
+    });
+
+    if (isProvider) {
+      // البروفايدر يغلق فقط إذا كان فعالاً والإنجاز 100%
+      return status === "active" && progressPercentage === 100;
+    } else {
+      // الكلاينت يغلق إذا كانت الحالة "قيد المراجعة"
+      // أضفنا كل الاحتمالات الممكنة للاسم القادم من السيرفر
+      return (
+        status === "submittedforfinalreview" ||
+        status === "inreview" ||
+        status === "submitted" ||
+        status.includes("submitted")
+      );
+    }
+  };
 
   const canViewReview = () => {
     if (!isProvider) return false;
@@ -283,44 +282,86 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
     return !isProvider && isOverdue;
   };
   // ✅ أضف هاي الأسطر الأربعة
-// 1. زر النشر (يظهر فوراً عند اكتمال المشروع)
+  // 1. زر النشر (يظهر فوراً عند اكتمال المشروع)
   const showPublishButton = useMemo(() => {
     if (!isProvider) return false;
     const isCompleted = cardData?.projectStatus === "Completed";
     const isPublished = projectDetails?.isPublished || false;
-    const clientAcceptedPublishing = projectDetails?.clientAcceptPublished || false;
+    const clientAcceptedPublishing =
+      projectDetails?.clientAcceptPublished || false;
     return isCompleted && !isPublished && clientAcceptedPublishing;
-  }, [cardData?.projectStatus, projectDetails?.isPublished, projectDetails?.clientAcceptPublished, isProvider]);
+  }, [
+    cardData?.projectStatus,
+    projectDetails?.isPublished,
+    projectDetails?.clientAcceptPublished,
+    isProvider,
+  ]);
 
   // 2. زر إغلاق المشروع (تعديل منطق التحقق من النص)
-  const showCloseProjectButton = useMemo(() => {
-    if (!cardData?.projectStatus) return false;
-    const status = cardData.projectStatus.toLowerCase().trim();
-    
-    if (isProvider) {
-      return status === "active" && progressPercentage === 100;
-    } else {
-      return ["submittedforfinalreview", "inreview", "submitted"].includes(status);
-    }
-  }, [cardData?.projectStatus, progressPercentage, isProvider]);
+  // 2. زر إغلاق المشروع (تعديل منطق التحقق من النص)
 
-  // 3. أزرار المراجعة والتأخير
+  const showCloseProjectButton = useMemo(() => {
+    if (!cardData?.projectStatus) {
+      log("⚠️ No projectStatus in cardData");
+      return false;
+    }
+
+    const status = cardData.projectStatus.toLowerCase().trim();
+    log("🔍 showCloseProjectButton check:", {
+      status,
+      isProvider,
+      progressPercentage,
+      rawStatus: cardData.projectStatus,
+    });
+
+    if (isProvider) {
+      const canClose = status === "active" && progressPercentage === 100;
+      log("Provider can close:", canClose);
+      return canClose;
+    } else {
+      const canClose = [
+        "submittedforfinalreview",
+        "inreview",
+        "submitted",
+      ].includes(status);
+      log("Client can close:", canClose);
+      return canClose;
+    }
+  }, [cardData?.projectStatus, progressPercentage, isProvider, cardData]); // ✅ أضف cardData كاملاً
+
+  // 3. زر مراجعة المشروع
   const showViewReviewButton = useMemo(() => {
     if (!isProvider) return false;
+
     const isCompleted = cardData?.projectStatus === "Completed";
     const isActive = cardData?.projectStatus === "Active";
-    return isCompleted || (isActive && !!projectDetails?.rejectionReason);
-  }, [cardData?.projectStatus, projectDetails?.rejectionReason, isProvider]);
+    const hasRejection = !!projectDetails?.rejectionReason;
+
+    log("🔍 showViewReviewButton check:", {
+      isCompleted,
+      isActive,
+      hasRejection,
+      status: cardData?.projectStatus,
+    });
+
+    return isCompleted || (isActive && hasRejection);
+  }, [
+    cardData?.projectStatus,
+    projectDetails?.rejectionReason,
+    isProvider,
+    cardData,
+    projectDetails,
+  ]); // ✅ أضف dependencies كاملة
 
   const showHandleOverdueButton = useMemo(() => {
     return !isProvider && isOverdue;
   }, [isProvider, isOverdue]);
 
-   const handlePublishSuccess = (publishedData) => {
+  const handlePublishSuccess = (publishedData) => {
     log("✅ Project published:", publishedData);
     if (onProjectClosed) onProjectClosed(true);
   };
-  
+
   // const handleCloseProjectClick = () => {
   //   if (isProvider) {
   //     setOpenCloseDialog(true);
@@ -328,7 +369,7 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
   //     setOpenReviewDialog(true);
   //   }
   // };
-  
+
   const handleCloseProjectClick = () => {
     if (isProvider) setOpenCloseDialog(true);
     else setOpenReviewDialog(true);
@@ -370,98 +411,115 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
   //     setClosingProject(false);
   //   }
   // };
-   
+
   const handleProviderSubmit = async () => {
     try {
       setClosingProject(true);
       await closeProjectByProvider(cardData.id, token);
-      setSnackbar({ open: true, message: "Project submitted for review! ✅", severity: "success" });
+      setSnackbar({
+        open: true,
+        message: "Project submitted for review! ✅",
+        severity: "success",
+      });
       setOpenCloseDialog(false);
       if (onProjectClosed) await onProjectClosed();
     } catch (err) {
-      setSnackbar({ open: true, message: "Failed to submit.", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Failed to submit.",
+        severity: "error",
+      });
     } finally {
       setClosingProject(false);
     }
   };
 
-// const handleClientReview = async (reviewData) => {
-//   try {
-//     setClosingProject(true);
+  // const handleClientReview = async (reviewData) => {
+  //   try {
+  //     setClosingProject(true);
 
-//     const closeRequestData = {
-//       isAccepted: reviewData.isAccepted,
-//       rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
-//       rating: reviewData.isAccepted ? reviewData.rating : undefined,
-//       comment: reviewData.isAccepted ? reviewData.comment : undefined,
-//     };
+  //     const closeRequestData = {
+  //       isAccepted: reviewData.isAccepted,
+  //       rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
+  //       rating: reviewData.isAccepted ? reviewData.rating : undefined,
+  //       comment: reviewData.isAccepted ? reviewData.comment : undefined,
+  //     };
 
-//     await closeProjectByClient(cardData.id, token, closeRequestData);
+  //     await closeProjectByClient(cardData.id, token, closeRequestData);
 
-//     // ✅ Start polling for points update
-//     startTemporaryPolling(2000);
-//     log("🚀 Polling started for points update");
+  //     // ✅ Start polling for points update
+  //     startTemporaryPolling(2000);
+  //     log("🚀 Polling started for points update");
 
-//     // ✅ أظهر الرسالة المناسبة
-//     if (reviewData.isAccepted) {
-//       setSnackbar({
-//         open: true,
-//         message: "Project completed successfully! Rating and review submitted. Points transferred. ✅",
-//         severity: "success",
-//       });
-//     } else {
-//       setSnackbar({
-//         open: true,
-//         message: "Project rejected and returned to Active status for rework.",
-//         severity: "info",
-//       });
-//     }
+  //     // ✅ أظهر الرسالة المناسبة
+  //     if (reviewData.isAccepted) {
+  //       setSnackbar({
+  //         open: true,
+  //         message: "Project completed successfully! Rating and review submitted. Points transferred. ✅",
+  //         severity: "success",
+  //       });
+  //     } else {
+  //       setSnackbar({
+  //         open: true,
+  //         message: "Project rejected and returned to Active status for rework.",
+  //         severity: "info",
+  //       });
+  //     }
 
-//     setOpenReviewDialog(false);
+  //     setOpenReviewDialog(false);
 
-//     // ✅ خلّي الأب يحدّث الـ state
-//     if (onProjectClosed) {
-//       await onProjectClosed(true); // skip success message
-//     }
-//   } catch (err) {
-//     logError("❌ Error reviewing project:", err);
+  //     // ✅ خلّي الأب يحدّث الـ state
+  //     if (onProjectClosed) {
+  //       await onProjectClosed(true); // skip success message
+  //     }
+  //   } catch (err) {
+  //     logError("❌ Error reviewing project:", err);
 
-//     let errorMessage = "Failed to review project.";
-//     if (err.response?.data?.detail) {
-//       errorMessage = err.response.data.detail;
-//     } else if (err.response?.data?.message) {
-//       errorMessage = err.response.data.message;
-//     } else if (err.response?.data?.errors) {
-//       const errors = err.response.data.errors;
-//       errorMessage = Object.values(errors).flat().join(", ");
-//     } else if (err.message) {
-//       errorMessage = err.message;
-//     }
-//     setSnackbar({
-//       open: true,
-//       message: errorMessage,
-//       severity: "error",
-//     });
-//   } finally {
-//     setClosingProject(false);
-//   }
-// };
+  //     let errorMessage = "Failed to review project.";
+  //     if (err.response?.data?.detail) {
+  //       errorMessage = err.response.data.detail;
+  //     } else if (err.response?.data?.message) {
+  //       errorMessage = err.response.data.message;
+  //     } else if (err.response?.data?.errors) {
+  //       const errors = err.response.data.errors;
+  //       errorMessage = Object.values(errors).flat().join(", ");
+  //     } else if (err.message) {
+  //       errorMessage = err.message;
+  //     }
+  //     setSnackbar({
+  //       open: true,
+  //       message: errorMessage,
+  //       severity: "error",
+  //     });
+  //   } finally {
+  //     setClosingProject(false);
+  //   }
+  // };
 
- const handleClientReview = async (reviewData) => {
+  const handleClientReview = async (reviewData) => {
     try {
       setClosingProject(true);
       const closeRequestData = {
         isAccepted: reviewData.isAccepted,
-        rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
+        rejectionReason: reviewData.isAccepted
+          ? undefined
+          : reviewData.rejectionReason,
         rating: reviewData.isAccepted ? reviewData.rating : undefined,
         comment: reviewData.isAccepted ? reviewData.comment : undefined,
       };
       await closeProjectByClient(cardData.id, token, closeRequestData);
+ if (reviewData.isAccepted) {
       startTemporaryPolling(2000);
-      setOpenReviewDialog(false);
+      log("🚀 Polling started for points update");
+    }
+          setOpenReviewDialog(false);
       if (onProjectClosed) await onProjectClosed(true);
     } catch (err) {
-      setSnackbar({ open: true, message: "Error processing review", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Error processing review",
+        severity: "error",
+      });
     } finally {
       setClosingProject(false);
     }
@@ -524,560 +582,587 @@ const status = cardData?.projectStatus?.toLowerCase()?.trim() || "";
 
   return (
     <>
-    {isDevelopment && (
-  <Typography variant="caption" sx={{position:'absolute', top:0, left:0, color:'red'}}>
-     Current Status: {cardData?.projectStatus}
-  </Typography>
-)}
-    <Box
-      sx={{
-        bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
-        borderRadius: { xs: 2, sm: 3 },
-        mb: 3,
-        p: { xs: 2, sm: 3 },
-        pb: 0,
-        border: isOverdue || hasRejection ? "2px solid #DC2626" : "1px solid #E5E7EB",
-        position: "relative",
-      }}
-    >
-      {/* EDIT BUTTON (CLIENT ONLY) */}
-      {!isProvider && cardData.projectStatus === "Active" && !isOverdue && (
-        <IconButton
-          onClick={handleOpenEdit}
-          sx={{
-            position: "absolute",
-            top: { xs: 8, sm: 16 },
-            right: { xs: 8, sm: 16 },
-            zIndex: 10,
-          }}
+      {isDevelopment && (
+        <Typography
+          variant="caption"
+          sx={{ position: "absolute", top: 0, left: 0, color: "red" }}
         >
-          <EditIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
-        </IconButton>
+          Current Status: {cardData?.projectStatus}
+        </Typography>
       )}
-
-      {/* EDIT DEADLINE POPUP */}
-      {isEditing && !isProvider && (
-        <Box
-          sx={{
-            position: { xs: "fixed", sm: "absolute" },
-            top: { xs: "50%", sm: 10 },
-            left: { xs: "50%", sm: "auto" },
-            right: { xs: "auto", sm: 10 },
-            transform: { xs: "translate(-50%, -50%)", sm: "none" },
-            bgcolor: "#fff",
-            border: "1px solid #ddd",
-            borderRadius: 2,
-            p: 2,
-            zIndex: 1300,
-            width: { xs: "90%", sm: 260 },
-            maxWidth: { xs: "400px", sm: "260px" },
-            boxShadow: 3,
-          }}
-        >
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-            <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
-              Edit Deadline
-            </Typography>
-            <IconButton size="small" onClick={() => setIsEditing(false)}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
-
-          <TextField
-            label="New Deadline"
-            type="datetime-local"
-            fullWidth
-            value={newDeadline}
-            onChange={(e) => setNewDeadline(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ min: getMinDateTime() }}
-            size={isMobile ? "small" : "medium"}
-            helperText="Must be at least 24 hours from now"
-            sx={{
-              mb: 2,
-              "& .MuiOutlinedInput-root": {
-                "&.Mui-focused fieldset": {
-                  borderColor: "#3B82F6",
-                },
-              },
-            }}
-          />
-
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={handleSaveDeadline}
-            disabled={loading}
-            sx={{
-              background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
-              textTransform: "none",
-              fontSize: { xs: "0.875rem", sm: "1rem" },
-              "&:hover": {
-                background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
-              },
-            }}
-          >
-            {loading ? "Saving..." : "Save"}
-          </Button>
-        </Box>
-      )}
-
-      {/* Back Button + Action Buttons */}
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-          flexWrap: "wrap",
-          gap: { xs: 1.5, sm: 1 },
+          bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
+          borderRadius: { xs: 2, sm: 3 },
+          mb: 3,
+          p: { xs: 2, sm: 3 },
+          pb: 0,
+          border:
+            isOverdue || hasRejection
+              ? "2px solid #DC2626"
+              : "1px solid #E5E7EB",
+          position: "relative",
         }}
       >
-        <IconButton onClick={onBack} sx={{ color: "#6B7280", p: 1 }}>
-          <ArrowBackIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
-        </IconButton>
-
-        <Box
-          sx={{
-            display: "flex",
-            gap: { xs: 0.5, sm: 1 },
-            flexWrap: "wrap",
-            justifyContent: "flex-end",
-          }}
-        >
-          {showPublishButton && (
-            <CustomButton
-              startIcon={<PublishIcon />}
-              onClick={() => setOpenPublishModal(true)}
-              sx={{
-                textTransform: "none",
-                fontSize: { xs: "11px", sm: "14px" },
-                py: { xs: 0.5, sm: 0.75 },
-                px: { xs: 1, sm: 2 },
-                whiteSpace: "nowrap",
-                background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
-              }}
-            >
-              {isMobile ? "Publish" : "Publish Project"}
-            </CustomButton>
-          )}
-
-          {showHandleOverdueButton && (
-            <CustomButton
-              startIcon={<WarningAmberIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
-              onClick={() => setOpenOverdueDialog(true)}
-              sx={{
-                textTransform: "none",
-                fontSize: { xs: "11px", sm: "14px" },
-                py: { xs: 0.5, sm: 0.75 },
-                px: { xs: 1, sm: 2 },
-                background: "linear-gradient(to right, #DC2626, #EF4444)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {isMobile ? "Handle" : "Handle Overdue"}
-            </CustomButton>
-          )}
-
-          {showViewReviewButton && (
-            <CustomButton
-              startIcon={<RateReviewIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
-              onClick={handleViewReview}
-              sx={{
-                textTransform: "none",
-                fontSize: { xs: "11px", sm: "14px" },
-                py: { xs: 0.5, sm: 0.75 },
-                px: { xs: 1, sm: 2 },
-                background:
-                  cardData.projectStatus === "Completed"
-                    ? "linear-gradient(to right, #00C8FF, #8B5FF6)"
-                    : "linear-gradient(to right, #DC2626, #EF4444)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {isMobile ? "Review" : "View Client Review"}
-            </CustomButton>
-          )}
-
-          {showCloseProjectButton  && (
-            <CustomButton
-              startIcon={<CheckCircleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
-              onClick={handleCloseProjectClick}
-              sx={{
-                textTransform: "none",
-                fontSize: { xs: "11px", sm: "14px" },
-                py: { xs: 0.5, sm: 0.75 },
-                px: { xs: 1, sm: 2 },
-                whiteSpace: "nowrap",
-              }}
-            >
-              {isMobile
-                ? isProvider
-                  ? "Submit"
-                  : "Review"
-                : isProvider
-                ? "Submit Final Work"
-                : "Review & Close Project"}
-            </CustomButton>
-          )}
-        </Box>
-      </Box>
-
-      {/* Title and Progress Section */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          gap: { xs: 2, md: 0 },
-          mb: 2,
-        }}
-      >
-        <Box flex={1} sx={{ pr: { xs: 0, md: "320px" } }}>
-          <Typography
-            variant="h5"
-            fontWeight="bold"
+        {/* EDIT BUTTON (CLIENT ONLY) */}
+        {!isProvider && cardData.projectStatus === "Active" && !isOverdue && (
+          <IconButton
+            onClick={handleOpenEdit}
             sx={{
-              mb: 2,
-              fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" },
-              pr: { xs: 0, md: 2 },
+              position: "absolute",
+              top: { xs: 8, sm: 16 },
+              right: { xs: 8, sm: 16 },
+              zIndex: 10,
             }}
           >
-            {cardData.title}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
-          >
-            {cardData.description}
-          </Typography>
-        </Box>
-
-        {/* Progress Section */}
-        <Box
-          sx={{
-            position: { xs: "static", md: "absolute" },
-            top: { md: 80 },
-            right: {
-              md: !isProvider && cardData.projectStatus === "Active" && !isOverdue ? 56 : 16,
-            },
-            width: { xs: "100%", sm: "100%", md: "280px" },
-          }}
-        >
-          <ProgressSection
-            progressPercentage={progressPercentage}
-            projectPoints={projectDetails?.points || 0}
-          />
-        </Box>
-      </Box>
-
-      {/* Client/Provider Info + Deadline + Status */}
-      <Box
-        display="flex"
-        alignItems="center"
-        gap={{ xs: 1.5, sm: 3 }}
-        mb={1}
-        sx={{ flexWrap: "wrap" }}
-      >
-        <Box display="flex" alignItems="center" gap={1}>
-          <Avatar
-            src={getImageUrl(displayAvatar, displayName)}
-            sx={{ width: { xs: 32, sm: 36 }, height: { xs: 32, sm: 36 } }}
-          >
-            {displayInitials}
-          </Avatar>
-
-          <Box>
-            <Typography
-              variant="body2"
-              color={theme.palette.mode === "dark" ? "#fff" : "#334155"}
-              fontWeight="600"
-              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-            >
-              {isMobile ? displayName : displayRoleWithName}
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box display="flex" alignItems="center" gap={0.5}>
-          <CalendarMonthIcon
-            sx={{
-              fontSize: { xs: 14, sm: 16 },
-              color: isOverdue ? "#DC2626" : "text.secondary",
-            }}
-          />
-          <Typography
-            variant="caption"
-            sx={{
-              fontSize: { xs: "0.7rem", sm: "12px" },
-              color: isOverdue ? "#DC2626" : "text.secondary",
-              fontWeight: isOverdue ? 600 : 400,
-            }}
-          >
-            {isOverdue ? "Was due: " : "Due: "}
-            {formatDateTime(cardData.deadline)}
-          </Typography>
-        </Box>
-
-        {cardData.projectStatus && (
-          <Chip
-            label={
-              cardData.projectStatus === "SubmittedForFinalReview"
-                ? "In Review"
-                : cardData.projectStatus
-            }
-            size="small"
-            sx={{
-              fontWeight: "600",
-              fontSize: { xs: "10px", sm: "12px" },
-              height: { xs: "22px", sm: "26px" },
-              px: { xs: 1, sm: 1.5 },
-              borderRadius: "6px",
-              backgroundColor: (() => {
-                if (cardData.projectStatus === "Overdue") return "#FEE2E2";
-                if (cardData.projectStatus === "Active") return "#D1FAE5";
-                if (cardData.projectStatus === "Completed") return "#DBEAFE";
-                if (cardData.projectStatus === "SubmittedForFinalReview") return "#F3E8FF";
-                if (cardData.projectStatus === "Cancelled") return "#F3F4F6";
-                return "#EFF6FF";
-              })(),
-              color: (() => {
-                if (cardData.projectStatus === "Overdue") return "#DC2626";
-                if (cardData.projectStatus === "Active") return "#059669";
-                if (cardData.projectStatus === "Completed") return "#0284C7";
-                if (cardData.projectStatus === "SubmittedForFinalReview") return "#A855F7";
-                if (cardData.projectStatus === "Cancelled") return "#6B7280";
-                return "#0284C7";
-              })(),
-            }}
-          />
+            <EditIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
+          </IconButton>
         )}
-      </Box>
 
-      {/* Project Overdue Warning Banner */}
-      {isOverdue && (
+        {/* EDIT DEADLINE POPUP */}
+        {isEditing && !isProvider && (
+          <Box
+            sx={{
+              position: { xs: "fixed", sm: "absolute" },
+              top: { xs: "50%", sm: 10 },
+              left: { xs: "50%", sm: "auto" },
+              right: { xs: "auto", sm: 10 },
+              transform: { xs: "translate(-50%, -50%)", sm: "none" },
+              bgcolor: "#fff",
+              border: "1px solid #ddd",
+              borderRadius: 2,
+              p: 2,
+              zIndex: 1300,
+              width: { xs: "90%", sm: 260 },
+              maxWidth: { xs: "400px", sm: "260px" },
+              boxShadow: 3,
+            }}
+          >
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={1}
+            >
+              <Typography
+                fontWeight="bold"
+                sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+              >
+                Edit Deadline
+              </Typography>
+              <IconButton size="small" onClick={() => setIsEditing(false)}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+
+            <TextField
+              label="New Deadline"
+              type="datetime-local"
+              fullWidth
+              value={newDeadline}
+              onChange={(e) => setNewDeadline(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ min: getMinDateTime() }}
+              size={isMobile ? "small" : "medium"}
+              helperText="Must be at least 24 hours from now"
+              sx={{
+                mb: 2,
+                "& .MuiOutlinedInput-root": {
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#3B82F6",
+                  },
+                },
+              }}
+            />
+
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={handleSaveDeadline}
+              disabled={loading}
+              sx={{
+                background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
+                textTransform: "none",
+                fontSize: { xs: "0.875rem", sm: "1rem" },
+                "&:hover": {
+                  background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
+                },
+              }}
+            >
+              {loading ? "Saving..." : "Save"}
+            </Button>
+          </Box>
+        )}
+
+        {/* Back Button + Action Buttons */}
         <Box
           sx={{
-            bgcolor: "#FEE2E2",
-            borderLeft: "4px solid #DC2626",
-            borderRadius: 1,
-            p: { xs: 1.5, sm: 2 },
-            mb: { xs: 2, sm: 1 },
-            mt: { xs: 2, sm: 3 },
             display: "flex",
-            alignItems: "flex-start",
-            gap: { xs: 1, sm: 2 },
-            flexDirection: { xs: "column", sm: "row" },
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+            flexWrap: "wrap",
+            gap: { xs: 1.5, sm: 1 },
           }}
         >
-          <WarningAmberIcon
+          <IconButton onClick={onBack} sx={{ color: "#6B7280", p: 1 }}>
+            <ArrowBackIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
+          </IconButton>
+
+          <Box
             sx={{
-              color: "#DC2626",
-              fontSize: { xs: 24, sm: 28 },
-              mt: { xs: 0, sm: 0 },
+              display: "flex",
+              gap: { xs: 0.5, sm: 1 },
+              flexWrap: "wrap",
+              justifyContent: "flex-end",
             }}
-          />
-          <Box>
-            <Typography
-              variant="body2"
-              fontWeight="bold"
-              color="#DC2626"
-              sx={{ mb: 0.5, fontSize: { xs: "0.875rem", sm: "0.875rem" } }}
-            >
-              ⚠️ PROJECT OVERDUE
-            </Typography>
-            <Typography
-              variant="body2"
-              color="#991B1B"
-              sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
-            >
-              This project passed its deadline on {formatDateTime(cardData.deadline)}.
-              {!isProvider &&
-                " Please use the 'Handle Overdue' button above to extend the deadline or cancel the project."}
-            </Typography>
+          >
+            {showPublishButton && (
+              <CustomButton
+                startIcon={<PublishIcon />}
+                onClick={() => setOpenPublishModal(true)}
+                sx={{
+                  textTransform: "none",
+                  fontSize: { xs: "11px", sm: "14px" },
+                  py: { xs: 0.5, sm: 0.75 },
+                  px: { xs: 1, sm: 2 },
+                  whiteSpace: "nowrap",
+                  background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
+                }}
+              >
+                {isMobile ? "Publish" : "Publish Project"}
+              </CustomButton>
+            )}
+
+            {showHandleOverdueButton && (
+              <CustomButton
+                startIcon={
+                  <WarningAmberIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                }
+                onClick={() => setOpenOverdueDialog(true)}
+                sx={{
+                  textTransform: "none",
+                  fontSize: { xs: "11px", sm: "14px" },
+                  py: { xs: 0.5, sm: 0.75 },
+                  px: { xs: 1, sm: 2 },
+                  background: "linear-gradient(to right, #DC2626, #EF4444)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {isMobile ? "Handle" : "Handle Overdue"}
+              </CustomButton>
+            )}
+
+            {showViewReviewButton && (
+              <CustomButton
+                startIcon={
+                  <RateReviewIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                }
+                onClick={handleViewReview}
+                sx={{
+                  textTransform: "none",
+                  fontSize: { xs: "11px", sm: "14px" },
+                  py: { xs: 0.5, sm: 0.75 },
+                  px: { xs: 1, sm: 2 },
+                  background:
+                    cardData.projectStatus === "Completed"
+                      ? "linear-gradient(to right, #00C8FF, #8B5FF6)"
+                      : "linear-gradient(to right, #DC2626, #EF4444)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {isMobile ? "Review" : "View Client Review"}
+              </CustomButton>
+            )}
+
+            {showCloseProjectButton && (
+              <CustomButton
+                startIcon={
+                  <CheckCircleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                }
+                onClick={handleCloseProjectClick}
+                sx={{
+                  textTransform: "none",
+                  fontSize: { xs: "11px", sm: "14px" },
+                  py: { xs: 0.5, sm: 0.75 },
+                  px: { xs: 1, sm: 2 },
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {isMobile
+                  ? isProvider
+                    ? "Submit"
+                    : "Review"
+                  : isProvider
+                  ? "Submit Final Work"
+                  : "Review & Close Project"}
+              </CustomButton>
+            )}
           </Box>
         </Box>
-      )}
 
-      {/* Rejection Reason Banner */}
-      {hasRejection && (
+        {/* Title and Progress Section */}
         <Box
           sx={{
-            bgcolor: "#FEF2F2",
-            borderLeft: "4px solid #DC2626",
-            borderRadius: 1,
-            p: { xs: 1.5, sm: 2 },
-            mb: { xs: 2, sm: 1 },
-            mt: { xs: 2, sm: 3 },
             display: "flex",
-            alignItems: "flex-start",
-            gap: { xs: 1, sm: 2 },
-            flexDirection: { xs: "column", sm: "row" },
+            flexDirection: { xs: "column", md: "row" },
+            gap: { xs: 2, md: 0 },
+            mb: 2,
           }}
         >
-          <WarningAmberIcon
-            sx={{
-              color: "#DC2626",
-              fontSize: { xs: 24, sm: 28 },
-              mt: { xs: 0, sm: 0 },
-            }}
-          />
-          <Box>
+          <Box flex={1} sx={{ pr: { xs: 0, md: "320px" } }}>
             <Typography
-              variant="body2"
+              variant="h5"
               fontWeight="bold"
-              color="#DC2626"
-              sx={{ mb: 0.5, fontSize: { xs: "0.875rem", sm: "0.875rem" } }}
+              sx={{
+                mb: 2,
+                fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" },
+                pr: { xs: 0, md: 2 },
+              }}
             >
-              ⚠️ PROJECT REJECTED - REWORK REQUIRED
+              {cardData.title}
             </Typography>
             <Typography
               variant="body2"
-              color="#991B1B"
+              color="text.secondary"
               sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
             >
-              <strong>Reason:</strong> {projectDetails.rejectionReason}
+              {cardData.description}
             </Typography>
           </Box>
+
+          {/* Progress Section */}
+          <Box
+            sx={{
+              position: { xs: "static", md: "absolute" },
+              top: { md: 80 },
+              right: {
+                md:
+                  !isProvider &&
+                  cardData.projectStatus === "Active" &&
+                  !isOverdue
+                    ? 56
+                    : 16,
+              },
+              width: { xs: "100%", sm: "100%", md: "280px" },
+            }}
+          >
+            <ProgressSection
+              progressPercentage={progressPercentage}
+              projectPoints={projectDetails?.points || 0}
+            />
+          </Box>
         </Box>
-      )}
 
-      {/* Provider Submit Dialog */}
-      <Dialog
-        open={openCloseDialog}
-        onClose={() => !closingProject && setOpenCloseDialog(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: "16px",
-            p: { xs: 0.5, sm: 1 },
-            m: { xs: 2, sm: 3 },
-            maxWidth: { xs: "calc(100% - 32px)", sm: "600px" },
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            fontWeight: "bold",
-            pb: 1,
-            fontSize: { xs: "1rem", sm: "1.25rem" },
-          }}
+        {/* Client/Provider Info + Deadline + Status */}
+        <Box
+          display="flex"
+          alignItems="center"
+          gap={{ xs: 1.5, sm: 3 }}
+          mb={1}
+          sx={{ flexWrap: "wrap" }}
         >
-          Submit Final Work
-        </DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
-          <Typography sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
-            Are you sure you want to submit this project for final review? All
-            tasks must be completed before submission.
-          </Typography>
-        </DialogContent>
-      <DialogActions
-  sx={{
-    px: { xs: 2, sm: 3 },
-    pb: { xs: 2, sm: 3 },
-    flexWrap: "wrap",
-    gap: 1,
-  }}
->
-  <Button
-    onClick={() => setOpenCloseDialog(false)}
-    disabled={closingProject}
-    sx={{
-      textTransform: "none",
-      fontSize: { xs: "0.875rem", sm: "1rem" },
-    }}
-  >
-    Cancel
-  </Button>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Avatar
+              src={getImageUrl(displayAvatar, displayName)}
+              sx={{ width: { xs: 32, sm: 36 }, height: { xs: 32, sm: 36 } }}
+            >
+              {displayInitials}
+            </Avatar>
 
-  <Button
-    onClick={handleProviderSubmit}
-    variant="contained"
-    disabled={closingProject}
-    sx={{
-      textTransform: "none",
-      fontSize: { xs: "0.875rem", sm: "1rem" },
-      background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
-      "&:hover": {
-        background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
-      },
-    }}
-  >
-    {closingProject ? "Submitting..." : "Confirm Submit"}
-  </Button>
-</DialogActions>
+            <Box>
+              <Typography
+                variant="body2"
+                color={theme.palette.mode === "dark" ? "#fff" : "#334155"}
+                fontWeight="600"
+                sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+              >
+                {isMobile ? displayName : displayRoleWithName}
+              </Typography>
+            </Box>
+          </Box>
 
-      </Dialog>
+          <Box display="flex" alignItems="center" gap={0.5}>
+            <CalendarMonthIcon
+              sx={{
+                fontSize: { xs: 14, sm: 16 },
+                color: isOverdue ? "#DC2626" : "text.secondary",
+              }}
+            />
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: { xs: "0.7rem", sm: "12px" },
+                color: isOverdue ? "#DC2626" : "text.secondary",
+                fontWeight: isOverdue ? 600 : 400,
+              }}
+            >
+              {isOverdue ? "Was due: " : "Due: "}
+              {formatDateTime(cardData.deadline)}
+            </Typography>
+          </Box>
 
-      {/* Client Review Dialog */}
-      <ProjectCloseReviewDialog
-        open={openReviewDialog}
-        onClose={() => !closingProject && setOpenReviewDialog(false)}
-        projectTitle={cardData.title}
-        projectDescription={cardData.description}
-        onSubmitReview={handleClientReview}
-      />
+          {cardData.projectStatus && (
+            <Chip
+              label={
+                cardData.projectStatus === "SubmittedForFinalReview"
+                  ? "In Review"
+                  : cardData.projectStatus
+              }
+              size="small"
+              sx={{
+                fontWeight: "600",
+                fontSize: { xs: "10px", sm: "12px" },
+                height: { xs: "22px", sm: "26px" },
+                px: { xs: 1, sm: 1.5 },
+                borderRadius: "6px",
+                backgroundColor: (() => {
+                  if (cardData.projectStatus === "Overdue") return "#FEE2E2";
+                  if (cardData.projectStatus === "Active") return "#D1FAE5";
+                  if (cardData.projectStatus === "Completed") return "#DBEAFE";
+                  if (cardData.projectStatus === "SubmittedForFinalReview")
+                    return "#F3E8FF";
+                  if (cardData.projectStatus === "Cancelled") return "#F3F4F6";
+                  return "#EFF6FF";
+                })(),
+                color: (() => {
+                  if (cardData.projectStatus === "Overdue") return "#DC2626";
+                  if (cardData.projectStatus === "Active") return "#059669";
+                  if (cardData.projectStatus === "Completed") return "#0284C7";
+                  if (cardData.projectStatus === "SubmittedForFinalReview")
+                    return "#A855F7";
+                  if (cardData.projectStatus === "Cancelled") return "#6B7280";
+                  return "#0284C7";
+                })(),
+              }}
+            />
+          )}
+        </Box>
 
-      <OverdueDecisionDialog
-        open={openOverdueDialog}
-        onClose={() => setOpenOverdueDialog(false)}
-        projectTitle={cardData.title}
-        projectDescription={cardData.description}
-        currentDeadline={cardData.deadline}
-        onSubmit={handleOverdueSubmit}
-      />
+        {/* Project Overdue Warning Banner */}
+        {isOverdue && (
+          <Box
+            sx={{
+              bgcolor: "#FEE2E2",
+              borderLeft: "4px solid #DC2626",
+              borderRadius: 1,
+              p: { xs: 1.5, sm: 2 },
+              mb: { xs: 2, sm: 1 },
+              mt: { xs: 2, sm: 3 },
+              display: "flex",
+              alignItems: "flex-start",
+              gap: { xs: 1, sm: 2 },
+              flexDirection: { xs: "column", sm: "row" },
+            }}
+          >
+            <WarningAmberIcon
+              sx={{
+                color: "#DC2626",
+                fontSize: { xs: 24, sm: 28 },
+                mt: { xs: 0, sm: 0 },
+              }}
+            />
+            <Box>
+              <Typography
+                variant="body2"
+                fontWeight="bold"
+                color="#DC2626"
+                sx={{ mb: 0.5, fontSize: { xs: "0.875rem", sm: "0.875rem" } }}
+              >
+                ⚠️ PROJECT OVERDUE
+              </Typography>
+              <Typography
+                variant="body2"
+                color="#991B1B"
+                sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+              >
+                This project passed its deadline on{" "}
+                {formatDateTime(cardData.deadline)}.
+                {!isProvider &&
+                  " Please use the 'Handle Overdue' button above to extend the deadline or cancel the project."}
+              </Typography>
+            </Box>
+          </Box>
+        )}
 
-      {/* View Project Review Dialog */}
-      <ViewProjectReviewDialog
-        open={openViewReviewDialog}
-        onClose={() => setOpenViewReviewDialog(false)}
-        projectData={cardData}
-        projectDetails={projectDetails}
-        reviewData={reviewData}
-      />
+        {/* Rejection Reason Banner */}
+        {hasRejection && (
+          <Box
+            sx={{
+              bgcolor: "#FEF2F2",
+              borderLeft: "4px solid #DC2626",
+              borderRadius: 1,
+              p: { xs: 1.5, sm: 2 },
+              mb: { xs: 2, sm: 1 },
+              mt: { xs: 2, sm: 3 },
+              display: "flex",
+              alignItems: "flex-start",
+              gap: { xs: 1, sm: 2 },
+              flexDirection: { xs: "column", sm: "row" },
+            }}
+          >
+            <WarningAmberIcon
+              sx={{
+                color: "#DC2626",
+                fontSize: { xs: 24, sm: 28 },
+                mt: { xs: 0, sm: 0 },
+              }}
+            />
+            <Box>
+              <Typography
+                variant="body2"
+                fontWeight="bold"
+                color="#DC2626"
+                sx={{ mb: 0.5, fontSize: { xs: "0.875rem", sm: "0.875rem" } }}
+              >
+                ⚠️ PROJECT REJECTED - REWORK REQUIRED
+              </Typography>
+              <Typography
+                variant="body2"
+                color="#991B1B"
+                sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+              >
+                <strong>Reason:</strong> {projectDetails.rejectionReason}
+              </Typography>
+            </Box>
+          </Box>
+        )}
 
-      {/* Publish Project Modal */}
-      <PublishProjectModal
-        open={openPublishModal}
-        onClose={() => setOpenPublishModal(false)}
-        projectId={cardData.id}
-        projectTitle={cardData.title}
-        projectDescription={cardData.description}
-        projectPoints={projectDetails?.points}
-        onPublishSuccess={handlePublishSuccess}
-      />
-
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{
-            width: "100%",
-            fontSize: { xs: "0.875rem", sm: "1rem" },
-            bgcolor:
-              snackbar.severity === "success"
-                ? "#3b82f6"
-                : snackbar.severity === "info"
-                ? "#3b82f6"
-                : "#EF4444",
-            color: "white",
-            "& .MuiAlert-icon": {
-              color: "white",
+        {/* Provider Submit Dialog */}
+        <Dialog
+          open={openCloseDialog}
+          onClose={() => !closingProject && setOpenCloseDialog(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: "16px",
+              p: { xs: 0.5, sm: 1 },
+              m: { xs: 2, sm: 3 },
+              maxWidth: { xs: "calc(100% - 32px)", sm: "600px" },
             },
           }}
-          variant="filled"
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <DialogTitle
+            sx={{
+              fontWeight: "bold",
+              pb: 1,
+              fontSize: { xs: "1rem", sm: "1.25rem" },
+            }}
+          >
+            Submit Final Work
+          </DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Typography sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
+              Are you sure you want to submit this project for final review? All
+              tasks must be completed before submission.
+            </Typography>
+          </DialogContent>
+          <DialogActions
+            sx={{
+              px: { xs: 2, sm: 3 },
+              pb: { xs: 2, sm: 3 },
+              flexWrap: "wrap",
+              gap: 1,
+            }}
+          >
+            <Button
+              onClick={() => setOpenCloseDialog(false)}
+              disabled={closingProject}
+              sx={{
+                textTransform: "none",
+                fontSize: { xs: "0.875rem", sm: "1rem" },
+              }}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              onClick={handleProviderSubmit}
+              variant="contained"
+              disabled={closingProject}
+              sx={{
+                textTransform: "none",
+                fontSize: { xs: "0.875rem", sm: "1rem" },
+                background: "linear-gradient(to right, #00C8FF, #8B5FF6)",
+                "&:hover": {
+                  background: "linear-gradient(to right, #8B5FF6, #00C8FF)",
+                },
+              }}
+            >
+              {closingProject ? "Submitting..." : "Confirm Submit"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Client Review Dialog */}
+        <ProjectCloseReviewDialog
+          open={openReviewDialog}
+          onClose={() => !closingProject && setOpenReviewDialog(false)}
+          projectTitle={cardData.title}
+          projectDescription={cardData.description}
+          onSubmitReview={handleClientReview}
+        />
+
+        <OverdueDecisionDialog
+          open={openOverdueDialog}
+          onClose={() => setOpenOverdueDialog(false)}
+          projectTitle={cardData.title}
+          projectDescription={cardData.description}
+          currentDeadline={cardData.deadline}
+          onSubmit={handleOverdueSubmit}
+        />
+
+        {/* View Project Review Dialog */}
+        <ViewProjectReviewDialog
+          open={openViewReviewDialog}
+          onClose={() => setOpenViewReviewDialog(false)}
+          projectData={cardData}
+          projectDetails={projectDetails}
+          reviewData={reviewData}
+        />
+
+        {/* Publish Project Modal */}
+        <PublishProjectModal
+          open={openPublishModal}
+          onClose={() => setOpenPublishModal(false)}
+          projectId={cardData.id}
+          projectTitle={cardData.title}
+          projectDescription={cardData.description}
+          projectPoints={projectDetails?.points}
+          onPublishSuccess={handlePublishSuccess}
+        />
+
+        {/* Snackbar */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={snackbar.severity}
+            sx={{
+              width: "100%",
+              fontSize: { xs: "0.875rem", sm: "1rem" },
+              bgcolor:
+                snackbar.severity === "success"
+                  ? "#3b82f6"
+                  : snackbar.severity === "info"
+                  ? "#3b82f6"
+                  : "#EF4444",
+              color: "white",
+              "& .MuiAlert-icon": {
+                color: "white",
+              },
+            }}
+            variant="filled"
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
     </>
   );
 }

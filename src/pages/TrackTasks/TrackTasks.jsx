@@ -1310,10 +1310,15 @@ export default function TrackTasks() {
           if (receivedProjectId === currentProjectId) {
             log("✅ Client accepted the project!");
 
-            setCardData((prev) => ({
-              ...prev,
-              projectStatus: "Completed",
-            }));
+            setCardData((prev) => {
+              const newData = {
+                ...prev,
+                projectStatus: "Completed",
+                status: "Completed",
+              };
+              log("📊 Updated cardData after ProjectCompleted:", newData);
+              return newData;
+            });
 
             setProjectDetails((prev) => ({
               ...prev,
@@ -1328,7 +1333,7 @@ export default function TrackTasks() {
           }
         });
 
-           // --- المشروع اكتمل ونُشر نهائياً ---
+        // --- المشروع اكتمل ونُشر نهائياً ---
         connection.on("ProjectPublished", (data) => {
           log("SignalR: ProjectPublished", data);
 
@@ -1337,7 +1342,7 @@ export default function TrackTasks() {
 
           if (receivedProjectId === currentProjectId) {
             setCardData((prev) => ({ ...prev, projectStatus: "Completed" }));
-          
+
             setSnackbar({
               open: true,
               message:
@@ -1346,8 +1351,8 @@ export default function TrackTasks() {
             });
           }
         });
-        
-         // --- ❌ المشروع رُفض (رفضه الكلاينت) ---
+
+        // --- ❌ المشروع رُفض (رفضه الكلاينت) ---
         connection.on("ProjectRejected", (data) => {
           log("🔔 SignalR: Received ProjectRejected", data);
 
@@ -1357,25 +1362,32 @@ export default function TrackTasks() {
           if (receivedProjectId === currentProjectId) {
             log("⚠️ Client rejected the project");
 
-            setCardData((prev) => ({
-              ...prev,
-              projectStatus: "Active",
-            }));
+            setCardData((prev) => {
+              const newData = {
+                ...prev,
+                projectStatus: "Active",
+                status: "Active",
+              };
+              log("📊 Updated cardData after ProjectRejected:", newData);
+              return newData;
+            });
 
             setProjectDetails((prev) => ({
               ...prev,
               status: "Active",
-              rejectionReason: data.reason || data.Reason || "No reason provided",
+              rejectionReason:
+                data.reason || data.Reason || "No reason provided",
             }));
 
             setSnackbar({
               open: true,
-              message: `⚠️ Project rejected: ${data.reason || data.Reason || "Check rejection details"}`,
+              message: `⚠️ Project rejected: ${
+                data.reason || data.Reason || "Check rejection details"
+              }`,
               severity: "warning",
             });
           }
         });
-
       } catch (err) {
         logError("❌ SignalR Connection Error:", err);
         if (isMounted) {
@@ -1404,13 +1416,9 @@ export default function TrackTasks() {
   // ===== Fetch Project Status =====
   const fetchProjectStatus = async () => {
     if (!cardData?.id || !token) {
-      log("⚠️ Cannot fetch status - missing cardData.id or token");
       return null;
     }
-
     try {
-      log("🔄 Fetching project status from dashboard for ID:", cardData.id);
-
       const filters = [
         "All Status",
         "Active",
@@ -1445,8 +1453,6 @@ export default function TrackTasks() {
           logError(`Error checking "${filter}" filter:`, filterError);
         }
       }
-
-      log("⚠️ Project not found in any filter");
       return null;
     } catch (err) {
       logError("❌ Failed to fetch status from dashboard:", err);
@@ -1457,30 +1463,23 @@ export default function TrackTasks() {
   // ===== Fetch Project Data =====
   const fetchProjectData = async () => {
     if (!cardData?.id || !token) {
-      log("⚠️ Cannot fetch - missing cardData.id or token");
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
-      log("🔄 Fetching project data for ID:", cardData.id);
-
       const detailsRes = await taskService.getProjectTaskDetails(
         cardData.id,
         token
       );
       log("✅ Fetched project details:", detailsRes.data);
       setProjectDetails(detailsRes.data);
-
       const dashboardStatus = await fetchProjectStatus();
-      log("📊 Dashboard Status Result:", dashboardStatus);
-
       setCardData((prev) => {
         const finalStatus = dashboardStatus
           ? mapProjectStatus(dashboardStatus)
           : prev.projectStatus || "Active";
-
         return {
           ...prev,
           title:
@@ -1548,32 +1547,33 @@ export default function TrackTasks() {
     setProjectDetails((prev) => ({ ...prev, deadline: newDeadline }));
   };
 
-const handleProjectClosed = async () => {
-  try {
-    log("🔄 Refreshing project data...");
-    
-    // 1. جلب البيانات يدوياً للتأكد
-    const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
-    const newData = detailsRes.data;
+  const handleProjectClosed = async () => {
+    try {
+      // 1. جلب البيانات يدوياً للتأكد
+      const detailsRes = await taskService.getProjectTaskDetails(
+        cardData.id,
+        token
+      );
+      const newData = detailsRes.data;
 
-    // 2. تحديث الحالة بشكل صريح ومباشر
-    setCardData(prev => ({
-      ...prev,
-      projectStatus: "SubmittedForFinalReview", // القيمة التي تظهر الزر
-      status: "SubmittedForFinalReview"
-    }));
+      // 2. تحديث الحالة بشكل صريح ومباشر
+      setCardData((prev) => ({
+        ...prev,
+        projectStatus: "SubmittedForFinalReview", // القيمة التي تظهر الزر
+        status: "SubmittedForFinalReview",
+      }));
 
-    setProjectDetails(newData);
+      setProjectDetails(newData);
 
-    setSnackbar({
-      open: true,
-      message: "Project submitted! You can now publish.",
-      severity: "success",
-    });
-  } catch (error) {
-    logError("Error refreshing project data:", error);
-  }
-};
+      setSnackbar({
+        open: true,
+        message: "Project submitted For Final Review.",
+        severity: "success",
+      });
+    } catch (error) {
+      logError("Error refreshing project data:", error);
+    }
+  };
 
   const handleSubmitReview = async (taskId, decision, comment) => {
     try {
