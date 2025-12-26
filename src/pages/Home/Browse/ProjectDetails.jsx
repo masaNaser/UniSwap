@@ -340,7 +340,6 @@ const ProjectDetails = () => {
                 p: 4,
                 borderRadius: "12px",
                 border: "1px solid #e0e0e0",
-                height: "100%",
               }}
             >
               <Typography

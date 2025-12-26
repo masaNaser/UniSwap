@@ -351,7 +351,8 @@ import { renderContentWithLinks } from "../../../utils/textHelper";
 import { useTheme } from "@mui/material/styles";
 
 // ✅ استيراد الـ BASE_URL من environment
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://uni1swap.runasp.net/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://uni1swap.runasp.net/api";
+const FILE_BASE_URL = import.meta.env.VITE_FILE_BASE_URL || "https://uni1swap.runasp.net";
 
 export default function TaskCard({
   task,
@@ -368,14 +369,22 @@ export default function TaskCard({
     if (!task.uploadFile) return;
 
     try {
+      let fileUrl;
+
       if (task.uploadFile instanceof File) {
-        const url = URL.createObjectURL(task.uploadFile);
-        window.open(url, "_blank");
+        fileUrl = URL.createObjectURL(task.uploadFile);
       } else if (typeof task.uploadFile === "string") {
-        // ✅ استخدام BASE_URL من environment
-        const fileUrl = task.uploadFile.startsWith("http")
-          ? task.uploadFile
-          : `${API_BASE_URL}/${task.uploadFile}`;
+        if (task.uploadFile.startsWith("http")) {
+          fileUrl = task.uploadFile;
+        } else {
+          const baseUrl = FILE_BASE_URL.replace(/\/$/, '');
+          const filePath = task.uploadFile.replace(/^\/+/, '');
+          fileUrl = `${baseUrl}/${filePath}`;
+        }
+        console.log('Opening file URL:', fileUrl);
+      }
+
+      if (fileUrl) {
         window.open(fileUrl, "_blank");
       }
     } catch (error) {
