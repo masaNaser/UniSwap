@@ -13,7 +13,7 @@ import { getSubServices } from "../../services/subServiceServices";
 import { getToken } from "../../utils/authHelpers";
 export default function AddServiceModal({ open, handleClose, onAdded, editingService }) {
   // const token = localStorage.getItem("accessToken");
-const token = getToken();
+  const token = getToken();
   const [allServices, setAllServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
   const [formData, setFormData] = useState({
@@ -23,11 +23,10 @@ const token = getToken();
     avgPoints: "",
     avgDurationDays: "",
   });
-  const isFormInvalid = 
-    !formData.serviceId || 
-    !formData.subServiceId || 
-    !formData.description.trim() || 
-    !formData.avgPoints || 
+  const isFormInvalid =
+    !formData.serviceId ||
+    !formData.subServiceId ||
+    !formData.avgPoints ||
     !formData.avgDurationDays;
 
   const [loading, setLoading] = useState(false);
@@ -98,7 +97,7 @@ const token = getToken();
     try {
       if (editingService) {
         // تعديل الخدمة
-       const response= await EditUserService(token, formData, editingService.id);
+        const response = await EditUserService(token, formData, editingService.id);
         console.log("EditUserService response:", response);
         setSnackbar({
           open: true,
@@ -107,8 +106,8 @@ const token = getToken();
         });
       } else {
         // إضافة خدمة جديدة
-     const response= await CreateService(token, formData);
-     console.log("CreateService response:", response);
+        const response = await CreateService(token, formData);
+        console.log("CreateService response:", response);
         setSnackbar({
           open: true,
           message: "Service added successfully!",
@@ -179,7 +178,7 @@ const token = getToken();
 
         {/* باقي الحقول */}
         <TextField
-          label="Description"
+          label="Description (Optional)"
           name="description"
           value={formData.description}
           onChange={handleChange}
