@@ -1531,15 +1531,14 @@ export default function TrackTasks() {
     }
   };
 
-  // ✅ Fixed Dependency Array
-  useEffect(() => {
-    if (!cardData?.id) {
-      log("📍 Skipping fetch - no cardData.id");
-      return;
-    }
-    log("📍 useEffect triggered - cardData.id:", cardData.id);
-    fetchProjectData();
-  }, [cardData?.id, token]);
+useEffect(() => {
+  if (!cardData?.id) return;
+  
+  fetchProjectData();
+  
+  // أضفنا cardData.projectStatus هنا عشان أول ما تتغير الحالة 
+  // الـ useEffect يشتغل فوراً ويجيب البيانات الجديدة
+}, [cardData?.id, cardData?.projectStatus, token]);
 
   // ===== Handlers =====
   const handleDeadlineUpdate = (newDeadline) => {
@@ -1899,8 +1898,12 @@ export default function TrackTasks() {
     }));
 
     // إعادة جلب كل البيانات من السيرفر للتأكد أن كل شيء متزامن
-    await fetchProjectData();
-  };
+try {
+    await fetchProjectData(); 
+    log("✅ Sync complete");
+  } catch (err) {
+    logError("❌ Sync failed", err);
+  }  };
   // ===== Computed Values =====
   const completedTasks = tasks.Done.length;
   const totalTasks = Object.values(tasks).reduce(
@@ -1941,7 +1944,7 @@ export default function TrackTasks() {
 
         // 🚩 السر هنا: عندما تتغير الحالة، الـ key سيتغير
         // مما يجبر الـ Header على "إعادة الرندرة" وحساب canCloseProject من جديد
-        key={`header-${cardData?.id}-${cardData?.projectStatus}-${Date.now()}`}
+key={`header-${cardData?.id}-${cardData?.projectStatus}`}
         onProjectStatusUpdate={handleProjectStatusUpdate}
         cardData={cardData}
         projectDetails={projectDetails}
