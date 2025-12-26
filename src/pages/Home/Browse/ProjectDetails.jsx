@@ -30,6 +30,7 @@ import {
 import { formatDateTime } from "../../../utils/timeHelper";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { getUserId } from "../../../utils/authHelpers";
+import { renderContentWithLinks } from "../../../utils/textHelper";
 const ProjectDetails = () => {
   const token = localStorage.getItem("accessToken");
   const { id } = useParams();
@@ -308,7 +309,7 @@ const ProjectDetails = () => {
                 onError={() => setImgError(true)}
                 sx={{
                   width: "100%",
-height: { xs: "220px", sm: "280px", md: "350px" },
+                  height: { xs: "220px", sm: "280px", md: "350px" },
                   objectFit: "cover",
                   borderRadius: "12px",
                 }}
@@ -317,7 +318,7 @@ height: { xs: "220px", sm: "280px", md: "350px" },
               <Box
                 sx={{
                   width: "100%",
-height: { xs: "220px", sm: "280px", md: "350px" },
+                  height: { xs: "220px", sm: "280px", md: "350px" },
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -412,7 +413,7 @@ height: { xs: "220px", sm: "280px", md: "350px" },
                     Price
                   </Typography>
                 </Box>
-                <Typography variant="body2" sx={{ fontWeight: "medium" }} >
+                <Typography variant="body2" sx={{ fontWeight: "medium" }}>
                   {project.points || 0} pts
                 </Typography>
               </Box>
@@ -493,7 +494,9 @@ height: { xs: "220px", sm: "280px", md: "350px" },
               wordBreak: "break-word",
             }}
           >
-            {project.description || "No description provided."}
+            {project.description
+              ? renderContentWithLinks(project.description)
+              : "No description provided."}
           </Typography>
         </Box>
 
@@ -543,7 +546,7 @@ height: { xs: "220px", sm: "280px", md: "350px" },
                 alignItems: "center",
                 gap: 3,
                 p: 3,
-                flexWrap:"wrap",
+                flexWrap: "wrap",
                 bgcolor: "rgb(106, 103, 254, 0.05)",
                 borderRadius: "12px",
                 border: "1px solid rgb(106, 103, 254, 0.2)",

@@ -28,6 +28,7 @@ import {
 import AddServiceModal from "../../../../components/Modals/AddServiceModal";
 import { useProfile } from "../../../../Context/ProfileContext";
 import { getToken } from "../../../../utils/authHelpers";
+import { renderContentWithLinks } from "../../../../utils/textHelper";
 export default function ServicesSection() {
   const theme = useTheme();
   // const token = localStorage.getItem("accessToken");
@@ -153,8 +154,10 @@ export default function ServicesSection() {
                   position: "relative",
                   mb: 1,
                   // backgroundColor: "rgba(248, 250, 252, 1)",
-                  backgroundColor: theme.palette.mode === 'dark' ? '#323232ff' : 'rgba(248, 250, 252, 1)',
-
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "#323232ff"
+                      : "rgba(248, 250, 252, 1)",
                 }}
               >
                 {isMyProfile && (
@@ -185,7 +188,16 @@ export default function ServicesSection() {
                   >
                     {s.subServiceName}
                   </Typography>
-                  <Typography>{s.description}</Typography>
+                  <Typography
+                    sx={{
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {s.description
+                      ? renderContentWithLinks(s.description)
+                      : "No description"}
+                  </Typography>
                   <Box
                     sx={{
                       display: "flex",
@@ -270,7 +282,8 @@ export default function ServicesSection() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete "{serviceToDelete?.subServiceName}"? You won't be able to revert this!
+            Are you sure you want to delete "{serviceToDelete?.subServiceName}"?
+            You won't be able to revert this!
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
