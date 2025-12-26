@@ -63,7 +63,7 @@ export default function TaskDialog({
         />
         <TextField
           fullWidth
-          label="Description"
+          label="Description (Optional)"
           value={newTask?.description || ''}
           onChange={(e) => onTaskChange(prev => ({ ...prev, description: e.target.value }))}
           multiline
@@ -177,7 +177,7 @@ export default function TaskDialog({
         <Button
           onClick={onSubmit}
           variant="contained"
-          disabled={!newTask?.title?.trim() || !newTask?.description?.trim()}
+          disabled={!newTask?.title?.trim()}
           sx={{ background: 'linear-gradient(to right, #00C8FF, #8B5FF6)' }}
         >
           {editingTask ? 'Update' : 'Add'}

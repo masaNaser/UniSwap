@@ -251,7 +251,7 @@ export default function TaskColumn({
   };
 
   const handleTaskChange = (updater) => {
- setNewTask(updater); // تغني عن الـ if/else بالكامل
+    setNewTask(updater); // تغني عن الـ if/else بالكامل
   };
 
   const handleSubmitTask = () => {
@@ -300,7 +300,7 @@ export default function TaskColumn({
               height: 32,
             }}
           />
-          
+
           {/* Add Button */}
           {shouldShowAddButton && (
             <Button

@@ -1615,10 +1615,10 @@ export default function TrackTasks() {
   };
 
   const handleAddTask = async () => {
-    if (!newTask.title.trim() || !newTask.description.trim()) {
+    if (!newTask.title.trim()) {
       setSnackbar({
         open: true,
-        message: "Please enter both task title and description",
+        message: "Please enter task title",
         severity: "error",
       });
       return;
@@ -1627,7 +1627,10 @@ export default function TrackTasks() {
     try {
       const formData = new FormData();
       formData.append("Title", newTask.title);
-      formData.append("Description", newTask.description || "");
+
+      if (newTask.description && newTask.description.trim()) {
+        formData.append("Description", newTask.description);
+      }
 
       if (newTask.uploadFile) {
         formData.append("UploadFile", newTask.uploadFile);
@@ -1677,7 +1680,7 @@ export default function TrackTasks() {
   };
 
   const handleTaskFromColumn = async (formData) => {
-    if (!formData.title.trim() || !formData.description.trim()) {
+    if (!formData.title.trim()) {
       setSnackbar({
         open: true,
         message: "Please enter both task title and description",
@@ -1689,7 +1692,10 @@ export default function TrackTasks() {
     try {
       const data = new FormData();
       data.append("Title", formData.title);
-      data.append("Description", formData.description || "");
+      
+      if (formData.description && formData.description.trim()) {
+        data.append("Description", formData.description);
+      }
 
       if (formData.uploadFile) {
         data.append("UploadFile", formData.uploadFile);
@@ -1877,24 +1883,24 @@ export default function TrackTasks() {
     setSelectedTask({ task, status });
     setAnchorEl(e.currentTarget);
   };
-   
+
   const handleProjectStatusUpdate = async (newStatus) => {
-  log("🔄 Manual Status Update triggered:", newStatus);
-  
-  setCardData((prev) => ({
-    ...prev,
-    projectStatus: newStatus,
-    status: newStatus,
-  }));
+    log("🔄 Manual Status Update triggered:", newStatus);
 
-  setProjectDetails((prev) => ({
-    ...prev,
-    status: newStatus,
-  }));
+    setCardData((prev) => ({
+      ...prev,
+      projectStatus: newStatus,
+      status: newStatus,
+    }));
 
-  // إعادة جلب كل البيانات من السيرفر للتأكد أن كل شيء متزامن
-  await fetchProjectData(); 
-};
+    setProjectDetails((prev) => ({
+      ...prev,
+      status: newStatus,
+    }));
+
+    // إعادة جلب كل البيانات من السيرفر للتأكد أن كل شيء متزامن
+    await fetchProjectData();
+  };
   // ===== Computed Values =====
   const completedTasks = tasks.Done.length;
   const totalTasks = Object.values(tasks).reduce(
@@ -1932,11 +1938,11 @@ export default function TrackTasks() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <TrackTasksHeader
-      
+
         // 🚩 السر هنا: عندما تتغير الحالة، الـ key سيتغير
         // مما يجبر الـ Header على "إعادة الرندرة" وحساب canCloseProject من جديد
-  key={`header-${cardData?.id}-${cardData?.projectStatus}-${Date.now()}`}
-  onProjectStatusUpdate={handleProjectStatusUpdate}
+        key={`header-${cardData?.id}-${cardData?.projectStatus}-${Date.now()}`}
+        onProjectStatusUpdate={handleProjectStatusUpdate}
         cardData={cardData}
         projectDetails={projectDetails}
         isProvider={isProvider}

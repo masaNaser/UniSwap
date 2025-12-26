@@ -347,6 +347,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import { formatDateTime } from "../../../utils/timeHelper";
+import { renderContentWithLinks } from "../../../utils/textHelper";
 import { useTheme } from "@mui/material/styles";
 
 // ✅ استيراد الـ BASE_URL من environment
@@ -495,7 +496,7 @@ export default function TaskCard({
                     lineHeight: 1.4,
                   }}
                 >
-                  {task.description}
+                  {renderContentWithLinks(task.description)}
                 </Typography>
               </Box>
             )}
