@@ -77,50 +77,55 @@ export default function Login() {
   // تحديد التاب الحالي
   const currentTab = location.pathname === "/login" ? 0 : 1;
 
-const loginHandle = async (data) => {
+  const loginHandle = async (data) => {
   try {
     setLoading(true);
     const response = await loginApi(data);
     console.log("login", response);
     
     if (response.status === 200) {
-      // ✅ الـ backend بيرجع بس الـ accessToken
-      // الـ refreshToken بيتحفظ تلقائياً بالـ cookie (HttpOnly)
       const { accessToken } = response.data;
       
-      // فك التوكن لاستخراج المعلومات
+      // Decode token
       const decoded = jwtDecode(accessToken);
       
-      // 1. تحديد مكان التخزين بناءً على خيار "Remember Me"
+      // Determine storage location
       const storage = data.rememberMe ? localStorage : sessionStorage;
       
-      // 2. ✅ تخزين بس الـ Access Token ومعلومات المستخدم
+      // Store token and expiration
       storage.setItem("accessToken", accessToken);
-      storage.setItem("accessTokenExpiration", decoded.exp);
+      storage.setItem("accessTokenExpiration", decoded.exp.toString());
       
-      // 3. استخراج معلومات المستخدم من التوكن
+      // Extract user info
       const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
       const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
       const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
       
-      // 4. حفظ معلومات المستخدم
+      // Store user info
       storage.setItem("userName", userName);
       storage.setItem("userId", userId);
       storage.setItem("userRole", userRole);
       
-      // 5. بدء Timer للتحديث التلقائي
+      console.log(`✅ Token stored, expires at: ${new Date(decoded.exp * 1000).toLocaleString()}`);
+      
+      // ✅ Stop any existing timer first (to avoid duplicates)
+      if (window.tokenRefreshTimerId) {
+        clearInterval(window.tokenRefreshTimerId);
+        console.log("🔄 Cleared existing timer");
+      }
+      
+      // ✅ Start new refresh timer
       const timerId = startTokenRefreshTimer();
       window.tokenRefreshTimerId = timerId;
-      console.log("✅ Token refresh timer started after login");
+      console.log("✅ Token refresh timer started from Login");
       
-      // 6. عرض رسالة نجاح والتوجيه
+      // Show success and redirect
       Swal.fire({
         title: "Login successful!",
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
       }).then(() => {
-        // التوجيه حسب Role
         if (userRole === "Admin") {
           navigate("/admin");
         } else {
@@ -134,7 +139,6 @@ const loginHandle = async (data) => {
       error.response?.data?.title ||
       "Invalid email or password";
     
-    // عرض الـ error تحت حقل الـ password
     setError("password", {
       type: "manual",
       message: msg,

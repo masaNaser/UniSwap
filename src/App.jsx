@@ -26,18 +26,33 @@ function AppWithTheme() {
   const refreshTimerRef = useRef(null);
 
   useEffect(() => {
-    // بدء Timer للتحديث التلقائي عند تحميل التطبيق
-    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-    
-    if (token) {
-      refreshTimerRef.current = startTokenRefreshTimer();
-      // حفظ Timer ID بشكل global لاستخدامه في Logout
-      window.tokenRefreshTimerId = refreshTimerRef.current;
-      console.log("✅ Token refresh timer started");
-    }
+    // ✅ دالة للتحقق وبدء Timer
+    const initializeTimer = () => {
+      const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
-    //  تنظيف Timer عند إغلاق التطبيق أو Unmount
+      if (token && !window.tokenRefreshTimerId) {
+        refreshTimerRef.current = startTokenRefreshTimer();
+        window.tokenRefreshTimerId = refreshTimerRef.current;
+        console.log("✅ Token refresh timer started from App.jsx");
+      }
+    };
+
+    // ✅ بدء Timer عند تحميل التطبيق إذا كان هناك token
+    initializeTimer();
+
+    // ✅ الاستماع لتغييرات localStorage (عند تسجيل الدخول من تاب آخر)
+    const handleStorageChange = (e) => {
+      if (e.key === "accessToken" && e.newValue) {
+        initializeTimer();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // ✅ تنظيف Timer عند إغلاق التطبيق
     return () => {
+      window.removeEventListener("storage", handleStorageChange);
+
       if (refreshTimerRef.current) {
         stopTokenRefreshTimer(refreshTimerRef.current);
         window.tokenRefreshTimerId = null;
