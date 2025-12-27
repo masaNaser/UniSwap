@@ -196,7 +196,7 @@ export default function ServicesSection() {
                   >
                     {s.description
                       ? renderContentWithLinks(s.description)
-                      : "No description"}
+                      : ""}
                   </Typography>
                   <Box
                     sx={{

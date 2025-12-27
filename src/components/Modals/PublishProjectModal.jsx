@@ -238,8 +238,7 @@ const PublishProjectModal = ({
       formData.append("Description", description);
       formData.append("SubServiceId", subServiceId);
       formData.append("Points", parseInt(points));
-      formData.append("DeliveryTimeInDays", parseInt(deliveryTimeInDays));
-
+formData.append("DeliveryTimeInDays", deliveryTimeInDays);
       if (image) {
         formData.append("Img", image);
       }

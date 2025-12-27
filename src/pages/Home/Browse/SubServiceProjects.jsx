@@ -293,7 +293,16 @@ const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
             <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
             <Typography variant="caption" color="text.secondary">
               {project.deliveryTimeInDays
-                ? `${project.deliveryTimeInDays} days`
+                ? (() => {
+                    const timeValue = project.deliveryTimeInDays
+                      .toString()
+                      .trim();
+                    // إذا كان المدخل أرقام فقط (مثل "3")، أضف كلمة "days"
+                    // إذا كان يحتوي على كلمات (مثل "3 weeks")، اعرضه كما هو
+                    return /^\d+$/.test(timeValue)
+                      ? `${timeValue} days`
+                      : timeValue;
+                  })()
                 : "N/A"}
             </Typography>
           </Box>
@@ -461,11 +470,12 @@ export default function SubServiceProjects() {
 
       console.log("✅ Projects fetched:", response.data);
 
-      if (Array.isArray(response.data)) {
-        setProjects(response.data);
-        setTotalPages(1);
-        setTotalCount(response.data.length);
-      } else if (response.data.items && Array.isArray(response.data.items)) {
+    if (Array.isArray(response.data)) {
+    setProjects(response.data);
+    setTotalCount(response.data.length);
+    // إذا كان عدد العناصر الجاي بيساوي الـ pageSize، يعني غالباً في لسه عناصر تانية
+    setTotalPages(response.data.length === pageSize ? page + 1 : page);
+} else if (response.data.items && Array.isArray(response.data.items)) {
         setProjects(response.data.items);
         setTotalPages(response.data.totalPages || 1);
         setTotalCount(response.data.totalCount || 0);
