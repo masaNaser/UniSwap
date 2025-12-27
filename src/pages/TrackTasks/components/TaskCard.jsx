@@ -503,6 +503,7 @@ export default function TaskCard({
                     wordBreak: "break-word",
                     fontSize: "14px",
                     lineHeight: 1.4,
+                    whiteSpace: "pre-wrap",
                   }}
                 >
                   {renderContentWithLinks(task.description)}
