@@ -773,7 +773,7 @@ const ProjectDetails = () => {
                           ml: 1,
                         }}
                       >
-                        {formatDateTime(review.createdAt)}
+                        {formatDateTime(review?.createdAt)}
                       </Typography>
                     </Box>
 

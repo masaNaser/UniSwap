@@ -286,7 +286,7 @@ export default function UsersTap() {
                       {/* Created At */}
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {formatDate(user.createdAt)}
+                          {formatDate(user?.createdAt)}
                         </Typography>
                       </TableCell>
                     </TableRow>

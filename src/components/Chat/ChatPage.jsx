@@ -61,28 +61,49 @@ export default function ChatPage() {
     setShowChatList(true);
     setSelectedConv(null);
   };
+useEffect(() => {
+  const onNewMessage = (event) => {
+    const message = event.detail;
+    setConversations((prev) => {
+      const existing = prev.find(c => c.id === message.conversationId);
+      if (existing) {
+        return prev.map(c => c.id === message.conversationId 
+          ? { 
+              ...c, 
+              lastMessage: message, 
+              unreadCount: selectedConv?.convId === c.id ? 0 : (c.unreadCount + 1) 
+            } 
+          : c).sort((a, b) => new Date(b.lastMessage?.createdAt) - new Date(a.lastMessage?.createdAt));
+      }
+      return prev; 
+    });
+  };
 
-  useEffect(() => {
-    if (!connection) return;
+  window.addEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
+  return () => window.removeEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
+}, [selectedConv]);
+  // useEffect(() => {
 
-    // مستمع خاص بصفحة الشات لتحديث القائمة لحظياً
-    const handleMessage = (message) => {
-      setConversations((prev) => {
-        const existing = prev.find(c => c.id === message.conversationId);
-        if (existing) {
-          return prev.map(c => c.id === message.conversationId 
-            ? { ...c, lastMessage: message, unreadCount: c.unreadCount + 1 } 
-            : c).sort((a, b) => new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt));
-        }
-        return prev; 
-      });
-    };
+  //   if (!connection) return;
 
-    connection.on("ReceiveMessage", handleMessage);
+  //   // مستمع خاص بصفحة الشات لتحديث القائمة لحظياً
+  //   const handleMessage = (message) => {
+  //     setConversations((prev) => {
+  //       const existing = prev.find(c => c.id === message.conversationId);
+  //       if (existing) {
+  //         return prev.map(c => c.id === message.conversationId 
+  //           ? { ...c, lastMessage: message, unreadCount: c.unreadCount + 1 } 
+  //           : c).sort((a, b) => new Date(b.lastMessage?.createdAt) - new Date(a.lastMessage?.createdAt));
+  //       }
+  //       return prev; 
+  //     });
+  //   };
+
+  //   connection.on("ReceiveMessage", handleMessage);
     
-    // تنظيف المستمع عند مغادرة الصفحة (دون إغلاق الاتصال بالكامل)
-    return () => connection.off("ReceiveMessage", handleMessage);
-  }, [connection]);
+  //   // تنظيف المستمع عند مغادرة الصفحة (دون إغلاق الاتصال بالكامل)
+  //   return () => connection.off("ReceiveMessage", handleMessage);
+  // }, [connection]);
   return (
     <Container maxWidth="lg" sx={{ mt: 3, mb: 3 }}>
       {/* ✅ أضف class "dark-mode" لو Dark Mode مفعّل */}

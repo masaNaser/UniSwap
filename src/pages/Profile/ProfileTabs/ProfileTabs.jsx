@@ -10,6 +10,7 @@ import PostsTab from "./PostsTab";
 import { useTheme } from "@mui/material/styles";
 
 export default function ProfileTabs({ userData }) {
+  // console.log("profile data",userData);
   const [currentTab, setCurrentTab] = useState(0);
   const theme = useTheme();
   return (

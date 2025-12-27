@@ -94,14 +94,31 @@ export default function ChatWindow({
     }
   }, [conversationId, token]);
 
+  // useEffect(() => {
+  //   if (connection) {
+  //     connection.on("ReceiveMessage", fetchNewMessageRealTime);
+  //   }
+  //   return () => {
+  //     if (connection) connection.off("ReceiveMessage");
+  //   };
+  // }, [connection, fetchNewMessageRealTime]);
   useEffect(() => {
-    if (connection) {
-      connection.on("ReceiveMessage", fetchNewMessageRealTime);
+  const onNewMessage = (event) => {
+    const message = event.detail;
+    if (message.conversationId === conversationId) {
+      setMessages((prev) => {
+        if (prev.some(m => m.id === message.id)) return prev;
+        return [...prev, message];
+      });
+
+      markMessageAsSeen(conversationId, token);
+      decreaseUnreadCount(1); // ينقص عداد الـ Navbar فوراً
     }
-    return () => {
-      if (connection) connection.off("ReceiveMessage");
-    };
-  }, [connection, fetchNewMessageRealTime]);
+  };
+
+  window.addEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
+  return () => window.removeEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
+}, [conversationId, token, decreaseUnreadCount]);
 
   // تحميل الرسائل القديمة عند السحب للأعلى
   const fetchOlderMessages = async () => {

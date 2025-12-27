@@ -58,6 +58,7 @@ const updatePost = (posts, postId, newData) =>
   posts.map((p) => (p.id === postId ? { ...p, ...newData } : p));
 
 export default function PostsTab({ username }) {
+  console.log("userName post tap",username)
   const { currentUser, loading } = useCurrentUser();
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
@@ -124,7 +125,7 @@ export default function PostsTab({ username }) {
     const startTime = Date.now();
 
     try {
-      const response = await GetAllPost(userToken, username, pageNumber, 10); // ✅ إضافة pagination
+      const response = await GetAllPost(userToken, username, pageNumber, 4); // ✅ إضافة pagination
       console.log("📥 PostsTab - Fetched page", response.data);
 
       const postsData = response.data.map((p) => ({
@@ -159,7 +160,7 @@ export default function PostsTab({ username }) {
       }
 
       // ✅ Check if there are more posts
-      setHasMore(postsData.length === 10);
+      setHasMore(postsData.length === 4);
 
       // Minimum loading time for UX
       const elapsedTime = Date.now() - startTime;

@@ -176,7 +176,7 @@ const Comment = ({
               >
                 {formatDateTime(comment.createdAt)}
               </Typography>
-              {console.log("time in modal:", formatDateTime(comment.createdAt))}
+              {console.log("time in modal:", formatDateTime(comment?.createdAt))}
               {isCurrentUser && (
                 <IconButton
                   aria-label="more"

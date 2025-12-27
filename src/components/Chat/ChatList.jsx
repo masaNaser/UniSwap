@@ -9,6 +9,7 @@ export default function ChatList({
   setConversations,
   onSelectConversation,
   className = "",
+  selectedConvId
 }) {
   // const token = localStorage.getItem("accessToken");
   const token = getToken();
@@ -16,7 +17,32 @@ export default function ChatList({
 
   // ✅ استخدم الـ Context
   const { decreaseUnreadCount, refreshUnreadCount } = useUnreadCount();
+ useEffect(() => {
+    const handleGlobalMessage = (event) => {
+      const message = event.detail;
 
+      setConversations((prev) => {
+        const existing = prev.find(c => c.id === message.conversationId);
+        
+        if (existing) {
+          return prev.map(c => 
+            c.id === message.conversationId 
+              ? { 
+                  ...c, 
+                  lastMessage: message, 
+                  // نزيد العداد فقط إذا لم تكن هذه هي المحادثة المفتوحة حالياً
+                  unreadCount: selectedConvId === c.id ? 0 : (c.unreadCount + 1) 
+                } 
+              : c
+          ).sort((a, b) => new Date(b.lastMessage?.createdAt) - new Date(a.lastMessage?.createdAt));
+        }
+        return prev;
+      });
+    };
+
+    window.addEventListener("NEW_SIGNALR_MESSAGE", handleGlobalMessage);
+    return () => window.removeEventListener("NEW_SIGNALR_MESSAGE", handleGlobalMessage);
+  }, [selectedConvId, setConversations]); // أضفنا التبعيات الصحيحة
   const fetchConversations = async () => {
     try {
       const response = await getConversations(token);
@@ -106,7 +132,7 @@ export default function ChatList({
               ? conv.lastMessage.text || "File"
               : "";
             const lastTime = conv.lastMessage?.createdAt
-              ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
+              ? new Date(conv.lastMessage?.createdAt).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })
