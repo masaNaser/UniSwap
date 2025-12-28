@@ -349,7 +349,7 @@ const ParentSubServiceProjects = () => {
 
       if (Array.isArray(response.data)) {
         setProjects(response.data);
-        console.log("Full project data:", response.data[0]); // 🔍 Check this
+        console.log("Full project data:", response.data); // 🔍 Check this
         setTotalPages(1);
       } else if (response.data.items) {
         setProjects(response.data.items);

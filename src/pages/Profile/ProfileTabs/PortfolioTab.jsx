@@ -13,8 +13,12 @@ import {
   Pagination,
   useMediaQuery,
   useTheme,
-  Skeleton 
+  DialogContent,
+  DialogTitle,
+  Dialog,
+  DialogActions
 } from "@mui/material";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -22,10 +26,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FolderIcon from "@mui/icons-material/Folder";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import UserProjectModal from "../../../components/Modals/UserProjectModal";
-import {
-  GetUserProject,
-  DeleteProject,
-} from "../../../services/profileService";
+import {GetUserProject,DeleteProject,} from "../../../services/profileService";
 import { useProfile } from "../../../Context/ProfileContext";
 import { getImageUrl } from "../../../utils/imageHelper";
 import { getToken } from "../../../utils/authHelpers";
@@ -337,6 +338,56 @@ export default function PortfolioTab() {
         />
       </Box>
     )}
+     
+     
+           <Dialog
+             open={deleteDialogOpen}
+             onClose={handleCancelDelete}
+             PaperProps={{
+               sx: {
+                 borderRadius: "12px",
+                 width: "400px",
+                 maxWidth: "90%",
+               },
+             }}
+           >
+             <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+               <WarningAmberIcon sx={{ color: "#F59E0B" }} />
+               Delete Project
+             </DialogTitle>
+             <DialogContent>
+               <Box sx={{ pt: 1 }}>Are you sure you want to delete the project <strong>"{projectToDelete?.title}"</strong>? 
+      This action cannot be undone.</Box>
+             </DialogContent>
+             <DialogActions sx={{ px: 3, pb: 2 }}>
+               <Button
+                 onClick={handleCancelDelete}
+                 sx={{
+                   color: "#6B7280",
+                   textTransform: "none",
+                 }}
+               >
+                 No, keep it
+               </Button>
+               <Button
+                 onClick={handleConfirmDelete}
+                 variant="contained"
+                 sx={{
+                   bgcolor: "#EF4444",
+                   textTransform: "none",
+                   "&:hover": {
+                     bgcolor: "#DC2626",
+                   },
+                 }}
+               >
+                 Yes, delete it!
+               </Button>
+             </DialogActions>
+           </Dialog>
+
+
+
+
 
     {/* المودال الخاص بالإضافة والتعديل */}
     <UserProjectModal

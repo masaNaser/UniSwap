@@ -19,6 +19,7 @@ import {
   Skeleton,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import StarIcon from "@mui/icons-material/Star";
@@ -61,62 +62,29 @@ const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
       }}
     >
       {/*  Menu للتعديل والحذف */}
-      {canEdit && (
-        <>
-          <IconButton
-            onClick={handleMenuOpen}
-            sx={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              bgcolor: "rgba(255, 255, 255, 0.9)",
-              zIndex: 10,
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-              "&:hover": {
-                bgcolor: "white",
-                transform: "scale(1.1)",
-              },
-              transition: "all 0.2s",
-            }}
-            size="small"
-          >
-            <MoreVertIcon sx={{ fontSize: 18 }} />
-          </IconButton>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleMenuClose}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-          >
-            <MenuItem
-              onClick={() => {
-                handleMenuClose();
-                onEditClick(project);
-              }}
-            >
-              <EditIcon fontSize="small" sx={{ mr: 1, color: "#3B82F6" }} />
-              Edit
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleMenuClose();
-                onDeleteClick(project);
-              }}
-            >
-              <DeleteIcon fontSize="small" sx={{ mr: 1, color: "#EF4444" }} />
-              Delete
-            </MenuItem>
-          </Menu>
-        </>
-      )}
+   {/* أيقونة التعديل مباشرة بدلاً من القائمة */}
+{canEdit && (
+  <IconButton
+    onClick={() => onEditClick(project)}
+    sx={{
+      position: "absolute",
+      top: 8,
+      right: 8,
+      bgcolor: "rgba(255, 255, 255, 0.9)",
+      zIndex: 10,
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+      "&:hover": {
+        bgcolor: "white",
+        transform: "scale(1.1)",
+        color: "#3B82F6", // تغيير لون القلم عند التحويم
+      },
+      transition: "all 0.2s",
+    }}
+    size="small"
+  >
+    <EditIcon sx={{ fontSize: 18, color: "#3B82F6" }} />
+  </IconButton>
+)}
 
       <Box sx={{ position: "relative" }}>
         <CardMedia
@@ -358,7 +326,7 @@ export default function SubServiceProjects() {
   const parentServiceName = params.get("parentName");
   const parentServiceId = params.get("parentId");
   const [page, setPage] = useState(1);
-  const pageSize = 6;
+  const pageSize = 4;
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -492,28 +460,39 @@ export default function SubServiceProjects() {
     }
   };
 
-  // Fetch when filters change (reset to page 1) - use debouncedSearch instead of searchQuery
-  useEffect(() => {
-    if (id) {
-      setPage(1);
-      fetchServiceProject(1);
-    }
-  }, [id, debouncedSearch, selectedSort, selectedPrice, selectedRating]);
+  // // Fetch when filters change (reset to page 1) - use debouncedSearch instead of searchQuery
+  // useEffect(() => {
+  //   if (id) {
+  //     setPage(1);
+  //     fetchServiceProject(1);
+  //   }
+  // }, [id, debouncedSearch, selectedSort, selectedPrice, selectedRating]);
 
-  // Fetch when page changes (only if page > 1 to avoid duplicate calls)
+  // // Fetch when page changes (only if page > 1 to avoid duplicate calls)
+  // useEffect(() => {
+  //   if (id && page > 1) {
+  //     fetchServiceProject(page);
+  //   }
+  // }, [page]);
   useEffect(() => {
-    if (id && page > 1) {
-      fetchServiceProject(page);
-    }
-  }, [page]);
+  if (id) {
+    fetchServiceProject(page);
+  }
+}, [id, debouncedSearch, selectedSort, selectedPrice, selectedRating, page]);
+
+// عند تغيير الفلاتر، فقط قم بتغيير رقم الصفحة لـ 1، والـ useEffect أعلاه سيتكفل بالباقي
+const handleSortSelect = (value) => {
+  setSelectedSort(value);
+  setPage(1); 
+};
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value); // Update local state immediately
   };
 
-  const handleSortSelect = (value) => {
-    setSelectedSort(value);
-  };
+  // const handleSortSelect = (value) => {
+  //   setSelectedSort(value);
+  // };
 
   const handlePriceSelect = (value) => {
     setSelectedPrice(value);

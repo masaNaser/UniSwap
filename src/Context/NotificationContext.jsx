@@ -1,3 +1,19 @@
+
+// استخدمت useRef 
+// لتخزين القيم التي أحتاجها برمجياً خلف الكواليس
+//  ولكن لا أريد أن يتسبب تغييرها في إعادة رندرة المكون.
+//  مثلاً في connectionRef احتفظت بمرجع لاتصال الـ SignalR
+//  لأتمكن من إغلاقه عند الـ 
+// Unmount،
+// وفي hasLoadedRef
+//  استخدمته كـ 
+// Flag 
+// لمنع تكرار طلبات
+//  الـ 
+// API 
+// غير الضرورية."
+
+
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import {
   createNotificationHub,
@@ -17,14 +33,20 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadNotificationCount, setunreadNotificationCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  // . تخزين اتصال الـ SignalR (connectionRef)
+// الهدف: 
+// الحفاظ على نفس الاتصال (Instance) مفتوحاً.
   const connectionRef = useRef(null);
+  // مفتاح أمان لمنع التكرار (hasLoadedRef)
+// الهدف: 
+// التأكد من أن جلب البيانات من الـ API يتم مرة واحدة فقط
   const hasLoadedRef = useRef(false);
 
   // ✅ استخدم state بدل مباشرة من localStorage
   const [token, setToken] = useState(() => getToken());
   const { updateCurrentUser } = useCurrentUser();
 
-  // 🔥 جلب البيانات
+  // وظيفتها الأساسية هي إحضار الإشعارات من السيرفر وترتيبها بحيث يفهمها المتصفح.
   const loadInitialData = async () => {
     if (!token || hasLoadedRef.current) return;
 
@@ -33,34 +55,31 @@ export const NotificationProvider = ({ children }) => {
       setLoading(true);
 
       const startTime = Date.now();
-
+// Promise.all: 
+//  بدلاً من جلب الإشعارات ثم الانتظار ثم جلب العدد،
+//  نقوم بطلب الاثنين معاً في نفس اللحظة.
+//  هذا يقلل وقت الانتظار للنصف تقريباً.
       const [notifRes, countRes] = await Promise.all([
         getAllNotifications(token),
         getUnreadCount(token),
       ]);
-
       const endTime = Date.now();
-      // console.log(`⏱️ API Response Time: ${endTime - startTime}ms`);
-      console.log("📦 Raw API Response:", notifRes.data);
-      // console.log("🔢 Unread Count:", countRes.data);
-
+    // عملنا وهيك واستخدمنا موضوع الجروب لانه الباك اصلا برجع الاشعارات مصنفات ك جروب
+    // (flatMap): تقوم هذه الدالة بفتح هذه المجموعات ودمج كل العناصر 
+    // الموجودة بداخلها في مصفوفة واحدة "مسطحة"
+    //  (Flat Array).
       let flatNotifications = [];
-
       if (Array.isArray(notifRes.data)) {
         flatNotifications = notifRes.data.flatMap(group =>
           Array.isArray(group.items) ? group.items : []
         );
       }
 
-      // console.log("📋 Processed Notifications:", flatNotifications);
-      // console.log("✅ Total Notifications:", flatNotifications.length);
-
       setNotifications(flatNotifications);
       setunreadNotificationCount(countRes.data);
       hasLoadedRef.current = true;
 
     } catch (error) {
-      console.error("❌ Error loading notifications:", error);
       console.error("❌ Error Details:", {
         message: error.message,
         response: error.response?.data,
@@ -68,18 +87,17 @@ export const NotificationProvider = ({ children }) => {
       });
     } finally {
       setLoading(false);
-      // console.log("✅ Notifications loaded successfully");
     }
   };
 
-  // ✅ راقب التغيير في localStorage
+  // هذا الجزء من الكود يمثل "نظام المراقبة والأمان
+  //  وظيفته الأساسية هي التأكد من أن الإشعارات المعروضة تخص المستخدم الحالي فقط، 
+  // وتحديثها فوراً إذا تغير المستخدم (تسجيل دخول أو خروج) دون الحاجة لتحديث الصفحة يدوياً. 
   useEffect(() => {
     const handleStorageChange = () => {
-      // const newToken = localStorage.getItem("accessToken");
       const newToken = getToken();
-      // console.log("🔄 Token changed:", newToken ? "Token exists" : "No token");
       setToken(newToken);
-      hasLoadedRef.current = false; // ✅ اسمح بتحميل جديد
+      hasLoadedRef.current = false; //  اسمح بتحميل جديد
     };
 
     // راقب التغييرات من نفس الـ tab
