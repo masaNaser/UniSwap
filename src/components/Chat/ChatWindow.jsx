@@ -13,8 +13,8 @@ import { getImageUrl } from "../../utils/imageHelper";
 import { useNavigateToProfile } from "../../hooks/useNavigateToProfile";
 import { useUnreadCount } from "../../Context/unreadCountContext";
 import { useTheme } from "@mui/material/styles";
-// import { useUnreadCount } from "../../Context/unreadCountContext";
 import { getToken, getUserId } from "../../utils/authHelpers";
+
 export default function ChatWindow({
   conversationId,
   receiverId,
@@ -33,26 +33,40 @@ export default function ChatWindow({
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const hasMoreRef = useRef(true);
-  // const token = localStorage.getItem("accessToken");
   const token = getToken();
   const currentUserId = getUserId();
   const initials = receiverName?.substring(0, 2).toUpperCase();
 
   const [initialScrollDone, setInitialScrollDone] = useState(false);
+  const isLoadingOlderRef = useRef(false); // تتبع حالة تحميل الرسائل القديمة
 
+  // دالة للتمرير للأسفل 
+  const scrollToBottom = useCallback((behavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  }, []);
+
+  // التمرير الأولي عند تحميل المحادثة
   useEffect(() => {
-    if (!initialScrollDone && messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    if (!initialScrollDone && messages.length > 0 && !isLoadingOlderRef.current) {
+      scrollToBottom("auto"); // تمرير فوري عند الفتح
       setInitialScrollDone(true);
     }
-  }, [messages, initialScrollDone]);
+  }, [messages, initialScrollDone, scrollToBottom]);
 
-  // 🔥 جلب المحادثة عند الفتح
-  // ... (داخل المكون ChatWindow)
+  // التمرير عند إضافة رسائل جديدة (ليس عند تحميل القديمة)
+  useEffect(() => {
+    if (initialScrollDone && !isLoadingOlderRef.current && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom("smooth");
+      }, 100);
+    }
+  }, [messages.length, initialScrollDone, scrollToBottom]);
 
-  // 1. تعريف دالة جلب البيانات بـ useCallback لحمايتها من التكرار
+  // جلب المحادثة عند الفتح
   const initChat = useCallback(async () => {
     if (!receiverId) return;
+    setInitialScrollDone(false); // إعادة تعيين عند فتح محادثة جديدة
+
     try {
       const convId = (!conversationId || conversationId === "null") ? null : conversationId;
       const response = await getOneConversation(convId, receiverId, 10, token);
@@ -74,63 +88,46 @@ export default function ChatWindow({
     } catch (err) {
       console.error("فشل جلب المحادثة:", err);
     }
-  }, [conversationId, receiverId, token]); // التبعيات الصحيحة
+  }, [conversationId, receiverId, token, currentUserId, decreaseUnreadCount, setConversations]);
 
-  // 2. تشغيل الدالة عند تغيير المحادثة فقط
   useEffect(() => {
     initChat();
   }, [initChat]);
 
-  // جلب الرسائل الجديدة دوريًا
-  // داخل ChatWindow
-  const fetchNewMessageRealTime = useCallback((message) => {
-    if (message.conversationId === conversationId) {
-      setMessages((prev) => {
-        if (prev.some(m => m.id === message.id)) return prev;
-        return [...prev, message];
-      });
-      // إذا كانت المحادثة مفتوحة، أخبر الباك إند أنها قُرئت
-      markMessageAsSeen(conversationId, token);
-    }
-  }, [conversationId, token]);
-
-  // useEffect(() => {
-  //   if (connection) {
-  //     connection.on("ReceiveMessage", fetchNewMessageRealTime);
-  //   }
-  //   return () => {
-  //     if (connection) connection.off("ReceiveMessage");
-  //   };
-  // }, [connection, fetchNewMessageRealTime]);
+  // استقبال الرسائل الجديدة من SignalR
   useEffect(() => {
-  const onNewMessage = (event) => {
-    const message = event.detail;
-    if (message.conversationId === conversationId) {
-      setMessages((prev) => {
-        if (prev.some(m => m.id === message.id)) return prev;
-        return [...prev, message];
-      });
+    const onNewMessage = (event) => {
+      const message = event.detail;
+      if (message.conversationId === conversationId) {
+        setMessages((prev) => {
+          if (prev.some(m => m.id === message.id)) return prev;
+          return [...prev, message]; // رسالة جديدة = تمرير تلقائي
+        });
 
-      markMessageAsSeen(conversationId, token);
-      decreaseUnreadCount(1); // ينقص عداد الـ Navbar فوراً
-    }
-  };
+        markMessageAsSeen(conversationId, token);
+        decreaseUnreadCount(1);
+      }
+    };
 
-  window.addEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
-  return () => window.removeEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
-}, [conversationId, token, decreaseUnreadCount]);
+    window.addEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
+    return () => window.removeEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
+  }, [conversationId, token, decreaseUnreadCount]);
 
   // تحميل الرسائل القديمة عند السحب للأعلى
   const fetchOlderMessages = async () => {
     if (loadingOlder || !hasMoreRef.current || messages.length === 0) return;
+
+    isLoadingOlderRef.current = true;
     setLoadingOlder(true);
 
     const container = messagesContainerRef.current;
     const scrollHeightBefore = container.scrollHeight;
+    const scrollTopBefore = container.scrollTop; // حفظ موضع السكرول
 
     const oldestMessage = messages.find((m) => !m.id.startsWith("temp-"));
     if (!oldestMessage) {
       setLoadingOlder(false);
+      isLoadingOlderRef.current = false;
       return;
     }
 
@@ -150,14 +147,18 @@ export default function ChatWindow({
           ...older.filter((o) => !prev.some((m) => m.id === o.id)),
           ...prev,
         ]);
+
+        // الحفاظ على موضع السكرول بعد إضافة الرسائل القديمة
         setTimeout(() => {
-          container.scrollTop = container.scrollHeight - scrollHeightBefore;
+          const scrollHeightAfter = container.scrollHeight;
+          container.scrollTop = scrollTopBefore + (scrollHeightAfter - scrollHeightBefore);
         }, 0);
       }
     } catch (err) {
       console.error("فشل جلب الرسائل القديمة:", err);
     } finally {
       setLoadingOlder(false);
+      isLoadingOlderRef.current = false; 
     }
   };
 
@@ -177,22 +178,21 @@ export default function ChatWindow({
     if (!text.trim() && files.length === 0) return;
 
     const tempId = `temp-${Date.now()}`;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: tempId,
-        senderId: currentUserId,
-        receiverId,
-        conversationId,
-        text,
-        content: files.length ? "File" : "Text",
-        filePath: files.length
-          ? files.map((f) => f.preview || f.filePath)[0]
-          : null,
-        createdAt: new Date().toISOString(),
-        status: "pending",
-      },
-    ]);
+    const newMessage = {
+      id: tempId,
+      senderId: currentUserId,
+      receiverId,
+      conversationId,
+      text,
+      content: files.length ? "File" : "Text",
+      filePath: files.length
+        ? files.map((f) => f.preview || f.filePath)[0]
+        : null,
+      createdAt: new Date().toISOString(),
+      status: "pending",
+    };
+
+    setMessages((prev) => [...prev, newMessage]); // رسالة جديدة = تمرير تلقائي
 
     try {
       const convId =

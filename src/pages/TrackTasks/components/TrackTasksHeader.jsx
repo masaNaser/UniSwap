@@ -105,8 +105,8 @@ export default function TrackTasksHeader({
 
   const displayInitials = isProvider
     ? projectDetails?.clientInitials ||
-      cardData.clientInitials ||
-      getInitials(displayName)
+    cardData.clientInitials ||
+    getInitials(displayName)
     : getInitials(displayName);
 
   const token = getToken();
@@ -136,7 +136,7 @@ export default function TrackTasksHeader({
 
     fetchReview();
   }, [cardData.id, cardData.projectStatus, isProvider, token]);
- 
+
   const getMinDateTime = () => {
     const now = new Date();
     const minDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -367,64 +367,61 @@ export default function TrackTasksHeader({
     }
   };
 
-const handleClientReview = async (reviewData) => {
-  try {
+  const handleClientReview = async (reviewData) => {
+    try {
+      setClosingProject(true);
+      const closeRequestData = {
+        isAccepted: reviewData.isAccepted,
+        rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
+        rating: reviewData.isAccepted ? reviewData.rating : undefined,
+        comment: reviewData.isAccepted ? reviewData.comment : undefined,
+      };
 
-    setClosingProject(true);
-    const closeRequestData = {
-      isAccepted: reviewData.isAccepted,
-      rejectionReason: reviewData.isAccepted ? undefined : reviewData.rejectionReason,
-      rating: reviewData.isAccepted ? reviewData.rating : undefined,
-      comment: reviewData.isAccepted ? reviewData.comment : undefined,
-    };
-    
-    log("📤 Submitting client review:", closeRequestData);
-    await closeProjectByClient(cardData.id, token, closeRequestData);
-    
-    // ✅ تحديث الحالة يدوياً وفوراً عند الكلاينت
-    // نستخدم الدالة التي مررناها من الأب
-    if (onProjectStatusUpdate) {
-       const nextStatus = reviewData.isAccepted ? "Completed" : "Active";
-       await onProjectStatusUpdate(nextStatus); 
-       log(`🔄 UI status forced to: ${nextStatus}`);
-    }
+      log("📤 Submitting client review:", closeRequestData);
+      await closeProjectByClient(cardData.id, token, closeRequestData);
 
-    if (reviewData.isAccepted) {
-      startTemporaryPolling(2000);
-      log("🚀 Polling started for points update");
-      
+      // ✅ Close dialog
+      setOpenReviewDialog(false);
+
+      // ✅ Determine next status and message
+      const nextStatus = reviewData.isAccepted ? "Completed" : "Active";
+
+      const snackbarConfig = reviewData.isAccepted
+        ? {
+          message: "Project accepted successfully! Rating submitted and points transferred.",
+          severity: "success"
+        }
+        : {
+          message: "Project rejected successfully. Provider will address your feedback.",
+          severity: "info"
+        };
+
+      // ✅ Update status with snackbar
+      if (onProjectStatusUpdate) {
+        await onProjectStatusUpdate(nextStatus, snackbarConfig);
+      }
+
+      // ✅ Start polling if accepted
+      if (reviewData.isAccepted) {
+        startTemporaryPolling(2000);
+        log("🚀 Polling started for points update");
+      }
+
+      if (onProjectClosed) {
+        await onProjectClosed(true);
+      }
+
+    } catch (err) {
+      logError("❌ Error reviewing project:", err);
       setSnackbar({
         open: true,
-        message: "✅ Project accepted! Rating submitted. Points transferred.",
-        severity: "success",
+        message: err.response?.data?.message || "Error processing review",
+        severity: "error",
       });
-    } 
-    else {
-      setSnackbar({
-        open: true,
-        message: "⚠️ Project rejected. Provider will rework it.",
-        severity: "warning",
-      });
+    } finally {
+      setClosingProject(false);
     }
-    
-    setOpenReviewDialog(false);
-    
-    // هذا السطر استمر بتركه كدعم إضافي
-    if (onProjectClosed) {
-      await onProjectClosed(true); 
-    }
-    
-  } catch (err) {
-    logError("❌ Error reviewing project:", err);
-    setSnackbar({
-      open: true,
-      message: err.response?.data?.message || "Error processing review",
-      severity: "error",
-    });
-  } finally {
-    setClosingProject(false);
-  }
-};
+  };
   const handleOverdueSubmit = async (decisionData) => {
     try {
       setLoading(true);
@@ -432,7 +429,22 @@ const handleClientReview = async (reviewData) => {
 
       log("✅ Overdue decision submitted successfully");
 
-      // ✅ Start polling if cancelled (refund points)
+      // if (!decisionData.acceptExtend) {
+      //       console.log("💰 Project cancelled - refunding points to client");
+
+      //       setTimeout(async () => {
+      //         try {
+      //           await updateCurrentUser();
+      //           console.log("✅ Client points updated in Navbar!");
+      //         } catch (err) {
+      //           console.error("❌ Failed to update points:", err);
+      //         }
+      //       }, 1500);
+
+      //       startTemporaryPolling(2000);
+      //     }
+
+      // Start polling if cancelled (refund points)
       if (!decisionData.acceptExtend) {
         startTemporaryPolling(2000);
         log("🚀 Polling started for points refund");
@@ -695,8 +707,8 @@ const handleClientReview = async (reviewData) => {
                     ? "Submit"
                     : "Review"
                   : isProvider
-                  ? "Submit Final Work"
-                  : "Review & Close Project"}
+                    ? "Submit Final Work"
+                    : "Review & Close Project"}
               </CustomButton>
             )}
           </Box>
@@ -740,8 +752,8 @@ const handleClientReview = async (reviewData) => {
               right: {
                 md:
                   !isProvider &&
-                  cardData.projectStatus === "Active" &&
-                  !isOverdue
+                    cardData.projectStatus === "Active" &&
+                    !isOverdue
                     ? 56
                     : 16,
               },
@@ -1051,8 +1063,8 @@ const handleClientReview = async (reviewData) => {
                 snackbar.severity === "success"
                   ? "#3b82f6"
                   : snackbar.severity === "info"
-                  ? "#3b82f6"
-                  : "#EF4444",
+                    ? "#3b82f6"
+                    : "#EF4444",
               color: "white",
               "& .MuiAlert-icon": {
                 color: "white",

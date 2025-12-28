@@ -1007,8 +1007,8 @@
 // }
 
 import React, { useState, useEffect, useRef, useReducer } from "react";
-import { Container, CircularProgress, Box, Typography } from "@mui/material";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { Container, CircularProgress, Typography } from "@mui/material";
+import { useNavigate, useLocation } from "react-router-dom";
 import TrackTasksHeader from "./components/TrackTasksHeader";
 import StatsSection from "./components/StatsSection";
 import KanbanBoard from "./components/KanbanBoard";
@@ -1258,10 +1258,7 @@ export default function TrackTasks() {
         connection.on("ProjectClosed", (data) => {
           log("🔔 SignalR: Received ProjectClosed", data);
 
-          // استخدم الـ ref للحصول على آخر cardData
           const currentCardData = cardDataRef.current;
-
-          // تحقق من الـ project ID (جرب كل الاحتمالات)
           const receivedProjectId = data.projectId || data.ProjectId;
           const currentProjectId = currentCardData?.id;
 
@@ -1270,7 +1267,6 @@ export default function TrackTasks() {
           if (receivedProjectId === currentProjectId) {
             log("✅ Project IDs match - updating status");
 
-            // حدّث الـ cardData
             setCardData((prev) => {
               log("Old cardData:", prev);
               const newData = {
@@ -1281,19 +1277,19 @@ export default function TrackTasks() {
               return newData;
             });
 
-            // حدّث الـ projectDetails أيضاً
             setProjectDetails((prev) => ({
               ...prev,
               status: "SubmittedForFinalReview",
             }));
 
-            // أظهر رسالة
-            setSnackbar({
-              open: true,
-              message:
-                "The project has submitted successfully !",
-              severity: "info",
-            });
+            //  ONLY SHOW ALERT TO PROVIDER
+            if (isProvider) {
+              setSnackbar({
+                open: true,
+                message: "Project submitted for review successfully!",
+                severity: "success",
+              });
+            }
 
             log("✅ State updated successfully");
           } else {
@@ -1303,10 +1299,10 @@ export default function TrackTasks() {
         // --- ✅ المشروع اكتمل (قبله الكلاينت) ---
         connection.on("ProjectCompleted", (data) => {
           // ✅ القفل: إذا كانت الحالة محلياً أصبحت Completed، تجاهل رسالة السيرفر الآن
-  if (cardDataRef.current?.projectStatus === "Completed") {
-    log("⏳ Already updated locally to Completed. Ignoring SignalR message to prevent jumping.");
-    return;
-  }
+          if (cardDataRef.current?.projectStatus === "Completed") {
+            log("⏳ Already updated locally to Completed. Ignoring SignalR message to prevent jumping.");
+            return;
+          }
           log("🔔 SignalR: Received ProjectCompleted", data);
 
           const receivedProjectId = data.projectId || data.ProjectId;
@@ -1383,14 +1379,6 @@ export default function TrackTasks() {
               rejectionReason:
                 data.reason || data.Reason || "No reason provided",
             }));
-
-            // setSnackbar({
-            //   open: true,
-            //   message: `⚠️ Project rejected: ${
-            //     data.reason || data.Reason || "Check rejection details"
-            //   }`,
-            //   severity: "warning",
-            // });
           }
         });
       } catch (err) {
@@ -1536,14 +1524,14 @@ export default function TrackTasks() {
     }
   };
 
-useEffect(() => {
-  if (!cardData?.id) return;
-  
-  fetchProjectData();
-  
-  // أضفنا cardData.projectStatus هنا عشان أول ما تتغير الحالة 
-  // الـ useEffect يشتغل فوراً ويجيب البيانات الجديدة
-}, [cardData?.id, cardData?.projectStatus, token]);
+  useEffect(() => {
+    if (!cardData?.id) return;
+
+    fetchProjectData();
+
+    // أضفنا cardData.projectStatus هنا عشان أول ما تتغير الحالة 
+    // الـ useEffect يشتغل فوراً ويجيب البيانات الجديدة
+  }, [cardData?.id, cardData?.projectStatus, token]);
 
   // ===== Handlers =====
   const handleDeadlineUpdate = (newDeadline) => {
@@ -1580,53 +1568,53 @@ useEffect(() => {
   };
 
   const handleSubmitReview = async (taskId, decision, comment) => {
-  try {
-    // 1. تحديد الحالة الجديدة بناءً على القرار
-    // إذا قبل المهمة الأخيرة، ربما نعتبر المشروع Completed، وإذا رفض نرجعه Active
-    const newProjectStatus = decision === "accept" ? "Completed" : "Active";
+    try {
+      // 1. تحديد الحالة الجديدة بناءً على القرار
+      // إذا قبل المهمة الأخيرة، ربما نعتبر المشروع Completed، وإذا رفض نرجعه Active
+      const newProjectStatus = decision === "accept" ? "Completed" : "Active";
 
-    if (decision === "accept") {
-      await taskService.acceptTask(taskId, comment, token);
-    } else {
-      await taskService.rejectTask(taskId, comment, token);
+      if (decision === "accept") {
+        await taskService.acceptTask(taskId, comment, token);
+      } else {
+        await taskService.rejectTask(taskId, comment, token);
+      }
+
+      // 2. تحديث الحالة محلياً "فوراً" قبل أي fetch
+      // هذا سيضمن اختفاء الأزرار وتغير اللون فوراً
+      setCardData((prev) => ({
+        ...prev,
+        projectStatus: newProjectStatus,
+        status: newProjectStatus,
+      }));
+
+      setProjectDetails((prev) => ({
+        ...prev,
+        status: newProjectStatus,
+      }));
+
+      // 3. تحديث التقدم
+      await taskService.updateProjectProgress(cardData.id, token);
+
+      // 4. استدعاء التحديث الشامل مع تأخير بسيط لضمان استقرار الباك إند
+      setTimeout(() => {
+        fetchProjectData();
+      }, 1500);
+
+      setSnackbar({
+        open: true,
+        message: decision === "accept" ? "Task accepted!" : "Task rejected!",
+        severity: "success",
+      });
+
+    } catch (error) {
+      logError("Error submitting review:", error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Failed to submit review",
+        severity: "error",
+      });
     }
-
-    // 2. تحديث الحالة محلياً "فوراً" قبل أي fetch
-    // هذا سيضمن اختفاء الأزرار وتغير اللون فوراً
-    setCardData((prev) => ({
-      ...prev,
-      projectStatus: newProjectStatus,
-      status: newProjectStatus,
-    }));
-
-    setProjectDetails((prev) => ({
-      ...prev,
-      status: newProjectStatus,
-    }));
-
-    // 3. تحديث التقدم
-    await taskService.updateProjectProgress(cardData.id, token);
-
-    // 4. استدعاء التحديث الشامل مع تأخير بسيط لضمان استقرار الباك إند
-    setTimeout(() => {
-      fetchProjectData();
-    }, 1500);
-
-    setSnackbar({
-      open: true,
-      message: decision === "accept" ? "Task accepted!" : "Task rejected!",
-      severity: "success",
-    });
-
-  } catch (error) {
-    logError("Error submitting review:", error);
-    setSnackbar({
-      open: true,
-      message: error.response?.data?.message || "Failed to submit review",
-      severity: "error",
-    });
-  }
-};
+  };
 
   const handleReviewClick = (task) => {
     setReviewingTask(task);
@@ -1716,7 +1704,7 @@ useEffect(() => {
     try {
       const data = new FormData();
       data.append("Title", formData.title);
-      
+
       if (formData.description && formData.description.trim()) {
         data.append("Description", formData.description);
       }
@@ -1747,6 +1735,8 @@ useEffect(() => {
     try {
       await taskService.deleteTask(taskId, token);
       // ✅ SignalR will handle removing from state
+      setAnchorEl(null);
+      setSelectedTask(null);
 
       setSnackbar({
         open: true,
@@ -1908,8 +1898,7 @@ useEffect(() => {
     setAnchorEl(e.currentTarget);
   };
 
-  const handleProjectStatusUpdate = async (newStatus) => {
-    
+  const handleProjectStatusUpdate = async (newStatus, snackbarConfig = null) => {
     log("🔄 Manual Status Update triggered:", newStatus);
 
     setCardData((prev) => ({
@@ -1923,15 +1912,26 @@ useEffect(() => {
       status: newStatus,
     }));
 
-    // إعادة جلب كل البيانات من السيرفر للتأكد أن كل شيء متزامن
-try {
-// 3. تأخير الـ Fetch قليلاً لضمان استقرار الباك إند ومنع التضارب مع SignalR
-  setTimeout(() => {
-    fetchProjectData(); 
-  }, 1000);    log("✅ Sync complete");
-  } catch (err) {
-    logError("❌ Sync failed", err);
-  }  };
+    // ✅ Show snackbar BEFORE fetch to ensure it displays
+    if (snackbarConfig) {
+      log("📢 Setting snackbar:", snackbarConfig);
+      setSnackbar({
+        open: true,
+        message: snackbarConfig.message,
+        severity: snackbarConfig.severity,
+      });
+    }
+
+    // Delay fetch to allow snackbar to render
+    try {
+      setTimeout(() => {
+        fetchProjectData();
+      }, 1500);
+      log("✅ Sync scheduled");
+    } catch (err) {
+      logError("❌ Sync failed", err);
+    }
+  };
   // ===== Computed Values =====
   const completedTasks = tasks.Done.length;
   const totalTasks = Object.values(tasks).reduce(
@@ -1972,7 +1972,8 @@ try {
 
         // 🚩 السر هنا: عندما تتغير الحالة، الـ key سيتغير
         // مما يجبر الـ Header على "إعادة الرندرة" وحساب canCloseProject من جديد
-key={cardData?.id} // ثبت الـ key على الـ id فقط عشان ما يختفي المكون        onProjectStatusUpdate={handleProjectStatusUpdate}
+        key={cardData?.id} // ثبت الـ key على الـ id فقط عشان ما يختفي المكون        onProjectStatusUpdate={handleProjectStatusUpdate}
+        onProjectStatusUpdate={handleProjectStatusUpdate}
         cardData={cardData}
         projectDetails={projectDetails}
         isProvider={isProvider}
