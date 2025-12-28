@@ -28,14 +28,19 @@ function AppWithTheme() {
   useEffect(() => {
     // ✅ دالة للتحقق وبدء Timer
     const initializeTimer = () => {
-      const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+  try {
+    const token = localStorage.getItem("accessToken") || 
+                  sessionStorage.getItem("accessToken");
 
-      if (token && !window.tokenRefreshTimerId) {
-        refreshTimerRef.current = startTokenRefreshTimer();
-        window.tokenRefreshTimerId = refreshTimerRef.current;
-        console.log("✅ Token refresh timer started from App.jsx");
-      }
-    };
+    if (token && !window.tokenRefreshTimerId) {
+      refreshTimerRef.current = startTokenRefreshTimer();
+      window.tokenRefreshTimerId = refreshTimerRef.current;
+      console.log("✅ Token refresh timer started from App.jsx");
+    }
+  } catch (error) {
+    console.error("❌ Failed to start token refresh timer:", error);
+  }
+};
 
     // ✅ بدء Timer عند تحميل التطبيق إذا كان هناك token
     initializeTimer();

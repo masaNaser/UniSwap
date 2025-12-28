@@ -1,4 +1,5 @@
 import { refreshToken } from '../services/authService';
+import { jwtDecode } from "jwt-decode";
 
 /**
  * التحقق من صلاحية التوكن وتحديثه إذا كان قريب من الانتهاء
@@ -35,7 +36,7 @@ export const checkAndRefreshToken = async () => {
       const { accessToken } = response.data;
 
       // Decode new token
-      const decoded = JSON.parse(atob(accessToken.split('.')[1]));
+      const decoded = jwtDecode(accessToken);
       
       // Update storage
       storage.setItem("accessToken", accessToken);

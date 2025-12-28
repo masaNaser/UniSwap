@@ -1,4 +1,5 @@
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "https://uni1swap.runasp.net/",
@@ -85,7 +86,7 @@ api.interceptors.response.use(
 
         // Properly decode and store expiration as NUMBER
         try {
-          const decoded = JSON.parse(atob(accessToken.split(".")[1]));
+          const decoded = jwtDecode(accessToken);
           storage.setItem("accessToken", accessToken);
           storage.setItem("accessTokenExpiration", decoded.exp.toString());
 

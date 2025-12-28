@@ -48,13 +48,6 @@ export default function Login() {
       .string()
       .required("Password is required")
       .min(8, "Password must be at least 8 characters")
-      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .matches(/[a-z]/, "Password must contain at least one lowercase letter")
-      .matches(/[0-9]/, "Password must contain at least one digit")
-      .matches(
-        /[^a-zA-Z0-9]/,
-        "Password must contain at least one special character"
-      ),
   });
 
   const {
@@ -78,83 +71,84 @@ export default function Login() {
   const currentTab = location.pathname === "/login" ? 0 : 1;
 
   const loginHandle = async (data) => {
-  try {
-    setLoading(true);
-    const response = await loginApi(data);
-    console.log("login", response);
-    
-    if (response.status === 200) {
-      const { accessToken } = response.data;
-      
-      // Decode token
-      const decoded = jwtDecode(accessToken);
-      
-      // Determine storage location
-      const storage = data.rememberMe ? localStorage : sessionStorage;
-      
-      // Store token and expiration
-      storage.setItem("accessToken", accessToken);
-      storage.setItem("accessTokenExpiration", decoded.exp.toString());
-      
-      // Extract user info
-      const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-      const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-      const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-      
-      // Store user info
-      storage.setItem("userName", userName);
-      storage.setItem("userId", userId);
-      storage.setItem("userRole", userRole);
-      
-      console.log(`✅ Token stored, expires at: ${new Date(decoded.exp * 1000).toLocaleString()}`);
-      
-      // ✅ Stop any existing timer first (to avoid duplicates)
-      if (window.tokenRefreshTimerId) {
-        clearInterval(window.tokenRefreshTimerId);
-        console.log("🔄 Cleared existing timer");
-      }
-      
-      // ✅ Start new refresh timer
-      const timerId = startTokenRefreshTimer();
-      window.tokenRefreshTimerId = timerId;
-      console.log("✅ Token refresh timer started from Login");
-      
-      // Show success and redirect
-      Swal.fire({
-        title: "Login successful!",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      }).then(() => {
-        if (userRole === "Admin") {
-          navigate("/admin");
-        } else {
-          navigate("/app/feed");
+    try {
+      setLoading(true);
+      const response = await loginApi(data);
+      console.log("login", response);
+
+      if (response.status === 200) {
+        const { accessToken } = response.data;
+
+        // Decode token
+        const decoded = jwtDecode(accessToken);
+
+        // Determine storage location
+        const storage = data.rememberMe ? localStorage : sessionStorage;
+
+        // Store token and expiration
+        storage.setItem("accessToken", accessToken);
+        storage.setItem("accessTokenExpiration", decoded.exp.toString());
+
+        // Extract user info
+        const userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+        const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+        const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+        // Store user info
+        storage.setItem("userName", userName);
+        storage.setItem("userId", userId);
+        storage.setItem("userRole", userRole);
+
+        console.log(`✅ Token stored, expires at: ${new Date(decoded.exp * 1000).toLocaleString()}`);
+
+        // ✅ Stop any existing timer first (to avoid duplicates)
+        if (window.tokenRefreshTimerId) {
+          stopTokenRefreshTimer(window.tokenRefreshTimerId);
+          window.tokenRefreshTimerId = null;
+          console.log("🔄 Cleared existing timer");
         }
+
+        // ✅ Start new refresh timer
+        const timerId = startTokenRefreshTimer();
+        window.tokenRefreshTimerId = timerId;
+        console.log("✅ Token refresh timer started from Login");
+
+        // Show success and redirect
+        Swal.fire({
+          title: "Login successful!",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        }).then(() => {
+          if (userRole === "Admin") {
+            navigate("/admin");
+          } else {
+            navigate("/app/feed");
+          }
+        });
+      }
+    } catch (error) {
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data?.title ||
+        "Invalid email or password";
+
+      setError("password", {
+        type: "manual",
+        message: msg,
       });
+
+      console.error("Login error:", error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Login failed",
+        text: msg,
+      });
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    const msg =
-      error.response?.data?.message ||
-      error.response?.data?.title ||
-      "Invalid email or password";
-    
-    setError("password", {
-      type: "manual",
-      message: msg,
-    });
-    
-    console.error("Login error:", error);
-    
-    Swal.fire({
-      icon: "error",
-      title: "Login failed",
-      text: msg,
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <>
@@ -446,8 +440,12 @@ export default function Login() {
               }}
             >
               <FormControlLabel
-                control={<Checkbox size="small" />}
-                {...register("rememberMe")}
+                control={
+                  <Checkbox
+                    size="small"
+                    {...register("rememberMe")}
+                  />
+                }
                 label={
                   <Typography sx={{ fontSize: { xs: "11px", sm: "14px" } }}>
                     Remember me
