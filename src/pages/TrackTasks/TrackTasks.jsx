@@ -1347,7 +1347,7 @@ export default function TrackTasks() {
             setSnackbar({
               open: true,
               message:
-                "🎉 Project has been officially completed and published!",
+                "Project published. Now visible in Browse",
               severity: "success",
             });
           }

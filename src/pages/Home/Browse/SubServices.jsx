@@ -145,7 +145,7 @@ const SubServices = () => {
           justifyContent: "space-between",
           alignItems: "center",
           mb: 4,
-          flexWrap:"wrap"
+          flexWrap: "wrap"
         }}
       >
         <Box>
@@ -171,7 +171,7 @@ const SubServices = () => {
                 setOpenCreateModal(true);
               }}
             >
-              Create
+              Create a Sub-Service
             </CustomButton>
           )}
         </Box>

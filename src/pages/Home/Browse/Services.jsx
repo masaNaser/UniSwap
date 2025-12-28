@@ -187,7 +187,7 @@ const Services = () => {
       console.error(error);
       setDeleteDialog(false);
       setSelectedService(null);
-      showSnackbar("Failed to delete service", "error");
+      showSnackbar("Cannot delete service: please remove its sub-services first", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -243,7 +243,7 @@ const Services = () => {
             startIcon={<AddIcon />}
             sx={{ mb: 2 }}
           >
-            Create
+            Create New Service
           </CustomButton>
         )}
       </Box>

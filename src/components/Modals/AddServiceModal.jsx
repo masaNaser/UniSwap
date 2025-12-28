@@ -120,7 +120,8 @@ export default function AddServiceModal({ open, handleClose, onAdded, editingSer
       console.error(err);
       setSnackbar({
         open: true,
-        message: err.response?.data?.title || "An error occurred. Please try again.",
+        // ✅ تغيير هنا: استخدم detail بدلاً من title
+        message: err.response?.data?.detail || err.response?.data?.title || "An error occurred. Please try again.",
         severity: "error",
       });
     }
