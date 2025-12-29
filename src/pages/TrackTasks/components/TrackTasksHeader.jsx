@@ -429,25 +429,15 @@ export default function TrackTasksHeader({
 
       log("✅ Overdue decision submitted successfully");
 
-      // if (!decisionData.acceptExtend) {
-      //       console.log("💰 Project cancelled - refunding points to client");
-
-      //       setTimeout(async () => {
-      //         try {
-      //           await updateCurrentUser();
-      //           console.log("✅ Client points updated in Navbar!");
-      //         } catch (err) {
-      //           console.error("❌ Failed to update points:", err);
-      //         }
-      //       }, 1500);
-
-      //       startTemporaryPolling(2000);
-      //     }
-
-      // Start polling if cancelled (refund points)
       if (!decisionData.acceptExtend) {
         startTemporaryPolling(2000);
         log("🚀 Polling started for points refund");
+
+        // ✅ Force immediate update after 1 second
+        setTimeout(async () => {
+          await updateCurrentUser();
+          log("💰 Immediate points update triggered");
+        }, 1000);
       }
 
       const successMessage = decisionData.acceptExtend
@@ -463,7 +453,7 @@ export default function TrackTasksHeader({
       setOpenOverdueDialog(false);
 
       if (onProjectClosed) {
-        await onProjectClosed();
+        await onProjectClosed(true);
       }
     } catch (err) {
       logError("❌ Error handling overdue decision:", err);

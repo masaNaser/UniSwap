@@ -10,29 +10,35 @@ export const CurrentUserProvider = ({ children }) => {
   const pollingIntervalRef = useRef(null);
 
   // ✅ الدالة المحسّنة لتحديث بيانات المستخدم
- const updateCurrentUser = useCallback(async () => {
-  // const token = localStorage.getItem("accessToken");
-  const token = getToken();
-  if (!token) {
-    console.log("⚠️ No token found, skipping update");
-    return null;
-  }
+  const updateCurrentUser = useCallback(async () => {
+    const token = getToken();
+    if (!token) {
+      console.log("⚠️ No token found, skipping update");
+      return null;
+    }
 
-  try {
-    const res = await GetFullProfile(token);    
-    // 🔥 الحل الأقوى: استخدمي functional update
-    setCurrentUser(prevUser => {
-      
-      // ✅ هاد بيضمن إنه الـ state يتحدث
-      return { ...res.data };
-    });
-    
-    return res.data;
-  } catch (error) {
-    console.error("❌ Error updating current user:", error);
-    return null;
-  }
-}, []);
+    try {
+      const res = await GetFullProfile(token);
+
+      // ✅ Use functional update with timestamp to force re-render
+      setCurrentUser(prevUser => {
+        const newUser = { ...res.data, _timestamp: Date.now() };
+
+        // ✅ Log to verify update
+        console.log("💰 Points updated:", {
+          old: prevUser?.totalPoints,
+          new: newUser.totalPoints
+        });
+
+        return newUser;
+      });
+
+      return res.data;
+    } catch (error) {
+      console.error("❌ Error updating current user:", error);
+      return null;
+    }
+  }, []);
 
   // 🔥 دالة لتفعيل الـ Polling المؤقت
   const startTemporaryPolling = useCallback((duration = 2000) => {
@@ -66,7 +72,7 @@ export const CurrentUserProvider = ({ children }) => {
   // 🔥 Polling Effect - بس لما يكون مفعّل
   useEffect(() => {
     if (enablePolling) {
-      
+
       pollingIntervalRef.current = setInterval(() => {
         updateCurrentUser();
       }, 2000); // كل ثانيتين
@@ -80,12 +86,12 @@ export const CurrentUserProvider = ({ children }) => {
   }, [enablePolling, updateCurrentUser]);
 
   return (
-    <CurrentUserContext.Provider value={{ 
-      currentUser, 
-      setCurrentUser, 
+    <CurrentUserContext.Provider value={{
+      currentUser,
+      setCurrentUser,
       updateCurrentUser,
       startTemporaryPolling, // 🔥 جديد
-      loading 
+      loading
     }}>
       {children}
     </CurrentUserContext.Provider>

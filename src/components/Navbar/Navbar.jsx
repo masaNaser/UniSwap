@@ -834,7 +834,7 @@ export default function PrimarySearchAppBar() {
                     </svg>
                   </Box>
                   <Typography
-                    key={currentUser?.totalPoints} // 🔥 أضيفي هاد
+                    key={currentUser?._timestamp}
                     sx={{
                       fontWeight: "bold",
                       color: "#3B82F6",
@@ -1207,7 +1207,7 @@ export default function PrimarySearchAppBar() {
                     </svg>
                   </Box>
                   <Typography
-                    key={currentUser?.totalPoints} // 🔥 أضيفي هاد
+                    key={currentUser?.totalPoints} 
                     sx={{
                       fontWeight: "bold",
                       color: "#3B82F6",

@@ -1512,9 +1512,62 @@ export default function TrackTasks() {
     setProjectDetails((prev) => ({ ...prev, deadline: newDeadline }));
   };
 
-  // ✅ REMOVED: No longer needed since we're not fetching on every close
-  const handleProjectClosed = async () => {
-    log("🔄 handleProjectClosed - status updated via SignalR or manual update");
+  // // ✅ REMOVED: No longer needed since we're not fetching on every close
+  // const handleProjectClosed = async () => {
+  //   log("🔄 handleProjectClosed - status updated via SignalR or manual update");
+  // };
+
+  // ✅ UPDATED: Fetch fresh project data after cancellation/extension
+  const handleProjectClosed = async (forceRefresh = false) => {
+    log("🔄 handleProjectClosed called, forceRefresh:", forceRefresh);
+
+    if (forceRefresh) {
+      try {
+        log("🔄 Fetching fresh project data after overdue decision...");
+
+        // ✅ Fetch fresh project details
+        const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
+        log("✅ Fresh project details:", detailsRes.data);
+
+        // ✅ Fetch fresh dashboard status
+        const dashboardStatus = await fetchProjectStatus();
+        log("✅ Fresh dashboard status:", dashboardStatus);
+
+        // ✅ Update project details
+        setProjectDetails(detailsRes.data);
+
+        // ✅ Update card data with fresh status
+        setCardData((prev) => {
+          const finalStatus = dashboardStatus
+            ? mapProjectStatus(dashboardStatus)
+            : detailsRes.data.status || prev.projectStatus || "Active";
+
+          return {
+            ...prev,
+            title: detailsRes.data.title || detailsRes.data.projectName || "Project",
+            description: detailsRes.data.description || "",
+            projectStatus: finalStatus,
+            status: finalStatus,
+            deadline: detailsRes.data.deadline,
+            progressPercentage: detailsRes.data.progressPercentage || prev.progressPercentage || 0,
+            rejectionReason: detailsRes.data.rejectionReason || prev.rejectionReason,
+            projectType: detailsRes.data.type || prev.projectType || "RequestProject",
+          };
+        });
+
+        log("✅ Project data refreshed successfully after overdue decision");
+
+      } catch (error) {
+        logError("❌ Error refreshing project data:", error);
+        setSnackbar({
+          open: true,
+          message: "Project updated but failed to refresh display. Please reload the page.",
+          severity: "warning",
+        });
+      }
+    } else {
+      log("⏭️ No refresh needed - status updated via SignalR");
+    }
   };
 
   const handleSubmitReview = async (taskId, decision, comment) => {
