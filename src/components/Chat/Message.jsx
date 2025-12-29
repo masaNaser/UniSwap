@@ -13,7 +13,7 @@ export default function Message({ text, filePath, content, sender }) {
         // backgroundColor: isFileMessage ? "transparent" : "",
         border: isFileMessage ? "none" : "",
         padding: "10px",
-        color: sender === "me" ? "white" : "initial",
+        color: sender === "me" ? "white" : "black",
         
       }}
     >

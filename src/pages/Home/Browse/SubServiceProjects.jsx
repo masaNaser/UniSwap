@@ -39,17 +39,6 @@ const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
   const isOwner = currentUserId === project.userId;
   const canEdit = isOwner || adminMode;
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
-
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
   return (
     <Card
       sx={{
@@ -326,7 +315,7 @@ export default function SubServiceProjects() {
   const parentServiceName = params.get("parentName");
   const parentServiceId = params.get("parentId");
   const [page, setPage] = useState(1);
-  const pageSize = 4;
+  const pageSize = 6;
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -392,15 +381,15 @@ export default function SubServiceProjects() {
     return mapping[rating];
   };
 
-  const fetchServiceProject = async (currentPage = 1) => {
+   const fetchServiceProject = async (currentPage = 1) => {
     try {
       setLoading(true);
       setError(null);
-
-      const queryParams = new URLSearchParams({
-        Page: currentPage.toString(),
-        PageSize: pageSize.toString(),
-      });
+    const queryParams = new URLSearchParams({
+      Page: "1",
+      // نطلب 5 عناصر بدلاً من 4 للتأكد من وجود صفحة تالية
+      PageSize: "100", 
+    });
 
       // Add search if present (use debouncedSearch)
       if (debouncedSearch.trim()) {
@@ -425,40 +414,33 @@ export default function SubServiceProjects() {
         queryParams.append("RatingFilter", ratingParam);
       }
 
-      console.log("📡 Fetching projects with params:", queryParams.toString());
+    const response = await api.get(
+      `/PublishProjects/browse/${id}?${queryParams.toString()}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  console.log("prject browse",response);
+if (Array.isArray(response.data)) {
+      const allProjects = response.data;
+      const totalItems = allProjects.length; // هون رح يكون 7
 
-      const response = await api.get(
-        `/PublishProjects/browse/${id}?${queryParams.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // حساب كم صفحة محتاجين بناءً على الـ 6 اللي بدك اياهم
+      const totalPagesCount = Math.ceil(totalItems / pageSize); 
+      setTotalPages(totalPagesCount);
+      setTotalCount(totalItems);
 
-      console.log("✅ Projects fetched:", response.data);
+      // --- السر هون: استخراج الـ 6 مشاريع الخاصة بالصفحة الحالية فقط ---
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const projectsForThisPage = allProjects.slice(startIndex, endIndex);
 
-    if (Array.isArray(response.data)) {
-    setProjects(response.data);
-    setTotalCount(response.data.length);
-    // إذا كان عدد العناصر الجاي بيساوي الـ pageSize، يعني غالباً في لسه عناصر تانية
-    setTotalPages(response.data.length === pageSize ? page + 1 : page);
-} else if (response.data.items && Array.isArray(response.data.items)) {
-        setProjects(response.data.items);
-        setTotalPages(response.data.totalPages || 1);
-        setTotalCount(response.data.totalCount || 0);
-      } else {
-        setProjects([]);
-        setTotalPages(1);
-        setTotalCount(0);
-      }
-    } catch (err) {
-      console.error("❌ Error fetching projects:", err);
-      setError(err.message || "Failed to load projects");
-    } finally {
-      setLoading(false);
+      setProjects(projectsForThisPage);
     }
-  };
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // // Fetch when filters change (reset to page 1) - use debouncedSearch instead of searchQuery
   // useEffect(() => {
@@ -483,7 +465,7 @@ export default function SubServiceProjects() {
 // عند تغيير الفلاتر، فقط قم بتغيير رقم الصفحة لـ 1، والـ useEffect أعلاه سيتكفل بالباقي
 const handleSortSelect = (value) => {
   setSelectedSort(value);
-  setPage(1); 
+  // setPage(1); 
 };
 
   const handleSearchChange = (e) => {
@@ -516,39 +498,72 @@ const handleSortSelect = (value) => {
     fetchServiceProject(page);
   };
 
-  const filterItems = [
+   const filterItems = [
+
     {
+
       type: "menu",
+
       label: selectedSort,
+
       items: [
+
         { label: "Highest Rated", value: "Highest Rated" },
+
         { label: "Price: Low to High", value: "Price: Low to High" },
+
         { label: "Price: High to Low", value: "Price: High to Low" },
+
       ],
+
       onSelect: handleSortSelect,
+
     },
+
     {
+
       type: "menu",
+
       label: selectedPrice,
+
       items: [
+
         { label: "All Prices", value: "All Prices" },
+
         { label: "Under 50 pts", value: "Under 50 pts" },
+
         { label: "50-100 pts", value: "50-100 pts" },
+
         { label: "Over 100 pts", value: "Over 100 pts" },
+
       ],
+
       onSelect: handlePriceSelect,
+
     },
+
     {
+
       type: "menu",
+
       label: selectedRating,
+
       items: [
+
         { label: "All Ratings", value: "All Ratings" },
+
         { label: "High", value: "High" },
+
         { label: "Average", value: "Average" },
+
         { label: "Low", value: "Low" },
+
       ],
+
       onSelect: handleRatingSelect,
+
     },
+
   ];
 
   // if (loading) {
