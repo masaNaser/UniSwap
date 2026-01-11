@@ -173,7 +173,7 @@ export default function Login() {
             />
             <Typography
               component={"span"}
-              sx={{ fontWeight: "600", color: "#74767a", fontSize: "14px" }}
+              sx={{ fontWeight: "600", color: "#74767a", fontSize: "18px" }}
             >
               UniSwap
             </Typography>

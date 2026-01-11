@@ -444,16 +444,14 @@ export default function TrackTasksHeader({
         ? "Project deadline extended successfully! The project is now Active. ⏰"
         : "Project cancelled successfully! Points have been refunded to your account. 💰";
 
-      setSnackbar({
-        open: true,
-        message: successMessage,
-        severity: "success",
-      });
-
       setOpenOverdueDialog(false);
 
+      // ✅ Pass the snackbar config through onProjectClosed
       if (onProjectClosed) {
-        await onProjectClosed(true);
+        await onProjectClosed(true, {
+          message: successMessage,
+          severity: "success"
+        });
       }
     } catch (err) {
       logError("❌ Error handling overdue decision:", err);
@@ -474,7 +472,6 @@ export default function TrackTasksHeader({
       setLoading(false);
     }
   };
-
   const handleSnackbarClose = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };

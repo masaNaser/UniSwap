@@ -1512,13 +1512,8 @@ export default function TrackTasks() {
     setProjectDetails((prev) => ({ ...prev, deadline: newDeadline }));
   };
 
-  // // ✅ REMOVED: No longer needed since we're not fetching on every close
-  // const handleProjectClosed = async () => {
-  //   log("🔄 handleProjectClosed - status updated via SignalR or manual update");
-  // };
-
-  // ✅ UPDATED: Fetch fresh project data after cancellation/extension
-  const handleProjectClosed = async (forceRefresh = false) => {
+  // ✅ UPDATED: Accept and display snackbar from child components
+  const handleProjectClosed = async (forceRefresh = false, snackbarConfig = null) => {
     log("🔄 handleProjectClosed called, forceRefresh:", forceRefresh);
 
     if (forceRefresh) {
@@ -1556,6 +1551,15 @@ export default function TrackTasks() {
         });
 
         log("✅ Project data refreshed successfully after overdue decision");
+
+        // ✅ Show snackbar if config was passed
+        if (snackbarConfig) {
+          setSnackbar({
+            open: true,
+            message: snackbarConfig.message,
+            severity: snackbarConfig.severity,
+          });
+        }
 
       } catch (error) {
         logError("❌ Error refreshing project data:", error);
