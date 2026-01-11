@@ -256,7 +256,7 @@ const Services = () => {
               description={service.description}
               image={service.image}
               icon={iconMap[service.name] || <DesignServicesIcon fontSize="large" />}
-              count={`${service.subServicesCount} services`}
+              count={`${service?.subServicesCount || 0} services`}
               url={`/app/browse/${service.id}?name=${encodeURIComponent(service.name)}`}
               adminMode={adminMode}
               onEdit={() => {
@@ -318,7 +318,7 @@ const Services = () => {
         />
         {createFormData.image && (
           <Box sx={{ mt: 1 }}>
-            <Typography variant="caption" color="text.secondary">Preview:</Typography>
+            {/* <Typography variant="caption" color="text.secondary">Preview:</Typography> */}
             <Box
               component="img"
               src={URL.createObjectURL(createFormData.image)}
