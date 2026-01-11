@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Container, Grid, Typography, Box, Breadcrumbs, TextField, CircularProgress } from "@mui/material";
+import { Container, Grid, Typography, Box, Breadcrumbs, TextField, CircularProgress,
+   Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions, Button} from "@mui/material";
 import { Link, useParams, useLocation } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -15,6 +20,7 @@ import {
 import GenericModal from "../../../components/Modals/GenericModal";
 import { isAdmin, getToken } from "../../../utils/authHelpers";
 import AddIcon from "@mui/icons-material/Add";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 const SubServices = () => {
   // const token = localStorage.getItem("accessToken");
@@ -37,7 +43,18 @@ const SubServices = () => {
   const [formData, setFormData] = useState({ name: "" });
 
   const [loading, setLoading] = useState(true);
+    const [snackbar, setSnackbar] = useState({
+      open: false,
+      message: "",
+      severity: "success",
+    });
 
+ const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+    const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
   // جلب الداتا
   const fetchSubServices = async () => {
     try {
@@ -64,7 +81,7 @@ const SubServices = () => {
       const response = await CreateSubServices(token, id, formData);
       console.log("creatSub", response);
       setOpenCreateModal(false);
-      fetchSubServices(); z
+      fetchSubServices(); 
     } finally {
       setIsSubmitting(false);
     }
@@ -81,17 +98,50 @@ const SubServices = () => {
     }
   };
 
-  const handleDelete = async () => {
+  // const handleDelete = async () => {
+
+  //   setIsSubmitting(true);
+  //   try {
+  //     await DeleteSubServices(token, id, selectedSub.id);
+  //     setOpenDeleteModal(false);
+  //     fetchSubServices();
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+  const handleConfirmDelete = async () => {
+    if (!selectedSub) return;
+
     setIsSubmitting(true);
     try {
       await DeleteSubServices(token, id, selectedSub.id);
       setOpenDeleteModal(false);
-      fetchSubServices();
+      // setServices((prev) =>
+      //   prev.filter((s) => s.id !== selectedSub.id)
+      // );
+      setSelectedSub(null);
+        fetchSubServices(); // ✅ ضروري
+
+      showSnackbar("Sub-service deleted successfully!", "success");
+    } catch (error) {
+      console.error(error);
+      setOpenDeleteModal(false);
+      setSelectedSub(null);
+      showSnackbar("Cannot delete service: please remove its sub-services first", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleDeleteClick = (sub) => {
+    setSelectedSub(sub);
+    setOpenDeleteModal(true);
+  };
+  
+   const handleCancelDelete = () => {
+    setOpenDeleteModal(false);
+    setSelectedSub(null);
+  };
   // لو ما في id أو بيانات
   if (!id) {
     return (
@@ -201,10 +251,12 @@ const SubServices = () => {
                 setFormData({ name: sub.name });
                 setOpenEditModal(true);
               }}
-              onDelete={() => {
-                setSelectedSub(sub);
-                setOpenDeleteModal(true);
-              }}
+              // onDelete={() => {
+              //   setSelectedSub(sub);
+              //   setOpenDeleteModal(true);
+              // }}
+              onDelete={() => handleDeleteClick(sub)}
+
             />
           </Grid>
         ))}
@@ -245,7 +297,7 @@ const SubServices = () => {
       </GenericModal>
 
       {/* DELETE */}
-      <GenericModal
+      {/* <GenericModal
         open={openDeleteModal}
         onClose={() => setOpenDeleteModal(false)}
         title="Delete"
@@ -256,7 +308,35 @@ const SubServices = () => {
         <Typography>
           Are you sure you want to delete "{selectedSub?.name}"?
         </Typography>
-      </GenericModal>
+      </GenericModal> */}
+         <Dialog
+              open={openDeleteModal}
+              onClose={() => setOpenDeleteModal(false)}
+              isSubmitting={isSubmitting}
+              PaperProps={{ sx: { borderRadius: "12px", width: "400px", maxWidth: "90%" } }}
+            >
+              <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <WarningAmberIcon sx={{ color: "#F59E0B" }} />
+                Delete Service
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Are you sure you want to delete "{selectedSub?.name}"? You won't be able to revert this!
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions sx={{ px: 3, pb: 2 }}>
+                <Button onClick={handleCancelDelete} sx={{ color: "#6B7280", textTransform: "none" }}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmDelete}
+                  variant="contained"
+                  sx={{ bgcolor: "#EF4444", textTransform: "none", "&:hover": { bgcolor: "#DC2626" } }}
+                >
+                  Yes, delete it!
+                </Button>
+              </DialogActions>
+            </Dialog>
     </Container>
   );
 };
