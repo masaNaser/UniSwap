@@ -54,7 +54,7 @@ export default function Register() {
   const validationSchema = yup.object({
     userName: yup
       .string()
-      .required("User Name is required")
+       .required("User Name is required")
       .min(5, "User Name must be at least 5 characters"),
 
     email: yup
@@ -97,24 +97,19 @@ export default function Register() {
     if (/[^A-Za-z0-9]/.test(value)) score++; // حرف خاص
     setPasswordStrength(score);
   };
-  const getStrengthLabel = () => {
-    switch (passwordStrength) {
-      case 0:
-        return { text: "", color: "inherit" };
-      case 1:
-        return { text: "very weak", color: "red" };
-      case 2:
-        return { text: "weak", color: "orange" };
-      case 3:
-        return { text: "medium", color: "yellow" };
-      case 4:
-        return { text: "strong", color: "green" };
-      case 5:
-        return { text: "very strong", color: "darkgreen" };
-      default:
-        return { text: "", color: "inherit" };
-    }
-  };
+  // ماب لتحديد النص واللون بناءً على القوة
+const strengthMap = {
+  1: { text: "very weak", color: "red" },
+  2: { text: "weak", color: "orange" },
+  3: { text: "medium", color: "yellow" },
+  4: { text: "strong", color: "green" },
+  5: { text: "very strong", color: "darkgreen" },
+};
+
+const getStrengthLabel = () => {
+  return strengthMap[passwordStrength] || { text: "", color: "inherit" };
+};
+
   const [skills, setSkills] = useState([]); // skills as array
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
@@ -147,11 +142,12 @@ export default function Register() {
       password: data.password.trim(),
       confirmPassword: data.confirmPassword.trim(),
       skills: skills,
-      universityMajor: data.universityMajor.toUpperCase(),
+      // universityMajor: data.universityMajor.toUpperCase(),
+      universityMajor: data.universityMajor,
       academicYear: data.academicYear,
     };
 
-    console.log("Final Data Sent:", JSON.stringify(finalData));
+    // console.log("Final Data Sent:", JSON.stringify(finalData));
 
     try {
       setLoading(true);
@@ -163,7 +159,8 @@ export default function Register() {
             "Registration successful! Please check your email to verify your account.",
           icon: "success",
           draggable: true,
-          timer: 1500,
+          timer: 1600,
+          showConfirmButton: false,
         });
         navigate("/login");
       }
@@ -361,10 +358,10 @@ export default function Register() {
                   color: "#0F172A",
                   borderRadius: "50px",
                   minHeight: "40px",
-                  minWidth: { xs: "100px", sm: "120px" }, // ✅ غيّرت هون
-                  fontSize: { xs: "13px", sm: "14px" }, // ✅ وزدت هاي
+                  minWidth: { xs: "100px", sm: "120px" },
+                  fontSize: { xs: "13px", sm: "14px" }, 
                   margin: "4px",
-                  padding: { xs: "6px 12px", sm: "6px 16px" }, // ✅ وهاي
+                  padding: { xs: "6px 12px", sm: "6px 16px" }, 
                 },
                 "& .Mui-selected": {
                   background: "#FFFFFF",
@@ -483,6 +480,7 @@ export default function Register() {
                 <>
                   <LinearProgress
                     variant="determinate"
+                    //عشان نحول الارقام اللي بتطلع بالماب ل نسبة مئوية
                     value={(passwordStrength / 5) * 100} // نسبة من 0 إلى 100%
                     sx={{
                       height: 8,

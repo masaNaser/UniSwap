@@ -24,7 +24,7 @@ import {
 } from "@mui/icons-material";
 import Logo from "/logo.png";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
-import { startTokenRefreshTimer } from "../../../utils/tokenRefresh";
+import { startTokenRefreshTimer,stopTokenRefreshTimer } from "../../../utils/tokenRefresh";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import CustomButton from "../../../components/CustomButton/CustomButton";
@@ -58,8 +58,8 @@ export default function Login() {
   } = useForm({
     //هاي الخطوة عشان نحكي للمكتبة الرياكت هوك فورم انه ما تعمل الفالديشن منها وانما الفالديشن اللي حطيناه باستخدام ال yup
     resolver: yupResolver(validationSchema),
-    shouldUseNativeValidation: false, // ✅ أضيفي هاد
-    mode: "onSubmit", // ✅ وهاد
+    shouldUseNativeValidation: false, 
+    mode: "onSubmit", // تحقق من الصحة عند الإرسال فقط
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -99,19 +99,19 @@ export default function Login() {
         storage.setItem("userId", userId);
         storage.setItem("userRole", userRole);
 
-        console.log(`✅ Token stored, expires at: ${new Date(decoded.exp * 1000).toLocaleString()}`);
+        console.log(` Token stored, expires at: ${new Date(decoded.exp * 1000).toLocaleString()}`);
 
-        // ✅ Stop any existing timer first (to avoid duplicates)
+        //  Stop any existing timer first (to avoid duplicates)
         if (window.tokenRefreshTimerId) {
           stopTokenRefreshTimer(window.tokenRefreshTimerId);
           window.tokenRefreshTimerId = null;
-          console.log("🔄 Cleared existing timer");
+          console.log(" Cleared existing timer");
         }
 
-        // ✅ Start new refresh timer
+        //  Start new refresh timer
         const timerId = startTokenRefreshTimer();
         window.tokenRefreshTimerId = timerId;
-        console.log("✅ Token refresh timer started from Login");
+        console.log(" Token refresh timer started from Login");
 
         // Show success and redirect
         Swal.fire({

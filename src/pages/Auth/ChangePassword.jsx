@@ -109,6 +109,7 @@ export default function ChangePassword() {
           title: "Password changed successfully.",
           icon: "success",
           timer: 1500,
+          showConfirmButton: false,
         });
         navigate("/login");
       }

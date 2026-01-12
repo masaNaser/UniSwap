@@ -2,7 +2,7 @@ import { refreshToken } from '../services/authService';
 import { jwtDecode } from "jwt-decode";
 
 /**
- * التحقق من صلاحية التوكن وتحديثه إذا كان قريب من الانتهاء
+  التحقق من صلاحية التوكن وتحديثه إذا كان قريب من الانتهاء
  */
 export const checkAndRefreshToken = async () => {
   console.log("🔍 [Timer] Checking token status...");
@@ -16,7 +16,7 @@ export const checkAndRefreshToken = async () => {
     return false;
   }
 
-  // ✅ Parse expiration as number
+  // Convert expiration string to number (وقت انتهاء الصلاحية يكون بالثواني)
   const expirationTime = parseInt(expiration, 10);
   if (isNaN(expirationTime)) {
     console.error("❌ [Timer] Invalid expiration format");
@@ -24,11 +24,12 @@ export const checkAndRefreshToken = async () => {
   }
 
   const currentTime = Math.floor(Date.now() / 1000);
+  // الناتج = كم ثانية بقيت للتوكن.
   const timeUntilExpiry = expirationTime - currentTime;
 
   console.log(`⏱️ [Timer] Token expires in ${Math.floor(timeUntilExpiry / 60)} minutes (${timeUntilExpiry} seconds)`);
 
-  // ✅ Refresh if less than 6 minutes remaining (increased buffer for safety)
+  //  Refresh if less than 6 minutes remaining (increased buffer for safety)
   if (timeUntilExpiry < 360) {
     console.log(`🔄 [Timer] Token expiring soon (${Math.floor(timeUntilExpiry / 60)} min remaining), refreshing...`);
     try {
@@ -61,7 +62,7 @@ export const checkAndRefreshToken = async () => {
 };
 
 /**
- * ✅ Check every 5 minutes in production
+   Check every 5 minutes in production
  */
 export const startTokenRefreshTimer = () => {
   console.log("✅ [Timer] Token refresh timer starting...");
@@ -69,7 +70,11 @@ export const startTokenRefreshTimer = () => {
   // Check immediately on start
   checkAndRefreshToken();
 
-  // ✅ Check every 5 minutes
+  //  Check every 5 minutes
+/*
+كل 5 دقائق → نفحص التوكن
+إذا قرب ينتهي → نعمل refresh
+*/ 
   const timerId = setInterval(() => {
     console.log("⏰ [Timer] 5-minute interval triggered");
     checkAndRefreshToken();

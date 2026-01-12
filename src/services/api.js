@@ -7,6 +7,7 @@ const api = axios.create({
 });
 
 // Create a separate axios instance for refresh calls (no interceptors)
+/// This avoids infinite loops if refresh fails
 const apiRefresh = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "https://uni1swap.runasp.net/",
   withCredentials: true,
@@ -14,6 +15,7 @@ const apiRefresh = axios.create({
 
 // متغيرات التحكم بالـ Queue والـ Refresh
 let isRefreshing = false;
+//   قائمة الطلبات التي فشلت وتنتظر انتهاء  refresh.
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
@@ -43,20 +45,27 @@ api.interceptors.request.use(
 
 // 2. Interceptor للردود (معالجة انتهاء الصلاحية 401)
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response) => response, // كل رد ناجح نمرره كما هو
+  async (error) => { // الردود التي تحتوي أخطاء
     const originalRequest = error.config;
 
     //  تجاهل أخطاء Login و Register و refresh-token
+    /*
+    "الروابط اللي ما بدنا نطبق عليها الـ 
+    Token Refresh"
+    بعض الـ 
+    API endpoints
+     لا نريد أن نرسل لها طلب تحديث التوكن تلقائيًا إذا انتهت صلاحية التوكن.
+    */
     const excludedUrls = [
       "/Account/login",
       "/Account/register",
       "/Account/refresh-token",
+      "/Account/logout",
     ];
     if (excludedUrls.some((url) => originalRequest.url.includes(url))) {
       return Promise.reject(error);
     }
-
     // إذا كان الخطأ 401 ولم يتم تجربة الطلب مسبقاً
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
@@ -119,9 +128,9 @@ function handleLogout() {
   console.log("🚪 Session expired, logging out...");
   localStorage.clear();
   sessionStorage.clear();
-  if (!window.location.pathname.includes("/login")) {
-    window.location.href = "/login";
-  }
+  // if (!window.location.pathname.includes("/login")) {
+    window.location.href = "/";
+  // }
 }
 
 export default api;

@@ -30,8 +30,7 @@ export const logout = async () => {
     localStorage.clear();
     sessionStorage.clear();
 
-    // التحويل للـ login
-    window.location.href = "/login";
+    window.location.href = "/";
   }
 };
 

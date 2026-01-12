@@ -124,6 +124,7 @@ export default function ResetPassword() {
           title: "Password reset successfully.",
           icon: "success",
           timer: 1500,
+         showConfirmButton: false,
         });
         navigate("/login");
       }

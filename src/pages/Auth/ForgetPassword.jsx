@@ -48,6 +48,7 @@ export default function ForgetPassword() {
           icon: "success",
           draggable: true,
           timer: 1500,
+          showConfirmButton: false,
         });
         // تمرير الإيميل للفورم الثاني
         navigate("/resetPassword", { state: { email: data.email } });
