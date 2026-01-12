@@ -264,7 +264,7 @@ export default function Register() {
               }}
             >
               Connect with fellow students, exchange skills, and build lasting
-              academic relationships in a safe, university-verified environment.
+              academic relationships in a safe university environment.
             </Typography>
 
             {/* Features */}
@@ -272,8 +272,7 @@ export default function Register() {
               {[
                 "Connect with students across universities",
                 "Exchange skills using our points system",
-                "Build your academic portfolio",
-                "Access to exclusive study groups",
+                "Build your professional portfolio",
                 "Real-time collaboration tools",
               ].map((text, i) => (
                 <Box
@@ -292,7 +291,7 @@ export default function Register() {
               ))}
             </Box>
 
-            {/* University Verified card */}
+            {/* University  card */}
             <Box
               sx={{
                 mt: 4,
@@ -307,17 +306,9 @@ export default function Register() {
               }}
             >
               <Box>
-                <Typography
-                  sx={{
-                    fontWeight: "600",
-                    color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
-                  }}
-                >
-                  University Verified
-                </Typography>
                 <Typography sx={{ fontSize: "14px", color: "#475569" }}>
-                  Join 5,000+ students from 25+ universities already using
-                  UniSwap to enhance their academic journey.
+                  Join students from different universities who are already using
+                  UniSwap to learn, connect, and collaborate.
                 </Typography>
               </Box>
             </Box>
@@ -346,7 +337,7 @@ export default function Register() {
                 Welcome to UniSwap
               </Typography>
               <Typography sx={{ fontSize: "14px", color: "#475569" }}>
-                Your academic collaboration starts here
+                Your collaboration journey starts here
               </Typography>
             </Box>
 

@@ -74,7 +74,7 @@ export default function LandingPage() {
     {
       title: "Academic Support",
       description:
-        "Get help with assignments, projects, and exam preparation from peers",
+        "Get help with projects, and exam preparation from peers",
       icon: (
         <ImportContactsTwoToneIcon
           sx={{
@@ -483,7 +483,7 @@ export default function LandingPage() {
                   px: { xs: 1, sm: 0 },
                 }}
               >
-                Join thousands of students transforming their university
+                Join students transforming their university
                 experience through skill sharing, collaboration, and peer
                 support.
               </Typography>
@@ -528,7 +528,7 @@ export default function LandingPage() {
             </Typography>
             <Typography sx={{ fontSize: "16px", color: "#74767a", mb: 4 }}>
               From skill sharing to project collaboration, UniSwap provides all
-              the tools you need for <br /> academic excellence.
+              the tools you need for <br /> professional excellence.
             </Typography>
           </Box>
           <Grid container spacing={3} sx={{ mb: "55px" }}>
