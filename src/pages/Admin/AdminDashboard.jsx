@@ -138,7 +138,7 @@ const AdminDashboard = () => {
         <Box sx={{ p: 2, mt: "auto" }}>
           <IconButton onClick={() => { logout(); navigate("/login"); }} sx={{ width: "100%", borderRadius: 2, color: "#ef4444", justifyContent: isMobile ? "center" : "flex-start", "&:hover": { bgcolor: "#fef2f2" } }}>
             <LogoutIcon sx={{ mr: isMobile ? 0 : 1.5 }} />
-            {!isMobile && <Typography variant="body2" fontWeight="medium">Sign Out</Typography>}
+            {!isMobile && <Typography variant="body2" fontWeight="medium">Logout</Typography>}
           </IconButton>
         </Box>
       </Paper>
