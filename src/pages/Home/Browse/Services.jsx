@@ -137,9 +137,20 @@ const Services = () => {
 
       showSnackbar("Service created successfully!", "success");
     } catch (error) {
-      console.error(error);
-      showSnackbar("Failed to create service", "error");
-    } finally {
+  console.error(error);
+
+  let errorMessage = "Failed to create service";
+
+  if (error.response?.data?.errors) {
+    const errorsObj = error.response.data.errors;
+
+    errorMessage = Object.values(errorsObj)
+      .flat()
+      .join(" | ");
+  }
+
+  showSnackbar(errorMessage, "error");
+}finally {
       setIsSubmitting(false);
     }
   };
@@ -276,41 +287,48 @@ const Services = () => {
 
       {/* Create Modal */}
       <GenericModal
-        open={openCreateModal}
-        onClose={() => {
-          setOpenCreateModal(false);
-          setCreateFormData({ name: "", description: "", image: null });
-        }}
-        title="Create New Service"
-        icon={<AddIcon sx={{ color: "#3b82f6" }} />}
-        primaryButtonText="Create Service"
-        primaryButtonIcon={<AddIcon />}
-        onPrimaryAction={handleCreateService}
-        isSubmitting={isSubmitting}
-        snackbar={snackbar}
-        onSnackbarClose={handleSnackbarClose}
-      >
+  open={openCreateModal}
+  onClose={() => {
+    setOpenCreateModal(false);
+    setCreateFormData({ name: "", description: "", image: null });
+  }}
+  title="Create New Service"
+  icon={<AddIcon sx={{ color: "#3b82f6" }} />}
+  primaryButtonText="Create Service"
+  primaryButtonIcon={<AddIcon />}
+  onPrimaryAction={handleCreateService}
+  isSubmitting={isSubmitting}
+  isPrimaryDisabled={  // ✅ أضف هذا السطر
+    !createFormData.name.trim() || 
+    !createFormData.description.trim() || 
+    !createFormData.image
+  }
+  snackbar={snackbar}
+  onSnackbarClose={handleSnackbarClose}
+>
         <TextField
           fullWidth
+          required
           label="Service Name"
           value={createFormData.name}
           onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
           sx={{ mb: 2 }}
-          disabled={isSubmitting}
+          
         />
         <TextField
           fullWidth
+          required
           label="Description"
           multiline
           rows={4}
           value={createFormData.description}
           onChange={(e) => setCreateFormData({ ...createFormData, description: e.target.value })}
-          disabled={isSubmitting}
           sx={{ mb: 2 }}
         />
 
         {/* Input + Preview */}
         <input
+        required
           type="file"
           accept="image/*"
           onChange={(e) => setCreateFormData({ ...createFormData, image: e.target.files[0] })}

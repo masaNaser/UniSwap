@@ -65,7 +65,7 @@ const GenericModal = ({
           </IconButton>
         </DialogTitle>
 
-        <DialogContent sx={{ pt: 1, pb: 1 }}>
+        <DialogContent sx={{ pt: 1, pb: 1,mt:2 }}>
           {headerInfo && (
             <Box
               sx={{
