@@ -963,7 +963,7 @@ export default function PrimarySearchAppBar() {
                       <ListItemIcon>
                         <Logout fontSize="small" sx={{ color: "red" }} />
                       </ListItemIcon>
-                      Sign Out
+                      Logout
                     </MenuItem>
                   </>
                 )}
@@ -1059,7 +1059,7 @@ export default function PrimarySearchAppBar() {
                       <ListItemIcon>
                         <Logout fontSize="small" sx={{ color: "red" }} />
                       </ListItemIcon>
-                      Sign Out
+                      Logout
                     </MenuItem>
                   </>
                 )}
