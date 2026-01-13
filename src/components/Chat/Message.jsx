@@ -16,8 +16,6 @@ export default function Message({ text, filePath, content, sender }) {
         padding: isImageMessage ? "0" : "10px",
         color: sender === "me" ? "white" : "black",
       }}
-        
-    
     >
       {isFileMessage ? (
         isImage ? (

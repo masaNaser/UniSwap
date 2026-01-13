@@ -15,12 +15,12 @@ export default function ChatList({
   const token = getToken();
   const userId = getUserId();
 
-  // ✅ استخدم الـ Context
+
   const { decreaseUnreadCount, refreshUnreadCount } = useUnreadCount();
+  // الاستماع للرسائل الجديدة عبر حدث مخصص
  useEffect(() => {
     const handleGlobalMessage = (event) => {
       const message = event.detail;
-
       setConversations((prev) => {
         const existing = prev.find(c => c.id === message.conversationId);
         
@@ -58,7 +58,7 @@ export default function ChatList({
           partnerId,
           partnerName,
           partnerImage,
-          unreadCount: conv.unreadCount || 0 // ✅ تأكد من وجود unreadCount
+          unreadCount: conv.unreadCount || 0 
         };
       });
 

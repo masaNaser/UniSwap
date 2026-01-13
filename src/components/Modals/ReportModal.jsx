@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { TextField, MenuItem, Stack, Button, Box } from "@mui/material";
+import { 
+  TextField, 
+  Stack, 
+  Button, 
+  Box, 
+  IconButton, 
+  Typography, 
+  Tooltip 
+} from "@mui/material";
 import FlagIcon from "@mui/icons-material/Flag";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DeleteIcon from "@mui/icons-material/Delete";
 import GenericModal from "./GenericModal";
 import { CreateReport } from "../../services/adminService";
 import { getToken } from "../../utils/authHelpers";
+
 const ReportModal = ({ open, onClose, userId, userName }) => {
-  // const token = localStorage.getItem("accessToken");
   const token = getToken();
   const [reason, setReason] = useState("");
   const [imageFile, setImageFile] = useState(null);
@@ -19,18 +29,32 @@ const ReportModal = ({ open, onClose, userId, userName }) => {
 
   const isFormValid = reason.trim() !== "";
 
-  // إنشاء preview للصورة عند اختيارها
+  // إدارة معاينة الصورة وتنظيف الذاكرة
   useEffect(() => {
     if (!imageFile) {
       setImagePreview(null);
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(imageFile);
+
+    // إنشاء رابط مؤقت للمعاينة
+    const objectUrl = URL.createObjectURL(imageFile);
+    setImagePreview(objectUrl);
+
+    // تنظيف الرابط عند تغيير الصورة أو إغلاق المكون
+    return () => URL.revokeObjectURL(objectUrl);
   }, [imageFile]);
+
+  // دالة لإعادة ضبط النموذج
+  const resetForm = () => {
+    setReason("");
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -49,10 +73,9 @@ const ReportModal = ({ open, onClose, userId, userName }) => {
         severity: "success",
       });
 
+      // إغلاق بعد نجاح العملية
       setTimeout(() => {
-        onClose();
-        setReason("");
-        setImageFile(null);
+        handleClose();
       }, 1500);
     } catch (error) {
       setSnackbar({
@@ -69,59 +92,98 @@ const ReportModal = ({ open, onClose, userId, userName }) => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleRemoveImage = () => {
+    setImageFile(null);
+  };
+
   return (
     <GenericModal
       open={open}
-      onClose={onClose}
-      title="Report User"
+      onClose={handleClose}
+      title={`Report ${userName || "User"}`}
       icon={<FlagIcon sx={{ color: "#EF4444" }} />}
       primaryButtonText="Submit Report"
       primaryButtonIcon={<FlagIcon />}
       onPrimaryAction={handleSubmit}
-      onSecondaryAction={onClose}
+      onSecondaryAction={handleClose}
       secondaryButtonText="Cancel"
       isPrimaryDisabled={!isFormValid}
       isSubmitting={isSubmitting}
       snackbar={snackbar}
       onSnackbarClose={handleSnackbarClose}
     >
-      <Stack spacing={2}>
+      <Stack spacing={2.5} sx={{ mt: 1 }}>
         <TextField
-        //   select
           label="Reason for Report"
+          // placeholder="Please describe why you are reporting this user..."
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           fullWidth
-        >
-          {/* <MenuItem value="spam">Spam</MenuItem>
-          <MenuItem value="harassment">Harassment</MenuItem>
-          <MenuItem value="inappropriate">Inappropriate Content</MenuItem>
-          <MenuItem value="scam">Scam</MenuItem>
-          <MenuItem value="other">Other</MenuItem> */}
-        </TextField>
+          multiline
+          rows={4}
+          variant="outlined"
+        />
 
-        <Button
-          variant="contained"
-          component="label"
-          sx={{ textTransform: "none" }}
-        >
-          Upload Image (Optional)
-          <input
-            type="file"
-            hidden
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files[0])}
-          />
-        </Button>
-
-        {imagePreview && (
-          <Box
-            component="img"
-            src={imagePreview}
-            alt="Preview"
-            sx={{ width: "100%", maxHeight: 200, objectFit: "contain", mt: 1, borderRadius: 1 }}
-          />
-        )}
+        <Box>
+          {!imagePreview ? (
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              startIcon={<CloudUploadIcon />}
+              sx={{ 
+                textTransform: "none", 
+                borderStyle: 'dashed',
+                py: 1.5,
+                borderColor: '#ccc',
+                '&:hover': { borderStyle: 'dashed' }
+              }}
+            >
+              Upload (Optional)
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files[0]) setImageFile(e.target.files[0]);
+                }}
+              />
+            </Button>
+          ) : (
+            <Box sx={{ position: 'relative', width: '100%' }}>
+              <Box
+                component="img"
+                src={imagePreview}
+                alt="Preview"
+                sx={{ 
+                  width: "100%", 
+                  maxHeight: 200, 
+                  objectFit: "contain", 
+                  borderRadius: 2,
+                  bgcolor: '#f9f9f9',
+                  border: '1px solid #eee'
+                }}
+              />
+              <Tooltip title="Remove image">
+                <IconButton 
+                  size="small"
+                  onClick={handleRemoveImage}
+                  sx={{ 
+                    position: 'absolute', 
+                    top: 8, 
+                    right: 8, 
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    boxShadow: 1,
+                    '&:hover': { backgroundColor: '#fff' }
+                  }}
+                >
+                  <DeleteIcon fontSize="small" color="error" />
+                </IconButton>
+              </Tooltip>
+           
+            </Box>
+          )}
+        </Box>
       </Stack>
     </GenericModal>
   );

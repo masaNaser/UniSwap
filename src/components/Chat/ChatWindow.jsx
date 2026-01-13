@@ -262,7 +262,7 @@ export default function ChatWindow({
       <Box className="chat-header">
         {onBack && (
           <button className="back-button" onClick={onBack}>
-            ← Back
+            ←
           </button>
         )}
 
