@@ -3,19 +3,21 @@
 export default function Message({ text, filePath, content, sender }) {
   const fileName = filePath?.split("/").pop?.() || "file";
 
-  const isImage = filePath && /\.(jpg|jpeg|png|gif)$/i.test(filePath);
+  const isImage = filePath && /\.(jpg|jpeg|png|gif|webp)$/i.test(filePath);
   const isFileMessage = content === "File" && filePath;
+  const isImageMessage = isFileMessage && isImage;
 
   return (
     <div
-      className={`message ${sender}`}
+          className={`message ${sender}`}
       style={{
-        // backgroundColor: isFileMessage ? "transparent" : "",
-        border: isFileMessage ? "none" : "",
-        padding: "10px",
+        backgroundColor: isImageMessage ? "transparent" : "",
+        border: isImageMessage ? "none" : "",
+        padding: isImageMessage ? "0" : "10px",
         color: sender === "me" ? "white" : "black",
-        
       }}
+        
+    
     >
       {isFileMessage ? (
         isImage ? (
