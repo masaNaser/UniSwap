@@ -226,11 +226,6 @@ const NotificationMenu = ({
           else {
             isProvider = false;
           }
-
-          console.log("🚀 Task Navigation:", {
-            projectId: notification.parentRefId,
-            isProvider,
-          });
           navigate(`/app/TrackTasks/${notification.parentRefId}`, {
             state: {
               id: notification.parentRefId,
@@ -286,7 +281,6 @@ const NotificationMenu = ({
         return;
 
       case "User":
-      case "Followed":
         targetRoute = `/app/profile/${notification.refId}`;
         break;
 

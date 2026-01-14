@@ -1,9 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { Container, Grid, Typography, Box, Breadcrumbs, TextField, CircularProgress } from "@mui/material";
+import {
+  Container,
+  Grid,
+  Typography,
+  Box,
+  Breadcrumbs,
+  TextField,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import { Link, useParams, useLocation } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddIcon from "@mui/icons-material/Add";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import ServiceCard from "../../../components/Cards/ServiceCard";
 import GenericModal from "../../../components/Modals/GenericModal";
@@ -21,8 +39,8 @@ const ParentSubServices = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
 
-  const serviceName = params.get("serviceName"); // Study Support
-  const subServiceName = params.get("subServiceName"); // Computer Engineering
+  const serviceName = params.get("serviceName");
+  const subServiceName = params.get("subServiceName");
 
   const [parentSubServices, setParentSubServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,113 +54,100 @@ const ParentSubServices = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: "" });
 
-  // جلب المواد (ParentSubServices)
+  // ✅ إضافة الـ Snackbar للرسائل
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const fetchParentSubServices = async () => {
     try {
       setLoading(true);
-      const response = await GetByParentSubService(token, serviceId, subServiceId);
-      console.log("Parent SubServices:", response.data);
+      const response = await GetByParentSubService(
+        token,
+        serviceId,
+        subServiceId
+      );
       setParentSubServices(response.data);
     } catch (err) {
-      console.error("Error fetching parent subservices:", err);
+      console.error("Error fetching:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (serviceId && subServiceId) {
-      fetchParentSubServices();
-    }
+    if (serviceId && subServiceId) fetchParentSubServices();
   }, [serviceId, subServiceId]);
 
-  // Create Subject (ParentSubService)
   const handleCreate = async () => {
     setIsSubmitting(true);
     try {
-      console.log("🔍 Creating with:", {
-        serviceId: serviceId,
-        name: formData.name,
-        parentSubServiceId: subServiceId // 🔥 تأكدي إنه موجود
-      });
-      // 🔥 استخدام CreateSubServices مع parentSubServiceId
-      const response = await CreateSubServices(token, serviceId, formData, subServiceId);
-      console.log("✅ Created:", response.data);
-
+      await CreateSubServices(token, serviceId, formData, subServiceId);
       setOpenCreateModal(false);
       setFormData({ name: "" });
       fetchParentSubServices();
+      showSnackbar("Subject created successfully!");
     } catch (error) {
-      console.error("Error creating subject:", error);
+      showSnackbar("Error creating subject", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Update Subject
   const handleUpdate = async () => {
     setIsSubmitting(true);
     try {
-      // 🔥 استخدام EditSubServices
       await EditSubServices(token, serviceId, selectedSubject.id, formData);
-
       setOpenEditModal(false);
-      setFormData({ name: "" });
       fetchParentSubServices();
+      showSnackbar("Subject updated successfully!");
     } catch (error) {
-      console.error("Error updating subject:", error);
+      showSnackbar("Error updating subject", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Delete Subject
-  const handleDelete = async () => {
+  //  دالة الحذف المحدثة بنفس المنطق اللي طلبتيه
+  const handleConfirmDelete = async () => {
+    if (!selectedSubject) return;
     setIsSubmitting(true);
     try {
-      // 🔥 استخدام DeleteSubServices
       await DeleteSubServices(token, serviceId, selectedSubject.id);
-
       setOpenDeleteModal(false);
       setSelectedSubject(null);
       fetchParentSubServices();
+      showSnackbar("Subject deleted successfully!", "success");
     } catch (error) {
-      console.error("Error deleting subject:", error);
+      console.error(error);
+      setOpenDeleteModal(false);
+      setSelectedSubject(null);
+      // 🔥 هون الرسالة اللي بدك إياها لما يرفض الحذف
+      showSnackbar(
+        "Cannot delete: please remove summaries inside this subject first",
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (!serviceId || !subServiceId) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Typography variant="h5" color="error">
-          Invalid parameters!
-        </Typography>
-      </Container>
-    );
-  }
-
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 2 }}>
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        sx={{ mb: 2 }}
+      >
         <Typography
           component={Link}
           to="/app/browse"
@@ -153,7 +158,9 @@ const ParentSubServices = () => {
         </Typography>
         <Typography
           component={Link}
-          to={`/app/browse/${serviceId}?name=${encodeURIComponent(serviceName)}`}
+          to={`/app/browse/${serviceId}?name=${encodeURIComponent(
+            serviceName
+          )}`}
           color="inherit"
           sx={{ textDecoration: "none" }}
         >
@@ -162,7 +169,6 @@ const ParentSubServices = () => {
         <Typography color="text.primary">{subServiceName}</Typography>
       </Breadcrumbs>
 
-      {/* Header */}
       <Box
         sx={{
           display: "flex",
@@ -172,17 +178,17 @@ const ParentSubServices = () => {
         }}
       >
         <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            {subServiceName}
-          </Typography>
+          <Typography variant="h4">{subServiceName}</Typography>
           <Typography variant="body2" color="text.secondary">
-            Select a subject to view projects
+            Select a subject to view content
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <CustomButton
             component={Link}
-            to={`/app/browse/${serviceId}?name=${encodeURIComponent(serviceName)}`}
+            to={`/app/browse/${serviceId}?name=${encodeURIComponent(
+              serviceName
+            )}`}
             variant="outlined"
             startIcon={<ArrowBackIcon />}
           >
@@ -209,15 +215,9 @@ const ParentSubServices = () => {
           <Grid item xs={12} sm={6} md={4} key={subject.id}>
             <ServiceCard
               title={subject.name}
-              description={subject.description || ""}
-              titleFontSize="1.2rem"
               cardWidth="368px"
               cardHeight="160px"
-              url={`/app/browse/${serviceId}/${subServiceId}/${subject.id}/projects?serviceName=${encodeURIComponent(
-                serviceName
-              )}&subServiceName=${encodeURIComponent(
-                subServiceName
-              )}&parentSubServiceName=${encodeURIComponent(subject.name)}`}
+              titleFontSize="1.2rem"
               adminMode={adminMode}
               onEdit={() => {
                 setSelectedSubject(subject);
@@ -228,18 +228,22 @@ const ParentSubServices = () => {
                 setSelectedSubject(subject);
                 setOpenDeleteModal(true);
               }}
+              url={`/app/browse/${serviceId}/${subServiceId}/${
+                subject.id
+              }/projects?serviceName=${encodeURIComponent(
+                serviceName
+              )}&subServiceName=${encodeURIComponent(
+                subServiceName
+              )}&parentSubServiceName=${encodeURIComponent(subject.name)}`}
             />
           </Grid>
         ))}
       </Grid>
 
-      {/* Create Modal */}
+      {/* Create & Edit Modals (بقيت كما هي) */}
       <GenericModal
         open={openCreateModal}
-        onClose={() => {
-          setOpenCreateModal(false);
-          setFormData({ name: "" });
-        }}
+        onClose={() => setOpenCreateModal(false)}
         title="Create Subject"
         primaryButtonText="Create"
         onPrimaryAction={handleCreate}
@@ -250,17 +254,12 @@ const ParentSubServices = () => {
           label="Subject Name"
           value={formData.name}
           onChange={(e) => setFormData({ name: e.target.value })}
-          placeholder="e.g., Data Structures"
         />
       </GenericModal>
 
-      {/* Edit Modal */}
       <GenericModal
         open={openEditModal}
-        onClose={() => {
-          setOpenEditModal(false);
-          setFormData({ name: "" });
-        }}
+        onClose={() => setOpenEditModal(false)}
         title="Edit Subject"
         primaryButtonText="Update"
         onPrimaryAction={handleUpdate}
@@ -274,22 +273,61 @@ const ParentSubServices = () => {
         />
       </GenericModal>
 
-      {/* Delete Modal */}
-      <GenericModal
+      {/* ✅ المودال المحدث للحذف (Dialog) */}
+      <Dialog
         open={openDeleteModal}
-        onClose={() => {
-          setOpenDeleteModal(false);
-          setSelectedSubject(null);
+        onClose={() => setOpenDeleteModal(false)}
+        PaperProps={{
+          sx: { borderRadius: "12px", width: "400px", maxWidth: "90%" },
         }}
-        title="Delete Subject"
-        primaryButtonText="Delete"
-        onPrimaryAction={handleDelete}
-        isSubmitting={isSubmitting}
       >
-        <Typography>
-          Are you sure you want to delete "{selectedSubject?.name}"?
-        </Typography>
-      </GenericModal>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <WarningAmberIcon sx={{ color: "#F59E0B" }} />
+          Delete Subject
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete "{selectedSubject?.name}"? You won't
+            be able to revert this!
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setOpenDeleteModal(false)}
+            sx={{ color: "#6B7280", textTransform: "none" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            disabled={isSubmitting}
+            variant="contained"
+            sx={{
+              bgcolor: "#EF4444",
+              textTransform: "none",
+              "&:hover": { bgcolor: "#DC2626" },
+            }}
+          >
+            {isSubmitting ? "Deleting..." : "Yes, delete it!"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ✅ إضافة الـ Snackbar في نهاية الـ Container ليعرض الرسائل */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

@@ -194,26 +194,28 @@ export default function StudyProjectModal({
     } catch (err) {
       console.error(err);
 
-      let errorMessage = "Failed to submit project. Try again!";
+  let errorMessage = "Failed to submit project. Try again!";
 
-      if (err.response?.data) {
-        const errorData = err.response.data;
+if (err.response?.data) {
+  const errorData = err.response.data;
 
-        if (errorData.errors && typeof errorData.errors === "object") {
-          const errorMessages = Object.values(errorData.errors)
-            .flat()
-            .join(", ");
-          errorMessage = errorMessages || errorMessage;
-        } else if (typeof errorData === "string") {
-          errorMessage = errorData;
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
-        } else if (errorData.title) {
-          errorMessage = errorData.title;
-        }
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
+  if (errorData.errors && typeof errorData.errors === "object") {
+    const allErrors = Object.values(errorData.errors).flat();
+
+    if (allErrors.length > 0) {
+      errorMessage = allErrors[0]; // أول رسالة واضحة
+    }
+  } else if (typeof errorData === "string") {
+    errorMessage = errorData;
+  } else if (errorData.message) {
+    errorMessage = errorData.message;
+  } else if (errorData.title) {
+    errorMessage = errorData.title;
+  }
+} else if (err.message) {
+  errorMessage = err.message;
+}
+
 
       setSnackbar({
         open: true,

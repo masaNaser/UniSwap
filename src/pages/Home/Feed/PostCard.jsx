@@ -195,7 +195,9 @@ const CommentBubble = ({ comment, theme, onUserClick }) => (
       >
         {comment.author.userName}
       </Typography>
-      <Typography variant="body2">{renderContentWithLinks(comment.content)}</Typography>
+      <Typography variant="body2">
+        {renderContentWithLinks(comment.content)}
+      </Typography>
       <Typography
         variant="caption"
         color="text.secondary"
@@ -366,9 +368,14 @@ function PostCard({
             sx={{
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
+              /* ✅ الحل الجذري لمشكلة العربي والإنجليزي المختلط */
+              unicodeBidi: "plaintext",
+              textAlign: "initial",
+              display: "block",
+              width: "100%",
             }}
           >
-            {post.content}
+            {renderContentWithLinks(post.content)}
           </Typography>
           <Box sx={{ mb: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
             {post.selectedTags.map((tag, index) => (
