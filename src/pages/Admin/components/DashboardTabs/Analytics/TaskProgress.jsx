@@ -4,7 +4,7 @@ import {
   Typography, 
   CircularProgress,
   Paper,
-  Divider
+   useTheme,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // للأيقونات
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
@@ -12,6 +12,7 @@ import { taskProgress } from '../../../../../services/adminService';
 import { getToken } from '../../../../../utils/authHelpers';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 export default function TaskProgress() {
+  const theme = useTheme();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -71,7 +72,7 @@ export default function TaskProgress() {
       sx={{
         p: 3,
         borderRadius: 4,
-        bgcolor: '#fff',
+        bgcolor:theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
         boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
         border: '1px solid #f1f5f9'
       }}
@@ -80,7 +81,8 @@ export default function TaskProgress() {
         variant="h6"
         fontWeight="600"
         mb={3}
-        sx={{ color: "#1e293b" }}>
+        sx={{ color:theme.palette.mode === "dark" ? "#f0f9ff" : "#1e293b" }}
+        >
         Task Progress
       </Typography>
 
@@ -124,7 +126,7 @@ export default function TaskProgress() {
               alignItems: 'center',
               p: 2,
               borderRadius: 3,
-              bgcolor: '#f8fafc', // خلفية الكرت الرمادية الخفيفة
+              bgcolor:theme.palette.mode === "dark" ? "#424242" : "#f8fafc", // خلفية الكرت الرمادية الخفيفة
               border: '1px solid #f1f5f9'
             }}
           >
@@ -140,7 +142,7 @@ export default function TaskProgress() {
             >
               {item.icon}
             </Box>
-            <Typography variant="h6" fontWeight="700" sx={{ color: '#1e293b' }}>
+            <Typography variant="h6" fontWeight="700" sx={{ color:theme.palette.mode === "dark" ? "#f0f9ff" : "#1e293b" }}>
               {item.count}
             </Typography>
             <Typography variant="caption" fontWeight="500" color="text.secondary" sx={{ textAlign: 'center' }}>

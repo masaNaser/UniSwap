@@ -84,7 +84,7 @@ export default function ActiveProject() {
         sx={{
           p: 3,
           borderRadius: 3,
-          bgcolor: "#fff",
+          bgcolor:theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
           border: "1px solid #f1f5f9",
         }}
       >
@@ -101,7 +101,7 @@ export default function ActiveProject() {
         sx={{
           p: 3,
           borderRadius: 3,
-          bgcolor: "#fff",
+          bgcolor:theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
           border: "1px solid #f1f5f9",
         }}
       >
@@ -224,7 +224,7 @@ export default function ActiveProject() {
       sx={{
         p: 3,
         borderRadius: 3,
-        bgcolor: "#fff",
+        bgcolor:theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
         border: "1px solid #f1f5f9",
       }}
     >
@@ -232,7 +232,7 @@ export default function ActiveProject() {
         variant="h6"
         fontWeight="600"
         mb={3}
-        sx={{ color: "#1e293b" }}
+        sx={{ color:theme.palette.mode === "dark" ? "#f0f9ff" : "#1e293b" }}
       >
         Active Projects
       </Typography>
@@ -243,9 +243,9 @@ export default function ActiveProject() {
             <TableRow>
               <TableCell
                 sx={{
-                  color: "#64748b",
+                  color:theme.palette.mode === "dark" ? "#e0e0e0" : "#64748b",
                   fontWeight: 500,
-                  bgcolor: "#fff",
+                  bgcolor:theme.palette.mode === "dark" ? "#424242" : "#f1f5f9",
                   fontSize: "0.875rem",
                 }}
               >
@@ -253,9 +253,9 @@ export default function ActiveProject() {
               </TableCell>
               <TableCell
                 sx={{
-                  color: "#64748b",
+                  color:theme.palette.mode === "dark" ? "#e0e0e0" : "#64748b",
                   fontWeight: 500,
-                  bgcolor: "#fff",
+                  bgcolor:theme.palette.mode === "dark" ? "#424242" : "#f1f5f9",
                   fontSize: "0.875rem",
                 }}
               >
@@ -263,9 +263,9 @@ export default function ActiveProject() {
               </TableCell>
               <TableCell
                 sx={{
-                  color: "#64748b",
+                  color:theme.palette.mode === "dark" ? "#e0e0e0" : "#64748b",
                   fontWeight: 500,
-                  bgcolor: "#fff",
+                  bgcolor:theme.palette.mode === "dark" ? "#424242" : "#f1f5f9",
                   fontSize: "0.875rem",
                 }}
               >
@@ -273,9 +273,9 @@ export default function ActiveProject() {
               </TableCell>
               <TableCell
                 sx={{
-                  color: "#64748b",
+                  color:theme.palette.mode === "dark" ? "#e0e0e0" : "#64748b",
                   fontWeight: 500,
-                  bgcolor: "#fff",
+                  bgcolor:theme.palette.mode === "dark" ? "#424242" : "#f1f5f9",
                   fontSize: "0.875rem",
                 }}
               >
@@ -283,9 +283,9 @@ export default function ActiveProject() {
               </TableCell>
               <TableCell
                 sx={{
-                  color: "#64748b",
+                  color:theme.palette.mode === "dark" ? "#e0e0e0" : "#64748b",
                   fontWeight: 500,
-                  bgcolor: "#fff",
+                  bgcolor:theme.palette.mode === "dark" ? "#424242" : "#f1f5f9",
                   fontSize: "0.875rem",
                 }}
               >
@@ -299,7 +299,7 @@ export default function ActiveProject() {
                 key={project.projectId}
                 sx={{
                   "&:last-child td": { border: 0 },
-                  "&:hover": { bgcolor: "#f8fafc" },
+                  "&:hover": { bgcolor: theme.palette.action.hover },
                 }}
               >
                 <TableCell sx={{ fontSize: "0.875rem", width: "30%" }}>

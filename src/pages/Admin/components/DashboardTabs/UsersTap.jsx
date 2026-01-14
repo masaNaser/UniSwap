@@ -25,7 +25,9 @@ import { GetUsers } from "../../../../services/adminService";
 import { formatDate } from "../../../../utils/timeHelper";
 import { getImageUrl } from "../../../../utils/imageHelper";
 import { getToken } from "../../../../utils/authHelpers";
+ import { useTheme } from "@mui/material/styles";
 export default function UsersTap() {
+  const theme = useTheme();
   // const token = localStorage.getItem("accessToken");
   const token = getToken();
   const [loading, setLoading] = useState(false);
@@ -151,7 +153,7 @@ export default function UsersTap() {
         <Box sx={{ width: "100%", overflowX: "auto" }}>
           <TableContainer>
             <Table>
-              <TableHead sx={{ bgcolor: "#f5f5f5" }}>
+              <TableHead sx={{ bgcolor: theme.palette.mode === "dark" ? "#424242" : "#f1f5f9" }}>
                 <TableRow>
                   <TableCell sx={{ fontSize: "17px" }}>User</TableCell>
                   <TableCell sx={{ fontSize: "17px" }}>Email</TableCell>

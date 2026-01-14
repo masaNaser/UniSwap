@@ -31,17 +31,14 @@ export default function ProfileHeader() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const handleProfileUpdated = async () => {
-    console.log("🔄 Refreshing profile data...");
 
     // انتظر قليلاً للسماح للسيرفر بمعالجة الصور
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const updatedData = await fetchUserData();
-    console.log("✅ Profile refreshed with new data:", updatedData);
 
     // ⬇️ إذا كان هذا بروفايلي، حدّث CurrentUser كمان
     if (isMyProfile) {
-      console.log("🔄 Syncing CurrentUser context...");
       setCurrentUser(updatedData);
     }
 

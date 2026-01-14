@@ -24,7 +24,10 @@ import AnalyticsTap from "./components/DashboardTabs/Analytics/AnalyticsTap";
 import { logout } from "../../services/authService";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getUserName } from "../../utils/authHelpers";
+ import { useTheme } from "@mui/material/styles";
+
 const AdminDashboard = () => {
+  const theme = useTheme();
   const userName = getUserName();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -59,7 +62,10 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f8fafc" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor:
+                    theme.palette.mode === "dark"
+                      ? "#323232ff"
+                      : "rgba(248, 250, 252, 1)", }}>
       
       {/* SIDEBAR */}
       <Paper
@@ -67,13 +73,21 @@ const AdminDashboard = () => {
         sx={{
           width: isMobile ? 80 : 230,
           bgcolor: "white",
-          borderRight: "1px solid #e2e8f0",
+          borderRight: "1px solid ",
+          borderRightColor:
+                    theme.palette.mode === "dark"
+                      ? "#424242"
+                      : "#e2e8f0",
           display: "flex",
           flexDirection: "column",
           position: "fixed",
           height: "100vh",
           transition: "width 0.3s ease",
           zIndex: 1200,
+          bgcolor:
+                    theme.palette.mode === "dark"
+                      ? "#323232ff"
+                      : "rgba(248, 250, 252, 1)",
         }}
       >
         {/* LOGO SECTION */}
@@ -116,7 +130,10 @@ const AdminDashboard = () => {
                 borderRadius: 2,
                 mb: 1,
                 color: "#64748b",
-                "&.Mui-selected": { bgcolor: "#f0f9ff", color: "#0284c7", fontWeight: "bold" },
+                "&.Mui-selected": { bgcolor:
+                    theme.palette.mode === "dark"
+                      ? "#323232ff"
+                      : "#f0f9ff", color: "#0284c7", fontWeight: "bold" },
                 "& .MuiSvgIcon-root": { marginRight: isMobile ? 0 : "12px !important", fontSize: 24 }
               }}
             />
@@ -151,7 +168,7 @@ const AdminDashboard = () => {
          width: isMobile ? "calc(100% - 80px)" : `calc(100% - 260px)`,
          transition: "margin 0.3s ease" }}>
         <Box mb={4}>
-          <Typography variant="h4" fontWeight="bold" sx={{ color: "#1e293b" }}>Admin Dashboard</Typography>
+          <Typography variant="h4" fontWeight="bold" sx={{ color: theme.palette.mode === "dark" ? "#f0f9ff" : "#1e293b" }}>Admin Dashboard</Typography>
           <Typography variant="body1" color="text.secondary">Welcome back, {userName}</Typography>
         </Box>
 

@@ -23,6 +23,7 @@ import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOu
 import ActiveProject from "./ActiveProject";
 import { getToken } from "../../../../../utils/authHelpers";
 import TaskProgress from "./TaskProgress";
+import { useTheme } from "@mui/material/styles";
 const CustomLegend = ({ payload }) => {
   return (
     <Box
@@ -36,10 +37,7 @@ const CustomLegend = ({ payload }) => {
       }}
     >
       {payload?.map((entry, index) => (
-        <Box
-          key={index}
-          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-        >
+        <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Box
             sx={{
               width: 10,
@@ -68,30 +66,31 @@ const CustomLegend = ({ payload }) => {
 };
 
 export default function AnalyticsTap() {
+  const theme = useTheme();
   // const token = localStorage.getItem("accessToken");
   const token = getToken();
   const [analytics, setAnalytics] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
- const fetchData = async () => {
-  setLoading(true);
-  try {
-    const analyticsRes = await Analytics(token);
-    console.log("Analytics:", analyticsRes.data);
-    setAnalytics(analyticsRes.data); // ✅ احفظ الداتا!
-    
-    const statsRes = await GetDashboard(token);
-    console.log("Stats:", statsRes.data);
-    setStats(statsRes.data); // ✅ احفظ الداتا!
-  } catch(err) {
-    console.error(err.response || err);
-    setError("فشل تحميل البيانات");
-  } finally {
-    setLoading(false);
-  }
-};
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const analyticsRes = await Analytics(token);
+      console.log("Analytics:", analyticsRes.data);
+      setAnalytics(analyticsRes.data); // ✅ احفظ الداتا!
+
+      const statsRes = await GetDashboard(token);
+      console.log("Stats:", statsRes.data);
+      setStats(statsRes.data); // ✅ احفظ الداتا!
+    } catch (err) {
+      console.error(err.response || err);
+      setError("فشل تحميل البيانات");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -120,39 +119,45 @@ export default function AnalyticsTap() {
   const majorData = Object.entries(analytics.usersByMajor || {}).map(
     ([name, value]) => ({ name, value })
   );
- const academicData = (() => {
-const yearMapping = {
-  "Firstyear": "First Year",  // تم تغيير Y إلى y لتطابق الباك
-  "Secondyear": "Second Year", 
-  "Thirdyear": "Third Year",
-  "Fourthyear": "Fourth Year",
-  "another": "Other",
-  // للتوافق مع أي أسماء ثانية
-  "0": "First Year",
-  "1": "Second Year",
-  "2": "Third Year",
-  "3": "Fourth Year",
-  "4": "Other"
-};
+  const academicData = (() => {
+    const yearMapping = {
+      Firstyear: "First Year", // تم تغيير Y إلى y لتطابق الباك
+      Secondyear: "Second Year",
+      Thirdyear: "Third Year",
+      Fourthyear: "Fourth Year",
+      another: "Other",
+      // للتوافق مع أي أسماء ثانية
+      0: "First Year",
+      1: "Second Year",
+      2: "Third Year",
+      3: "Fourth Year",
+      4: "Other",
+    };
 
-  const order = ["First Year", "Second Year", "Third Year", "Fourth Year", "Other"];
+    const order = [
+      "First Year",
+      "Second Year",
+      "Third Year",
+      "Fourth Year",
+      "Other",
+    ];
 
-  return Object.entries(analytics.usersByAcademicYear || {})
-    .map(([year, count]) => ({
-      year: yearMapping[year] || year,
-      count
-    }))
-    .sort((a, b) => {
-      const indexA = order.indexOf(a.year);
-      const indexB = order.indexOf(b.year);
-      
-      // إذا ما لقينا السنة بالـ order، نحطها بالآخر
-      if (indexA === -1) return 1;
-      if (indexB === -1) return -1;
-      
-      return indexA - indexB;
-    });
-})();
+    return Object.entries(analytics.usersByAcademicYear || {})
+      .map(([year, count]) => ({
+        year: yearMapping[year] || year,
+        count,
+      }))
+      .sort((a, b) => {
+        const indexA = order.indexOf(a.year);
+        const indexB = order.indexOf(b.year);
+
+        // إذا ما لقينا السنة بالـ order، نحطها بالآخر
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+
+        return indexA - indexB;
+      });
+  })();
   // لوحة ألوان واسعة جداً لتغطية أي عدد من التخصصات
   const COLORS = [
     "#4e79a7",
@@ -204,55 +209,61 @@ const yearMapping = {
             title="Total Users"
             value={stats.totalUsers}
             icon={<PeopleIcon />}
-            iconBgColor="#e0f2fe"
+            iconBgColor={
+              theme.palette.mode === "dark" ? "#323232ff" : "#e0f2fe"
+            }
           />
           <SelectActionCard
             title="Active Services"
             value={stats.services}
             icon={<BusinessCenterIcon />}
-            iconBgColor="#dcfce7"
+            iconBgColor={
+              theme.palette.mode === "dark" ? "#323232ff" : "#d1fae1"
+            }
           />
           <SelectActionCard
             title="Total Points"
             value={stats.totalPointsAwarded}
             icon={<WorkspacePremiumOutlinedIcon />}
-            iconBgColor="#fef3c7"
+            iconBgColor={
+              theme.palette.mode === "dark" ? "#323232ff" : "#fef3c7"
+            }
           />
           <SelectActionCard
             title="Reports Pending"
             value={stats.pendingReports}
             icon={<WarningIcon />}
-            iconBgColor="#fee2e2"
+            iconBgColor={
+              theme.palette.mode === "dark" ? "#323232ff" : "#fee2e2"
+            }
           />
         </Box>
-<Box 
-  sx={{ 
-    mb: 3, 
-    display: 'grid',
-    gridTemplateColumns: {
-      xs: '1fr', 
-      md: '1fr', 
-      // تم تعديل النسبة هنا ليعطي الجدول مساحة أكبر والتقارير مساحة كافية
-      lg: 'minmax(0, 2.5fr) minmax(320px, 1fr)' 
-    },
-    gap: 3,
-    alignItems: 'start' // يضمن بقاء العناصر في الأعلى إذا اختلف الطول
-  }}
->
-  <ActiveProject />
-  <TaskProgress />
-</Box>
-  {/* <Box sx={{mb:3}}> <TaskProgress /></Box> */}
-   
+        <Box
+          sx={{
+            mb: 3,
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "1fr",
+              // تم تعديل النسبة هنا ليعطي الجدول مساحة أكبر والتقارير مساحة كافية
+              lg: "minmax(0, 2.5fr) minmax(320px, 1fr)",
+            },
+            gap: 3,
+            alignItems: "start", // يضمن بقاء العناصر في الأعلى إذا اختلف الطول
+          }}
+        >
+          <ActiveProject />
+          <TaskProgress />
+        </Box>
+        {/* <Box sx={{mb:3}}> <TaskProgress /></Box> */}
 
-         
         {/* Charts Row */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
           {/* Pie Chart - Major Distribution */}
           <Box
             sx={{
               flex: "1 1 450px",
-              bgcolor: "#fff",
+              bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
               p: 3,
               borderRadius: 3,
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
@@ -274,7 +285,7 @@ const yearMapping = {
                     outerRadius={80}
                     dataKey="value"
                     label={renderCustomLabel}
-                    sx={{mt:2}}
+                    sx={{ mt: 2 }}
                   >
                     {majorData.map((_, index) => (
                       <Cell
@@ -284,8 +295,7 @@ const yearMapping = {
                     ))}
                   </Pie>
                   <Tooltip />
-                <Legend content={<CustomLegend />} />
-
+                  <Legend content={<CustomLegend />} />
                 </PieChart>
               </ResponsiveContainer>
             </Box>
@@ -295,7 +305,7 @@ const yearMapping = {
           <Box
             sx={{
               flex: "1 1 450px",
-              bgcolor: "#fff",
+              bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
               p: 3,
               borderRadius: 3,
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
