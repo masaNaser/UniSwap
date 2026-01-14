@@ -39,7 +39,7 @@ const NotificationMenu = ({
 }) => {
   const navigate = useNavigate();
   const [notifAnchor, setNotifAnchor] = useState(null);
-  const theme = useTheme(); // 🔥 استخدام theme
+  const theme = useTheme();
 
   const handleNotifClick = (event) => {
     setNotifAnchor(event.currentTarget);
@@ -49,20 +49,21 @@ const NotificationMenu = ({
     setNotifAnchor(null);
   };
 
-  // 🔥 تحويل الوقت لـ timestamp للترتيب
+  //  تحويل الوقت لـ timestamp للترتيب
   const parseTimeAgo = (timeAgo) => {
     if (!timeAgo) return Date.now();
 
     const now = Date.now();
+    // مثال: "5 minutes ago"
     const match = timeAgo.match(
       /(\d+)\s*(second|minute|hour|day|week|month|year)s?\s*ago/i
     );
 
     if (!match) return now;
-
+    // استخراج القيمة والوحدة الزمنية
     const value = parseInt(match[1]);
     const unit = match[2].toLowerCase();
-
+    // تحويل الوحدة الزمنية إلى milliseconds
     const multipliers = {
       second: 1000,
       minute: 60 * 1000,
@@ -76,7 +77,7 @@ const NotificationMenu = ({
     return now - value * (multipliers[unit] || 0);
   };
 
-  // 🔥 ترتيب الإشعارات حسب الوقت (الأحدث أولاً)
+  //  ترتيب الإشعارات حسب الوقت (الأحدث أولاً)
   const sortedNotifications = [...notifications].sort((a, b) => {
     const timeA = parseTimeAgo(a.timeAgo);
     const timeB = parseTimeAgo(b.timeAgo);
@@ -90,7 +91,6 @@ const NotificationMenu = ({
     project: "Projects",
     requestProjectTasks: "Tasks",
     "Task Created": "Tasks",
-    courseTasks: "Course Tasks",
     reviews: "Reviews",
     reports: "Reports",
     System: "System",
@@ -135,17 +135,16 @@ const NotificationMenu = ({
     let targetRoute = "/app/feed";
 
     switch (notification.refType) {
-      // ✅ Posts
+      //  Posts
       case "Post":
       case "Liked":
       case "Comment":
       case "Commented":
       case "Shared":
-        // case "Mentioned":
         targetRoute = `/app/feed?postId=${notification.refId}`;
         break;
 
-      // ✅ Projects
+      //  Projects
       case "Project":
       case "Rating":
       case "Rated":
@@ -156,7 +155,7 @@ const NotificationMenu = ({
         const projectMessage = notification.message?.toLowerCase() || "";
         let isProvider = false;
 
-        // 🔍 Provider Messages (الشخص اللي عم يشتغل على المشروع)
+        //  Provider Messages (الشخص اللي عم يشتغل على المشروع)
         if (
           // Provider completed the project
           projectMessage.includes("has marked the project as complete")
@@ -171,14 +170,14 @@ const NotificationMenu = ({
           ) ||
           projectMessage.includes("project you are working on is now overdue")
         ) {
-          isProvider = true; // ✅ Provider Tab
+          isProvider = true;
         }
-        // 🔍 Client Messages (الشخص اللي طالب المشروع)
+        //  Client Messages (الشخص اللي طالب المشروع)
         else if (
           projectMessage.includes("please review the final work") ||
           projectMessage.includes("please choose to extend the deadline")
         ) {
-          isProvider = false; // ✅ Client Tab
+          isProvider = false; //  Client Tab
         }
         // Project general notifications
         else if (
@@ -186,20 +185,13 @@ const NotificationMenu = ({
           projectMessage.includes("deadline has been extended") ||
           projectMessage.includes("deadline is approaching")
         ) {
-          isProvider = false; // ✅ Client Tab (عادةً الـ client بيتلقى هاي الإشعارات)
+          isProvider = false;
         }
-        // 🔍 Default: إذا ما قدرنا نحدد، نستخدم logic
+        //  Default: إذا ما قدرنا نحدد، نستخدم logic
         else {
           // إذا في parentRefId، غالبًا Task notification
           isProvider = notification.parentRefId ? true : false;
         }
-
-        console.log("🚀 Project Navigation:", {
-          projectId: notification.refId,
-          isProvider,
-          message: notification.message,
-        });
-
         navigate("/app/project", {
           state: {
             requestId: notification.refId,
@@ -211,64 +203,27 @@ const NotificationMenu = ({
         return;
       }
 
-      // ✅ RequestProject Tasks - مع إرسال state
-
-      // ✅ RequestProject Tasks (Based on Backend Messages)
-
       case "RequestProject":
-
       case "Task":
-
       case "Updated":
         if (notification.parentRefId) {
           const taskMessage = notification.message?.toLowerCase() || "";
           let isProvider = false;
-          console.log("🔍 Analyzing task notification:", notification.message);
-
-          // ✅ PROVIDER Messages (Backend → Provider)
-
-          // 1. "accepted your submitted task ."
+          console.log(" Analyzing task notification:", notification.message);
 
           if (taskMessage.includes("accepted your submitted task")) {
             isProvider = true;
-
-            console.log("   ✅ Provider (task accepted)");
-          }
-
-          // 2. "rejected your submitted task ."
-          else if (taskMessage.includes("rejected your submitted task")) {
+          } else if (taskMessage.includes("rejected your submitted task")) {
             isProvider = true;
-
-            console.log("   ✅ Provider (task rejected)");
-          }
-
-          // 3. "Your task has been auto-accepted..."
-          else if (taskMessage.includes("your task has been auto-accepted")) {
+          } else if (taskMessage.includes("your task has been auto-accepted")) {
             isProvider = true;
-
-            console.log(" ✅ Provider (task auto-accepted)");
-          }
-
-          // ✅ CLIENT Messages (Backend → Client)
-
-          // 4. "submitted a task for your review"
-          else if (taskMessage.includes("submitted a task for your review")) {
+          } else if (taskMessage.includes("submitted a task for your review")) {
             isProvider = false;
-
-            console.log("✅ Client (review task)");
-          }
-
-          // 5. "created a new project task"
-          else if (taskMessage.includes("created a new project task")) {
+          } else if (taskMessage.includes("created a new project task")) {
             isProvider = false;
-
-            console.log("✅ Client (new task)");
           }
-
           // Default
           else {
-            console.warn("⚠️ Unknown task message");
-
             isProvider = false;
           }
 
@@ -276,57 +231,35 @@ const NotificationMenu = ({
             projectId: notification.parentRefId,
             isProvider,
           });
-
-          navigate(`/app/TrackTasks/${notification.parentRefId}`,
-            {
-              state: {
-                id: notification.parentRefId,
-                projectTitle: notification.message || "Project",
-                isProvider,
-              },
-            }
-          );
-
+          navigate(`/app/TrackTasks/${notification.parentRefId}`, {
+            state: {
+              id: notification.parentRefId,
+              projectTitle: notification.message || "Project",
+              isProvider,
+            },
+          });
           handleNotifClose();
-
           return;
         }
-
         targetRoute = "/app/project";
-
         break;
 
-      // ✅ Reviews
       case "Review": {
-        // const reviewMessage = notification.message?.toLowerCase() || "";
-
-        // Review notification بيكون على Published Project
-        // فلازم نروح على صفحة ProjectDetails
-        console.log("🔔 Review Notification:", {
-          projectId: notification.refId,
-          message: notification.message,
-        });
-
-        // ✅ التوجه لصفحة تفاصيل المشروع المنشور
+        //  التوجه لصفحة تفاصيل المشروع المنشور
         navigate(`/app/project/${notification.parentRefId}`);
         handleNotifClose();
         return;
       }
 
-      // ✅ Reports (للإدارة أو للمستخدم)
       case "Report":
         // إذا عندك صفحة reports للإدارة
         targetRoute = `/admin?tab=reports&reportId=${notification.refId}`;
         break;
 
-      // ✅ Collaboration
-      // ✅ في NotificationMenu.jsx
       case "Collaboration":
         const collaborationMessage = notification.message?.toLowerCase() || "";
-
         // ✅ تحليل صحيح
         let isProvider;
-
         if (collaborationMessage.includes("sent you")) {
           // "AyaMusamih sent you a collaboration request"
           // معناها: شخص بعتلك ريكوست → أنتِ Provider
@@ -340,40 +273,24 @@ const NotificationMenu = ({
           // معناها: رفضوا ريكوستك → أنتِ Client
           isProvider = false; // ✅ أنتِ Client
         } else {
-          // Default: ما بنعرف
           isProvider = false;
         }
-
-        console.log("🚀 Collaboration Navigation:", {
-          requestId: notification.refId,
-          isProvider, // ✅ true عشان أنتِ Provider
-          message: notification.message,
-        });
-
         navigate("/app/project", {
           state: {
             requestId: notification.refId,
-            isProvider, // ✅ true
+            isProvider,
             showRequests: true,
           },
         });
         handleNotifClose();
         return;
 
-      // ✅ Messages
-      // case "Message":
-      //   targetRoute = "/app/chat";
-      //   break;
-
-      // ✅ Users / Follow
       case "User":
       case "Followed":
         targetRoute = `/app/profile/${notification.refId}`;
         break;
 
-      // ✅ System Notifications (Points, etc.)
       case "System":
-        // ممكن تروح لصفحة profile أو dashboard
         targetRoute = "/app/profile";
         break;
 
@@ -494,7 +411,7 @@ const NotificationMenu = ({
     );
   };
 
-return (
+  return (
     <>
       <IconButton
         size="large"
@@ -542,7 +459,9 @@ return (
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <NotificationsNoneIcon sx={{ color: theme.palette.text.primary, fontSize: 22 }} />
+            <NotificationsNoneIcon
+              sx={{ color: theme.palette.text.primary, fontSize: 22 }}
+            />
             <Typography
               sx={{
                 fontWeight: 600,
@@ -576,8 +495,11 @@ return (
             onClick={handleNotifClose}
             sx={{
               color: theme.palette.text.secondary, // 🔥
-              "&:hover": { 
-                bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#F3F4F6" // 🔥
+              "&:hover": {
+                bgcolor:
+                  theme.palette.mode === "dark"
+                    ? "rgba(255,255,255,0.08)"
+                    : "#F3F4F6", // 🔥
               },
             }}
           >
@@ -613,7 +535,10 @@ return (
                 py: 0.5,
                 borderRadius: "8px",
                 "&:hover": {
-                  bgcolor: theme.palette.mode === "dark" ? "rgba(59, 130, 246, 0.15)" : "#EFF6FF", // 🔥
+                  bgcolor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(59, 130, 246, 0.15)"
+                      : "#EFF6FF", // 🔥
                 },
                 "&.Mui-disabled": {
                   color: theme.palette.text.disabled, // 🔥
@@ -640,7 +565,10 @@ return (
                   py: 0.5,
                   borderRadius: "8px",
                   "&:hover": {
-                    bgcolor: theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.15)" : "#FEF2F2", // 🔥
+                    bgcolor:
+                      theme.palette.mode === "dark"
+                        ? "rgba(239, 68, 68, 0.15)"
+                        : "#FEF2F2", // 🔥
                   },
                 }}
               >
@@ -652,38 +580,56 @@ return (
 
         {/* Empty State - 🔥 Dark Mode Support */}
         {notifications.length === 0 && (
-          <Box sx={{ p: 6, textAlign: "center", bgcolor: theme.palette.background.paper }}> {/* 🔥 */}
+          <Box
+            sx={{
+              p: 6,
+              textAlign: "center",
+              bgcolor: theme.palette.background.paper,
+            }}
+          >
+            {" "}
+            {/* 🔥 */}
             <Box
               sx={{
                 width: 80,
                 height: 80,
                 borderRadius: "50%",
-                bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "#F3F4F6", // 🔥
+                bgcolor:
+                  theme.palette.mode === "dark"
+                    ? "rgba(255,255,255,0.05)"
+                    : "#F3F4F6", // 🔥
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 margin: "0 auto 16px",
               }}
             >
-              <NotificationsNoneIcon sx={{ fontSize: 40, color: theme.palette.text.disabled }} /> {/* 🔥 */}
+              <NotificationsNoneIcon
+                sx={{ fontSize: 40, color: theme.palette.text.disabled }}
+              />{" "}
+              {/* 🔥 */}
             </Box>
             <Typography
               variant="h6"
-              sx={{ color: theme.palette.text.primary, fontWeight: 600, mb: 0.5 }} // 🔥
+              sx={{
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+                mb: 0.5,
+              }} // 🔥
             >
               No notifications yet!
             </Typography>
           </Box>
         )}
 
-        {/* Notifications List - 🔥 Dark Mode Support */}
+        {/* Notifications List -  Dark Mode Support */}
         {sortedNotifications.length > 0 && (
           <Box
-            sx={{ 
-              maxHeight: 400, 
-              overflowY: "auto", 
-              bgcolor: theme.palette.background.paper, // 🔥
-              p: 2 
+            sx={{
+              maxHeight: 400,
+              overflowY: "auto",
+              bgcolor: theme.palette.background.paper,
+              p: 2,
             }}
           >
             {sortedNotifications.map((notif, index) => {
@@ -692,7 +638,9 @@ return (
               const colors = groupColors[groupName] || groupColors.Other;
 
               const prevGroupName =
-                index > 0 ? sortedNotifications[index - 1].group || "Other" : null;
+                index > 0
+                  ? sortedNotifications[index - 1].group || "Other"
+                  : null;
               const showGroupBadge = groupName !== prevGroupName;
 
               return (
@@ -707,9 +655,12 @@ return (
                         gap: 1,
                       }}
                     >
-                      {React.cloneElement(groupIcons[groupName] || <CommentIcon />, {
-                        sx: { fontSize: 20, color: colors.text },
-                      })}
+                      {React.cloneElement(
+                        groupIcons[groupName] || <CommentIcon />,
+                        {
+                          sx: { fontSize: 20, color: colors.text },
+                        }
+                      )}
 
                       <Typography
                         sx={{
@@ -740,32 +691,33 @@ return (
                       mb: 1.5,
                       cursor: "pointer",
                       borderRadius: "16px",
-                      bgcolor: notif.isRead 
+                      bgcolor: notif.isRead
                         ? theme.palette.background.paper // 🔥
-                        : theme.palette.mode === "dark" 
-                          ? "rgba(59, 130, 246, 0.15)" // 🔥 Dark mode unread
-                          : "#F0F7FF", // Light mode unread
+                        : theme.palette.mode === "dark"
+                        ? "rgba(59, 130, 246, 0.15)" // 🔥 Dark mode unread
+                        : "#F0F7FF", // Light mode unread
                       border: `1px solid ${theme.palette.divider}`, // 🔥
                       transition: "0.2s ease",
                       boxShadow: notif.isRead
-                        ? theme.palette.mode === "dark" 
+                        ? theme.palette.mode === "dark"
                           ? "0 1px 3px rgba(0,0,0,0.3)" // 🔥
                           : "0 1px 3px rgba(0,0,0,0.05)"
                         : theme.palette.mode === "dark"
-                          ? "0 2px 6px rgba(59, 130, 246, 0.3)" // 🔥
-                          : "0 2px 6px rgba(63,131,248,0.15)",
+                        ? "0 2px 6px rgba(59, 130, 246, 0.3)" // 🔥
+                        : "0 2px 6px rgba(63,131,248,0.15)",
                       "&:hover": {
-                        boxShadow: theme.palette.mode === "dark" 
-                          ? "0 3px 8px rgba(0,0,0,0.4)" // 🔥
-                          : "0 3px 8px rgba(0,0,0,0.12)",
+                        boxShadow:
+                          theme.palette.mode === "dark"
+                            ? "0 3px 8px rgba(0,0,0,0.4)" // 🔥
+                            : "0 3px 8px rgba(0,0,0,0.12)",
                         transform: "translateY(-2px)",
-                        bgcolor: notif.isRead 
-                          ? theme.palette.mode === "dark" 
+                        bgcolor: notif.isRead
+                          ? theme.palette.mode === "dark"
                             ? "rgba(255,255,255,0.05)" // 🔥
                             : "#F9FAFB"
                           : theme.palette.mode === "dark"
-                            ? "rgba(59, 130, 246, 0.2)" // 🔥
-                            : "#E0EEFF",
+                          ? "rgba(59, 130, 246, 0.2)" // 🔥
+                          : "#E0EEFF",
                       },
                     }}
                   >
@@ -784,13 +736,13 @@ return (
                               width: 40,
                               height: 40,
                               borderRadius: "50%",
-                              bgcolor: notif.isRead 
-                                ? theme.palette.mode === "dark" 
+                              bgcolor: notif.isRead
+                                ? theme.palette.mode === "dark"
                                   ? "rgba(255,255,255,0.1)" // 🔥
                                   : "#F3F4F6"
                                 : theme.palette.mode === "dark"
-                                  ? "rgba(59, 130, 246, 0.2)" // 🔥
-                                  : "#DBEAFE",
+                                ? "rgba(59, 130, 246, 0.2)" // 🔥
+                                : "#DBEAFE",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",

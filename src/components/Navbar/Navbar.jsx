@@ -592,8 +592,7 @@ export default function PrimarySearchAppBar() {
     return currentPath === path;
   };
   useEffect(() => {
-    console.log("🔍 Navbar re-rendered with points:", currentUser?.totalPoints);
-  }, [currentUser?.totalPoints]); // ✅ هاد مهم - يعيد render لما النقاط تتغير
+  }, [currentUser?.totalPoints]); //  هاد مهم - يعيد render لما النقاط تتغير
 
   return (
     <>

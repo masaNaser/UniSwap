@@ -175,9 +175,9 @@ export default function ActiveProject() {
                   sx={{
                     height: 6,
                     borderRadius: 3,
-                    bgcolor: "#e2e8f0",
+                     bgcolor: "#e2e8f0",
                     "& .MuiLinearProgress-bar": {
-                      bgcolor: "#000",
+                      bgcolor: "#0284C7",
                       borderRadius: 3,
                     },
                   }}
@@ -326,7 +326,7 @@ export default function ActiveProject() {
                         borderRadius: 3,
                         bgcolor: "#e2e8f0",
                         "& .MuiLinearProgress-bar": {
-                          bgcolor: "#000",
+                          bgcolor: "#0284C7",
                           borderRadius: 3,
                         },
                       }}
@@ -335,16 +335,23 @@ export default function ActiveProject() {
                 </TableCell>
 
                 <TableCell  sx={{ width: "15%" }}>
-                  <Chip
-                    label={project.status}
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: "0.75rem",
-                      height: 24,
-                      ...getStatusStyle(project.status),
-                    }}
-                  />
+               <Chip
+  label={project.status}
+  size="small"
+  sx={{
+    fontWeight: 600,
+    fontSize: "0.75rem",
+    height: 24,
+
+    whiteSpace: "nowrap",
+    overflow: "visible",
+    textOverflow: "unset",
+    maxWidth: "none",
+
+    ...getStatusStyle(project.status),
+  }}
+/>
+
                 </TableCell>
 
                 <TableCell sx={{ fontSize: "0.875rem" , width: "17.5%" }}>

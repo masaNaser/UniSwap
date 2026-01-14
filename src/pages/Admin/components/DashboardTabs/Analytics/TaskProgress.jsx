@@ -8,10 +8,9 @@ import {
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // للأيقونات
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { taskProgress } from '../../../../../services/adminService';
 import { getToken } from '../../../../../utils/authHelpers';
-
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 export default function TaskProgress() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +21,7 @@ export default function TaskProgress() {
       try {
         const token = getToken();
         const response = await taskProgress(token);
+        console.log('Task Progress Response:', response);
         setData(response.data);
       } catch (err) {
         setError('Failed to load task progress');
@@ -50,18 +50,18 @@ export default function TaskProgress() {
       icon: <CheckCircleOutlineIcon sx={{ color: '#0891b2' }} />
     },
     { 
-      label: 'In-Progress', 
+      label: 'In Progress', 
       count: data.inProgress, 
       percentage: data.inProgressPercentage,
       color: '#86efac', // Green
       icon: <PlayCircleOutlineIcon sx={{ color: '#16a34a' }} />
     },
     { 
-      label: 'Up Coming', 
-      count: data.upComing, 
-      percentage: data.upComingPercentage,
+      label: 'In Review', 
+      count: data.inReview, 
+      percentage: data.inReviewPercentage,
       color: '#fed7aa', // Orange
-      icon: <ErrorOutlineIcon sx={{ color: '#ea580c', transform: 'rotate(180deg)' }} />
+    icon: <PauseCircleOutlineIcon sx={{ color: '#ea580c' }} />
     }
   ];
 

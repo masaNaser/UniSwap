@@ -1,27 +1,25 @@
-
-
-import React, { useState } from 'react';
-import Navbar from '../components/Navbar/Navbar';
-import { Outlet } from 'react-router-dom';
-import Footer from '../components/Footer/Footer';
+import React, { useState } from "react";
+import Navbar from "../components/Navbar/Navbar";
+import { Outlet } from "react-router-dom";
+import Footer from "../components/Footer/Footer";
 import { ProfileContext } from "../Context/ProfileContext";
 import { CurrentUserProvider } from "../Context/CurrentUserContext";
 import { GetFullProfile, GetProfileById } from "../services/profileService";
- import { useCurrentUser } from "../Context/CurrentUserContext";
-import { Box } from '@mui/material'; // ⬅️ استوردي Box
-import ScrollToTop from '../ScrollToTop';
-import { getToken,getUserId } from '../utils/authHelpers';
+import { useCurrentUser } from "../Context/CurrentUserContext";
+import { Box } from "@mui/material";
+import ScrollToTop from "../ScrollToTop";
+import { getToken, getUserId } from "../utils/authHelpers";
 export default function MainLayout() {
   const [userData, setUserData] = useState(null);
   const [isMyProfile, setIsMyProfile] = useState(false);
-  const { updateCurrentUser } = useCurrentUser(); // ✅ أضيفي هاي
+  const { updateCurrentUser } = useCurrentUser();
 
-  // ⬅️ دالة لجلب البيانات (هاي الأهم!)
+  //  دالة لجلب البيانات)
   const fetchUserData = async (userId) => {
     // const token = localStorage.getItem("accessToken");
     const token = getToken();
     const currentUserId = getUserId();
-    
+
     if (!token) {
       console.warn("No token found");
       return;
@@ -30,55 +28,50 @@ export default function MainLayout() {
     try {
       const mine = !userId || userId === currentUserId;
       setIsMyProfile(mine);
-      
+
       const res = mine
         ? await GetFullProfile(token)
         : await GetProfileById(token, userId);
-      
+
       setUserData(res.data);
-         if (mine) {
+      if (mine) {
         await updateCurrentUser();
       }
-          return res.data;   // ⬅⬅⬅ المهم هذا
-
+      return res.data;
     } catch (error) {
       console.error(" Error fetching profile:", error);
-          return null;
-
+      return null;
     }
   };
-
-
   return (
     <>
       <CurrentUserProvider>
-        <ProfileContext.Provider value={{ 
-          userData, 
-          setUserData, 
-          isMyProfile, 
-          setIsMyProfile,
-          fetchUserData,
-          // refreshProfile
-        }}>
-          {/* ⬇️⬇️⬇️ الحل هون ⬇️⬇️⬇️ */}
-        <Box
-          sx={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
+        <ProfileContext.Provider
+          value={{
+            userData,
+            setUserData,
+            isMyProfile,
+            setIsMyProfile,
+            fetchUserData,
+            // refreshProfile
           }}
         >
-          <ScrollToTop/>
-          <Navbar />
-          {/* Main Content */}
-          <Box sx={{ flex: 1 }}>
-            <Outlet />
+          <Box
+            sx={{
+              minHeight: "100vh",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <ScrollToTop />
+            <Navbar />
+            <Box sx={{ flex: 1 }}>
+              <Outlet />
+            </Box>
+
+            <Footer />
           </Box>
-
-          <Footer />
-        </Box>      
-         </ProfileContext.Provider>
-
+        </ProfileContext.Provider>
       </CurrentUserProvider>
     </>
   );

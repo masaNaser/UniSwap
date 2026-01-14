@@ -55,7 +55,7 @@ export default function Register() {
     userName: yup
       .string()
        .required("User Name is required")
-      .min(5, "User Name must be at least 5 characters"),
+      .min(4, "User Name must be at least 4 characters"),
 
     email: yup
       .string()

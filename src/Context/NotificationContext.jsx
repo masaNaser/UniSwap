@@ -1,27 +1,31 @@
-
-// استخدمت useRef 
+// استخدمت useRef
 // لتخزين القيم التي أحتاجها برمجياً خلف الكواليس
 //  ولكن لا أريد أن يتسبب تغييرها في إعادة رندرة المكون.
 //  مثلاً في connectionRef احتفظت بمرجع لاتصال الـ SignalR
-//  لأتمكن من إغلاقه عند الـ 
+//  لأتمكن من إغلاقه عند الـ
 // Unmount،
 // وفي hasLoadedRef
-//  استخدمته كـ 
-// Flag 
+//  استخدمته كـ
+// Flag
 // لمنع تكرار طلبات
-//  الـ 
-// API 
+//  الـ
+// API
 // غير الضرورية."
 
-
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import {
   createNotificationHub,
   getAllNotifications,
   getUnreadCount,
   markAsRead,
   markAllAsRead,
-  deleteAll
+  deleteAll,
 } from "../services/notificationService";
 import { getToken } from "../utils/authHelpers";
 import { useCurrentUser } from "./CurrentUserContext";
@@ -33,13 +37,20 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadNotificationCount, setunreadNotificationCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  // . تخزين اتصال الـ SignalR (connectionRef)
-// الهدف: 
-// الحفاظ على نفس الاتصال (Instance) مفتوحاً.
+  //  تخزين اتصال الـ
+  // SignalR (connectionRef)
+  /**
+   * اتصال
+   * SignalR
+   * واحد فقط — وليس أكثر
+   *
+   */
   const connectionRef = useRef(null);
-  // مفتاح أمان لمنع التكرار (hasLoadedRef)
-// الهدف: 
-// التأكد من أن جلب البيانات من الـ API يتم مرة واحدة فقط
+  // الهدف:
+  // التأكد من أن جلب البيانات من
+  //  الـ
+  // API
+  //  يتم مرة واحدة فقط
   const hasLoadedRef = useRef(false);
 
   // ✅ استخدم state بدل مباشرة من localStorage
@@ -49,41 +60,39 @@ export const NotificationProvider = ({ children }) => {
   // وظيفتها الأساسية هي إحضار الإشعارات من السيرفر وترتيبها بحيث يفهمها المتصفح.
   const loadInitialData = async () => {
     if (!token || hasLoadedRef.current) return;
-
     try {
-      // console.log("🔄 Loading notifications...");
       setLoading(true);
-
       const startTime = Date.now();
-// Promise.all: 
-//  بدلاً من جلب الإشعارات ثم الانتظار ثم جلب العدد،
-//  نقوم بطلب الاثنين معاً في نفس اللحظة.
-//  هذا يقلل وقت الانتظار للنصف تقريباً.
-      const [notifRes, countRes] = await Promise.all([
+      // Promise.all:
+      //  بدلاً من جلب الإشعارات ثم الانتظار ثم جلب العدد،
+      //  نقوم بطلب الاثنين معاً في نفس اللحظة.
+      //  هذا يقلل وقت الانتظار للنصف تقريباً.
+      const [getAllNotificationsRes, countRes] = await Promise.all([
         getAllNotifications(token),
         getUnreadCount(token),
       ]);
+      console.log(` getAllNotificationsRes : `, getAllNotificationsRes);
       const endTime = Date.now();
-    // عملنا وهيك واستخدمنا موضوع الجروب لانه الباك اصلا برجع الاشعارات مصنفات ك جروب
-    // (flatMap): تقوم هذه الدالة بفتح هذه المجموعات ودمج كل العناصر 
-    // الموجودة بداخلها في مصفوفة واحدة "مسطحة"
-    //  (Flat Array).
+      // عملنا وهيك واستخدمنا موضوع الجروب لانه الباك اصلا برجع الاشعارات مصنفات ك جروب
+      // (flatMap): تقوم هذه الدالة بفتح هذه المجموعات ودمج كل العناصر
+      // الموجودة بداخلها في مصفوفة واحدة "مسطحة"
+      //  (Flat Array).
       let flatNotifications = [];
-      if (Array.isArray(notifRes.data)) {
-        flatNotifications = notifRes.data.flatMap(group =>
+      if (Array.isArray(getAllNotificationsRes.data)) {
+        flatNotifications = getAllNotificationsRes.data.flatMap((group) =>
+          // بنفحص اذا كان في ايتم داخل الجروب الواحد
+          // يعني بنوخد الايتم الخاص بكل جروب ( الايتم هو الاشعار نفسه كل معلوماته)
           Array.isArray(group.items) ? group.items : []
         );
       }
-
       setNotifications(flatNotifications);
       setunreadNotificationCount(countRes.data);
       hasLoadedRef.current = true;
-
     } catch (error) {
       console.error("❌ Error Details:", {
         message: error.message,
         response: error.response?.data,
-        status: error.response?.status
+        status: error.response?.status,
       });
     } finally {
       setLoading(false);
@@ -91,19 +100,25 @@ export const NotificationProvider = ({ children }) => {
   };
 
   // هذا الجزء من الكود يمثل "نظام المراقبة والأمان
-  //  وظيفته الأساسية هي التأكد من أن الإشعارات المعروضة تخص المستخدم الحالي فقط، 
-  // وتحديثها فوراً إذا تغير المستخدم (تسجيل دخول أو خروج) دون الحاجة لتحديث الصفحة يدوياً. 
+  //  وظيفته الأساسية هي التأكد من أن الإشعارات المعروضة تخص المستخدم الحالي فقط،
+  // وتحديثها فوراً إذا تغير المستخدم (تسجيل دخول أو خروج) دون الحاجة لتحديث الصفحة يدوياً.
   useEffect(() => {
     const handleStorageChange = () => {
       const newToken = getToken();
       setToken(newToken);
-      hasLoadedRef.current = false; //  اسمح بتحميل جديد
+      hasLoadedRef.current = false;
     };
 
-    // راقب التغييرات من نفس الـ tab
+    /*عندك تبويب متصفح مفتوح.
+المستخدم سجل دخول في تبويب آخر.
+هذا الحدث 
+(storage) يكتشف التغيير في التوكن 
+ويستدعي 
+handleStorageChange.
+النتيجة: تبويبنا يعرف أن المستخدم تغير وتظهر إشعاراته الجديدة 
+*/
     window.addEventListener("storage", handleStorageChange);
 
-    // راقب التغييرات من نفس الـ window (login/logout)
     const intervalId = setInterval(() => {
       // const currentToken = localStorage.getItem("accessToken");
       const currentToken = getToken();
@@ -118,7 +133,6 @@ export const NotificationProvider = ({ children }) => {
     };
   }, [token]);
 
-  // ✅ جلب البيانات فوراً عند Mount أو تغيير Token
   useEffect(() => {
     if (!token) {
       setLoading(false);
@@ -126,20 +140,14 @@ export const NotificationProvider = ({ children }) => {
       setunreadNotificationCount(0);
       return;
     }
-
-    // console.log("🚀 NotificationProvider Mounted");
-
     // جلب البيانات فوراً
     loadInitialData();
-
     // ثم اتصال SignalR
     const startConnection = async () => {
       try {
         const connection = createNotificationHub(token);
         connectionRef.current = connection;
-
         connection.on("ReceiveNotification", async (notification) => {
-
           try {
             // إعادة جلب كل الإشعارات
             hasLoadedRef.current = false;
@@ -150,9 +158,9 @@ export const NotificationProvider = ({ children }) => {
               "Collaboration",
               "Review",
               "Rating",
-              "System"
+              "System",
             ];
-
+            // تحقق إذا كان الإشعار متعلق بالنقاط
             const isPointsRelated =
               pointsRelatedTypes.includes(notification.refType) ||
               notification.message?.toLowerCase().includes("point") ||
@@ -173,7 +181,6 @@ export const NotificationProvider = ({ children }) => {
 
         await connection.start();
         console.log("✅ SignalR Connected Successfully");
-
       } catch (error) {
         console.error("❌ SignalR Connection Failed:", error);
       }
@@ -225,7 +232,7 @@ export const NotificationProvider = ({ children }) => {
       value={{
         notifications,
         unreadNotificationCount,
-        loading, // ✅ شاركه مع الـ components
+        loading,
         markAsRead: handleMarkAsRead,
         markAllAsRead: handleMarkAllAsRead,
         clearAll: deleteAllNotification,
