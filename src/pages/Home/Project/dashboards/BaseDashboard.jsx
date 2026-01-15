@@ -111,6 +111,9 @@ export default function BaseDashboard({
             const response = await getPendingRequests(token, userRole);
             const requests = response.data || [];
 
+            console.log('Client Requests Response:', response);
+        console.log('Client Requests Data:', requests);
+
             const updatedRequests = requests.map((req) => ({
                 ...req,
                 [imageKey]: req[imageKey] || null,
