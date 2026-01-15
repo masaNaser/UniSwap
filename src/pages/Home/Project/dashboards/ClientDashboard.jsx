@@ -12,7 +12,7 @@ export default function ClientDashboard({
     isProvider: false,
     storageKey: "clientShowRequests",
     userRole: "Client",
-    imageKey: "providerImage",
+    imageKey: "providerPicture",
     nameKey: "providerName",
     headerProps: {
       title: "Services I'm Requesting",
