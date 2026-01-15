@@ -1,3 +1,5 @@
+// المواد
+
 import React, { useEffect, useState } from "react";
 import {
   Container,
@@ -118,7 +120,6 @@ const ParentSubServices = () => {
     }
   };
 
-  //  دالة الحذف المحدثة بنفس المنطق اللي طلبتيه
   const handleConfirmDelete = async () => {
     if (!selectedSubject) return;
     setIsSubmitting(true);
@@ -298,9 +299,9 @@ const ParentSubServices = () => {
           >
             Cancel
           </Button>
-          <Button
+          {/* <Button
             onClick={handleConfirmDelete}
-            disabled={isSubmitting}
+            // disabled={isSubmitting}
             variant="contained"
             sx={{
               bgcolor: "#EF4444",
@@ -309,8 +310,19 @@ const ParentSubServices = () => {
             }}
           >
             {isSubmitting ? "Deleting..." : "Yes, delete it!"}
-          </Button>
+          </Button> */}
         </DialogActions>
+        <Button
+          onClick={handleConfirmDelete}
+          variant="contained"
+          sx={{
+            bgcolor: "#EF4444",
+            textTransform: "none",
+            "&:hover": { bgcolor: "#DC2626" },
+          }}
+        >
+          Yes, delete it!
+        </Button>
       </Dialog>
 
       {/* ✅ إضافة الـ Snackbar في نهاية الـ Container ليعرض الرسائل */}
@@ -322,8 +334,8 @@ const ParentSubServices = () => {
       >
         <Alert
           onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", bgcolor: "#3b82f6" }}
+          variant="filled"
         >
           {snackbar.message}
         </Alert>

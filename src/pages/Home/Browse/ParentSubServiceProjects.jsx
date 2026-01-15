@@ -1,5 +1,5 @@
 // src/pages/Home/Browse/ParentSubServiceProjects.jsx
-
+// التلخيص
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import {
@@ -387,7 +387,6 @@ const ParentSubServiceProjects = () => {
   };
 
   const handleSuccess = async () => {
-    console.log("📚 Study project published successfully!");
 
     // Refresh the projects list
     fetchProjects(page);
@@ -395,11 +394,9 @@ const ParentSubServiceProjects = () => {
     // Force update user points after publishing
     // Wait 1 seconds for backend to award the points
     setTimeout(async () => {
-      console.log("🔄 Updating user points after study project publish...");
 
       if (updateCurrentUser) {
         await updateCurrentUser();
-        console.log("✅ User points updated!");
       }
     }, 1000);
   };

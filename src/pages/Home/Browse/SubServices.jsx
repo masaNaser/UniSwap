@@ -4,7 +4,7 @@ import { Container, Grid, Typography, Box, Breadcrumbs, TextField, CircularProgr
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions, Button} from "@mui/material";
+  DialogActions, Button,Snackbar,Alert } from "@mui/material";
 import { Link, useParams, useLocation } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -127,7 +127,8 @@ const SubServices = () => {
       console.error(error);
       setOpenDeleteModal(false);
       setSelectedSub(null);
-      showSnackbar("Cannot delete service: please remove its sub-services first", "error");
+      const errorMessage = error.response?.data?.detail || "Something went wrong on the server";
+      showSnackbar(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -337,6 +338,20 @@ const SubServices = () => {
                 </Button>
               </DialogActions>
             </Dialog>
+            <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={4000} 
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+        onClose={handleSnackbarClose} 
+        severity={snackbar.severity}
+        variant="filled" 
+        sx={{ width: '100%', bgcolor: "#3b82f6" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

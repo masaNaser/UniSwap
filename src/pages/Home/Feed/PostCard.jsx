@@ -33,7 +33,7 @@ import { useTheme } from "@mui/material/styles";
 import { getUserName } from "../../../utils/authHelpers";
 import { renderContentWithLinks } from "../../../utils/textHelper";
 
-// ✅ FileDisplay Component - لعرض جميع أنواع الملفات
+//  FileDisplay Component - لعرض جميع أنواع الملفات
 const FileDisplay = ({ fileUrl }) => {
   if (!fileUrl || fileUrl === null || fileUrl === "") return null;
 
@@ -238,7 +238,7 @@ function PostCard({
   currentUserAvatar,
   onShowLikes,
 }) {
-  const theme = useTheme(); // 🔥 ضيفي هاد السطر
+  const theme = useTheme();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [recentComments, setRecentComments] = useState(
@@ -368,7 +368,6 @@ function PostCard({
             sx={{
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
-              /* ✅ الحل الجذري لمشكلة العربي والإنجليزي المختلط */
               unicodeBidi: "plaintext",
               textAlign: "initial",
               display: "block",

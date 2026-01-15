@@ -51,29 +51,29 @@ const ProjectCard = ({ project, onEditClick, adminMode, onDeleteClick }) => {
       }}
     >
       {/*  Menu للتعديل والحذف */}
-   {/* أيقونة التعديل مباشرة بدلاً من القائمة */}
-{canEdit && (
-  <IconButton
-    onClick={() => onEditClick(project)}
-    sx={{
-      position: "absolute",
-      top: 8,
-      right: 8,
-      bgcolor: "rgba(255, 255, 255, 0.9)",
-      zIndex: 10,
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-      "&:hover": {
-        bgcolor: "white",
-        transform: "scale(1.1)",
-        color: "#3B82F6", // تغيير لون القلم عند التحويم
-      },
-      transition: "all 0.2s",
-    }}
-    size="small"
-  >
-    <EditIcon sx={{ fontSize: 18, color: "#3B82F6" }} />
-  </IconButton>
-)}
+      {/* أيقونة التعديل مباشرة بدلاً من القائمة */}
+      {canEdit && (
+        <IconButton
+          onClick={() => onEditClick(project)}
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            bgcolor: "rgba(255, 255, 255, 0.9)",
+            zIndex: 10,
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+            "&:hover": {
+              bgcolor: "white",
+              transform: "scale(1.1)",
+              color: "#3B82F6", // تغيير لون القلم عند التحويم
+            },
+            transition: "all 0.2s",
+          }}
+          size="small"
+        >
+          <EditIcon sx={{ fontSize: 18, color: "#3B82F6" }} />
+        </IconButton>
+      )}
 
       <Box sx={{ position: "relative" }}>
         <CardMedia
@@ -381,15 +381,15 @@ export default function SubServiceProjects() {
     return mapping[rating];
   };
 
-   const fetchServiceProject = async (currentPage = 1) => {
+  const fetchServiceProject = async (currentPage = 1) => {
     try {
       setLoading(true);
       setError(null);
-    const queryParams = new URLSearchParams({
-      Page: "1",
-      // نطلب 5 عناصر بدلاً من 4 للتأكد من وجود صفحة تالية
-      PageSize: "100", 
-    });
+      const queryParams = new URLSearchParams({
+        Page: "1",
+        // نطلب 5 عناصر بدلاً من 4 للتأكد من وجود صفحة تالية
+        PageSize: "100",
+      });
 
       // Add search if present (use debouncedSearch)
       if (debouncedSearch.trim()) {
@@ -414,33 +414,33 @@ export default function SubServiceProjects() {
         queryParams.append("RatingFilter", ratingParam);
       }
 
-    const response = await api.get(
-      `/PublishProjects/browse/${id}?${queryParams.toString()}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-  console.log("prject browse",response);
-if (Array.isArray(response.data)) {
-      const allProjects = response.data;
-      const totalItems = allProjects.length; // هون رح يكون 7
+      const response = await api.get(
+        `/PublishProjects/browse/${id}?${queryParams.toString()}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("prject browse", response);
+      if (Array.isArray(response.data)) {
+        const allProjects = response.data;
+        const totalItems = allProjects.length; // هون رح يكون 7
 
-      // حساب كم صفحة محتاجين بناءً على الـ 6 اللي بدك اياهم
-      const totalPagesCount = Math.ceil(totalItems / pageSize); 
-      setTotalPages(totalPagesCount);
-      setTotalCount(totalItems);
+        // حساب كم صفحة محتاجين بناءً على الـ 6 اللي بدك اياهم
+        const totalPagesCount = Math.ceil(totalItems / pageSize);
+        setTotalPages(totalPagesCount);
+        setTotalCount(totalItems);
 
-      // --- السر هون: استخراج الـ 6 مشاريع الخاصة بالصفحة الحالية فقط ---
-      const startIndex = (currentPage - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const projectsForThisPage = allProjects.slice(startIndex, endIndex);
+        // --- السر هون: استخراج الـ 6 مشاريع الخاصة بالصفحة الحالية فقط ---
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const projectsForThisPage = allProjects.slice(startIndex, endIndex);
 
-      setProjects(projectsForThisPage);
+        setProjects(projectsForThisPage);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // // Fetch when filters change (reset to page 1) - use debouncedSearch instead of searchQuery
   // useEffect(() => {
@@ -457,16 +457,16 @@ if (Array.isArray(response.data)) {
   //   }
   // }, [page]);
   useEffect(() => {
-  if (id) {
-    fetchServiceProject(page);
-  }
-}, [id, debouncedSearch, selectedSort, selectedPrice, selectedRating, page]);
+    if (id) {
+      fetchServiceProject(page);
+    }
+  }, [id, debouncedSearch, selectedSort, selectedPrice, selectedRating, page]);
 
-// عند تغيير الفلاتر، فقط قم بتغيير رقم الصفحة لـ 1، والـ useEffect أعلاه سيتكفل بالباقي
-const handleSortSelect = (value) => {
-  setSelectedSort(value);
-  // setPage(1); 
-};
+  // عند تغيير الفلاتر، فقط قم بتغيير رقم الصفحة لـ 1، والـ useEffect أعلاه سيتكفل بالباقي
+  const handleSortSelect = (value) => {
+    setSelectedSort(value);
+    // setPage(1);
+  };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value); // Update local state immediately
@@ -498,58 +498,39 @@ const handleSortSelect = (value) => {
     fetchServiceProject(page);
   };
 
-   const filterItems = [
-
+  const filterItems = [
     {
-
       type: "menu",
 
       label: selectedSort,
 
       items: [
-
         { label: "Highest Rated", value: "Highest Rated" },
 
         { label: "Price: Low to High", value: "Price: Low to High" },
 
         { label: "Price: High to Low", value: "Price: High to Low" },
-
       ],
 
       onSelect: handleSortSelect,
-
     },
-
     {
-
       type: "menu",
-
       label: selectedPrice,
-
       items: [
-
         { label: "All Prices", value: "All Prices" },
-
         { label: "Under 50 pts", value: "Under 50 pts" },
-
         { label: "50-100 pts", value: "50-100 pts" },
-
         { label: "Over 100 pts", value: "Over 100 pts" },
-
       ],
-
       onSelect: handlePriceSelect,
-
     },
-
     {
-
       type: "menu",
 
       label: selectedRating,
 
       items: [
-
         { label: "All Ratings", value: "All Ratings" },
 
         { label: "High", value: "High" },
@@ -557,13 +538,10 @@ const handleSortSelect = (value) => {
         { label: "Average", value: "Average" },
 
         { label: "Low", value: "Low" },
-
       ],
 
       onSelect: handleRatingSelect,
-
     },
-
   ];
 
   // if (loading) {
@@ -653,11 +631,6 @@ const handleSortSelect = (value) => {
         onSearchChange={handleSearchChange}
         items={filterItems}
       />
-
-      {/* الحاوية المشتركة للـ Skeleton والكروت الحقيقية */}
-
-      {/* الحاوية باستخدام نظام الـ Grid اللي ضبط معك في الصفحة الثانية */}
-
       <Box
         sx={{
           display: "grid",
