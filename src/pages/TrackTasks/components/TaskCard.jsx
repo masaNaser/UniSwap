@@ -1,5 +1,3 @@
-
-
 import React from "react";
 import {
   Card,
@@ -20,7 +18,6 @@ import { formatDateTime } from "../../../utils/timeHelper";
 import { renderContentWithLinks } from "../../../utils/textHelper";
 import { useTheme } from "@mui/material/styles";
 
-// ✅ استيراد الـ BASE_URL من environment
 const FILE_BASE_URL = import.meta.env.VITE_FILE_BASE_URL || "https://uni1swap.runasp.net";
 
 export default function TaskCard({
@@ -61,7 +58,6 @@ export default function TaskCard({
     }
   };
 
-  // ✅ تحسين منطق التحقق من Decision
   const lastDecision = task.lastClientDecision
     ? String(task.lastClientDecision).toLowerCase()
     : null;

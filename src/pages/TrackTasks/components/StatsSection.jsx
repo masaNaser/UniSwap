@@ -1,5 +1,6 @@
 import { Box, Card, CardContent, Typography } from '@mui/material';
 
+//  الاحصائيات
 export default function StatsSection({
   totalTasks,
   inProgressCount,
@@ -19,6 +20,7 @@ export default function StatsSection({
       <StatCard label="In Progress" value={inProgressCount} color="#0284C7" />
       <StatCard label="In Review" value={inReviewCount} color="#A855F7" />
       <StatCard label="Completed" value={completedCount} color="#059669" />
+      
     </Box>
   );
 }

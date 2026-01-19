@@ -41,7 +41,7 @@ export default function ProjectCloseReviewDialog({
       return;
     }
 
-    console.log('📝 Submitting review:', {
+    console.log(' Submitting review:', {
       isAccepted: reviewDecision === 'accept',
       rating: reviewDecision === 'accept' ? Number(rating) : 0,
       comment: reviewComment.trim(),

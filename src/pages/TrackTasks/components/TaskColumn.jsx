@@ -38,10 +38,9 @@ export default function TaskColumn({
     uploadFile: null,
   });
 
-  // ✅ Fixed: Added null check for projectStatus
   const shouldShowAddButton = isProvider &&
     isToDoColumn &&
-    projectStatus && // ✅ تحقق من أن projectStatus ليس null/undefined
+    projectStatus && 
     projectStatus !== 'SubmittedForFinalReview' &&
     projectStatus !== 'Completed' &&
     projectStatus !== 'Cancelled';
@@ -61,7 +60,7 @@ export default function TaskColumn({
   };
 
   const handleTaskChange = (updater) => {
-    setNewTask(updater); // تغني عن الـ if/else بالكامل
+    setNewTask(updater); 
   };
 
   const handleSubmitTask = () => {

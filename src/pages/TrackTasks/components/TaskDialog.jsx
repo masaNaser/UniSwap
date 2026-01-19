@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogTitle,
@@ -20,7 +21,8 @@ const statusLabels = {
   'InReview': 'In Review',
   'Done': 'Done',
 };
-
+// حوار إضافة/تعديل مهمة
+// 'Edit Task' : 'Add New Task'
 export default function TaskDialog({
   open,
   onClose,
@@ -43,7 +45,7 @@ export default function TaskDialog({
     const fileInput = document.getElementById('task-file-upload');
     if (fileInput) fileInput.value = '';
   };
-  // 🔥 تحديد إذا نعرض حقل الـ Progress
+  //  تحديد إذا نعرض حقل الـ Progress
   const showProgressField = editingTask &&
     editingTask.status === 'InProgress' &&
     isProvider;
@@ -72,7 +74,7 @@ export default function TaskDialog({
           placeholder="Enter task description"
         />
 
-        {/* 🔥 Progress Slider - بس للـ InProgress Tasks */}
+        {/*  Progress Slider - بس للـ InProgress Tasks */}
         {showProgressField && (
           <Box sx={{ mt: 3, mb: 2 }}>
             <Typography variant="subtitle2" sx={{ mb: 2 }}>
@@ -151,26 +153,7 @@ export default function TaskDialog({
             </Box>
           )}
         </Box>
-
-        {/* {!editingTask && (
-          <TextField
-            fullWidth
-            select
-            label="Status"
-            value={newTask?.status || 'ToDo'}
-            onChange={(e) => onTaskChange(prev => ({ ...prev, status: e.target.value }))}
-            margin="normal"
-            SelectProps={{
-              native: true,
-            }}
-          >
-            {statuses.map(status => (
-              <option key={status} value={status}>
-                {statusLabels[status]}
-              </option>
-            ))}
-          </TextField>
-        )} */}
+      
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
