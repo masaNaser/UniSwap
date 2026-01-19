@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef, useReducer } from "react";
 import { Container, CircularProgress, Typography } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -43,13 +41,19 @@ const log = (...args) => isDevelopment && console.log(...args);
 const logError = (...args) => console.error(...args);
 
 // ===== Tasks Reducer =====
+//الستيت عبارة عن الاعمدة الاربعة 
+// البيلود فيها معلومات التاسك من العنوان والايدي والستيتس تبعته
 const tasksReducer = (state, action) => {
   try {
+    //حسب نوع الحدث قرر شو تعمل
     switch (action.type) {
+      //خد كل التاسكات من السيرفر
       case "SET_TASKS":
         return action.payload;
 
       case "TASK_CREATED": {
+        // توحيد نوع الـ status 
+        // (رقم أو سترينج)
         const statusKey =
           typeof action.payload.status === "number"
             ? STATUS_MAP[action.payload.status]
@@ -72,7 +76,7 @@ const tasksReducer = (state, action) => {
           ],
         };
       }
-
+       //نقل التاسك من عمود إلى عمود اخر
       case "TASK_STATUS_CHANGED": {
         const statusKey =
           typeof action.payload.status === "number"
@@ -99,7 +103,7 @@ const tasksReducer = (state, action) => {
 
         return newState;
       }
-
+     // تعديل بيانات التاسك بدون تغيير مكانه
       case "TASK_UPDATED": {
         const statusKey =
           typeof action.payload.status === "number"
@@ -146,7 +150,6 @@ export default function TrackTasks() {
   const location = useLocation();
   const initialCardData = location.state;
   const { updateCurrentUser } = useCurrentUser();
-
   const [cardData, setCardData] = useState(initialCardData);
   const isProvider = cardData?.isProvider || false;
   const token = getToken();
@@ -183,7 +186,7 @@ export default function TrackTasks() {
   const [openReviewDueDateDialog, setOpenReviewDueDateDialog] = useState(false);
   const [taskForReview, setTaskForReview] = useState(null);
 
-  // ✅ ADD: Refs to track fetch state and prevent duplicates
+  //  ADD: Refs to track fetch state and prevent duplicates
   const fetchInProgressRef = useRef(false);
   const lastFetchTimeRef = useRef(0);
   const cardDataRef = useRef(cardData);
@@ -195,22 +198,19 @@ export default function TrackTasks() {
   // ===== SignalR Connection =====
   useEffect(() => {
     if (!cardData?.id || !token) {
-      log("⚠️ Cannot start SignalR - missing cardData.id or token");
+      log("Cannot start SignalR - missing cardData.id or token");
       return;
     }
-
     let isMounted = true;
     let connection = null;
-
     const startConnection = async () => {
       connection = createProjectHubConnection();
       connectionRef.current = connection;
-
       try {
         await connection.start();
         if (!isMounted) return;
 
-        log("✅ Connected to SignalR Hub");
+        log("Connected to SignalR Hub");
         await connection.invoke("JoinProject", cardData.id);
 
         connection.on("TaskCreated", (newTask) => {
@@ -241,17 +241,13 @@ export default function TrackTasks() {
           }));
         });
 
-        // ✅ FIXED: Project status changes should NOT trigger fetch
+        //  FIXED: Project status changes should NOT trigger fetch
         connection.on("ProjectClosed", (data) => {
-          log("🔔 SignalR: Received ProjectClosed", data);
-
           const currentCardData = cardDataRef.current;
           const receivedProjectId = data.projectId || data.ProjectId;
           const currentProjectId = currentCardData?.id;
 
           if (receivedProjectId === currentProjectId) {
-            log("✅ Project closed - updating status (NO FETCH)");
-
             setCardData((prev) => ({
               ...prev,
               projectStatus: "SubmittedForFinalReview",
@@ -394,7 +390,7 @@ export default function TrackTasks() {
 
             if (currentProject) {
               const status = currentProject.projectStatus || currentProject.status;
-              log(`✅ Found project in "${filter}" with status:`, status);
+              log(` Found project in "${filter}" with status:`, status);
               return status;
             }
           }
@@ -404,41 +400,37 @@ export default function TrackTasks() {
       }
       return null;
     } catch (err) {
-      logError("❌ Failed to fetch status from dashboard:", err);
+      logError(" Failed to fetch status from dashboard:", err);
       return null;
     }
   };
 
-  // ✅ FIXED: Debounced fetch with lock
+  //  FIXED: Debounced fetch with lock
   const fetchProjectData = async () => {
     if (!cardData?.id || !token) {
       setLoading(false);
       return;
     }
-
-    // ✅ Prevent duplicate fetches within 2 seconds
+    // Prevent duplicate fetches within 2 seconds
     const now = Date.now();
     if (fetchInProgressRef.current || (now - lastFetchTimeRef.current < 2000)) {
-      log("⏭️ Skipping duplicate fetch (too soon or already in progress)");
+      log("Skipping duplicate fetch (too soon or already in progress)");
       return;
     }
-
     try {
       fetchInProgressRef.current = true;
       lastFetchTimeRef.current = now;
       setLoading(true);
 
-      log("🔄 Fetching project data for ID:", cardData.id);
+      log("Fetching project data for ID:", cardData.id);
 
       const detailsRes = await taskService.getProjectTaskDetails(
         cardData.id,
         token
       );
-      log("✅ Fetched project details:", detailsRes.data);
+      log("Fetched project details:", detailsRes.data);
       setProjectDetails(detailsRes.data);
-
       const dashboardStatus = await fetchProjectStatus();
-
       setCardData((prev) => {
         const finalStatus = dashboardStatus
           ? mapProjectStatus(dashboardStatus)
@@ -458,7 +450,6 @@ export default function TrackTasks() {
             detailsRes.data.type || prev.projectType || "RequestProject",
         };
       });
-
       const tasksRes = await taskService.getTasksByStatus(
         cardData.id,
         null,
@@ -494,38 +485,37 @@ export default function TrackTasks() {
     }
   };
 
-  // ✅ FIXED: Only fetch on mount, not on status changes
+  //  FIXED: Only fetch on mount, not on status changes
   useEffect(() => {
     if (!cardData?.id) return;
     fetchProjectData();
   }, [cardData?.id, token]);
 
-  // ===== Handlers =====
   const handleDeadlineUpdate = (newDeadline) => {
     setCardData((prev) => ({ ...prev, deadline: newDeadline }));
     setProjectDetails((prev) => ({ ...prev, deadline: newDeadline }));
   };
 
-  // ✅ UPDATED: Accept and display snackbar from child components
+  // Accept and display snackbar from child components
   const handleProjectClosed = async (forceRefresh = false, snackbarConfig = null) => {
-    log("🔄 handleProjectClosed called, forceRefresh:", forceRefresh);
+    log("handleProjectClosed called, forceRefresh:", forceRefresh);
 
     if (forceRefresh) {
       try {
-        log("🔄 Fetching fresh project data after overdue decision...");
+        log("Fetching fresh project data after overdue decision...");
 
-        // ✅ Fetch fresh project details
+        //  Fetch fresh project details
         const detailsRes = await taskService.getProjectTaskDetails(cardData.id, token);
-        log("✅ Fresh project details:", detailsRes.data);
+        log(" Fresh project details:", detailsRes.data);
 
-        // ✅ Fetch fresh dashboard status
+        //  Fetch fresh dashboard status
         const dashboardStatus = await fetchProjectStatus();
-        log("✅ Fresh dashboard status:", dashboardStatus);
+        log(" Fresh dashboard status:", dashboardStatus);
 
-        // ✅ Update project details
+        //  Update project details
         setProjectDetails(detailsRes.data);
 
-        // ✅ Update card data with fresh status
+        //  Update card data with fresh status
         setCardData((prev) => {
           const finalStatus = dashboardStatus
             ? mapProjectStatus(dashboardStatus)
@@ -544,9 +534,9 @@ export default function TrackTasks() {
           };
         });
 
-        log("✅ Project data refreshed successfully after overdue decision");
+        log(" Project data refreshed successfully after overdue decision");
 
-        // ✅ Show snackbar if config was passed
+        // Show snackbar if config was passed
         if (snackbarConfig) {
           setSnackbar({
             open: true,
@@ -556,7 +546,7 @@ export default function TrackTasks() {
         }
 
       } catch (error) {
-        logError("❌ Error refreshing project data:", error);
+        logError(" Error refreshing project data:", error);
         setSnackbar({
           open: true,
           message: "Project updated but failed to refresh display. Please reload the page.",
@@ -564,7 +554,7 @@ export default function TrackTasks() {
         });
       }
     } else {
-      log("⏭️ No refresh needed - status updated via SignalR");
+      log(" No refresh needed - status updated via SignalR");
     }
   };
 
@@ -578,7 +568,7 @@ export default function TrackTasks() {
 
       await taskService.updateProjectProgress(cardData.id, token);
 
-      // ✅ Only fetch task data, not full project (status comes from SignalR)
+      //  Only fetch task data, not full project (status comes from SignalR)
       const tasksRes = await taskService.getTasksByStatus(cardData.id, null, token);
       const allTasks = tasksRes.data;
       const tasksByStatus = {
@@ -881,7 +871,7 @@ export default function TrackTasks() {
     setAnchorEl(e.currentTarget);
   };
 
-  // ✅ FIXED: Manual status update without fetch
+  // FIXED: Manual status update without fetch
   const handleProjectStatusUpdate = async (newStatus, snackbarConfig = null) => {
     log("🔄 Manual Status Update triggered:", newStatus);
 
@@ -916,7 +906,6 @@ export default function TrackTasks() {
   );
   const progressPercentage = projectDetails?.progressPercentage || 0;
 
-  // ===== Render =====
   if (loading) {
     return (
       <Container

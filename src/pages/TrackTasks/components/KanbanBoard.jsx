@@ -14,7 +14,7 @@ export default function KanbanBoard({
   onAddTask,
   onReviewClick,
   onViewReview,
-  projectStatus, // ✅ NEW: Receive project status from parent
+  projectStatus,
 }) {
   return (
     <Box
@@ -40,7 +40,7 @@ export default function KanbanBoard({
           onAddTask={onAddTask}
           onReviewClick={onReviewClick}
           onViewReview={onViewReview}
-          projectStatus={projectStatus} // ✅ Pass it down
+          projectStatus={projectStatus}
         />
       ))}
     </Box>

@@ -10,6 +10,9 @@ export const renderContentWithLinks = (text) => {
 
   return text.split(urlRegex).map((part, index) => {
     if (part.match(urlRegex)) {
+    /*لو الرابط بدأ بـ www. → يضيف https:// تلقائيًا
+لو بدأ بـ http:// أو https:// → يستخدمه كما هو
+*/
       const href = part.startsWith("www.") ? `https://${part}` : part;
       return (
         <a
@@ -21,7 +24,7 @@ export const renderContentWithLinks = (text) => {
             color: "#3b82f6", 
             textDecoration: "underline",
             wordBreak: "break-all",
-            cursor: "pointer" // لضمان ظهور اليد عند التأشير
+            cursor: "pointer" 
           }}
         >
           {part}

@@ -33,7 +33,7 @@ import { useTheme } from "@mui/material/styles";
 import { getUserName } from "../../../utils/authHelpers";
 import { renderContentWithLinks } from "../../../utils/textHelper";
 
-//  FileDisplay Component - لعرض جميع أنواع الملفات
+// لعرض جميع أنواع الملفات
 const FileDisplay = ({ fileUrl }) => {
   if (!fileUrl || fileUrl === null || fileUrl === "") return null;
 
@@ -104,12 +104,12 @@ const FileDisplay = ({ fileUrl }) => {
         return "Word Document";
       case "xls":
       case "xlsx":
-        return "Excel Spreadsheet";
+        return "Excel Sheet";
       case "txt":
         return "Text File";
       case "zip":
       case "rar":
-        return "Compressed Archive";
+        return "Compressed File";
       default:
         return "File";
     }
@@ -162,7 +162,6 @@ const FileDisplay = ({ fileUrl }) => {
     </Box>
   );
 };
-
 // Single Comment Bubble
 const CommentBubble = ({ comment, theme, onUserClick }) => (
   <Box sx={{ display: "flex", gap: 1, mb: 1, minWidth: 0 }}>
@@ -252,6 +251,7 @@ function PostCard({
   const currentUserName = getUserName();
   const isPostAuthor = post.user.name === currentUserName;
   const isPostClosed = post.isClosed === true;
+  const navigateToProfile = useNavigateToProfile();
 
   useEffect(() => {
     const loadRecentComments = async () => {
@@ -297,7 +297,6 @@ function PostCard({
     }
   };
 
-  const navigateToProfile = useNavigateToProfile();
 
   const handleInlineCommentSubmit = async (e) => {
     e.preventDefault();
@@ -416,11 +415,11 @@ function PostCard({
             }
             label={`${post.likes} Likes`}
             onClick={(e) => {
-              // ✅ لو كبس على القلب، عمل لايك
+              //  لو كبس على القلب، عمل لايك
               if (e.target.closest("button")) {
                 handleLikeClick();
               }
-              // ✅ لو كبس على النص، عرض اللايكات
+              //  لو كبس على النص، عرض اللايكات
               else if (post.likes > 0 && onShowLikes) {
                 onShowLikes(post.likedBy);
               }

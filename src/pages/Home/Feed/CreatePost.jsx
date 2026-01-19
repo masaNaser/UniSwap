@@ -63,52 +63,76 @@ const CreatePost = ({ addPost, token }) => {
   };
 
   const handleContentChange = (event) => {
+
     if (event.target.value.length <= characterLimit)
       setContent(event.target.value);
     if (errors.content && event.target.value.trim() !== "")
       setErrors({ content: "" });
   };
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      const maxSize = 10 * 1024 * 1024;
-      if (selectedFile.size > maxSize) {
-        setSnackbar({
-          open: true,
-          message: "File size must be less than 10MB",
-          severity: "error",
-        });
-        return;
-      }
+  // const handleFileChange = (e) => {
+  //   const selectedFile = e.target.files[0];
+  //   if (selectedFile) {
+  //     const maxSize = 10 * 1024 * 1024;
+  //     if (selectedFile.size > maxSize) {
+  //       setSnackbar({
+  //         open: true,
+  //         message: "File size must be less than 10MB",
+  //         severity: "error",
+  //       });
+  //       return;
+  //     }
 
-      setFile(selectedFile);
+  //     setFile(selectedFile);
 
-      if (selectedFile.type.startsWith('image/')) {
-        setImagePreview(URL.createObjectURL(selectedFile));
-      } else {
-        setImagePreview(null);
-      }
-    }
-  };
+  //     if (selectedFile.type.startsWith('image/')) {
+  //       setImagePreview(URL.createObjectURL(selectedFile));
+  //     } else {
+  //       setImagePreview(null);
+  //     }
+  //   }
+  // };
+   
+  const handleUpload = (e, { allowPreview }) => {
+  const selectedFile = e.target.files[0];
+  if (!selectedFile) return;
+  const maxSize = 10 * 1024 * 1024; // 10 MB
+  if (selectedFile.size > maxSize) {
+    setSnackbar({
+      open: true,
+      message: "File size must be less than 10MB",
+      severity: "error",
+    });
+    return;
+  }
 
-  const handleDocumentChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      const maxSize = 10 * 1024 * 1024;
-      if (selectedFile.size > maxSize) {
-        setSnackbar({
-          open: true,
-          message: "File size must be less than 10MB",
-          severity: "error",
-        });
-        return;
-      }
+  setFile(selectedFile);
 
-      setFile(selectedFile);
-      setImagePreview(null);
-    }
-  };
+  if (allowPreview && selectedFile.type.startsWith("image/")) {
+    setImagePreview(URL.createObjectURL(selectedFile));
+  } else {
+    setImagePreview(null);
+  }
+};
+
+
+  // const handleDocumentChange = (e) => {
+  //   const selectedFile = e.target.files[0];
+  //   if (selectedFile) {
+  //     const maxSize = 10 * 1024 * 1024;
+  //     if (selectedFile.size > maxSize) {
+  //       setSnackbar({
+  //         open: true,
+  //         message: "File size must be less than 10MB",
+  //         severity: "error",
+  //       });
+  //       return;
+  //     }
+
+  //     setFile(selectedFile);
+  //     setImagePreview(null);
+  //   }
+  // };
 
   const handleRemoveFile = () => {
     setFile(null);
@@ -127,7 +151,6 @@ const CreatePost = ({ addPost, token }) => {
     const formData = new FormData();
     formData.append("Content", content);
 
-    // ✅ Send tags as array - backend expects List<string>
     selectedTags.forEach(tag => formData.append("Tags", tag));
 
     if (file) formData.append("File", file);
@@ -160,7 +183,7 @@ const CreatePost = ({ addPost, token }) => {
       addPost(newPost);
       setContent("");
       setSelectedTags([]);
-      setTagInputValue(""); // ✅ Clear tag input
+      setTagInputValue("");
       setErrors({ content: "" });
       setFile(null);
       setImagePreview(null);
@@ -168,7 +191,7 @@ const CreatePost = ({ addPost, token }) => {
       if (response.status === 201) {
         setSnackbar({
           open: true,
-          message: "Post has been created successfully! 🎉",
+          message: "Post has been created successfully!",
           severity: "success",
         });
       }
@@ -176,7 +199,7 @@ const CreatePost = ({ addPost, token }) => {
       console.error("Error creating post:", error);
       setSnackbar({
         open: true,
-        message: "Failed to create post. Please try again.",
+        message: error?.message || "Failed to create post. Please try again.",
         severity: "error",
       });
     }
@@ -233,12 +256,11 @@ const CreatePost = ({ addPost, token }) => {
               freeSolo
               options={[]}
               value={selectedTags}
-              inputValue={tagInputValue} // ✅ Added
+              inputValue={tagInputValue} 
               onInputChange={(event, newInputValue) => {
-                setTagInputValue(newInputValue); // ✅ Added
+                setTagInputValue(newInputValue); 
               }}
               onChange={(event, newValue) => {
-                // ✅ Improved: Show warning if trying to exceed limit
                 if (newValue.length > 5) {
                   setSnackbar({
                     open: true,
@@ -248,7 +270,7 @@ const CreatePost = ({ addPost, token }) => {
                   return;
                 }
                 setSelectedTags(newValue);
-                setTagInputValue(""); // ✅ Clear input after adding
+                setTagInputValue("");
               }}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => {
@@ -324,7 +346,7 @@ const CreatePost = ({ addPost, token }) => {
                 }}
               >
                 <Typography variant="body2" sx={{ flexGrow: 1, fontWeight: 500 }}>
-                  📎 {file.name} ({(file.size / 1024).toFixed(0)} KB)
+                 {file.name}
                 </Typography>
                 <IconButton onClick={handleRemoveFile} size="small">
                   <CloseIcon fontSize="small" />
@@ -346,7 +368,7 @@ const CreatePost = ({ addPost, token }) => {
               type="file"
               id="upload-image"
               style={{ display: "none" }}
-              onChange={handleFileChange}
+              onChange={(e) => handleUpload(e, { allowPreview: true })}
             />
             <label htmlFor="upload-image">
               <IconButton component="span" sx={iconHover} title="Upload Image">
@@ -359,7 +381,7 @@ const CreatePost = ({ addPost, token }) => {
               type="file"
               id="upload-document"
               style={{ display: "none" }}
-              onChange={handleDocumentChange}
+              onChange={(e) => handleUpload(e, { allowPreview: true })}
             />
             <label htmlFor="upload-document">
               <IconButton component="span" sx={iconHover} title="Upload Document">

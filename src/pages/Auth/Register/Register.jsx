@@ -370,7 +370,7 @@ const getStrengthLabel = () => {
                 "& .MuiTabs-indicator": { display: "none" },
               }}
             >
-              <Tab label="Sign In" />
+              <Tab label="Log In" />
               <Tab label="Sign Up" />
             </Tabs>
 

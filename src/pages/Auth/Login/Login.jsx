@@ -339,7 +339,7 @@ export default function Login() {
                 "& .MuiTabs-indicator": { display: "none" },
               }}
             >
-              <Tab label="Sign In" />
+              <Tab label="Log In" />
               <Tab label="Sign Up" />
             </Tabs>
 
@@ -466,7 +466,7 @@ export default function Login() {
                 fontSize: 16,
               }}
             >
-              {currentTab === 0 ? "Sign In" : "Create Account"}
+              {currentTab === 0 ? "Log In" : "Create Account"}
             </CustomButton>
 
             <Typography

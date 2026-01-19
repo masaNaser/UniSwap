@@ -5,14 +5,14 @@ const useInfiniteScroll = (callback, hasMore, loading) => {
 
   useEffect(() => {
     const options = {
-      root: null,
-      rootMargin: '100px', // ✅ يبدأ التحميل قبل 100px من النهاية
-      threshold: 0.1,
+      root: null, // نراقب الشاشة كاملة
+      rootMargin: '100px', // نبدأ المراقبة قبل الوصول للنهاية ب100 بكسل
+      threshold: 0.1, // نعتبر العنصر مرئياً إذا كان 10% منه ظاهر
     };
 
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore && !loading) {
-        callback();
+        callback(); // استدعاء الدالة لتحميل المزيد من البيانات
       }
     }, options);
 

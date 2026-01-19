@@ -77,20 +77,17 @@ const updatePost = (posts, postId, newData) =>
 export default function Feed() {
   const theme = useTheme();
   const [postsUpdated, setPostsUpdated] = useState(false);
-
-
   const { currentUser, loading, updateCurrentUser } = useCurrentUser();
   const [posts, setPosts] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [highlightedPostId, setHighlightedPostId] = useState(null);
   const postRefs = useRef({});
 
-  // ✅ Infinite Scroll State
+  //  Infinite Scroll State
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  // const userToken = localStorage.getItem("accessToken");
   const userToken = getToken();
   const userName = getUserName();
 
@@ -125,11 +122,9 @@ export default function Feed() {
     severity: "success",
   });
 
-  // بعد state الموجودة، أضف هاي:
   const [likesModalOpen, setLikesModalOpen] = useState(false);
   const [currentPostLikes, setCurrentPostLikes] = useState([]);
 
-  // أضف function جديدة:
   const handleShowLikes = (postLikes) => {
     setCurrentPostLikes(postLikes || []);
     setLikesModalOpen(true);
@@ -138,17 +133,14 @@ export default function Feed() {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // ✅ تعديل fetchPosts لدعم الـ pagination
   const fetchPosts = async (pageNumber = 1, append = false) => {
     if (loadingMore) return;
-
     setLoadingMore(true);
+    //الوقت قبل ما نحمل البيانات
     const startTime = Date.now();
 
     try {
-      const response = await getPosts(userToken, pageNumber, 10); // ✅ 10 بوستات بالمرة
-      console.log(response);
-
+      const response = await getPosts(userToken, pageNumber, 10); //  10 بوستات بالمرة
       const postsData = response.data.map((p) => ({
         id: p.id,
         content: p.content,
@@ -169,22 +161,24 @@ export default function Feed() {
         fileUrl: p.fileUrl ? `https://uni1swap.runasp.net/${p.fileUrl}` : null,
         isLiked: p.isLikedByMe || false,
         recentComments: [],
-        likedBy: p.likedBy || [], // ✅ أضف هاد السطر
+        likedBy: p.likedBy || [], 
         isClosed: p.postStatus === "Closed",
       }));
 
       if (append) {
-        // ✅ إضافة البوستات الجديدة
+        // إضافة البوستات الجديدة
         setPosts((prev) => [...prev, ...postsData]);
       } else {
         setPosts(postsData);
       }
 
-      // ✅ إذا رجع أقل من 10 معناها خلصت البوستات
+      //  إذا رجع أقل من 10 معناها خلصت البوستات
       setHasMore(postsData.length === 10);
-      // ✅ ضمان إن الـ loader يظهر على الأقل 800ms
+      //الوقت الفعلي اللي استغرقه جلب البيانات 
       const elapsedTime = Date.now() - startTime;
+      // نحدد أقل وقت للتحميل 
       const minimumLoadingTime = 800; // 800 milliseconds
+      // نحسب الوقت المتبقي للانتظار
       const remainingTime = Math.max(0, minimumLoadingTime - elapsedTime);
 
       if (remainingTime > 0) {
@@ -196,13 +190,12 @@ export default function Feed() {
         message: "Failed to fetch posts.",
         severity: "error",
       });
-      console.error("Error fetching posts:", error);
     } finally {
       setLoadingMore(false);
     }
   };
 
-  // ✅ Function لتحميل المزيد
+  //   لتحميل المزيد
   const loadMorePosts = useCallback(() => {
     if (!hasMore || loadingMore) return;
     const nextPage = page + 1;
@@ -210,7 +203,7 @@ export default function Feed() {
     fetchPosts(nextPage, true);
   }, [page, hasMore, loadingMore]);
 
-  // ✅ استخدام الـ Infinite Scroll Hook
+  //  استخدام الـ Infinite Scroll Hook
   const observerRef = useInfiniteScroll(loadMorePosts, hasMore, loadingMore);
 
   const fetchRecentComments = useCallback(
@@ -296,7 +289,7 @@ export default function Feed() {
         setPosts(posts.filter((p) => p.id !== postId));
         setSnackbar({
           open: true,
-          message: "Your post has been deleted. ✓",
+          message: "Your post has been deleted.",
           severity: "success",
         });
       }
@@ -311,7 +304,6 @@ export default function Feed() {
   };
 
   const handleFileRemovedFromPost = (postId) => {
-    console.log("🗑️ Removing file from post in Feed:", postId);
     setPosts((prev) =>
       prev.map((p) =>
         p.id === postId ? { ...p, fileUrl: null } : p
@@ -350,9 +342,7 @@ export default function Feed() {
 
   const handleEditPost = async () => {
     const { postId, content, tags, file, removeFile } = editDialog;
-
     setIsUpdating(true);
-
     try {
       const formData = new FormData();
 
@@ -368,7 +358,7 @@ export default function Feed() {
         });
       }
 
-      // ⚠️ الجزء المهم - لو الملف انحذف قبل، ما نبعث removeFile مرة ثانية
+      //  الجزء المهم - لو الملف انحذف قبل، ما نبعث removeFile مرة ثانية
       if (removeFile === true && !editDialog.existingFileUrl) {
         // الملف انحذف فعلاً من السيرفر، ما نبعث شي
         formData.append("RemoveFile", "false");
@@ -406,7 +396,7 @@ export default function Feed() {
         closeEditDialog();
         setSnackbar({
           open: true,
-          message: "Your post has been updated. ✓",
+          message: "Your post has been updated.",
           severity: "success",
         });
       }
@@ -740,20 +730,21 @@ export default function Feed() {
   };
 
   const postIdFromUrl = searchParams.get("postId");
-  const [loadingPostFromNotif, setLoadingPostFromNotif] = useState(false); // ✅ ضيفي هاد
-
+  const [loadingPostFromNotif, setLoadingPostFromNotif] = useState(false); 
+// الكود هذا مسؤول عن فتح بوست معين تلقائيًا إذا جاء المستخدم من رابط إشعار
   useEffect(() => {
     if (!postIdFromUrl || !posts.length || loadingPostFromNotif) return;
-
+// البحث عن البوست ان موجود 
     const post = posts.find(p => p.id === postIdFromUrl);
 
     if (post) {
-      console.log("✅ Scrolling to post:", postIdFromUrl);
+      // هاي اول وحدة انه نستنى نص ثانية عشان نتأكد ان كل شي محمل
       setTimeout(() => {
         const postElement = postRefs.current[postIdFromUrl];
         if (postElement) {
           postElement.scrollIntoView({ behavior: "smooth", block: "center" });
           setHighlightedPostId(postIdFromUrl);
+          // نمسح التحديد بعد 3 ثواني
           setTimeout(() => {
             setHighlightedPostId(null);
             setSearchParams({});
@@ -761,11 +752,17 @@ export default function Feed() {
         }
       }, 500);
     } else {
-      console.log("🔄 Post not found, reloading page 1...");
       setLoadingPostFromNotif(true);
       setPage(1);
       setHasMore(true);
+/**finally هي جزء من الـ Promise.
+معناها: تنفذ الكود اللي جواتها مهما حصل: سواء نجحت عملية 
+*/
 
+/**
+ * بعد محاولة جلب البوستات، نتأكد
+ *  إذا البوست موجود على الصفحة ونسحب له المستخدم أو نظهر رسالة خطأ.
+ *  */
       fetchPosts(1, false).finally(() => {
         setTimeout(() => {
           const postElement = postRefs.current[postIdFromUrl];
@@ -792,7 +789,7 @@ export default function Feed() {
   }, [postIdFromUrl, posts.length, loadingPostFromNotif]);
 
   useEffect(() => {
-    fetchPosts(1, false); // ✅ التحميل الأول
+    fetchPosts(1, false); 
   }, [userToken]);
 
   return (
@@ -889,7 +886,7 @@ export default function Feed() {
                     </Box>
                   ))}
 
-                  {/* ✅ Loading Indicator */}
+                  {/*  Loading Indicator */}
                   {loadingMore && (
                     <Box
                       sx={{
@@ -904,18 +901,13 @@ export default function Feed() {
                       }}
                     >
                       <CircularProgress size={40} sx={{ color: "#3B82F6" }} />
-                      {/* <Typography
-                        sx={{ mt: 2, color: "#6B7280", fontWeight: 500 }}
-                      >
-                        Loading more posts...
-                      </Typography> */}
                     </Box>
                   )}
 
-                  {/* ✅ العنصر المراقب للـ Infinite Scroll */}
+                  {/*  العنصر المراقب للـ Infinite Scroll */}
                   <div ref={observerRef} style={{ height: "20px" }} />
 
-                  {/* ✅ End Message */}
+                  {/*  End Message */}
                   {/* {!hasMore && posts.length > 0 && (
                     <Box sx={{ textAlign: "center", py: 3 }}>
                       <Typography
@@ -925,7 +917,7 @@ export default function Feed() {
                           fontSize: "16px",
                         }}
                       >
-                        🎉 You've reached the end!
+                         You've reached the end!
                       </Typography> */}
                   {/* <Typography
                         sx={{ color: "#D1D5DB", fontSize: "14px", mt: 0.5 }}
@@ -935,7 +927,7 @@ export default function Feed() {
                     </Box>
                   )}*/}
 
-                  {/* ✅ Empty State */}
+                  {/*  Empty State */}
                   {!loading && posts.length === 0 && (
                     <Box sx={{ textAlign: "center", py: 8 }}>
                       <Typography
@@ -1033,6 +1025,7 @@ export default function Feed() {
         snackbar={snackbar}
         onSnackbarClose={handleSnackbarClose}
       />
+
       <LikesModal
         open={likesModalOpen}
         onClose={() => setLikesModalOpen(false)}
