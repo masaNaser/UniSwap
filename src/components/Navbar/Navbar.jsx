@@ -1058,7 +1058,7 @@ export default function PrimarySearchAppBar() {
                       <ListItemIcon>
                         <Logout fontSize="small" sx={{ color: "red" }} />
                       </ListItemIcon>
-                      Logout
+                      Log out
                     </MenuItem>
                   </>
                 )}
@@ -1206,7 +1206,7 @@ export default function PrimarySearchAppBar() {
                     </svg>
                   </Box>
                   <Typography
-                    key={currentUser?.totalPoints} 
+                    key={currentUser?.totalPoints}
                     sx={{
                       fontWeight: "bold",
                       color: "#3B82F6",

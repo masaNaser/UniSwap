@@ -227,7 +227,7 @@ const AdminDashboard = () => {
             <LogoutIcon sx={{ mr: isMobile ? 0 : 1.5 }} />
             {!isMobile && (
               <Typography variant="body2" fontWeight="medium">
-                Logout
+                Log out
               </Typography>
             )}
           </IconButton>

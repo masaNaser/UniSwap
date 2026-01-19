@@ -24,7 +24,7 @@ import {
 } from "@mui/icons-material";
 import Logo from "/logo.png";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
-import { startTokenRefreshTimer,stopTokenRefreshTimer } from "../../../utils/tokenRefresh";
+import { startTokenRefreshTimer, stopTokenRefreshTimer } from "../../../utils/tokenRefresh";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import CustomButton from "../../../components/CustomButton/CustomButton";
@@ -58,7 +58,7 @@ export default function Login() {
   } = useForm({
     //هاي الخطوة عشان نحكي للمكتبة الرياكت هوك فورم انه ما تعمل الفالديشن منها وانما الفالديشن اللي حطيناه باستخدام ال yup
     resolver: yupResolver(validationSchema),
-    shouldUseNativeValidation: false, 
+    shouldUseNativeValidation: false,
     mode: "onSubmit", // تحقق من الصحة عند الإرسال فقط
   });
 
@@ -339,8 +339,8 @@ export default function Login() {
                 "& .MuiTabs-indicator": { display: "none" },
               }}
             >
-              <Tab label="Log In" />
-              <Tab label="Sign Up" />
+              <Tab label="Log in" />
+              <Tab label="Sign up" />
             </Tabs>
 
             {/* Fields */}

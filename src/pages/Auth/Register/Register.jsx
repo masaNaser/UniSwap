@@ -54,7 +54,7 @@ export default function Register() {
   const validationSchema = yup.object({
     userName: yup
       .string()
-       .required("User Name is required")
+      .required("User Name is required")
       .min(4, "User Name must be at least 4 characters"),
 
     email: yup
@@ -98,17 +98,17 @@ export default function Register() {
     setPasswordStrength(score);
   };
   // ماب لتحديد النص واللون بناءً على القوة
-const strengthMap = {
-  1: { text: "very weak", color: "red" },
-  2: { text: "weak", color: "orange" },
-  3: { text: "medium", color: "yellow" },
-  4: { text: "strong", color: "green" },
-  5: { text: "very strong", color: "darkgreen" },
-};
+  const strengthMap = {
+    1: { text: "very weak", color: "red" },
+    2: { text: "weak", color: "orange" },
+    3: { text: "medium", color: "yellow" },
+    4: { text: "strong", color: "green" },
+    5: { text: "very strong", color: "darkgreen" },
+  };
 
-const getStrengthLabel = () => {
-  return strengthMap[passwordStrength] || { text: "", color: "inherit" };
-};
+  const getStrengthLabel = () => {
+    return strengthMap[passwordStrength] || { text: "", color: "inherit" };
+  };
 
   const [skills, setSkills] = useState([]); // skills as array
   const [inputValue, setInputValue] = useState("");
@@ -359,9 +359,9 @@ const getStrengthLabel = () => {
                   borderRadius: "50px",
                   minHeight: "40px",
                   minWidth: { xs: "100px", sm: "120px" },
-                  fontSize: { xs: "13px", sm: "14px" }, 
+                  fontSize: { xs: "13px", sm: "14px" },
                   margin: "4px",
-                  padding: { xs: "6px 12px", sm: "6px 16px" }, 
+                  padding: { xs: "6px 12px", sm: "6px 16px" },
                 },
                 "& .Mui-selected": {
                   background: "#FFFFFF",
@@ -370,8 +370,8 @@ const getStrengthLabel = () => {
                 "& .MuiTabs-indicator": { display: "none" },
               }}
             >
-              <Tab label="Log In" />
-              <Tab label="Sign Up" />
+              <Tab label="Log in" />
+              <Tab label="Sign up" />
             </Tabs>
 
             {/* Form */}

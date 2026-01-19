@@ -156,8 +156,8 @@ export default function LandingPage() {
               ? "rgba(45, 45, 45, 0.7)"
               : "rgba(255, 255, 255, 0.85)"
             : theme.palette.mode === "dark"
-            ? "rgba(45, 45, 45, 0.4)"
-            : "rgba(255, 255, 255, 0.84)",
+              ? "rgba(45, 45, 45, 0.4)"
+              : "rgba(255, 255, 255, 0.84)",
           backdropFilter: "blur(15px)",
           boxShadow: scrolled ? "0 2px 12px rgba(0,0,0,0.08)" : "none",
           transition: "all 0.3s ease",
@@ -272,13 +272,13 @@ export default function LandingPage() {
                   },
                 }}
               >
-                Login
+                Log in
               </Button>
               <Button
                 component={Link}
                 to="/register"
                 variant="outlined"
-                      sx={{
+                sx={{
                   color: theme.palette.mode === "dark" ? "#fff" : "#004aad",
                   borderColor:
                     theme.palette.mode === "dark" ? "#fff" : "#004aad",
@@ -300,7 +300,7 @@ export default function LandingPage() {
                   },
                 }}
               >
-                Sign Up
+                Sign up
               </Button>
             </>
           )}
