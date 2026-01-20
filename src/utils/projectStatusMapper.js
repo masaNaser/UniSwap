@@ -1,10 +1,3 @@
-// src/utils/projectStatusMapper.js
-
-/**
- * Maps numeric or string project status to readable string format
- * @param {number|string} status - The status value from API (0-4 or string)
- * @returns {string} - Readable status string
- */
 export const mapProjectStatus = (status) => {
   // If already a string, return as is (handle both PascalCase and normal case)
   if (typeof status === 'string') {
@@ -34,11 +27,6 @@ export const mapProjectStatus = (status) => {
   return statusMapping[status] || 'Active';
 };
 
-/**
- * Maps projects array with status field
- * @param {Array} projects - Array of project objects
- * @returns {Array} - Projects with mapped status
- */
 export const mapProjectsWithStatus = (projects) => {
   if (!Array.isArray(projects)) return [];
 
@@ -52,11 +40,6 @@ export const mapProjectsWithStatus = (projects) => {
   }));
 };
 
-/**
- * Gets display label for status filter
- * @param {string} status - The status value
- * @returns {string} - Display label
- */
 export const getStatusDisplayLabel = (status) => {
   const labelMap = {
     'All Status': 'All Status',

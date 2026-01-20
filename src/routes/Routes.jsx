@@ -64,7 +64,6 @@ const router = createBrowserRouter([
         path: "browse/:id",
         element: <SubServices />,
       },
-      // 🔥 مسار جديد للـ ParentSubServices (المواد)
       {
         path: "browse/:serviceId/:subServiceId/subjects",
         element: <ParentSubServices />,

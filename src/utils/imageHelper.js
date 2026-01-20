@@ -1,6 +1,3 @@
-
-// src/utils/imageHelper.js
-
 const BASE_URL = import.meta.env.VITE_API_URL || "https://uni1swap.runasp.net";
 
 export const getImageUrl = (path, userName="") => {
