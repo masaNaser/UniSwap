@@ -26,7 +26,7 @@ export const UnreadCountProvider = ({ children }) => {
     setUnreadCount((prev) => Math.max(0, prev - amount));
   }, []);
 
-  // 🔥 دالة لإيقاف الاتصال بشكل آمن
+  //  دالة لإيقاف الاتصال بشكل آمن
   const stopConnection = useCallback(() => {
     if (connectionRef.current) {
       try {
@@ -43,7 +43,7 @@ export const UnreadCountProvider = ({ children }) => {
     isConnectingRef.current = false;
   }, []);
 
-  // 🔥 دالة لبدء الاتصال
+  //  دالة لبدء الاتصال
   const startConnection = useCallback(async () => {
     const token = getToken();
 
@@ -125,7 +125,7 @@ export const UnreadCountProvider = ({ children }) => {
     }
   }, [refreshUnreadCount, stopConnection]);
 
-  // 🔥 Effect لمراقبة حالة التوكن وبدء الاتصال
+  //  Effect لمراقبة حالة التوكن وبدء الاتصال
   useEffect(() => {
     // محاولة الاتصال عند التحميل
     const initConnection = async () => {
@@ -170,7 +170,7 @@ export const UnreadCountProvider = ({ children }) => {
         decreaseUnreadCount,
         setUnreadCount,
         connection: connectionRef.current,
-        reconnect: startConnection // 🔥 إضافة دالة لإعادة الاتصال يدوياً إذا لزم الأمر
+        reconnect: startConnection //  إضافة دالة لإعادة الاتصال يدوياً إذا لزم الأمر
       }}
     >
       {children}

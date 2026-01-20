@@ -53,7 +53,7 @@ export const NotificationProvider = ({ children }) => {
   //  يتم مرة واحدة فقط
   const hasLoadedRef = useRef(false);
 
-  // ✅ استخدم state بدل مباشرة من localStorage
+  // استخدم state بدل مباشرة من localStorage
   const [token, setToken] = useState(() => getToken());
   const { updateCurrentUser } = useCurrentUser();
 

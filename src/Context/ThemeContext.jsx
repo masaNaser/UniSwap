@@ -9,7 +9,7 @@ export const ThemeModeContext = createContext({
 });
 
 export const ThemeModeProvider = ({ children }) => {
-  // 🆕 جيب الوضع من localStorage أو استخدم light كافتراضي
+  //  جيب الوضع من localStorage أو استخدم light كافتراضي
   const [mode, setMode] = useState(() => {
     return localStorage.getItem("themeMode") || "light";
   });
@@ -19,7 +19,7 @@ export const ThemeModeProvider = ({ children }) => {
   const toggleMode = () => {
     setMode(prev => {
       const newMode = prev === "light" ? "dark" : "light";
-      localStorage.setItem("themeMode", newMode); // 🆕 احفظ الاختيار
+      localStorage.setItem("themeMode", newMode); //  احفظ الاختيار
       return newMode;
     });
   };

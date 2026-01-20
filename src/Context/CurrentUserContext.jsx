@@ -1,15 +1,18 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { GetFullProfile } from "../services/profileService";
 import { getToken } from "../utils/authHelpers";
+
+// هذا المخزن سيحتوي على بيانات المستخدم الحالي ويكون متاح لكل الصفحات
 export const CurrentUserContext = createContext(null);
 
+// هذا المكون يلف كل التطبيق ويوفر بيانات المستخدم لجميع الصفحات
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [enablePolling, setEnablePolling] = useState(false); // 🔥 جديد
+  const [enablePolling, setEnablePolling] = useState(false); 
   const pollingIntervalRef = useRef(null);
 
-  // ✅ الدالة المحسّنة لتحديث بيانات المستخدم
+  //  الدالة المحسّنة لتحديث بيانات المستخدم
   const updateCurrentUser = useCallback(async () => {
     const token = getToken();
     if (!token) {
@@ -18,13 +21,14 @@ export const CurrentUserProvider = ({ children }) => {
     }
 
     try {
+      // جلب بيانات المستخدم من السيرفر
       const res = await GetFullProfile(token);
 
-      // ✅ Use functional update with timestamp to force re-render
+      // Use functional update with timestamp to force re-render
       setCurrentUser(prevUser => {
         const newUser = { ...res.data, _timestamp: Date.now() };
 
-        // ✅ Log to verify update
+        // Log to verify update
         console.log("💰 Points updated:", {
           old: prevUser?.totalPoints,
           new: newUser.totalPoints
@@ -40,7 +44,7 @@ export const CurrentUserProvider = ({ children }) => {
     }
   }, []);
 
-  // 🔥 دالة لتفعيل الـ Polling المؤقت
+  //  دالة لتفعيل الـ Polling المؤقت
   const startTemporaryPolling = useCallback((duration = 2000) => {
     setEnablePolling(true);
 
@@ -50,7 +54,7 @@ export const CurrentUserProvider = ({ children }) => {
     }, duration);
   }, []);
 
-  // ✅ تحميل بيانات المستخدم عند بدء التطبيق
+  //  تحميل بيانات المستخدم عند بدء التطبيق
   useEffect(() => {
     const fetchCurrentUser = async () => {
       // const token = localStorage.getItem("accessToken");
@@ -69,7 +73,7 @@ export const CurrentUserProvider = ({ children }) => {
     fetchCurrentUser();
   }, []);
 
-  // 🔥 Polling Effect - بس لما يكون مفعّل
+  //  Polling Effect - بس لما يكون مفعّل
   useEffect(() => {
     if (enablePolling) {
 
@@ -90,7 +94,7 @@ export const CurrentUserProvider = ({ children }) => {
       currentUser,
       setCurrentUser,
       updateCurrentUser,
-      startTemporaryPolling, // 🔥 جديد
+      startTemporaryPolling,
       loading
     }}>
       {children}
