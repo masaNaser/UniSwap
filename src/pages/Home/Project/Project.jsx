@@ -22,6 +22,7 @@ import { useLocation } from 'react-router-dom';
 import { getToken } from "../../../utils/authHelpers";
 export default function Project() {
   const location = useLocation();
+  // معلومات الاشعار اللي جايه من النافيجشن بصفحةالنتفكيشن منيو
   const notificationData = location.state;
 
   // Initialize from localStorage to persist across page refreshes
@@ -32,11 +33,11 @@ export default function Project() {
     const saved = localStorage.getItem("projectTabIndex");
     return saved ? parseInt(saved) : 0;
   });
-
+// عبارة عن الايدي لما يجي من الاشعارات
   const [highlightedRequestId, setHighlightedRequestId] = useState(
     notificationData?.requestId || null
   );
-
+   // تحديد عرض Requests أو Projects
   const [showRequestsFromNotif, setShowRequestsFromNotif] = useState(() => {
     if (notificationData?.showRequests !== undefined) {
       return notificationData.showRequests;

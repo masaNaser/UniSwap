@@ -4,12 +4,12 @@ import ChatWindow from "./ChatWindow";
 import Container from "@mui/material/Container";
 import { useLocation } from "react-router-dom";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
-import { useTheme } from "@mui/material/styles"; // ✅ أضف هذا
+import { useTheme } from "@mui/material/styles"; 
 import "./Chat.css";
 import { useUnreadCount } from "../../Context/unreadCountContext";
 export default function ChatPage() {
-  const theme = useTheme(); // ✅ استخدم الـ theme
-  const isDark = theme.palette.mode === "dark"; // ✅ تحقق من Dark Mode
+  const theme = useTheme(); 
+  const isDark = theme.palette.mode === "dark";
  const {connection}= useUnreadCount();
   const location = useLocation();
   const initialConv = location.state || null;
@@ -29,12 +29,10 @@ export default function ChatPage() {
     const handleResize = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
-
       if (!mobile) {
         setShowChatList(true);
       }
     };
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -51,7 +49,6 @@ export default function ChatPage() {
 
   const handleSelectConversation = (convObj) => {
     setSelectedConv(convObj);
-
     if (isMobile) {
       setShowChatList(false);
     }
@@ -82,33 +79,9 @@ useEffect(() => {
   window.addEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
   return () => window.removeEventListener("NEW_SIGNALR_MESSAGE", onNewMessage);
 }, [selectedConv]);
-  // useEffect(() => {
-
-  //   if (!connection) return;
-
-  //   // مستمع خاص بصفحة الشات لتحديث القائمة لحظياً
-  //   const handleMessage = (message) => {
-  //     setConversations((prev) => {
-  //       const existing = prev.find(c => c.id === message.conversationId);
-  //       if (existing) {
-  //         return prev.map(c => c.id === message.conversationId 
-  //           ? { ...c, lastMessage: message, unreadCount: c.unreadCount + 1 } 
-  //           : c).sort((a, b) => new Date(b.lastMessage?.createdAt) - new Date(a.lastMessage?.createdAt));
-  //       }
-  //       return prev; 
-  //     });
-  //   };
-
-  //   connection.on("ReceiveMessage", handleMessage);
-    
-  //   // تنظيف المستمع عند مغادرة الصفحة (دون إغلاق الاتصال بالكامل)
-  //   return () => connection.off("ReceiveMessage", handleMessage);
-  // }, [connection]);
   return (
     <Container maxWidth="lg" sx={{ mt: 3, mb: 3 }}>
-      {/* ✅ أضف class "dark-mode" لو Dark Mode مفعّل */}
       <div className={`chat-container ${isDark ? "dark-mode" : ""}`}>
-
         {(!isMobile || showChatList) && (
           <ChatList
             className={isMobile && showChatList ? "mobile-show" : ""}

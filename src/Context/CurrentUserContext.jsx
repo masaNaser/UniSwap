@@ -16,7 +16,7 @@ export const CurrentUserProvider = ({ children }) => {
   const updateCurrentUser = useCallback(async () => {
     const token = getToken();
     if (!token) {
-      console.log("⚠️ No token found, skipping update");
+      console.log(" No token found, skipping update");
       return null;
     }
 
@@ -27,9 +27,9 @@ export const CurrentUserProvider = ({ children }) => {
       // Use functional update with timestamp to force re-render
       setCurrentUser(prevUser => {
         const newUser = { ...res.data, _timestamp: Date.now() };
-
+  console.log("Fetched user data:", newUser);
         // Log to verify update
-        console.log("💰 Points updated:", {
+        console.log("Points updated:", {
           old: prevUser?.totalPoints,
           new: newUser.totalPoints
         });
@@ -39,7 +39,7 @@ export const CurrentUserProvider = ({ children }) => {
 
       return res.data;
     } catch (error) {
-      console.error("❌ Error updating current user:", error);
+      console.error("Error updating current user:", error);
       return null;
     }
   }, []);
@@ -64,7 +64,7 @@ export const CurrentUserProvider = ({ children }) => {
           const res = await GetFullProfile(token);
           setCurrentUser(res.data);
         } catch (error) {
-          console.error("❌ Error loading current user:", error);
+          console.error(" Error loading current user:", error);
         }
       }
       setLoading(false);

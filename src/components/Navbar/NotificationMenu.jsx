@@ -194,9 +194,9 @@ const NotificationMenu = ({
         }
         navigate("/app/project", {
           state: {
-            requestId: notification.refId,
+            requestId: notification.refId, // ID الريكوست
             isProvider,
-            showRequests: false,
+            showRequests: false, // نفتح التاب شو ريكوست او لا 
           },
         });
         handleNotifClose();
@@ -253,20 +253,20 @@ const NotificationMenu = ({
 
       case "Collaboration":
         const collaborationMessage = notification.message?.toLowerCase() || "";
-        // ✅ تحليل صحيح
+        //  تحليل صحيح
         let isProvider;
         if (collaborationMessage.includes("sent you")) {
           // "AyaMusamih sent you a collaboration request"
           // معناها: شخص بعتلك ريكوست → أنتِ Provider
-          isProvider = true; // ✅ أنتِ Provider
+          isProvider = true; //  أنتِ Provider
         } else if (collaborationMessage.includes("accepted your")) {
           // "accepted your collaboration request"
           // معناها: قبلوا ريكوستك → أنتِ Client
-          isProvider = false; // ✅ أنتِ Client
+          isProvider = false; //  أنتِ Client
         } else if (collaborationMessage.includes("rejected your")) {
           // "rejected your collaboration request"
           // معناها: رفضوا ريكوستك → أنتِ Client
-          isProvider = false; // ✅ أنتِ Client
+          isProvider = false; //  أنتِ Client
         } else {
           isProvider = false;
         }

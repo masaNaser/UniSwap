@@ -111,8 +111,6 @@ export default function Login() {
         //  Start new refresh timer
         const timerId = startTokenRefreshTimer();
         window.tokenRefreshTimerId = timerId;
-        console.log(" Token refresh timer started from Login");
-
         // Show success and redirect
         Swal.fire({
           title: "Login successful!",
@@ -328,8 +326,7 @@ export default function Login() {
                   color: "#0F172A",
                   borderRadius: "50px",
                   minHeight: "40px",
-                  minWidth: { xs: "100px", sm: "120px" }, // ✅ غيّرت هون
-                  fontSize: { xs: "13px", sm: "14px" }, // ✅ وزدت هاي
+                  fontSize: { xs: "13px", sm: "14px" },
                   margin: "4px",
                 },
                 "& .Mui-selected": {

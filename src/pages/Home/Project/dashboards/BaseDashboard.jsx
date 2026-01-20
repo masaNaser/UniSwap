@@ -13,20 +13,6 @@ import { getToken } from "../../../../utils/authHelpers";
 
 /**
  * BaseDashboard - Shared dashboard component for both Provider and Client views
- * @param {Object} props
- * @param {Object} props.data - Dashboard data
- * @param {string} props.statusFilter - Current status filter
- * @param {Function} props.onStatusFilterChange - Status filter change handler
- * @param {Function} props.onRefresh - Refresh handler
- * @param {string} props.highlightedRequestId - ID of request to highlight
- * @param {boolean} props.initialShowRequests - Initial show requests state
- * @param {Object} props.config - Configuration object for customizing behavior
- * @param {boolean} props.config.isProvider - Whether this is provider or client view
- * @param {string} props.config.storageKey - LocalStorage key for show requests state
- * @param {string} props.config.userRole - "Provider" or "Client" for API calls
- * @param {Object} props.config.headerProps - Props for ProjectHeader component
- * @param {string} props.config.imageKey - Key for user image in request data
- * @param {string} props.config.nameKey - Key for user name in request data
  */
 export default function BaseDashboard({
     data,

@@ -42,13 +42,11 @@ export default function ChatList({
 
     window.addEventListener("NEW_SIGNALR_MESSAGE", handleGlobalMessage);
     return () => window.removeEventListener("NEW_SIGNALR_MESSAGE", handleGlobalMessage);
-  }, [selectedConvId, setConversations]); // أضفنا التبعيات الصحيحة
+  }, [selectedConvId, setConversations]);
   const fetchConversations = async () => {
     try {
-      const response = await getConversations(token);
-      console.log("المحادثات المستلمة:", response.data);
-
-      const convsWithNames = response.data.map((conv) => {
+        const response = await getConversations(token);
+        const convsWithNames = response.data.map((conv) => {
         const partnerId = conv.receiverId;
         const partnerName = conv.receiverName;
         const partnerImage = conv.receiverImage;
@@ -69,7 +67,7 @@ export default function ChatList({
       );
 
       setConversations(sorted);
-      // ✅ حدّث العداد في الـ Navbar بعد جلب المحادثات
+      //  حدّث العداد في الـ Navbar بعد جلب المحادثات
       refreshUnreadCount();
     } catch (err) {
       console.error("فشل في جلب المحادثات:", err);
@@ -137,24 +135,9 @@ export default function ChatList({
                 minute: "2-digit",
               })
               : "";
-
-            // const lastDate = conv.lastMessage?.createdAt
-            //   ? (() => {
-            //       const msgDate = new Date(conv.lastMessage.createdAt);
-            //       const today = new Date();
-            //       const isToday =
-            //         msgDate.getDate() === today.getDate() &&
-            //         msgDate.getMonth() === today.getMonth() &&
-            //         msgDate.getFullYear() === today.getFullYear();
-            //       return isToday
-            //         ? "Today"
-            //         : msgDate.toLocaleDateString("en-GB");
-            //     })()
-            //   : "";
-
             const initials = conv.partnerName?.substring(0, 2).toUpperCase();
 
-            // ✅ هل في رسائل جديدة؟
+            // هل في رسائل جديدة
             const hasUnread = conv.unreadCount > 0;
 
             return (
@@ -184,7 +167,6 @@ export default function ChatList({
                 </Avatar>
                 <div className="chat-info">
                   <div className="chat-name">{conv.partnerName}</div>
-                  {/* ✅ لو في رسائل جديدة، خلي النص bold */}
                   <div
                     className="chat-last"
                     style={{
@@ -204,9 +186,7 @@ export default function ChatList({
                   >
                     {lastTime}
                   </div>
-                  {/* <div className="chat-date">{lastDate}</div> */}
-
-                  {/* ✅ Badge للرسائل غير المقروءة */}
+                  {/*  Badge للرسائل غير المقروءة */}
                   {hasUnread && (
                     <span className="unread-badge">{conv.unreadCount}</span>
                   )}

@@ -18,7 +18,7 @@ export const UnreadCountProvider = ({ children }) => {
       const response = await getUnreadCount(currentToken);
       setUnreadCount(response.data || 0);
     } catch (error) {
-      console.error('❌ Error fetching unread count:', error);
+      console.error(' Error fetching unread count:', error);
     }
   }, []);
 
@@ -32,7 +32,7 @@ export const UnreadCountProvider = ({ children }) => {
       try {
         connectionRef.current.stop();
       } catch (err) {
-        console.error("❌ Error stopping connection:", err);
+        console.error(" Error stopping connection:", err);
       }
       connectionRef.current = null;
     }
@@ -49,7 +49,6 @@ export const UnreadCountProvider = ({ children }) => {
 
     // إذا ما في توكن، نظّف ولا تحاول الاتصال
     if (!token) {
-      console.log("⚠️ No token available, skipping SignalR connection");
       stopConnection();
       setUnreadCount(0);
       return;
@@ -57,13 +56,11 @@ export const UnreadCountProvider = ({ children }) => {
 
     // منع محاولات الاتصال المتعددة
     if (isConnectingRef.current) {
-      console.log("⚠️ Connection already in progress");
       return;
     }
 
     // إذا الاتصال شغال، لا تعيد الاتصال
     if (connectionRef.current?.state === "Connected") {
-      console.log("✅ Already connected to SignalR");
       await refreshUnreadCount();
       return;
     }
@@ -73,14 +70,10 @@ export const UnreadCountProvider = ({ children }) => {
     try {
       // أوقف أي اتصال قديم
       stopConnection();
-
-      console.log("🔄 Starting SignalR connection...");
       const connection = createChatHubConnection(token);
       connectionRef.current = connection;
 
       await connection.start();
-      console.log("✅ SignalR Connected successfully");
-
       // جلب العداد فوراً بعد الاتصال
       await refreshUnreadCount();
 
@@ -95,14 +88,12 @@ export const UnreadCountProvider = ({ children }) => {
 
       // معالجة قطع الاتصال
       connection.onclose((error) => {
-        console.log("⚠️ SignalR connection closed", error);
         connectionRef.current = null;
         isConnectingRef.current = false;
 
         // محاولة إعادة الاتصال بعد 3 ثوان إذا كان هناك توكن
         if (getToken()) {
           reconnectTimeoutRef.current = setTimeout(() => {
-            console.log("🔄 Attempting to reconnect...");
             startConnection();
           }, 3000);
         }
@@ -111,14 +102,13 @@ export const UnreadCountProvider = ({ children }) => {
       isConnectingRef.current = false;
 
     } catch (err) {
-      console.error("❌ SignalR Connection Error:", err);
+      console.error(" SignalR Connection Error:", err);
       connectionRef.current = null;
       isConnectingRef.current = false;
 
       // محاولة إعادة الاتصال بعد 5 ثوان
       if (getToken()) {
         reconnectTimeoutRef.current = setTimeout(() => {
-          console.log("🔄 Retrying connection after error...");
           startConnection();
         }, 5000);
       }
@@ -144,10 +134,8 @@ export const UnreadCountProvider = ({ children }) => {
       const token = getToken();
 
       if (token && (!connectionRef.current || connectionRef.current.state !== "Connected")) {
-        console.log("🔄 Token available but not connected, attempting connection...");
         startConnection();
       } else if (!token && connectionRef.current) {
-        console.log("⚠️ Token removed, stopping connection");
         stopConnection();
         setUnreadCount(0);
       } else if (token && connectionRef.current?.state === "Connected") {

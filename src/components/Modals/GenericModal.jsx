@@ -28,8 +28,8 @@ const GenericModal = ({
   isPrimaryDisabled = false,
   isSubmitting = false,
   secondaryButtonText = "Cancel",
-  secondaryButtonIcon,  // ✅ أضيفي
-  onSecondaryAction,    // ✅ أضيفي
+  secondaryButtonIcon,  
+  onSecondaryAction,   
   secondaryButtonSx,
   snackbar,
   onSnackbarClose,

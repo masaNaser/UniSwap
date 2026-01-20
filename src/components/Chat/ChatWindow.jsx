@@ -12,7 +12,6 @@ import { Avatar, Box, CircularProgress } from "@mui/material";
 import { getImageUrl } from "../../utils/imageHelper";
 import { useNavigateToProfile } from "../../hooks/useNavigateToProfile";
 import { useUnreadCount } from "../../Context/unreadCountContext";
-import { useTheme } from "@mui/material/styles";
 import { getToken, getUserId } from "../../utils/authHelpers";
 
 export default function ChatWindow({
@@ -23,7 +22,6 @@ export default function ChatWindow({
   receiverImage,
   onBack,
 }) {
-  const theme = useTheme();
   const navigateToProfile = useNavigateToProfile();
   const { decreaseUnreadCount, refreshUnreadCount } = useUnreadCount();
   const { connection } = useUnreadCount();

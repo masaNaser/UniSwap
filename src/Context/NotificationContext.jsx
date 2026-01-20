@@ -53,7 +53,7 @@ export const NotificationProvider = ({ children }) => {
   //  يتم مرة واحدة فقط
   const hasLoadedRef = useRef(false);
 
-  // استخدم state بدل مباشرة من localStorage
+  //  استخدم state بدل مباشرة من localStorage
   const [token, setToken] = useState(() => getToken());
   const { updateCurrentUser } = useCurrentUser();
 
@@ -89,7 +89,7 @@ export const NotificationProvider = ({ children }) => {
       setunreadNotificationCount(countRes.data);
       hasLoadedRef.current = true;
     } catch (error) {
-      console.error("❌ Error Details:", {
+      console.error(" Error Details:", {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
@@ -169,20 +169,20 @@ handleStorageChange.
               notification.message?.toLowerCase().includes("earned");
 
             if (isPointsRelated && updateCurrentUser) {
-              console.log("🔄 Updating user points after notification");
+              console.log(" Updating user points after notification");
               await updateCurrentUser();
             }
           } catch (error) {
-            console.error("❌ Error reloading notifications:", error);
+            console.error(" Error reloading notifications:", error);
             setNotifications((prev) => [notification, ...prev]);
             setunreadNotificationCount((prev) => prev + 1);
           }
         });
 
         await connection.start();
-        console.log("✅ SignalR Connected Successfully");
+        console.log(" SignalR Connected Successfully");
       } catch (error) {
-        console.error("❌ SignalR Connection Failed:", error);
+        console.error(" SignalR Connection Failed:", error);
       }
     };
 
@@ -203,7 +203,7 @@ handleStorageChange.
       );
       setunreadNotificationCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
-      console.error("❌ Error marking as read:", error);
+      console.error(" Error marking as read:", error);
     }
   };
 
@@ -213,7 +213,7 @@ handleStorageChange.
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setunreadNotificationCount(0);
     } catch (error) {
-      console.error("❌ Error marking all as read:", error);
+      console.error(" Error marking all as read:", error);
     }
   };
 
@@ -223,7 +223,7 @@ handleStorageChange.
       setNotifications([]);
       setunreadNotificationCount(0);
     } catch (error) {
-      console.error("❌ Error deleting all:", error);
+      console.error(" Error deleting all:", error);
     }
   };
 

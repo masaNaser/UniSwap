@@ -21,7 +21,7 @@ const statusLabels = {
   'InReview': 'In Review',
   'Done': 'Done',
 };
-// حوار إضافة/تعديل مهمة
+//  إضافة/تعديل مهمة
 // 'Edit Task' : 'Add New Task'
 export default function TaskDialog({
   open,
