@@ -5,21 +5,21 @@ import { jwtDecode } from "jwt-decode";
   التحقق من صلاحية التوكن وتحديثه إذا كان قريب من الانتهاء
  */
 export const checkAndRefreshToken = async () => {
-  console.log("🔍 [Timer] Checking token status...");
+  console.log(" [Timer] Checking token status...");
   
   const storage = localStorage.getItem("accessToken") ? localStorage : sessionStorage;
   const token = storage.getItem("accessToken");
   const expiration = storage.getItem("accessTokenExpiration");
 
   if (!token || !expiration) {
-    console.log("⚠️ [Timer] No token or expiration found");
+    console.log(" [Timer] No token or expiration found");
     return false;
   }
 
   // Convert expiration string to number (وقت انتهاء الصلاحية يكون بالثواني)
   const expirationTime = parseInt(expiration, 10);
   if (isNaN(expirationTime)) {
-    console.error("❌ [Timer] Invalid expiration format");
+    console.error("[Timer] Invalid expiration format");
     return false;
   }
 
@@ -27,11 +27,11 @@ export const checkAndRefreshToken = async () => {
   // الناتج = كم ثانية بقيت للتوكن.
   const timeUntilExpiry = expirationTime - currentTime;
 
-  console.log(`⏱️ [Timer] Token expires in ${Math.floor(timeUntilExpiry / 60)} minutes (${timeUntilExpiry} seconds)`);
+  console.log(` [Timer] Token expires in ${Math.floor(timeUntilExpiry / 60)} minutes (${timeUntilExpiry} seconds)`);
 
   //  Refresh if less than 6 minutes remaining (increased buffer for safety)
   if (timeUntilExpiry < 360) {
-    console.log(`🔄 [Timer] Token expiring soon (${Math.floor(timeUntilExpiry / 60)} min remaining), refreshing...`);
+    console.log(` [Timer] Token expiring soon (${Math.floor(timeUntilExpiry / 60)} min remaining), refreshing...`);
     try {
       const response = await refreshToken();
       const { accessToken } = response.data;
@@ -44,10 +44,10 @@ export const checkAndRefreshToken = async () => {
       storage.setItem("accessTokenExpiration", decoded.exp.toString());
       
       const newTimeLeft = decoded.exp - Math.floor(Date.now() / 1000);
-      console.log(`✅ [Timer] Token refreshed successfully - new expiry in ${Math.floor(newTimeLeft / 60)} minutes`);
+      console.log(` [Timer] Token refreshed successfully - new expiry in ${Math.floor(newTimeLeft / 60)} minutes`);
       return true;
     } catch (error) {
-      console.error("❌ [Timer] Failed to refresh token:", error);
+      console.error(" [Timer] Failed to refresh token:", error);
       
       // Clear and redirect
       localStorage.clear();
@@ -57,7 +57,7 @@ export const checkAndRefreshToken = async () => {
     }
   }
 
-  console.log(`✔️ [Timer] Token is still valid, no refresh needed`);
+  console.log(` [Timer] Token is still valid, no refresh needed`);
   return true;
 };
 
@@ -65,7 +65,7 @@ export const checkAndRefreshToken = async () => {
    Check every 5 minutes in production
  */
 export const startTokenRefreshTimer = () => {
-  console.log("✅ [Timer] Token refresh timer starting...");
+  console.log("[Timer] Token refresh timer starting...");
   
   // Check immediately on start
   checkAndRefreshToken();
@@ -76,11 +76,11 @@ export const startTokenRefreshTimer = () => {
 إذا قرب ينتهي → نعمل refresh
 */ 
   const timerId = setInterval(() => {
-    console.log("⏰ [Timer] 5-minute interval triggered");
+    console.log(" [Timer] 5-minute interval triggered");
     checkAndRefreshToken();
   }, 5 * 60 * 1000); // 5 minutes
 
-  console.log(`✅ [Timer] Timer started (ID: ${timerId}, checks every 5 min)`);
+  console.log(`[Timer] Timer started (ID: ${timerId}, checks every 5 min)`);
   return timerId;
 };
 
@@ -90,6 +90,6 @@ export const startTokenRefreshTimer = () => {
 export const stopTokenRefreshTimer = (timerId) => {
   if (timerId) {
     clearInterval(timerId);
-    console.log(`🛑 [Timer] Token refresh timer stopped (ID: ${timerId})`);
+    console.log(` [Timer] Token refresh timer stopped (ID: ${timerId})`);
   }
 };
