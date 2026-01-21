@@ -116,7 +116,7 @@ export default function PostsTab({ username }) {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // ✅ Fetch user posts with pagination (wrapped in useCallback)
+  // Fetch user posts with pagination (wrapped in useCallback)
   const fetchUserPosts = useCallback(async (pageNumber = 1, append = false) => {
     // Prevent duplicate requests
     if (loadingMore && !isInitialLoad) return;
@@ -125,7 +125,8 @@ export default function PostsTab({ username }) {
     const startTime = Date.now();
 
     try {
-      const response = await GetAllPost(userToken, username, pageNumber, 4); // ✅ إضافة pagination
+      // pagination
+      const response = await GetAllPost(userToken, username, pageNumber, 4); 
       console.log("📥 PostsTab - Fetched page", response.data);
 
       const postsData = response.data.map((p) => ({
@@ -159,7 +160,7 @@ export default function PostsTab({ username }) {
         setPosts(postsData);
       }
 
-      // ✅ Check if there are more posts
+      // Check if there are more posts
       setHasMore(postsData.length === 4);
 
       // Minimum loading time for UX
@@ -185,7 +186,7 @@ export default function PostsTab({ username }) {
     }
   }, [userToken, username, loadingMore, isInitialLoad]);
 
-  // ✅ Load more posts function
+  // Load more posts function
 
   const loadMorePosts = useCallback(() => {
     if (!hasMore || loadingMore) {
@@ -201,7 +202,7 @@ export default function PostsTab({ username }) {
     });
   }, [hasMore, loadingMore, fetchUserPosts]);
 
-  // ✅ Hook for infinite scroll
+  // Hook for infinite scroll
   const observerRef = useInfiniteScroll(loadMorePosts, hasMore, loadingMore);
 
   const fetchRecentComments = useCallback(
@@ -237,7 +238,7 @@ export default function PostsTab({ username }) {
     }
   }, [posts.length, fetchRecentComments]);
 
-  // ✅ Initial load with proper reset
+  // Initial load with proper reset
   useEffect(() => {
     if (username && userToken) {
       console.log("🔄 PostsTab - Initial load triggered");
@@ -670,7 +671,7 @@ export default function PostsTab({ username }) {
     );
   };
 
-  // ✅ Initial Loading State
+  // Initial Loading State
   if (loadingPosts && isInitialLoad) {
     return (
       <Box sx={{ mt: 3, width: "100%" }}>
@@ -681,7 +682,7 @@ export default function PostsTab({ username }) {
     );
   }
 
-  // ✅ Empty State
+  // Empty State
   if (posts.length === 0 && !loadingPosts) {
     return (
       <Box sx={{ textAlign: "center", py: 10, color: "text.secondary" }}>
@@ -737,10 +738,10 @@ export default function PostsTab({ username }) {
           </Box>
         )}
 
-        {/* ✅ Observer Element for Infinite Scroll */}
+        {/* Observer Element for Infinite Scroll */}
         <div ref={observerRef} style={{ height: "20px" }} />
 
-        {/* ✅ End Message */}
+        {/* End Message */}
         {/* {!hasMore && posts.length > 0 && (
           <Box sx={{ textAlign: "center", py: 3 }}>
             <Typography
