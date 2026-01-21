@@ -8,6 +8,7 @@ export default function ClientDashboard({
   highlightedRequestId,
   initialShowRequests,
 }) {
+  // بنمرر config للبيس داش عشان يستخدم userrole بالفنكشن ويعرف يجيب بيانات مين فيهم
   const config = {
     isProvider: false,
     storageKey: "clientShowRequests",
