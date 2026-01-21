@@ -36,7 +36,7 @@ export const EditServices = async (token, id, data) => {
       Authorization: `Bearer ${token}`,
       "Content-Type": "multipart/form-data",
     },
-    params: { id },  // 👈 هيي
+    params: { id },
   });
 };
 
@@ -46,6 +46,6 @@ export const DeleteServices = async (token, id) => {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    params: { id }, // <-- مهم
+    params: { id }, 
   });
 };

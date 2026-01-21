@@ -1,5 +1,3 @@
-// src/services/subServiceServices.js
-
 import api from './api';
 
 export const getSubServices = async (token, id) => {
@@ -18,7 +16,7 @@ export const getOneSubServices = async (token, serviceId, subServiceId) => {
   });
 };
 
-// 🔥 تعديل Create لدعم parentSubServiceId
+//  تعديل Create لدعم parentSubServiceId
 export const CreateSubServices = async (token, serviceId, data, parentSubServiceId = null) => {
   // بناء الـ URL بناءً على وجود parentSubServiceId
   const url = parentSubServiceId 
@@ -33,7 +31,7 @@ export const CreateSubServices = async (token, serviceId, data, parentSubService
   });
 };
 
-// 🔥 تعديل Edit لتحويل name → Name
+// تعديل Edit لتحويل name → Name
 export const EditSubServices = async (token, serviceId, subId, data) => {
   const payload = { Name: data.name };
   

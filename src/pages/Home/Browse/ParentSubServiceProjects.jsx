@@ -1,5 +1,3 @@
-// src/pages/Home/Browse/ParentSubServiceProjects.jsx
-// التلخيص
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import {
@@ -349,11 +347,11 @@ const ParentSubServiceProjects = () => {
 
       if (Array.isArray(response.data)) {
         setProjects(response.data);
-        console.log("Full project data:", response.data); // 🔍 Check this
+        console.log("Full project data:", response.data);
         setTotalPages(1);
       } else if (response.data.items) {
         setProjects(response.data.items);
-        console.log("Full project data:", response.data.items[0]); // 🔍 Check this
+        console.log("Full project data:", response.data.items[0]);
         setTotalPages(response.data.totalPages || 1);
       }
     } catch (err) {
